@@ -1,0 +1,1 @@
+export type DevelpomentVector = 'tech' | 'nature' | 'medieval' | 'aether' | 'default';
