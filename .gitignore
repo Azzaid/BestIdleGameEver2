@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+#do not load raw sprites to git
+.assets/base
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
