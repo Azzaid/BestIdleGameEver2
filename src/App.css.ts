@@ -8,8 +8,7 @@ export const appContainer = style({
 });
 
 export const appNav = style({
-  backgroundColor: vars.color.primary,
-  color: 'white',
+  backgroundColor: vars.bgHi,
   padding: '0 20px',
   display: 'flex',
   justifyContent: 'space-between',
@@ -38,13 +37,12 @@ export const navBarItem = style({
 
 export const navBarLink = style({
         display: 'block',
-        color: 'white',
         textDecoration: 'none',
         padding: '20px 15px',
         transition: 'background-color 0.2s',
     selectors: {
         '&:hover': {
-            backgroundColor: vars.color.primaryDark,
+            backgroundColor: vars.focus,
         },
     }
 });
@@ -52,7 +50,7 @@ export const navBarLink = style({
 export const appContent = style({
   flex: 1,
   overflow: 'auto',
-  backgroundColor: vars.color.background,
+  backgroundColor: vars.bg,
 });
 
 export const themeSwitcher = style({

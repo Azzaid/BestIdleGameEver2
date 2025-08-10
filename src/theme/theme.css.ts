@@ -1,75 +1,81 @@
-import { createTheme, createThemeContract } from '@vanilla-extract/css';
+// theme.css.ts
+import { createGlobalTheme, createGlobalThemeContract } from '@vanilla-extract/css';
 
-export const vars = createThemeContract({
-  color: {
-    primary: '',
-    primaryDark: '',
-    secondary: '',
-    text: '',
-    background: '',
-    border: '',
-    link: '',
-    buttonText: '',
-  },
+export type ThemeName = 'default' | 'tech' | 'nature' | 'medieval' | 'aether';
+
+export const vars = createGlobalThemeContract({
+    bg: 'bg',
+    bgHi: 'bg-hi',
+    border: 'border',
+    el: 'el',
+    focus: 'focus',
+    textHead: 'text-head',
+    text: 'text',
+    elContrast: 'el-contrast',
+    shadow: 'shadow',
 });
 
-export const techTheme = createTheme(vars, {
-  color: {
-    primary: '#5b6cff', // blue-violet
-    primaryDark: '#454fc9',
-    secondary: '#7f8c8d', // grey
-    text: '#e8eaf6',
-    background: '#0f1226',
-    border: '#3b3f5c',
-    link: '#8a9aff',
-    buttonText: '#ffffff',
-  },
-});
-
-export const natureTheme = createTheme(vars, {
-  color: {
-    primary: '#2ecc71', // green
-    primaryDark: '#27ae60',
-    secondary: '#f1c40f', // yellow
-    text: '#223322',
-    background: '#ffffff',
-    border: '#dfe6e0',
-    link: '#1e8449',
-    buttonText: '#ffffff',
-  },
-});
-
-export const medievalTheme = createTheme(vars, {
-  color: {
-    primary: '#8b4513', // dark brown
-    primaryDark: '#5e2f0c',
-    secondary: '#b22222', // red
-    text: '#2b1a0a',
-    background: '#f6efe5',
-    border: '#c9b39a',
-    link: '#8b0000',
-    buttonText: '#fff8e7',
-  },
-});
-
-export const aetherTheme = createTheme(vars, {
-  color: {
-    primary: '#3ad5c9', // light turquoise
-    primaryDark: '#1b9b96',
-    secondary: '#0e3c7d', // deep blue
-    text: '#0e2233',
-    background: '#ffffff',
-    border: '#d6eef0',
-    link: '#0e3c7d',
-    buttonText: '#ffffff',
-  },
-});
-
-export type ThemeName = 'tech' | 'nature' | 'medieval' | 'aether';
-
-export const themeByName: Record<ThemeName, string> = {
-  tech: techTheme,
-  nature: natureTheme,
-  medieval: medievalTheme,
-  aether: aetherTheme,
+export const palettes: Record<ThemeName, Record<keyof typeof vars, string>> = {
+    default: {
+        bg: 'hsl(42 20% 97%)',
+        bgHi: 'hsl(42 22% 99%)',
+        border: 'hsl(42 15% 80%)',
+        el: 'hsl(32 22% 49%)',
+        focus: 'hsl(32 35% 58%)',
+        textHead: 'hsl(220 25% 20%)',
+        text: 'hsl(220 15% 30%)',
+        elContrast: 'white',
+        shadow: '0 4px 24px hsl(220 20% 20% / 0.08)',
+    },
+    tech: {
+        bg: 'hsl(220 20% 96%)',
+        bgHi: 'hsl(220 22% 99%)',
+        border: 'hsl(220 12% 78%)',
+        el: 'hsl(200 80% 45%)',
+        focus: 'hsl(190 90% 55%)',
+        textHead: 'hsl(225 40% 18%)',
+        text: 'hsl(225 20% 28%)',
+        elContrast: 'white',
+        shadow: '0 4px 24px hsl(220 20% 20% / 0.10)',
+    },
+    nature: {
+        bg: 'hsl(100 20% 96%)',
+        bgHi: 'hsl(100 22% 99%)',
+        border: 'hsl(100 12% 78%)',
+        el: 'hsl(140 28% 35%)',
+        focus: 'hsl(140 45% 42%)',
+        textHead: 'hsl(160 35% 16%)',
+        text: 'hsl(160 18% 26%)',
+        elContrast: 'white',
+        shadow: '0 4px 24px hsl(160 20% 20% / 0.08)',
+    },
+    medieval: {
+        bg: 'hsl(42 35% 95%)',
+        bgHi: 'hsl(42 40% 98%)',
+        border: 'hsl(35 25% 70%)',
+        el: 'hsl(354 42% 36%)',
+        focus: 'hsl(30 70% 45%)',
+        textHead: 'hsl(24 40% 18%)',
+        text: 'hsl(24 25% 28%)',
+        elContrast: 'white',
+        shadow: '0 4px 24px hsl(24 30% 20% / 0.10)',
+    },
+    aether: {
+        bg: 'hsl(270 28% 96%)',
+        bgHi: 'hsl(270 30% 99%)',
+        border: 'hsl(270 18% 80%)',
+        el: 'hsl(280 65% 55%)',
+        focus: 'hsl(200 85% 58%)',
+        textHead: 'hsl(270 40% 18%)',
+        text: 'hsl(270 22% 28%)',
+        elContrast: 'white',
+        shadow: '0 4px 24px hsl(270 30% 20% / 0.08)',
+    },
 };
+
+// Global default + attribute-scoped themes
+createGlobalTheme(':root', vars, palettes.default);
+createGlobalTheme('[data-theme="tech"]', vars, palettes.tech);
+createGlobalTheme('[data-theme="nature"]', vars, palettes.nature);
+createGlobalTheme('[data-theme="medieval"]', vars, palettes.medieval);
+createGlobalTheme('[data-theme="aether"]', vars, palettes.aether);

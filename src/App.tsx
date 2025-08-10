@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { ThemeProvider, useTheme } from './theme/ThemeProvider'
-import * as s from './App.css.ts'
+import * as appTheme from './App.css.ts'
 
 // Import page components
 import BattlePage from './pages/Battle/BattlePage'
-import BuildPage from './pages/Build/BuildPage_hex'
+import BuildPage from './pages/Build/BuildPage'
 import ResearchPage from './pages/Research/ResearchPage'
 import CityPage from './pages/City/CityPage'
 import StatisticsPage from './pages/Statistics/StatisticsPage'
@@ -12,7 +12,7 @@ import StatisticsPage from './pages/Statistics/StatisticsPage'
 function ThemeSwitcher() {
   const { setTheme } = useTheme();
   return (
-    <div className={s.themeSwitcher}>
+    <div className={appTheme.themeSwitcher}>
       <button onClick={() => setTheme('tech')}>Tech</button>
       <button onClick={() => setTheme('nature')}>Nature</button>
       <button onClick={() => setTheme('medieval')}>Medieval</button>
@@ -25,34 +25,34 @@ function App() {
   return (
     <ThemeProvider initialTheme={'tech'}>
       <Router>
-        <div className={s.appContainer}>
-          <nav className={s.appNav}>
-            <div className={s.appTitle}>Tower Defense Idle</div>
-            <ul className={s.navLinks}>
-              <li className={s.navBarItem}>
-                <Link className={s.navBarLink} to="/battle">Battle</Link>
+        <div className={appTheme.appContainer}>
+          <nav className={appTheme.appNav}>
+            <div className={appTheme.appTitle}>Tower Defense Idle</div>
+            <ul className={appTheme.navLinks}>
+              <li className={appTheme.navBarItem}>
+                <Link className={appTheme.navBarLink} to="/battle">Battle</Link>
               </li>
               <li>
-                <Link className={s.navBarLink} to="/build">Build</Link>
+                <Link className={appTheme.navBarLink} to="/build">Build</Link>
               </li>
               <li>
-                <Link className={s.navBarLink} to="/research">Research</Link>
+                <Link className={appTheme.navBarLink} to="/research">Research</Link>
               </li>
               <li>
-                <Link className={s.navBarLink} to="/city">City</Link>
+                <Link className={appTheme.navBarLink} to="/city">City</Link>
               </li>
               <li>
-                <Link className={s.navBarLink} to="/statistics">Statistics</Link>
+                <Link className={appTheme.navBarLink} to="/statistics">Statistics</Link>
               </li>
             </ul>
             <ThemeSwitcher />
           </nav>
           
-          <main className={s.appContent}>
+          <main className={appTheme.appContent}>
             <Routes>
               <Route path="/" element={<BattlePage />} />
               <Route path="/battle" element={<BattlePage />} />
-              <Route path="/build" element={<BuildPage spriteAtlas={{}}/>} />
+              <Route path="/build" element={<BuildPage/>} />
               <Route path="/research" element={<ResearchPage />} />
               <Route path="/city" element={<CityPage />} />
               <Route path="/statistics" element={<StatisticsPage />} />

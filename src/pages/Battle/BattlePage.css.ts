@@ -11,7 +11,7 @@ export const battlePage = style({
 export const canvasContainer = style({
   flex: 1,
   margin: '20px 0',
-  border: `2px solid ${vars.color.text}`,
+  border: `2px solid ${vars.bgHi}`,
   borderRadius: '5px',
   overflow: 'hidden',
   minHeight: '500px',

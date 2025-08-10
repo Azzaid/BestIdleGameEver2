@@ -2,18 +2,9 @@ import React, { useMemo, useRef, useState, useEffect } from "react";
 
 // ---------- Math helpers (pointy-top axial) ----------
 type AxialCoordinate = { column: number; row: number };
-const HEX_RADIUS_PX = 28;
+const HEX_RADIUS_PX = 32;
 const SQUARE_ROOT_OF_3 = Math.sqrt(3);
-
-function axialToPixelPosition(
-    { column, row }: AxialCoordinate,
-    radiusPx = HEX_RADIUS_PX
-) {
-    return {
-        x: radiusPx * (SQUARE_ROOT_OF_3 * column + (SQUARE_ROOT_OF_3 / 2) * row),
-        y: radiusPx * (1.5 * row),
-    };
-}
+const HEX_STROKE_WIDTH = 2;
 
 function getHexagonPolygonPoints(
     centerX: number,
@@ -29,6 +20,27 @@ function getHexagonPolygonPoints(
         polygonPoints.push(`${vertexX},${vertexY}`);
     }
     return polygonPoints.join(" ");
+}
+
+function axialToPixelPosition(
+    { column, row }: AxialCoordinate,
+    hexRadiusPx = HEX_RADIUS_PX,
+    gapBetweenEdgesPx = HEX_STROKE_WIDTH + 1 // e.g., your stroke width (1–2 px works well)
+) {
+    // Distance between centers of adjacent hexes (no gap) = √3 * R.
+    // To get a visible gap g between edges, scale all center distances by:
+    //   scale = (√3*R + g) / (√3*R) = 1 + g / (√3*R)
+    const scale =
+        1 + (gapBetweenEdgesPx / (SQUARE_ROOT_OF_3 * hexRadiusPx));
+
+    const x =
+        scale *
+        hexRadiusPx *
+        (SQUARE_ROOT_OF_3 * column + (SQUARE_ROOT_OF_3 / 2) * row);
+
+    const y = scale * hexRadiusPx * (1.5 * row);
+
+    return { x, y };
 }
 
 function pixelPositionToAxialCoordinate(
@@ -74,10 +86,11 @@ type HexCell = AxialCoordinate & {
 type SpriteAtlas = Record<string, string>;
 
 // ---------- Component ----------
-export default function ClickableHexGrid({
+export default function CityHex({
                                              radiusInCells = 8,
                                              spriteAtlas,
                                              predefinedCells,
+                                    onSelect=()=>{}
                                          }: {
     radiusInCells?: number;
     spriteAtlas: SpriteAtlas;
@@ -96,7 +109,7 @@ export default function ClickableHexGrid({
                     id: String(cellIdCounter++),
                     column,
                     row,
-                    spriteKey: null,
+                    spriteKey: cellIdCounter < 6 ? `tech_farm_${cellIdCounter}` : null,
                 });
             }
         }
@@ -105,21 +118,20 @@ export default function ClickableHexGrid({
 
     // Precompute geometry
     const preparedCells = useMemo(() => {
-        const borderInset = HEX_RADIUS_PX * 0.95;
-        const innerSquareSide =
-            borderInset * Math.sqrt(3) / 2; // fit square into hex
-
+        const hexRadius = HEX_RADIUS_PX; // center -> vertex
+        const hexWidth = Math.sqrt(3) * hexRadius; // flat-to-flat
+        const spritePadding = 0.98; // tweak to taste (0.9–0.98)
+        const spriteSide = hexWidth * spritePadding; // << correct scale now
         return allCells.map((cell) => {
             const { x, y } = axialToPixelPosition(cell);
             return {
                 ...cell,
                 centerX: x,
                 centerY: y,
-                polygonPoints: getHexagonPolygonPoints(x, y),
-                spriteX: x - innerSquareSide / 2,
-                spriteY: y - innerSquareSide / 2,
-                spriteWidth: innerSquareSide,
-                spriteHeight: innerSquareSide,
+                spriteX: x - spriteSide / 2,
+                spriteY: y - spriteSide / 2,
+                spriteWidth: spriteSide,
+                spriteHeight: spriteSide,
             };
         });
     }, [allCells]);
@@ -151,6 +163,7 @@ export default function ClickableHexGrid({
         const worldY = (y - cameraOffsetY) / zoomFactor;
 
         const { column, row } = pixelPositionToAxialCoordinate(worldX, worldY);
+        onSelect({ column, row })
         setSelectedCellKey(`${column},${row}`);
     };
 
@@ -264,15 +277,14 @@ export default function ClickableHexGrid({
 
                             <use
                                 href="#hexagonPath"
-                                fill={
-                                    isSelected
-                                        ? "#2e2a17"
-                                        : isHovered
-                                            ? "#1b1b22"
-                                            : "#16161b"
+                                fill="#16161b"
+                                stroke={
+                                isSelected
+                                    ? "#2e2a17"
+                                    : isHovered
+                                        ? "#6f6f7a" : "#16161b"
                                 }
-                                stroke="#6f6f7a"
-                                strokeWidth={1}
+                                strokeWidth={HEX_STROKE_WIDTH}
                                 vectorEffect="non-scaling-stroke"
                             />
 
@@ -285,10 +297,7 @@ export default function ClickableHexGrid({
                                     height={cell.spriteHeight}
                                     preserveAspectRatio="xMidYMid meet"
                                     clipPath={`url(#${clipId})`}
-                                    style={{
-                                        imageRendering: "pixelated",
-                                        pointerEvents: "none",
-                                    }}
+                                    style={{ imageRendering: "pixelated", pointerEvents: "none" }}
                                 />
                             )}
                         </g>
