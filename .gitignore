@@ -13,7 +13,7 @@ dist-ssr
 *.local
 
 #do not load raw sprites to git
-.assets/base
+assets/base
 
 # Editor directories and files
 .vscode/*
