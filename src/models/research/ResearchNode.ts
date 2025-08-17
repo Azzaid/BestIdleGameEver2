@@ -1,10 +1,10 @@
-import type {DevelpomentVector} from "../DevlopmentVector.ts";
+import type {DevelopmentVectorKey} from "../DevlopmentVector.ts";
 
 export type ResearchNodeData = {
     id: string;
     parentId: string | null;             // canonical parent for collapse/navigation
     name: string;
-    vector: DevelpomentVector;
+    vector: DevelopmentVectorKey;
     summary?: string;
     unlocks?: string[];
     costs?: { type: string; amount: number }[];

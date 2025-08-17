@@ -1,28 +1,32 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
+import { buildingsSpriteAtlas  } from "../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
+import type {AxialCoordinate, HexCell} from "../../../models/city/HexGrid.ts";
 
 // ---------- Math helpers (pointy-top axial) ----------
-type AxialCoordinate = { column: number; row: number };
 const HEX_RADIUS_PX = 32;
 const SQUARE_ROOT_OF_3 = Math.sqrt(3);
 const HEX_STROKE_WIDTH = 2;
+const hexWidth = Math.sqrt(3) * HEX_RADIUS_PX; // flat-to-flat
+const SPRITE_PADDING = 0.98; // tweak to taste (0.9–0.98)
+const spriteSide = hexWidth * SPRITE_PADDING; // << correct scale now
+const SPRITE_WIDTH = spriteSide;
+const SPRITE_HEIGHT = spriteSide;
 
 function getHexagonPolygonPoints(
-    centerX: number,
-    centerY: number,
     radiusPx = HEX_RADIUS_PX
 ) {
     const polygonPoints: string[] = [];
     for (let vertexIndex = 0; vertexIndex < 6; vertexIndex++) {
         const angleRadians =
             (Math.PI / 180) * (60 * vertexIndex - 30); // pointy-top
-        const vertexX = centerX + radiusPx * Math.cos(angleRadians);
-        const vertexY = centerY + radiusPx * Math.sin(angleRadians);
+        const vertexX = radiusPx * Math.cos(angleRadians);
+        const vertexY = radiusPx * Math.sin(angleRadians);
         polygonPoints.push(`${vertexX},${vertexY}`);
     }
     return polygonPoints.join(" ");
 }
 
-function axialToPixelPosition(
+function axialCoordinateToPixelPosition(
     { column, row }: AxialCoordinate,
     hexRadiusPx = HEX_RADIUS_PX,
     gapBetweenEdgesPx = HEX_STROKE_WIDTH + 1 // e.g., your stroke width (1–2 px works well)
@@ -54,9 +58,9 @@ function pixelPositionToAxialCoordinate(
     const fractionalRow = (2 / 3 * pixelY) / radiusPx;
 
     // Convert to cube coordinates for rounding
-    let cubeX = fractionalColumn;
-    let cubeZ = fractionalRow;
-    let cubeY = -cubeX - cubeZ;
+    const cubeX = fractionalColumn;
+    const cubeZ = fractionalRow;
+    const cubeY = -cubeX - cubeZ;
 
     let roundedCubeX = Math.round(cubeX);
     let roundedCubeY = Math.round(cubeY);
@@ -77,70 +81,43 @@ function pixelPositionToAxialCoordinate(
     return { column: roundedCubeX, row: roundedCubeZ };
 }
 
-// ---------- Types ----------
-type HexCell = AxialCoordinate & {
-    id: string;
-    spriteKey: string | null;
-};
-
-type SpriteAtlas = Record<string, string>;
-
 // ---------- Component ----------
 export default function CityHex({
                                              radiusInCells = 8,
-                                             spriteAtlas,
-                                             predefinedCells,
+                                             cells,
                                     onSelect=()=>{}
                                          }: {
     radiusInCells?: number;
-    spriteAtlas: SpriteAtlas;
-    predefinedCells?: HexCell[];
+    cells: HexCell[];
+    onSelect?: (cell: AxialCoordinate) => void;
 }) {
-    // Build a hex disc if not given
-    const allCells: HexCell[] = useMemo(() => {
-        if (predefinedCells) return predefinedCells;
-        const generatedCells: HexCell[] = [];
-        let cellIdCounter = 0;
-        for (let column = -radiusInCells; column <= radiusInCells; column++) {
-            const rowMin = Math.max(-radiusInCells, -column - radiusInCells);
-            const rowMax = Math.min(radiusInCells, -column + radiusInCells);
-            for (let row = rowMin; row <= rowMax; row++) {
-                generatedCells.push({
-                    id: String(cellIdCounter++),
-                    column,
-                    row,
-                    spriteKey: cellIdCounter < 6 ? `tech_farm_${cellIdCounter}` : null,
-                });
-            }
-        }
-        return generatedCells;
-    }, [radiusInCells, predefinedCells]);
-
     // Precompute geometry
     const preparedCells = useMemo(() => {
-        const hexRadius = HEX_RADIUS_PX; // center -> vertex
-        const hexWidth = Math.sqrt(3) * hexRadius; // flat-to-flat
-        const spritePadding = 0.98; // tweak to taste (0.9–0.98)
-        const spriteSide = hexWidth * spritePadding; // << correct scale now
-        return allCells.map((cell) => {
-            const { x, y } = axialToPixelPosition(cell);
+        return cells.map((cell) => {
+            const { x, y } = axialCoordinateToPixelPosition(cell);
             return {
                 ...cell,
                 centerX: x,
                 centerY: y,
                 spriteX: x - spriteSide / 2,
                 spriteY: y - spriteSide / 2,
-                spriteWidth: spriteSide,
-                spriteHeight: spriteSide,
             };
         });
-    }, [allCells]);
+    }, [cells]);
+
+    const hexagonPolygonPoints = useMemo(() => {
+        return getHexagonPolygonPoints(HEX_RADIUS_PX);
+    }, []);
 
     // Camera state
     const [zoomFactor, setZoomFactor] = useState(2);
     const [cameraOffsetX, setCameraOffsetX] = useState(0);
     const [cameraOffsetY, setCameraOffsetY] = useState(0);
     const svgRef = useRef<SVGSVGElement>(null);
+    const isDraggingRef = useRef(false);
+    const startMouseRef = useRef({ x: 0, y: 0 });
+    const startCameraOffsetRef = useRef({ x: 0, y: 0 });
+    const cameraOffsetRef = useRef({ x: cameraOffsetX, y: cameraOffsetY });
 
     // Hover & selection
     const [hoveredCellKey, setHoveredCellKey] = useState<string | null>(null);
@@ -168,6 +145,7 @@ export default function CityHex({
     };
 
     const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+        if (isDraggingRef.current) return;
         if (!svgRef.current) return;
         const svgPoint = svgRef.current.createSVGPoint();
         svgPoint.x = event.clientX;
@@ -188,7 +166,7 @@ export default function CityHex({
     };
 
     // Zoom wheel
-    const handleWheelZoom = (event: React.WheelEvent) => {
+    const handleWheelZoom = (event: WheelEvent) => {
         event.preventDefault();
         const zoomChange = event.deltaY < 0 ? 1.1 : 0.9;
         setZoomFactor((currentZoom) => {
@@ -202,38 +180,64 @@ export default function CityHex({
 
     // Drag to pan
     useEffect(() => {
+        cameraOffsetRef.current = { x: cameraOffsetX, y: cameraOffsetY };
+    }, [cameraOffsetX, cameraOffsetY]);
+
+    useEffect(() => {
         const svgElement = svgRef.current;
         if (!svgElement) return;
-        let isDragging = false;
-        let startMouseX = 0;
-        let startMouseY = 0;
-        let startCameraOffsetX = 0;
-        let startCameraOffsetY = 0;
 
         const onMouseDown = (e: MouseEvent) => {
-            isDragging = true;
-            startMouseX = e.clientX;
-            startMouseY = e.clientY;
-            startCameraOffsetX = cameraOffsetX;
-            startCameraOffsetY = cameraOffsetY;
+            if (e.button !== 0) return; // left button only
+            isDraggingRef.current = true;
+            startMouseRef.current = { x: e.clientX, y: e.clientY };
+            startCameraOffsetRef.current = { ...cameraOffsetRef.current };
+            // optional: prevent text selection while dragging
+            document.body.style.userSelect = "none";
+            svgElement.style.cursor = "grabbing";
         };
+
         const onMouseMove = (e: MouseEvent) => {
-            if (!isDragging) return;
-            setCameraOffsetX(startCameraOffsetX + (e.clientX - startMouseX));
-            setCameraOffsetY(startCameraOffsetY + (e.clientY - startMouseY));
+            if (!isDraggingRef.current) return;
+            const dx = e.clientX - startMouseRef.current.x;
+            const dy = e.clientY - startMouseRef.current.y;
+            const nx = startCameraOffsetRef.current.x + dx;
+            const ny = startCameraOffsetRef.current.y + dy;
+            // update state (this will re-render, but listeners stay intact)
+            setCameraOffsetX(nx);
+            setCameraOffsetY(ny);
         };
-        const onMouseUp = () => (isDragging = false);
+
+        const onMouseUp = () => {
+            if (!isDraggingRef.current) return;
+            isDraggingRef.current = false;
+            document.body.style.userSelect = "";
+            if (svgElement) svgElement.style.cursor = "grab";
+        };
 
         svgElement.addEventListener("mousedown", onMouseDown);
         window.addEventListener("mousemove", onMouseMove);
         window.addEventListener("mouseup", onMouseUp);
 
+        // set initial cursor
+        svgElement.style.cursor = "grab";
+
         return () => {
             svgElement.removeEventListener("mousedown", onMouseDown);
             window.removeEventListener("mousemove", onMouseMove);
             window.removeEventListener("mouseup", onMouseUp);
+            document.body.style.userSelect = "";
         };
-    }, [cameraOffsetX, cameraOffsetY]);
+    }, []);
+
+    useEffect(() => {
+        const svgElement = svgRef.current;
+        if (!svgElement) return;
+        svgElement.addEventListener("wheel", handleWheelZoom, { passive: false });
+        return () => {
+            svgElement.removeEventListener("wheel", handleWheelZoom)
+        }
+    }, []);
 
     const viewExtent = (radiusInCells + 2) * HEX_RADIUS_PX * 2.2;
 
@@ -241,7 +245,6 @@ export default function CityHex({
         <svg
             ref={svgRef}
             viewBox={`${-viewExtent} ${-viewExtent} ${viewExtent * 2} ${viewExtent * 2}`}
-            onWheel={handleWheelZoom}
             onMouseMove={handleMouseMove}
             onClick={handleClick}
             style={{
@@ -255,7 +258,7 @@ export default function CityHex({
             <defs>
                 <polygon
                     id="hexagonPath"
-                    points={getHexagonPolygonPoints(0, 0)}
+                    points={hexagonPolygonPoints}
                 />
             </defs>
 
@@ -288,13 +291,13 @@ export default function CityHex({
                                 vectorEffect="non-scaling-stroke"
                             />
 
-                            {cell.spriteKey && spriteAtlas[cell.spriteKey] && (
+                            {cell.buildingKey && buildingsSpriteAtlas[cell.developmentVector] && buildingsSpriteAtlas[cell.developmentVector][cell.buildingKey] && (
                                 <image
-                                    href={spriteAtlas[cell.spriteKey]}
-                                    x={-cell.spriteWidth / 2}
-                                    y={-cell.spriteHeight / 2}
-                                    width={cell.spriteWidth}
-                                    height={cell.spriteHeight}
+                                    href={buildingsSpriteAtlas[cell.developmentVector][cell.buildingKey]}
+                                    x={-SPRITE_WIDTH / 2}
+                                    y={-SPRITE_HEIGHT / 2}
+                                    width={SPRITE_WIDTH}
+                                    height={SPRITE_HEIGHT}
                                     preserveAspectRatio="xMidYMid meet"
                                     clipPath={`url(#${clipId})`}
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}
