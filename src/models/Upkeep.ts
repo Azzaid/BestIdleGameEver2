@@ -1,4 +1,6 @@
 //TODO: replace upkeep keys with techProduce, techResearch, aetherProduce, aetherResearch, medievalProduce, medievalResearch, etc.
+import {DEVELOPMENT_VECTORS} from "./DevlopmentVector.ts";
+
 export const UPKEEP_TYPES = {
     people: Symbol("People"),
     gold: Symbol("Gold"),
@@ -16,19 +18,15 @@ export type UpkeepTypesValue = typeof UPKEEP_TYPES[keyof typeof UPKEEP_TYPES];
 export type UpkeepAmount = Partial<Record<UpkeepTypesValue, number>>;
 export type UpkeepDescription = Partial<Record<UpkeepTypesValue, string>>;
 
-// Canonical order to iterate in UI:
-export const ALL_UPKEEP_KEYS = [
-    UPKEEP_TYPES.people,
-    UPKEEP_TYPES.gold,
-    UPKEEP_TYPES.electricity,
-    UPKEEP_TYPES.highTechComponents,
-    UPKEEP_TYPES.mana,
-    UPKEEP_TYPES.arcaneSupplies,
-    UPKEEP_TYPES.biomass,
-    UPKEEP_TYPES.mutagen,
-] as const satisfies readonly UpkeepTypesValue[];
+export const UPKEEP_TYPES_BY_VECTOR = {
+    [DEVELOPMENT_VECTORS.tech]: [UPKEEP_TYPES.electricity, UPKEEP_TYPES.highTechComponents],
+    [DEVELOPMENT_VECTORS.nature]: [UPKEEP_TYPES.biomass, UPKEEP_TYPES.mutagen],
+    [DEVELOPMENT_VECTORS.medieval]: [UPKEEP_TYPES.people, UPKEEP_TYPES.gold],
+    [DEVELOPMENT_VECTORS.aether]: [UPKEEP_TYPES.mana, UPKEEP_TYPES.arcaneSupplies],
+    [DEVELOPMENT_VECTORS.default]: [],
+}
 
-// Labels (or icons) for rendering
+// Here will be url strings
 export const UPKEEP_SPRITES = {
     [UPKEEP_TYPES.people]: "People",
     [UPKEEP_TYPES.gold]: "Gold",

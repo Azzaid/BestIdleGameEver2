@@ -7,7 +7,6 @@ export const DEVELOPMENT_VECTORS = {
 } as const;
 
 export type DevelopmentVectorKey = keyof typeof DEVELOPMENT_VECTORS;
-
 export type DevelopmentVectorValue = typeof DEVELOPMENT_VECTORS[keyof typeof DEVELOPMENT_VECTORS];
 
 export const BUILDING_TYPES = {

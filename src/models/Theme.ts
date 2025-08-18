@@ -1,5 +1,22 @@
-type HSLColor = `hsl(${number}, ${number}%, ${number}%)`;
-type HSLAColor = `hsla(${number}, ${number}%, ${number}%, ${number})`;
+import {
+    type DevelopmentVectorKey,
+} from "./DevlopmentVector.ts";
+
+type HSLColor = `hsl(${number} ${number}% ${number}%)`;
+type HSLAColor = `hsl(${number} ${number}% ${number}% / ${number})`;
+
+export type ThemeName = DevelopmentVectorKey;
+
+// Object with both property access *and* array access
+export const THEME_NAMES = {
+    tech: "tech",
+    nature: "nature",
+    medieval: "medieval",
+    aether: "aether",
+    default: "default",
+} as const satisfies Record<ThemeName, ThemeName>;
+
+export const THEME_NAME_LIST = Object.values(THEME_NAMES);
 
 export type Theme = {
     color: {
@@ -69,9 +86,9 @@ export type Theme = {
         },
         shadow: {
             /** Card/drop shadow for raised surfaces. */
-            card: HSLColor | HSLAColor,
+            card: string,
             /** Popover/tooltip shadow (slightly stronger). */
-            popover: HSLColor | HSLAColor,
+            popover: string,
         },
     },
 }

@@ -2,9 +2,11 @@ import { useState } from "react";
 import * as s from "./BuildingSelector.css.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../../../models/DevlopmentVector.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
-import {ALL_UPKEEP_KEYS} from "../../../../models/Upkeep.ts";
+import {UPKEEP_TYPES} from "../../../../models/Upkeep.ts";
 import {HexTilePreview} from "./HexTilePreview.tsx";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
+import {useTypedSelector} from "../../../../store/hooks.ts";
+import {selectTotalUpkeep} from "../../../../store/upkeep/selectors.ts";
 
 
 export type BuildingSelectorProps = {
@@ -15,9 +17,10 @@ export function BuildingSelector({
                                      onBuild,
                                  }: BuildingSelectorProps) {
     const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.default);
+    const upkeep = useTypedSelector(selectTotalUpkeep);
 
     return (
-        <div className={s.wrapper} data-theme={activeVector}>
+        <div className={s.wrapper} data-theme={activeVector.description}>
             {/* Tabs */}
             <div className={s.tabs} role="tablist" aria-label="Development vectors">
                 {Object.values(DEVELOPMENT_VECTORS).map(vector => {
@@ -58,7 +61,7 @@ export function BuildingSelector({
                                         {building.name}
                                     </h3>
                                     <ul className={s.cost}>
-                                        {ALL_UPKEEP_KEYS.map((resource) => {
+                                        {Object.values(UPKEEP_TYPES).map((resource) => {
                                             if (!building.requiredUpkeep[resource]) return null
                                             return (
                                                 <li key={resource.description} className={s.costItem}>
@@ -88,7 +91,7 @@ export function BuildingSelector({
                                 <div className={s.contentCol}>
                                     <h4 className={s.sectionTitle}>Gives</h4>
                                     <ul className={s.bullets}>
-                                        {ALL_UPKEEP_KEYS.map((resource) => {
+                                        {Object.values(UPKEEP_TYPES).map((resource) => {
                                             if (!building.providedUpkeep[resource]) return null
                                             return (
                                                 <li key={resource.description} className={s.bulletItem}>

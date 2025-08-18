@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 // Ensures vanilla-extract emits CSS and bundles it.
-import { themeMap, themeNames, type ThemeName } from './theme.css.ts';
+import { themeMap } from './theme.css.ts';
+import {THEME_NAME_LIST, type ThemeName} from "../models/Theme.ts";
 
 type ThemeContextValue = {
     theme: ThemeName;
@@ -12,7 +13,6 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = 'app-theme';
-const THEMES: ThemeName[] = themeNames;
 
 /** Apply data-theme attribute for CSS selector–based themes. */
 function applyHtmlDataTheme(name: ThemeName) {
@@ -27,7 +27,7 @@ function applyHtmlDataTheme(name: ThemeName) {
 function getInitialTheme(): ThemeName {
     if (typeof window === 'undefined') return 'default';
     const saved = (localStorage.getItem(STORAGE_KEY) || '').toLowerCase() as ThemeName;
-    return THEMES.includes(saved) ? saved : 'default';
+    return THEME_NAME_LIST.includes(saved) ? saved : 'default';
 }
 
 export const ThemeProvider: React.FC<
@@ -43,7 +43,7 @@ export const ThemeProvider: React.FC<
     }, [theme]);
 
     const setTheme = (t: ThemeName) => {
-        if (!THEMES.includes(t)) return;
+        if (!THEME_NAME_LIST.includes(t)) return;
         setThemeState(t);
     };
 

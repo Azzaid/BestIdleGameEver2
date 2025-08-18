@@ -1,10 +1,14 @@
-import React, { useMemo, useRef, useState, useEffect } from "react";
-import { buildingsSpriteAtlas  } from "../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
-import type {AxialCoordinate, HexCell} from "../../../models/city/HexGrid.ts";
+import React, {useEffect, useMemo, useRef, useState} from "react";
+import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
+import type {AxialCoordinate, HexCell} from "../../../../models/city/HexGrid.ts";
+import {
+    axialCoordinateToPixelPosition, clampPan,
+    computeCityBounds,
+    getHexagonPolygonPoints, maxZoomThatFits,
+    pixelPositionToAxialCoordinate
+} from "./hexUtils.ts";
 
-// ---------- Math helpers (pointy-top axial) ----------
 const HEX_RADIUS_PX = 32;
-const SQUARE_ROOT_OF_3 = Math.sqrt(3);
 const HEX_STROKE_WIDTH = 2;
 const hexWidth = Math.sqrt(3) * HEX_RADIUS_PX; // flat-to-flat
 const SPRITE_PADDING = 0.98; // tweak to taste (0.9–0.98)
@@ -12,76 +16,7 @@ const spriteSide = hexWidth * SPRITE_PADDING; // << correct scale now
 const SPRITE_WIDTH = spriteSide;
 const SPRITE_HEIGHT = spriteSide;
 
-function getHexagonPolygonPoints(
-    radiusPx = HEX_RADIUS_PX
-) {
-    const polygonPoints: string[] = [];
-    for (let vertexIndex = 0; vertexIndex < 6; vertexIndex++) {
-        const angleRadians =
-            (Math.PI / 180) * (60 * vertexIndex - 30); // pointy-top
-        const vertexX = radiusPx * Math.cos(angleRadians);
-        const vertexY = radiusPx * Math.sin(angleRadians);
-        polygonPoints.push(`${vertexX},${vertexY}`);
-    }
-    return polygonPoints.join(" ");
-}
 
-function axialCoordinateToPixelPosition(
-    { column, row }: AxialCoordinate,
-    hexRadiusPx = HEX_RADIUS_PX,
-    gapBetweenEdgesPx = HEX_STROKE_WIDTH + 1 // e.g., your stroke width (1–2 px works well)
-) {
-    // Distance between centers of adjacent hexes (no gap) = √3 * R.
-    // To get a visible gap g between edges, scale all center distances by:
-    //   scale = (√3*R + g) / (√3*R) = 1 + g / (√3*R)
-    const scale =
-        1 + (gapBetweenEdgesPx / (SQUARE_ROOT_OF_3 * hexRadiusPx));
-
-    const x =
-        scale *
-        hexRadiusPx *
-        (SQUARE_ROOT_OF_3 * column + (SQUARE_ROOT_OF_3 / 2) * row);
-
-    const y = scale * hexRadiusPx * (1.5 * row);
-
-    return { x, y };
-}
-
-function pixelPositionToAxialCoordinate(
-    pixelX: number,
-    pixelY: number,
-    radiusPx = HEX_RADIUS_PX
-): AxialCoordinate {
-    // Fractional axial
-    const fractionalColumn =
-        (SQUARE_ROOT_OF_3 / 3 * pixelX - 1 / 3 * pixelY) / radiusPx;
-    const fractionalRow = (2 / 3 * pixelY) / radiusPx;
-
-    // Convert to cube coordinates for rounding
-    const cubeX = fractionalColumn;
-    const cubeZ = fractionalRow;
-    const cubeY = -cubeX - cubeZ;
-
-    let roundedCubeX = Math.round(cubeX);
-    let roundedCubeY = Math.round(cubeY);
-    let roundedCubeZ = Math.round(cubeZ);
-
-    const deltaX = Math.abs(roundedCubeX - cubeX);
-    const deltaY = Math.abs(roundedCubeY - cubeY);
-    const deltaZ = Math.abs(roundedCubeZ - cubeZ);
-
-    if (deltaX > deltaY && deltaX > deltaZ) {
-        roundedCubeX = -roundedCubeY - roundedCubeZ;
-    } else if (deltaY > deltaZ) {
-        roundedCubeY = -roundedCubeX - roundedCubeZ;
-    } else {
-        roundedCubeZ = -roundedCubeX - roundedCubeY;
-    }
-
-    return { column: roundedCubeX, row: roundedCubeZ };
-}
-
-// ---------- Component ----------
 export default function CityHex({
                                              radiusInCells = 8,
                                              cells,
@@ -94,7 +29,7 @@ export default function CityHex({
     // Precompute geometry
     const preparedCells = useMemo(() => {
         return cells.map((cell) => {
-            const { x, y } = axialCoordinateToPixelPosition(cell);
+            const { x, y } = axialCoordinateToPixelPosition(cell, HEX_RADIUS_PX, HEX_STROKE_WIDTH + 1);
             return {
                 ...cell,
                 centerX: x,
@@ -109,6 +44,11 @@ export default function CityHex({
         return getHexagonPolygonPoints(HEX_RADIUS_PX);
     }, []);
 
+    const cityBounds = useMemo(
+        () => computeCityBounds(preparedCells, HEX_RADIUS_PX),
+        [preparedCells]
+    );
+
     // Camera state
     const [zoomFactor, setZoomFactor] = useState(2);
     const [cameraOffsetX, setCameraOffsetX] = useState(0);
@@ -122,6 +62,12 @@ export default function CityHex({
     // Hover & selection
     const [hoveredCellKey, setHoveredCellKey] = useState<string | null>(null);
     const [selectedCellKey, setSelectedCellKey] = useState<string | null>(null);
+
+    const viewExtent = (radiusInCells + 2) * HEX_RADIUS_PX * 2.2;
+    const viewBoxX = -viewExtent;
+    const viewBoxY = -viewExtent;
+    const viewBoxW = viewExtent * 2;
+    const viewBoxH = viewExtent * 2;
 
     const handleClick = (event: React.MouseEvent<SVGSVGElement>) => {
         if (!svgRef.current) return;
@@ -139,7 +85,7 @@ export default function CityHex({
         const worldX = (x - cameraOffsetX) / zoomFactor;
         const worldY = (y - cameraOffsetY) / zoomFactor;
 
-        const { column, row } = pixelPositionToAxialCoordinate(worldX, worldY);
+        const { column, row } = pixelPositionToAxialCoordinate(worldX, worldY, HEX_RADIUS_PX);
         onSelect({ column, row })
         setSelectedCellKey(`${column},${row}`);
     };
@@ -161,21 +107,58 @@ export default function CityHex({
         const worldX = (x - cameraOffsetX) / zoomFactor;
         const worldY = (y - cameraOffsetY) / zoomFactor;
 
-        const { column, row } = pixelPositionToAxialCoordinate(worldX, worldY);
+        const { column, row } = pixelPositionToAxialCoordinate(worldX, worldY, HEX_RADIUS_PX);
         setHoveredCellKey(`${column},${row}`);
     };
 
-    // Zoom wheel
     const handleWheelZoom = (event: WheelEvent) => {
         event.preventDefault();
-        const zoomChange = event.deltaY < 0 ? 1.1 : 0.9;
-        setZoomFactor((currentZoom) => {
-            const newZoom = Math.max(0.5, Math.min(8, currentZoom * zoomChange));
-            const nearInteger = Math.round(newZoom);
-            return Math.abs(newZoom - nearInteger) < 0.06
-                ? nearInteger
-                : newZoom;
-        });
+        if (!svgRef.current) return;
+
+        // 1) figure out mouse in SVG coordinates
+        const svg = svgRef.current;
+        const pt = svg.createSVGPoint();
+        pt.x = event.clientX; pt.y = event.clientY;
+        const ctm = svg.getScreenCTM();
+        if (!ctm) return;
+        const svgPt = pt.matrixTransform(ctm.inverse());
+
+        // 2) world point under cursor before zoom (keep this fixed)
+        const worldX = (svgPt.x - cameraOffsetRef.current.x) / zoomFactor;
+        const worldY = (svgPt.y - cameraOffsetRef.current.y) / zoomFactor;
+
+        // 3) compute new zoom with limits
+        const zoomStep = event.deltaY < 0 ? 1.1 : 0.9;
+
+        // City must always fit in viewport when zoomed out:
+        const minZoomThatFits = maxZoomThatFits(cityBounds, viewBoxW, viewBoxH);
+
+        // Hard cap for zooming in:
+        const hardMaxZoom = 2;
+        // Apply wheel step and clamp:
+        let proposedZoom = zoomFactor * zoomStep;
+
+        // Clamp so: minZoom ≤ zoom ≤ hardMax
+        proposedZoom = Math.max(minZoomThatFits, Math.min(hardMaxZoom, proposedZoom));
+
+        // optional snap near integers
+        const near = Math.round(proposedZoom);
+        if (Math.abs(proposedZoom - near) < 0.06) proposedZoom = near;
+
+        // 4) adjust pan so the world point under cursor stays under cursor
+        const nextTx = svgPt.x - worldX * proposedZoom;
+        const nextTy = svgPt.y - worldY * proposedZoom;
+
+        // 5) clamp pan so city stays inside
+        const clamped = clampPan(
+            nextTx, nextTy, proposedZoom,
+            cityBounds,
+            viewBoxX, viewBoxY, viewBoxW, viewBoxH
+        );
+
+        setZoomFactor(proposedZoom);
+        setCameraOffsetX(clamped.tx);
+        setCameraOffsetY(clamped.ty);
     };
 
     // Drag to pan
@@ -201,11 +184,18 @@ export default function CityHex({
             if (!isDraggingRef.current) return;
             const dx = e.clientX - startMouseRef.current.x;
             const dy = e.clientY - startMouseRef.current.y;
-            const nx = startCameraOffsetRef.current.x + dx;
-            const ny = startCameraOffsetRef.current.y + dy;
-            // update state (this will re-render, but listeners stay intact)
-            setCameraOffsetX(nx);
-            setCameraOffsetY(ny);
+
+            const nextTx = startCameraOffsetRef.current.x + dx;
+            const nextTy = startCameraOffsetRef.current.y + dy;
+
+            const clamped = clampPan(
+                nextTx, nextTy, zoomFactor,
+                cityBounds,
+                viewBoxX, viewBoxY, viewBoxW, viewBoxH
+            );
+
+            setCameraOffsetX(clamped.tx);
+            setCameraOffsetY(clamped.ty);
         };
 
         const onMouseUp = () => {
@@ -216,6 +206,7 @@ export default function CityHex({
         };
 
         svgElement.addEventListener("mousedown", onMouseDown);
+        svgElement.addEventListener("wheel", handleWheelZoom, { passive: false });
         window.addEventListener("mousemove", onMouseMove);
         window.addEventListener("mouseup", onMouseUp);
 
@@ -224,22 +215,13 @@ export default function CityHex({
 
         return () => {
             svgElement.removeEventListener("mousedown", onMouseDown);
+            svgElement.removeEventListener("wheel", handleWheelZoom)
             window.removeEventListener("mousemove", onMouseMove);
             window.removeEventListener("mouseup", onMouseUp);
             document.body.style.userSelect = "";
         };
-    }, []);
+    }, [zoomFactor]);
 
-    useEffect(() => {
-        const svgElement = svgRef.current;
-        if (!svgElement) return;
-        svgElement.addEventListener("wheel", handleWheelZoom, { passive: false });
-        return () => {
-            svgElement.removeEventListener("wheel", handleWheelZoom)
-        }
-    }, []);
-
-    const viewExtent = (radiusInCells + 2) * HEX_RADIUS_PX * 2.2;
 
     return (
         <svg

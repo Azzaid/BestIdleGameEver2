@@ -1,5 +1,5 @@
 import React, {type FC, type ReactElement, useMemo, useState} from 'react';
-import {Canvas, Edge, type EdgeProps, type NodeProps, CanvasDirection} from 'reaflow';
+import {Canvas, Edge, type EdgeProps, type NodeProps, type CanvasDirection} from 'reaflow';
 import type {ResearchNodeData} from "../../models/research/ResearchNode.ts";
 import {anyMet, isUnlocked, prereqsOf} from "./util.ts";
 import {NodeCard} from "./Components/NodeCard.tsx";

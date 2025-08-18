@@ -4,11 +4,8 @@
  * Themes included: default, tech, nature, medieval, aether
  * Contract: role-based tokens under `vars` (background, text, brand, state, border, shadow, overlay)
  */
-
 import { createGlobalTheme, createThemeContract } from '@vanilla-extract/css'
-import type {Theme} from "../models/Theme.ts";
-
-export type ThemeName = 'default' | 'tech' | 'nature' | 'medieval' | 'aether'
+import {type Theme, THEME_NAMES, type ThemeName} from "../models/Theme.ts";
 
 /* --------------------------------------------------------------------------------
  * Token contract (roles, not raw colors)
@@ -103,8 +100,8 @@ export const vars = createThemeContract({
  * shadow → shadow.card
  */
 
-const themes: Record<ThemeName, any> = {
-    default: {
+const themes: Record<ThemeName, Theme> = {
+    [THEME_NAMES.default]: {
         color: {
             background: {
                 app: 'hsl(42 20% 97%)',
@@ -129,7 +126,7 @@ const themes: Record<ThemeName, any> = {
                 primary: 'hsl(220 15% 30%)',
                 heading: 'hsl(220 25% 20%)',
                 muted: 'hsl(220 10% 48%)',
-                inverse: '#ffffff',
+                inverse: 'hsl(0 0% 100%)',
                 link: 'hsl(32 22% 49%)',
                 linkHover: 'hsl(32 22% 54%)',
             },
@@ -151,7 +148,7 @@ const themes: Record<ThemeName, any> = {
         },
     },
 
-    tech: {
+    [THEME_NAMES.tech]: {
         color: {
             background: {
                 app: 'hsl(220 20% 96%)',
@@ -176,7 +173,7 @@ const themes: Record<ThemeName, any> = {
                 primary: 'hsl(225 20% 28%)',
                 heading: 'hsl(225 40% 18%)',
                 muted: 'hsl(225 10% 50%)',
-                inverse: '#ffffff',
+                inverse: 'hsl(0 0% 100%)',
                 link: 'hsl(200 80% 45%)',
                 linkHover: 'hsl(200 80% 52%)',
             },
@@ -198,7 +195,7 @@ const themes: Record<ThemeName, any> = {
         },
     },
 
-    nature: {
+    [THEME_NAMES.nature]: {
         color: {
             background: {
                 app: 'hsl(100 20% 96%)',
@@ -223,7 +220,7 @@ const themes: Record<ThemeName, any> = {
                 primary: 'hsl(160 18% 26%)',
                 heading: 'hsl(160 35% 16%)',
                 muted: 'hsl(160 10% 46%)',
-                inverse: '#ffffff',
+                inverse: 'hsl(0 0% 100%)',
                 link: 'hsl(140 28% 35%)',
                 linkHover: 'hsl(140 28% 41%)',
             },
@@ -245,7 +242,7 @@ const themes: Record<ThemeName, any> = {
         },
     },
 
-    medieval: {
+    [THEME_NAMES.medieval]: {
         color: {
             background: {
                 app: 'hsl(42 35% 95%)',
@@ -270,7 +267,7 @@ const themes: Record<ThemeName, any> = {
                 primary: 'hsl(24 25% 28%)',
                 heading: 'hsl(24 40% 18%)',
                 muted: 'hsl(24 15% 46%)',
-                inverse: '#ffffff',
+                inverse: 'hsl(0 0% 100%)',
                 link: 'hsl(354 42% 36%)',
                 linkHover: 'hsl(354 42% 42%)',
             },
@@ -292,7 +289,7 @@ const themes: Record<ThemeName, any> = {
         },
     },
 
-    aether: {
+    [THEME_NAMES.aether]: {
         color: {
             background: {
                 app: 'hsl(270 28% 96%)',
@@ -317,7 +314,7 @@ const themes: Record<ThemeName, any> = {
                 primary: 'hsl(270 22% 28%)',
                 heading: 'hsl(270 40% 18%)',
                 muted: 'hsl(270 12% 50%)',
-                inverse: '#ffffff',
+                inverse: 'hsl(0 0% 100%)',
                 link: 'hsl(280 65% 55%)',
                 linkHover: 'hsl(280 65% 61%)',
             },
@@ -342,12 +339,11 @@ const themes: Record<ThemeName, any> = {
 
 /* Register default and attribute-scoped themes */
 createGlobalTheme(':root', vars, themes.default)
-createGlobalTheme('[data-theme="default"]', vars, themes.default)
-createGlobalTheme('[data-theme="tech"]', vars, themes.tech)
-createGlobalTheme('[data-theme="nature"]', vars, themes.nature)
-createGlobalTheme('[data-theme="medieval"]', vars, themes.medieval)
-createGlobalTheme('[data-theme="aether"]', vars, themes.aether)
+createGlobalTheme(`[data-theme="${THEME_NAMES.default}"]`, vars, themes.default)
+createGlobalTheme(`[data-theme="${THEME_NAMES.tech}"]`, vars, themes.tech)
+createGlobalTheme(`[data-theme="${THEME_NAMES.nature}"]`, vars, themes.nature)
+createGlobalTheme(`[data-theme="${THEME_NAMES.medieval}"]`, vars, themes.medieval)
+createGlobalTheme(`[data-theme="${THEME_NAMES.aether}"]`, vars, themes.aether)
 
 /* Export map for programmatic access */
 export const themeMap: Record<ThemeName, Theme> = themes
-export const themeNames: ThemeName[] = ['default', 'tech', 'nature', 'medieval', 'aether']
