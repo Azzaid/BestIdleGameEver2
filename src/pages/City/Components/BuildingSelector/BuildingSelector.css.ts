@@ -1,55 +1,18 @@
 import { style, styleVariants } from "@vanilla-extract/css";
-
-// Assumed theme variables. Adjust to your tokens.
-const vars = {
-    color: {
-        bg: "var(--bg)",
-        card: "var(--surface)",
-        text: "var(--text)",
-        subtext: "var(--subtle)",
-        rim: "var(--rim)",
-        accent: "var(--accent)",
-        accentFg: "var(--on-accent)",
-        muted: "var(--muted)",
-        line: "var(--line)",
-        tab: "var(--tab)",
-        tabActive: "var(--tab-active)",
-    },
-    radius: {
-        md: "14px",
-        lg: "18px",
-        pill: "999px",
-    },
-    space: {
-        xs: "6px",
-        sm: "10px",
-        md: "14px",
-        lg: "20px",
-        xl: "28px",
-    },
-    shadow: {
-        card: "0 6px 20px rgba(0,0,0,.15)",
-        inset: "inset 0 0 0 1px rgba(0,0,0,.06)",
-    },
-    font: {
-        sm: "12px",
-        md: "14px",
-        lg: "16px",
-        xl: "18px",
-    },
-};
+import {tokens} from "../../../../theme/tokens.css.ts";
+import {vars} from "../../../../theme/theme.css.ts";
 
 // Component wrapper (can inherit data-theme from parent)
 export const wrapper = style({
     display: "grid",
-    gap: vars.space.lg,
-    color: vars.color.text,
+    gap: tokens.space.lg,
+    color: vars.color.text.primary,
 });
 
 // Tabs
 export const tabs = style({
     display: "flex",
-    gap: vars.space.sm,
+    gap: tokens.space.sm,
     flexWrap: "wrap",
 });
 
@@ -57,28 +20,28 @@ export const tabButton = styleVariants({
     active: {
         display: "inline-flex",
         alignItems: "center",
-        gap: vars.space.xs,
-        padding: `${vars.space.xs} ${vars.space.md}`,
-        borderRadius: vars.radius.pill,
-        border: `1px solid ${vars.color.tabActive}`,
-        background: vars.color.tabActive,
-        color: "var(--tab-active-fg, #fff)",
-        fontSize: vars.font.md,
+        gap: tokens.space.xs,
+        padding: `${tokens.space.xs} ${tokens.space.md}`,
+        borderRadius: tokens.radius.pill,
+        border: `1px solid ${vars.color.border.selected}`,
+        background: vars.color.background.surface,
+        color: vars.color.text.heading,
+        fontSize: tokens.font.md,
         cursor: "pointer",
         selectors: {
             "&[disabled]": { opacity: 0.4, cursor: "not-allowed" },
         },
     },
-    '': {
+    regular: {
         display: "inline-flex",
         alignItems: "center",
-        gap: vars.space.xs,
-        padding: `${vars.space.xs} ${vars.space.md}`,
-        borderRadius: vars.radius.pill,
-        border: `1px solid ${vars.color.tab}`,
+        gap: tokens.space.xs,
+        padding: `${tokens.space.xs} ${tokens.space.md}`,
+        borderRadius: tokens.radius.pill,
+        border: `1px solid ${vars.color.border.default}`,
         background: "transparent",
-        color: vars.color.text,
-        fontSize: vars.font.md,
+        color: vars.color.text.primary,
+        fontSize: tokens.font.md,
         cursor: "pointer",
         selectors: {
             "&:hover:not([disabled])": { background: "color-mix(in oklab, var(--surface) 85%, var(--text) 15%)" },
@@ -100,7 +63,7 @@ export const tabLabel = style({
 });
 
 export const tabCount = style({
-    fontSize: vars.font.sm,
+    fontSize: tokens.font.sm,
     opacity: 0.7,
 });
 
@@ -108,15 +71,15 @@ export const tabCount = style({
 export const list = style({
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))",
-    gap: vars.space.lg,
+    gap: tokens.space.lg,
 });
 
 // Card
 export const card = style({
-    background: vars.color.card,
-    borderRadius: vars.radius.lg,
-    boxShadow: `${vars.shadow.card}, ${vars.shadow.inset}`,
-    border: `1px solid ${vars.color.line}`,
+    background: vars.color.background.surface,
+    borderRadius: tokens.radius.lg,
+    boxShadow: `${tokens.shadow.card}, ${tokens.shadow.inset}`,
+    border: `1px solid ${vars.color.border.default}`,
     overflow: "hidden",
     display: "grid",
     gridTemplateRows: "auto auto auto auto",
@@ -126,21 +89,21 @@ export const zoneHeader = style({
     display: "grid",
     gridTemplateColumns: "1fr auto",
     alignItems: "center",
-    padding: vars.space.lg,
-    borderBottom: `1px solid ${vars.color.line}`,
-    gap: vars.space.md,
+    padding: tokens.space.lg,
+    borderBottom: `1px solid ${vars.color.border.default}`,
+    gap: tokens.space.md,
 });
 
 export const titleLine = style({
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: vars.space.md,
+    gap: tokens.space.md,
 });
 
 export const name = style({
     margin: 0,
-    fontSize: vars.font.xl,
+    fontSize: tokens.font.xl,
     lineHeight: 1.15,
 });
 
@@ -149,7 +112,7 @@ export const cost = style({
     margin: 0,
     padding: 0,
     display: "flex",
-    gap: vars.space.sm,
+    gap: tokens.space.sm,
 });
 
 export const costItem = style({
@@ -157,9 +120,9 @@ export const costItem = style({
     alignItems: "center",
     gap: 6,
     padding: "2px 8px",
-    borderRadius: vars.radius.pill,
+    borderRadius: tokens.radius.pill,
     background: "color-mix(in oklab, var(--surface) 70%, var(--text) 8%)",
-    border: `1px solid ${vars.color.line}`,
+    border: `1px solid ${vars.color.border.default}`,
 });
 
 export const costValue = style({ fontWeight: 600 });
@@ -167,13 +130,13 @@ export const costLabel = style({ opacity: 0.7 });
 
 // Build button
 export const buildBtn = style({
-    padding: `${vars.space.xs} ${vars.space.lg}`,
-    borderRadius: vars.radius.pill,
-    background: vars.color.accent,
-    color: vars.color.accentFg,
+    padding: `${tokens.space.xs} ${tokens.space.lg}`,
+    borderRadius: tokens.radius.pill,
+    background: vars.color.brand.primary,
+    color: vars.color.text.primary,
     border: `1px solid color-mix(in oklab, var(--accent) 70%, black 15%)`,
     cursor: "pointer",
-    fontSize: vars.font.md,
+    fontSize: tokens.font.md,
     fontWeight: 600,
     selectors: {
         "&:hover": { filter: "brightness(1.05)" },
@@ -185,9 +148,9 @@ export const buildBtn = style({
 export const zoneRow = style({
     display: "grid",
     gridTemplateColumns: "120px 1fr",
-    gap: vars.space.lg,
-    padding: `${vars.space.md} ${vars.space.lg}`,
-    borderBottom: `1px solid ${vars.color.line}`,
+    gap: tokens.space.lg,
+    padding: `${tokens.space.md} ${tokens.space.lg}`,
+    borderBottom: `1px solid ${vars.color.border.default}`,
 });
 
 export const previewCol = style({
@@ -201,11 +164,11 @@ export const previewColPlaceholder = style({
 export const contentCol = style({
     display: "grid",
     alignContent: "start",
-    gap: vars.space.sm,
+    gap: tokens.space.sm,
 });
 
 export const sectionTitle = style({
-    fontSize: vars.font.lg,
+    fontSize: tokens.font.lg,
     margin: 0,
 });
 
@@ -225,18 +188,18 @@ export const bulletItem = style({
 
 // Zone 4 — description
 export const zoneDesc = style({
-    padding: `${vars.space.md} ${vars.space.lg} ${vars.space.lg}`,
+    padding: `${tokens.space.md} ${tokens.space.lg} ${tokens.space.lg}`,
 });
 
 export const description = style({
     margin: 0,
-    color: vars.color.subtext,
-    fontSize: vars.font.md,
+    color: vars.color.text.primary,
+    fontSize: tokens.font.md,
 });
 
 export const muted = style({
-    color: vars.color.muted,
-    fontSize: vars.font.md,
+    color: vars.color.text.primary,
+    fontSize: tokens.font.md,
 });
 
 // Preview SVG default tile vars (can be themed)

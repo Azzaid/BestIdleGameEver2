@@ -7,6 +7,7 @@ import {
     getHexagonPolygonPoints, maxZoomThatFits,
     pixelPositionToAxialCoordinate
 } from "./hexUtils.ts";
+import cityBackground from '../../../../assets/city/background/Top-down_map_view_circular_lan.jpeg'
 
 const HEX_RADIUS_PX = 32;
 const HEX_STROKE_WIDTH = 2;
@@ -15,6 +16,19 @@ const SPRITE_PADDING = 0.98; // tweak to taste (0.9–0.98)
 const spriteSide = hexWidth * SPRITE_PADDING; // << correct scale now
 const SPRITE_WIDTH = spriteSide;
 const SPRITE_HEIGHT = spriteSide;
+
+const AUTHORED_HEX_RADIUS = 32;                 // how the image was generated
+const backgroundScale = HEX_RADIUS_PX / AUTHORED_HEX_RADIUS; // = 1 if 32
+
+const imagePixelWidth = 768;
+const imagePixelHeight = 768;
+
+const backgroundWorldWidth  = imagePixelWidth  * backgroundScale;
+const backgroundWorldHeight = imagePixelHeight * backgroundScale;
+
+// Center it on world origin so it aligns with your grid centered at (0,0)
+const backgroundX = -backgroundWorldWidth  / 2;
+const backgroundY = -backgroundWorldHeight / 2;
 
 
 export default function CityHex({
@@ -231,7 +245,7 @@ export default function CityHex({
             onClick={handleClick}
             style={{
                 width: "100%",
-                height: "80vh",
+                height: "100%",
                 background: "#0f0f13",
                 imageRendering: "pixelated",
                 shapeRendering: "crispEdges",
@@ -245,6 +259,15 @@ export default function CityHex({
             </defs>
 
             <g transform={`translate(${cameraOffsetX} ${cameraOffsetY}) scale(${zoomFactor})`}>
+                <image
+                    href={cityBackground}     // put your file in public/backgrounds/
+                    x={backgroundX}
+                    y={backgroundY}
+                    width={backgroundWorldWidth}
+                    height={backgroundWorldHeight}
+                    preserveAspectRatio="none"           // keeps exact authored scale
+                    style={{ imageRendering: "pixelated" }}
+                />
                 {preparedCells.map((cell) => {
                     const cellKey = `${cell.column},${cell.row}`;
                     const isSelected = cellKey === selectedCellKey;
@@ -262,7 +285,7 @@ export default function CityHex({
 
                             <use
                                 href="#hexagonPath"
-                                fill="#16161b"
+                                fill="#8016161b"
                                 stroke={
                                 isSelected
                                     ? "#2e2a17"

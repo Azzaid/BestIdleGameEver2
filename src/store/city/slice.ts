@@ -3,7 +3,7 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 
-const getInitialHexes = ((cityRadius=10) => {
+const getInitialHexes = ((cityRadius=6) => {
     const generatedCells: HexCell[] = [];
     for (let column = -cityRadius; column <= cityRadius; column++) {
         const rowMin = Math.max(-cityRadius, -column - cityRadius);

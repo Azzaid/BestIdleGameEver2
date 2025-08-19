@@ -34,7 +34,7 @@ export function BuildingSelector({
                             aria-expanded={activeVector === vector}
                             role="tab"
                             aria-selected={activeVector === vector}
-                            className={s.tabButton[activeVector === vector ? 'active' : '']}
+                            className={s.tabButton[activeVector === vector ? 'active' : 'regular']}
                             onClick={() => !disabled && setActiveVector(vector)}
                             disabled={disabled}
                             title={disabled ? "No buildings yet" : undefined}
