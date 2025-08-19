@@ -32,11 +32,9 @@ const backgroundY = -backgroundWorldHeight / 2;
 
 
 export default function CityHex({
-                                             radiusInCells = 8,
                                              cells,
                                     onSelect=()=>{}
                                          }: {
-    radiusInCells?: number;
     cells: HexCell[];
     onSelect?: (cell: AxialCoordinate) => void;
 }) {
@@ -77,7 +75,7 @@ export default function CityHex({
     const [hoveredCellKey, setHoveredCellKey] = useState<string | null>(null);
     const [selectedCellKey, setSelectedCellKey] = useState<string | null>(null);
 
-    const viewExtent = (radiusInCells + 2) * HEX_RADIUS_PX * 2.2;
+    const viewExtent = Math.max(backgroundWorldWidth, backgroundWorldHeight) / 2;
     const viewBoxX = -viewExtent;
     const viewBoxY = -viewExtent;
     const viewBoxW = viewExtent * 2;

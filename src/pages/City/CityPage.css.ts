@@ -3,14 +3,22 @@ import {vars} from "../../theme/theme.css.ts";
 
 export const cityPage = style({
     display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+    gap: '12px',
     height: '100%',
     backgroundColor: vars.color.background.app
 });
 
 export const cityContainer = style({
-    display: 'flex',
-    flex: 1,
-    marginBottom: '20px',
+    flex: '1 1 900px',
+    width: '100%',
     maxWidth: '900px',
     maxHeight: '900px',
+    aspectRatio:'1/1'     /* ensures square shape */
+});
+
+export const buildingSelectorContainer = style({
+    flex: '1 1 240px',
+    minWidth: '240px',
 });

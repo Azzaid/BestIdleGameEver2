@@ -23,7 +23,9 @@ const CityPage = () => {
         <CityHex cells={hexes} onSelect={setSelectedHex}/>
       </div>
         {selectedHex &&
-            <BuildingSelector onBuild={handleBuildingSelect}/>
+            <div className={s.buildingSelectorContainer}>
+                <BuildingSelector onBuild={handleBuildingSelect}/>
+            </div>
         }
     </div>
   );

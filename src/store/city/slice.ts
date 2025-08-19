@@ -3,7 +3,9 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 
-const getInitialHexes = ((cityRadius=6) => {
+const INITIAL_CITY_CELL_RADIUS = 6;
+
+const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
     const generatedCells: HexCell[] = [];
     for (let column = -cityRadius; column <= cityRadius; column++) {
         const rowMin = Math.max(-cityRadius, -column - cityRadius);
@@ -22,12 +24,14 @@ const getInitialHexes = ((cityRadius=6) => {
 
 // Define a type for the slice state
 interface CityState {
-    hexes: HexCell[]
+    hexes: HexCell[],
+    cellRadius: number,
 }
 
 // Define the initial state using that type
 const initialState: CityState = {
     hexes: getInitialHexes(),
+    cellRadius: INITIAL_CITY_CELL_RADIUS
 }
 
 export const citySlice = createSlice({
