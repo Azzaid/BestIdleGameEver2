@@ -1,4 +1,4 @@
-import type {AxialCoordinate} from "../../../../models/city/HexGrid.ts";
+import type {AxialCoordinate, HexCell} from "../../../../models/city/HexGrid.ts";
 
 const SQUARE_ROOT_OF_3 = Math.sqrt(3);
 
@@ -135,4 +135,94 @@ export const maxZoomThatFits = (bounds: Bounds, vbw: number, vbh: number) => {
     const contentW = bounds.maxX - bounds.minX;
     const contentH = bounds.maxY - bounds.minY;
     return Math.min(vbw / contentW, vbh / contentH);
+}
+
+type HasAxial<T> = T & AxialCoordinate;
+
+// ---- Math helpers --------------------------------------------------------
+
+/** Axial (q,r) distance for pointy-top hexes */
+export function axialDistance(a: AxialCoordinate, b: AxialCoordinate): number {
+    const dq = a.column - b.column;
+    const dr = a.row - b.row;
+    // cube coords: x=dq, z=dr, y=-x-z
+    return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+}
+
+/** Compare axial coordinates for exact equality */
+export function sameAxial(a: AxialCoordinate, b: AxialCoordinate): boolean {
+    return a.column === b.column && a.row === b.row;
+}
+
+export type HexDirection =
+    | "top-left"
+    | "top-right"
+    | "left"
+    | "right"
+    | "bottom-left"
+    | "bottom-right";
+
+const DIRECTION_OFFSETS: Record<HexDirection, Readonly<AxialCoordinate>> = {
+    "right":        { column: +1, row:  0 },
+    "top-right":    { column: +1, row: -1 },
+    "top-left":     { column:  0, row: -1 },
+    "left":         { column: -1, row:  0 },
+    "bottom-left":  { column: -1, row: +1 },
+    "bottom-right": { column:  0, row: +1 },
+};
+
+export function axialInDirection(
+    origin: AxialCoordinate,
+    direction: HexDirection,
+    steps: number = 1
+): AxialCoordinate {
+    const offset = DIRECTION_OFFSETS[direction];
+    return {
+        column: origin.column + offset.column * steps,
+        row: origin.row + offset.row * steps,
+    };
+}
+
+// ---- 1) Hexes within radius ---------------------------------------------
+
+/**
+ * Returns all hexes from `allHexes` that are within `radius` (inclusive)
+ * of `centerHex`, using axial distance.
+ *
+ * Tip: pass `excludeCenter = true` if you don’t want the center itself.
+ */
+export function hexesWithinRadius(
+    centerHex: AxialCoordinate,
+    radiusInHexes: number,
+    allHexes: ReadonlyArray<HexCell>,
+    options?: { excludeCenter?: boolean, onlyNonEmpty?: boolean }
+): HexCell[] {
+    const { excludeCenter = false, onlyNonEmpty = true } = options ?? {};
+    const result: HexCell[] = [];
+
+    for (const hex of allHexes) {
+        const distance = axialDistance(centerHex, hex);
+        if (distance <= radiusInHexes) {
+            if (excludeCenter && sameAxial(centerHex, hex)) continue;
+            if (onlyNonEmpty && !hex.buildingKey) continue;
+            result.push(hex);
+        }
+    }
+
+    return result;
+}
+
+// ---- 2) Adjacent hex in a direction -------------------------------------
+
+/**
+ * Returns the hex from `allHexes` that is exactly one step from `origin`
+ * in `direction`. If none exists in the list, returns `undefined`.
+ */
+export function adjacentHexInDirection<T extends AxialCoordinate>(
+    origin: AxialCoordinate,
+    direction: HexDirection,
+    allHexes: ReadonlyArray<HasAxial<T>>
+): HasAxial<T> | undefined {
+    const target = axialInDirection(origin, direction, 1);
+    return allHexes.find(h => sameAxial(h, target));
 }

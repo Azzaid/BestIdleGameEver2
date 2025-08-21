@@ -1,9 +1,9 @@
-import type {BuildingTypesValue, DevelopmentVectorValue} from "../DevlopmentVector.ts";
+import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
 import type { UpkeepAmount, UpkeepDescription } from "../Upkeep.ts";
-
-export interface TextEffect {
-    text: string;
-}
+import type {BuildingTypesValue} from "./BuildingTypes.ts";
+import type {BuildingKeyword} from "./Keywords.ts";
+import type {AdjacencyRule, HexResolvedStats} from "./Adjancency.ts";
+import type {AxialCoordinate} from "./HexGrid.ts";
 
 /** Building data model (extend later with structured effects if needed) */
 export interface Building {
@@ -15,9 +15,13 @@ export interface Building {
     vector: DevelopmentVectorValue;
     requiredUpkeep: UpkeepAmount
     requiredUpkeepDescription: UpkeepDescription;
+    trace: number;
     providedUpkeep: UpkeepAmount;
     providedUpkeepDescription: UpkeepDescription;
-    adjacency:unknown;
-    adjacencyDescription: unknown;    // adjacency rules will be added later
+    adjacency: AdjacencyRule[];
+    adjacencyDescription: string;
+    keywords: BuildingKeyword[];
     description: string;
 }
+
+export interface PlacedBuilding extends Building, HexResolvedStats, AxialCoordinate {}

@@ -31,3 +31,5 @@ export const resourceIcon = style({
 });
 
 export const resourceText = style({});
+
+export const traceMeter = style({});

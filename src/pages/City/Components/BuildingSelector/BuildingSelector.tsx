@@ -6,7 +6,7 @@ import {UPKEEP_TYPES} from "../../../../models/Upkeep.ts";
 import {HexTilePreview} from "./HexTilePreview.tsx";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
 import {useTypedSelector} from "../../../../store/hooks.ts";
-import {selectTotalUpkeep} from "../../../../store/upkeep/selectors.ts";
+import {selectCityResolution} from "../../../../store/upkeep/selectors.ts";
 
 
 export type BuildingSelectorProps = {
@@ -17,7 +17,7 @@ export function BuildingSelector({
                                      onBuild,
                                  }: BuildingSelectorProps) {
     const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.default);
-    const upkeep = useTypedSelector(selectTotalUpkeep);
+    const {effectiveTrace, effectiveUpkeep} = useTypedSelector(selectCityResolution);
 
     return (
         <div className={s.wrapper} data-theme={activeVector.description}>

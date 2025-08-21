@@ -2,8 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
-
-const INITIAL_CITY_CELL_RADIUS = 6;
+import {INITIAL_CITY_CELL_RADIUS} from "../../data/constants.ts";
 
 const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
     const generatedCells: HexCell[] = [];

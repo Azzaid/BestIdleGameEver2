@@ -5,6 +5,7 @@ export const cityPage = style({
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
+    justifyContent: 'center',
     gap: '12px',
     height: '100%',
     backgroundColor: vars.color.background.app
