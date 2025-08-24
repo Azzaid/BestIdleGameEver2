@@ -7,15 +7,13 @@ import type {
     PlacedCityMap,
     TargetFilter
 } from "../../../../models/city/Adjancency.ts";
-import type {AxialCoordinate, HexCell} from "../../../../models/city/HexGrid.ts";
+import type {HexCell} from "../../../../models/city/HexGrid.ts";
 import type {Building, PlacedBuilding} from "../../../../models/city/Building.ts";
 import {addUpkeep, deductUpkeep, multiplyUpkeep} from "./upkeepUtils.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
 import {hexesWithinRadius} from "./hexUtils.ts";
 import {TRACE_PER_HEX} from "../../../../data/constants.ts";
 import {deepClone} from "../../../../utils/deepClone.ts";
-
-const coordKey = ({column, row}: AxialCoordinate ) => `${column},${row}`;
 
 function matchesFilter(
     placed?: PlacedBuilding,
@@ -91,7 +89,7 @@ export const placeCityBuildings = (
     const placedCity = new Map<string, PlacedBuilding>();
 
     hexes.forEach((hexCell: HexCell) => {
-        const { column, row, buildingKey, developmentVector } = hexCell;
+        const { column, row, cellKey, buildingKey, developmentVector } = hexCell;
         const building:Building | undefined = buildingKey ? BUILDINGS_ATLAS[developmentVector][buildingKey] : undefined;
         const placed: PlacedBuilding | undefined = building ? {
             ...deepClone(building),
@@ -107,13 +105,13 @@ export const placeCityBuildings = (
             effectiveRequiredUpkeep: {...building.requiredUpkeep},
             effectiveTrace: building.trace
         } : undefined;
-        if (placed) placedCity.set(coordKey({column, row}), placed);
+        if (placed) placedCity.set(cellKey, placed);
     })
 
     //2) Emit & aggregate effects
     hexes.forEach((hexCell: HexCell) => {
-        const { column, row, buildingKey} = hexCell;
-        const affectorBuilding:PlacedBuilding | undefined = buildingKey ? placedCity.get(coordKey({column, row})) : undefined;
+        const { cellKey, buildingKey } = hexCell;
+        const affectorBuilding:PlacedBuilding | undefined = buildingKey ? placedCity.get(cellKey) : undefined;
 
         //for each hex with building and adjacency rules
         if (affectorBuilding && affectorBuilding.adjacency.length) {
@@ -128,7 +126,7 @@ export const placeCityBuildings = (
                     hexes,
                     {excludeCenter: true, onlyNonEmpty: true}
                 ).forEach((affectedHex: HexCell) => {
-                    const affectedBuilding: PlacedBuilding | undefined = placedCity.get(coordKey({column: affectedHex.column, row: affectedHex.row}));
+                    const affectedBuilding: PlacedBuilding | undefined = placedCity.get(affectedHex.cellKey);
 
                     //if the hex has a building and matches the filter
                     if (affectedBuilding && matchesFilter(affectedBuilding, adjacencyRule.targetFilter)) {
@@ -141,8 +139,8 @@ export const placeCityBuildings = (
 
     //3) Apply aggregated effects
     hexes.forEach((hexCell: HexCell) => {
-        const { column, row, buildingKey} = hexCell;
-        const building:PlacedBuilding | undefined = buildingKey ? placedCity.get(coordKey({column, row})) : undefined;
+        const { cellKey, buildingKey} = hexCell;
+        const building:PlacedBuilding | undefined = buildingKey ? placedCity.get(cellKey) : undefined;
 
         if (building) {
             const { requiredUpkeep, requiredUpkeepAdd, requiredUpkeepMul, providedUpkeep, providedUpkeepAdd, providedUpkeepMul, trace, traceAdd, traceMul } = building;
@@ -163,10 +161,9 @@ export function resolveCityUpkeepAndTrace(
         requiredUpkeep: {} as UpkeepAmount,
         providedUpkeep: {} as UpkeepAmount,
         effectiveUpkeep: {} as UpkeepAmount,
-        buildingTrace: 0,
-        territoryTrace: 0,
         buildingsTrace: 0,
-        trace: 0,
+        territoryTrace: 0,
+        effectiveTrace: 0,
     };
 
     city.forEach((building) => {

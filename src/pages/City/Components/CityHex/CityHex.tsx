@@ -267,7 +267,7 @@ export default function CityHex({
                     style={{ imageRendering: "pixelated" }}
                 />
                 {preparedCells.map((cell) => {
-                    const cellKey = `${cell.column},${cell.row}`;
+                    const { centerX, centerY, cellKey, developmentVector, buildingKey} = cell;
                     const isSelected = cellKey === selectedCellKey;
                     const isHovered = cellKey === hoveredCellKey;
                     const clipId = `clip-${cellKey}`;
@@ -275,7 +275,7 @@ export default function CityHex({
                     return (
                         <g
                             key={cellKey}
-                            transform={`translate(${cell.centerX} ${cell.centerY})`}
+                            transform={`translate(${centerX} ${centerY})`}
                         >
                             <clipPath id={clipId}>
                                 <use href="#hexagonPath" />
@@ -294,9 +294,9 @@ export default function CityHex({
                                 vectorEffect="non-scaling-stroke"
                             />
 
-                            {cell.buildingKey && buildingsSpriteAtlas[cell.developmentVector] && buildingsSpriteAtlas[cell.developmentVector][cell.buildingKey] && (
+                            {buildingKey && buildingsSpriteAtlas[developmentVector] && buildingsSpriteAtlas[developmentVector][buildingKey] && (
                                 <image
-                                    href={buildingsSpriteAtlas[cell.developmentVector][cell.buildingKey]}
+                                    href={buildingsSpriteAtlas[developmentVector][buildingKey]}
                                     x={-SPRITE_WIDTH / 2}
                                     y={-SPRITE_HEIGHT / 2}
                                     width={SPRITE_WIDTH}

@@ -6,6 +6,14 @@ import type {PlacedBuilding} from "./Building.ts";
 
 export type EffectScope = "self" | "neighbors";
 
+export type HexDirection =
+    | "top-left"
+    | "top-right"
+    | "left"
+    | "right"
+    | "bottom-left"
+    | "bottom-right";
+
 // What an effect can modify
 export interface EffectDelta {
     requiredUpkeepAdd?: UpkeepAmount;
@@ -30,6 +38,11 @@ export interface AdjacencyRule {
     radiusInHexes: number;
     targetFilter?: TargetFilter;
     effect: EffectDelta;
+}
+
+export type ExpandRule = {
+    requiredBuildings: Partial<Record<HexDirection, string>>;
+    resultingBuildings: Partial<Record<HexDirection, string>>;
 }
 
 export interface HexResolvedStats extends EffectDelta {

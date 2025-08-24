@@ -4,6 +4,7 @@ import type {BuildingTypesValue} from "./BuildingTypes.ts";
 import type {BuildingKeyword} from "./Keywords.ts";
 import type {AdjacencyRule, HexResolvedStats} from "./Adjancency.ts";
 import type {AxialCoordinate} from "./HexGrid.ts";
+import type {MultiHexStructureRule} from "./MultiHexStructure.ts";
 
 /** Building data model (extend later with structured effects if needed) */
 export interface Building {
@@ -12,6 +13,7 @@ export interface Building {
     type: BuildingTypesValue;
     level:number,
     size:number,
+    isMultiHex: boolean;
     vector: DevelopmentVectorValue;
     requiredUpkeep: UpkeepAmount
     requiredUpkeepDescription: UpkeepDescription;
@@ -22,6 +24,7 @@ export interface Building {
     adjacencyDescription: string;
     keywords: BuildingKeyword[];
     description: string;
+    multiHexStructure?: MultiHexStructureRule[]
 }
 
 export interface PlacedBuilding extends Building, HexResolvedStats, AxialCoordinate {}

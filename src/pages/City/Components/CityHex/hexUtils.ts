@@ -1,4 +1,7 @@
 import type {AxialCoordinate, HexCell} from "../../../../models/city/HexGrid.ts";
+import type {HexDirection} from "../../../../models/city/Adjancency.ts";
+
+export const coordKey = ({column, row}: AxialCoordinate) => `${column},${row}`;
 
 const SQUARE_ROOT_OF_3 = Math.sqrt(3);
 
@@ -153,14 +156,6 @@ export function axialDistance(a: AxialCoordinate, b: AxialCoordinate): number {
 export function sameAxial(a: AxialCoordinate, b: AxialCoordinate): boolean {
     return a.column === b.column && a.row === b.row;
 }
-
-export type HexDirection =
-    | "top-left"
-    | "top-right"
-    | "left"
-    | "right"
-    | "bottom-left"
-    | "bottom-right";
 
 const DIRECTION_OFFSETS: Record<HexDirection, Readonly<AxialCoordinate>> = {
     "right":        { column: +1, row:  0 },
