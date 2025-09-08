@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { World } from '../core/world';
+import type { World } from '../core/world';
 
 /** Minimal sync: ensure every entity with Transform has a placeholder sprite until you attach real ones. */
 export function PixiSyncSystem(world: World) {

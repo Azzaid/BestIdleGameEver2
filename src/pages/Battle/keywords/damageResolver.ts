@@ -1,4 +1,4 @@
-import { EnemyData } from '../../../models/battle/enemy.ts';
+import type { EnemyData } from '../../../models/battle/enemy.ts';
 
 export interface ProjectileForDamage {
   baseDamage: number;

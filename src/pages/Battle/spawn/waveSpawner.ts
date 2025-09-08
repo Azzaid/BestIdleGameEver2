@@ -1,7 +1,7 @@
 import type { World } from '../core/world';
 import { createEntityId } from '../core/world';
 import type { PlannedSpawn, WavePlan } from './wavePlanner';
-import { EnemyBlueprint } from './enemyBlueprints';
+import type { EnemyBlueprint } from '../../../models/battle/enemyBlueprints';
 import { createDisplayFromSpriteInfo } from '../factories/spriteFactory';
 
 export interface WaveSpawnerOptions {

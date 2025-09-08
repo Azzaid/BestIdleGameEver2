@@ -1,8 +1,9 @@
 import * as PIXI from 'pixi.js';
-import { SpriteInfo } from '../../../models/battle/spriteInfo.ts';
+import type { SpriteInfo } from '../../../models/battle/spriteInfo.ts';
+import type { DisplayObject } from '@pixi/display';
 
 /** Creates a static Sprite or AnimatedSprite from SpriteInfo. */
-export function createDisplayFromSpriteInfo(info: SpriteInfo): PIXI.DisplayObject {
+export function createDisplayFromSpriteInfo(info: SpriteInfo): DisplayObject {
   if (info.animated && info.animationFrames && info.animationFrames.length > 0) {
     const frames = info.animationFrames.map(k => PIXI.Texture.from(k));
     const anim = new PIXI.AnimatedSprite(frames);

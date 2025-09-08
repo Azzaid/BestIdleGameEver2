@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { World } from '../core/world';
+import type { World } from '../core/world';
 
 /** Tiny HP bar above enemies. */
 export function HealthBarSystem(world: World) {

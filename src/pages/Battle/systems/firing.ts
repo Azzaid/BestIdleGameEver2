@@ -1,4 +1,5 @@
-import { World, createEntityId } from '../core/world';
+import type { World } from '../core/world';
+import { createEntityId } from '../core/world';
 
 /** Spawns burst and sets retarget cooldown to hold current target briefly. */
 export function FiringSystem(world: World, dt: number) {

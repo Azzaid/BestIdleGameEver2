@@ -4,7 +4,7 @@ import type {EntityId} from "../../../models/battle/common.ts";
 
 
 /** Sort helper */
-function sortBy(world: World, candidates: EntityId[], score: (id: EntityId) => number): EntityId[] {
+function sortBy(_world: World, candidates: EntityId[], score: (id: EntityId) => number): EntityId[] {
     return candidates.slice().sort((a, b) => score(a) - score(b));
 }
 

@@ -1,4 +1,4 @@
-import { World } from '../core/world';
+import type { World } from '../core/world';
 
 export function MovementSystem(world: World, dt: number) {
   for (const [id, mv] of world.movements) {

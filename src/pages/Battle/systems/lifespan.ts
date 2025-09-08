@@ -1,4 +1,4 @@
-import { World } from '../core/world';
+import type { World } from '../core/world';
 
 export function LifespanSystem(world: World, dt: number) {
   for (const [id, life] of world.lifespans) {

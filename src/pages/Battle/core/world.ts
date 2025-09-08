@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import type { DisplayObject } from '@pixi/display';
 import type { EntityId } from '../../../models/battle/common.ts';
 import type { Transform } from '../../../models/battle/transform.ts';
 import type { MovementController } from '../../../models/battle/movement.ts';
@@ -39,7 +40,7 @@ export interface World {
 
   // View
   worldLayer: PIXI.Container;
-  sprites: Map<EntityId, PIXI.DisplayObject>;
+  sprites: Map<EntityId, DisplayObject>;
   healthBars: Map<EntityId, PIXI.Graphics>;
 
   // Housekeeping
@@ -53,19 +54,19 @@ export function createWorld(config: WorldConfig): World {
   const worldLayer = new PIXI.Container();
   worldLayer.sortableChildren = true;
   return {
-    nextEntityId: 1,
-    config,
-    transforms: new Map(),
-    movements: new Map(),
-    lifespans: new Map(),
-    healths: new Map(),
-    towersData: new Map(),
-    enemiesData: new Map(),
-    worldLayer,
-    sprites: new Map(),
-    healthBars: new Map(),
-    toRemove: new Set(),
-    projectileInfo: new Map(),
+      nextEntityId: 1,
+      config,
+      transforms: new Map(),
+      movements: new Map(),
+      lifespans: new Map(),
+      healths: new Map(),
+      towersData: new Map(),
+      enemiesData: new Map(),
+      worldLayer,
+      sprites: new Map(),
+      healthBars: new Map(),
+      toRemove: new Set(),
+      projectileInfo: new Map(),
       spawners: [],
       waveScheduler: {
           config: {
@@ -81,7 +82,7 @@ export function createWorld(config: WorldConfig): World {
               enabled: true,
           },
           enemyIds: [],  // TODO: fill from content
-          blueprints: {} as any, // TODO: inject ENEMIES map here
+          blueprints: {},
       },
   };
 }
