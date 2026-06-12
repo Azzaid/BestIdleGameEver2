@@ -36,7 +36,7 @@ export function BattleStage(props: {
             hostRef.current!.appendChild(app.canvas);
 
             // Load assets (noop by default)
-            loadBattleAssets();
+            await loadBattleAssets();
 
             const viewportWidth = app.renderer.width;
             const viewportHeight = app.renderer.height;
@@ -147,8 +147,8 @@ export function BattleStage(props: {
             canvas.removeEventListener('pointerdown', () => {});
             window.removeEventListener('pointermove', () => {});
             window.removeEventListener('pointerup', () => {});
-            // v8 destroy accepts boolean or options object
-            app.destroy({ children: true, texture: true, textureSource: true, context: true }); // :contentReference[oaicite:3]{index=3}
+
+            app.destroy(true, { children: true, texture: true, textureSource: true, context: true }); // :contentReference[oaicite:3]{index=3}
         };
     }, [props.wallLogicalWidth, props.battlefieldWidth, props.battlefieldHeight, hostRef.current]);
 
