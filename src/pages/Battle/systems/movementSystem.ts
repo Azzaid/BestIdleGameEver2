@@ -84,5 +84,20 @@ export function MovementSystem(world: World, dt: number) {
         break;
       }
     }
+
+    stopEnemyAtWall(world, id);
   }
+}
+
+function stopEnemyAtWall(world: World, id: number) {
+  const enemy = world.enemiesData.get(id);
+  const tf = world.transforms.get(id);
+  if (!enemy || !tf) return;
+
+  const wallContactY = world.config.wallY - enemy.hitRadius;
+  if (tf.position.y < wallContactY) return;
+
+  tf.position.y = wallContactY;
+  tf.rotationRadians = Math.PI / 2;
+  world.movements.delete(id);
 }

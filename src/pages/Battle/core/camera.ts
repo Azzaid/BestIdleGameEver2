@@ -23,7 +23,7 @@ export function createCamera(config: CameraConfig): Camera {
     const camera: Camera = {
         container,
         position: { x: 0, y: 0 },
-        scale: Math.max(config.minZoom, Math.min(1, config.maxZoom)),
+        scale: Math.min(config.minZoom, config.maxZoom),
         config,
     };
 
@@ -31,10 +31,20 @@ export function createCamera(config: CameraConfig): Camera {
     return camera;
 }
 
-/** Keep the entire wall width visible by default; clamp to [minZoom, maxZoom] later. */
-export function computeMinZoomForWall(args: { wallLogicalWidth: number; viewportWidth: number }): number {
-    if (args.wallLogicalWidth <= 0) return 0.5;
-    return Math.min(1, args.viewportWidth / args.wallLogicalWidth);
+/** Keep the full battlefield visible by default; clamp to [minZoom, maxZoom] later. */
+export function computeMinZoomForWall(args: {
+    wallLogicalWidth: number;
+    viewportWidth: number;
+    battlefieldHeight: number;
+    viewportHeight: number;
+}): number {
+    if (args.wallLogicalWidth <= 0 || args.battlefieldHeight <= 0) return 0.5;
+
+    return Math.min(
+        1,
+        args.viewportWidth / args.wallLogicalWidth,
+        args.viewportHeight / args.battlefieldHeight
+    );
 }
 
 /** Programmatically set scale with clamping, then apply. */

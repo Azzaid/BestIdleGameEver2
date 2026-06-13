@@ -1,5 +1,5 @@
-import { Application, Container } from 'pixi.js';
-import { useEffect, useRef } from 'react';
+import { Application, Container, Graphics } from 'pixi.js';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createWorld, createEntityId } from '../core/world';
 import { runSystems } from '../systems/runSystems';
 import {
@@ -19,9 +19,44 @@ export function BattleStage(props: {
     wallLogicalWidth: number;   // TODO: derive from city hex row width (Redux)
     battlefieldWidth: number;   // TODO: logical width in world units
     battlefieldHeight: number;  // TODO: logical height in world units
+    wallY: number;
     resolvedTower: TowerAssemblyResolved;
 }) {
+    const wrapperRef = useRef<HTMLDivElement>(null);
     const hostRef = useRef<HTMLDivElement>(null);
+    const aspectRatio = props.battlefieldWidth / props.battlefieldHeight;
+    const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+
+    useEffect(() => {
+        const wrapper = wrapperRef.current;
+        if (!wrapper) return;
+
+        const updateCanvasSize = () => {
+            const { width, height } = wrapper.getBoundingClientRect();
+            if (width <= 0 || height <= 0) return;
+
+            const heightLimitedWidth = height * aspectRatio;
+            if (heightLimitedWidth <= width) {
+                setCanvasSize({ width: heightLimitedWidth, height });
+                return;
+            }
+
+            setCanvasSize({ width, height: width / aspectRatio });
+        };
+
+        updateCanvasSize();
+        const resizeObserver = new ResizeObserver(updateCanvasSize);
+        resizeObserver.observe(wrapper);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, [aspectRatio]);
+
+    const hostStyle = useMemo(() => ({
+        width: `${canvasSize.width}px`,
+        height: `${canvasSize.height}px`,
+    }), [canvasSize.height, canvasSize.width]);
 
     useEffect(() => {
         let app: Application | null = null;
@@ -29,7 +64,7 @@ export function BattleStage(props: {
         let cleanupResize = () => {};
 
         (async () => {
-            if (!hostRef.current) return;
+            if (!hostRef.current || canvasSize.width <= 0 || canvasSize.height <= 0) return;
 
             app = new Application();
 
@@ -48,7 +83,12 @@ export function BattleStage(props: {
 
             const viewportWidth = app.renderer.width;
             const viewportHeight = app.renderer.height;
-            const minZoom = computeMinZoomForWall({ wallLogicalWidth: props.wallLogicalWidth, viewportWidth });
+            const minZoom = computeMinZoomForWall({
+                wallLogicalWidth: props.wallLogicalWidth,
+                viewportWidth,
+                battlefieldHeight: props.battlefieldHeight,
+                viewportHeight,
+            });
 
             const camera = createCamera({
                 worldWidth: props.battlefieldWidth,
@@ -56,23 +96,48 @@ export function BattleStage(props: {
                 viewportWidth,
                 viewportHeight,
                 minZoom,
-                maxZoom: 2.0, // 32->64 limit
+                maxZoom: minZoom * 2,
             });
+            camera.position.y = props.battlefieldHeight - viewportHeight / camera.scale;
+            applyCameraTransform(camera);
             app.stage.addChild(camera.container);
 
+            const wallY = props.wallY;
             const world = createWorld({
                 battlefieldWidth: props.battlefieldWidth,
                 battlefieldHeight: props.battlefieldHeight,
-                wallY: props.battlefieldHeight - 40, // TODO: align with visual wall
+                wallY,
                 app,
             });
             camera.container.addChild(world.worldLayer);
 
+            const fullBoundsPlaceholder = new Graphics();
+            fullBoundsPlaceholder
+                .rect(0, 0, props.battlefieldWidth, props.battlefieldHeight)
+                .stroke({ color: 0x45d0ff, width: 3 });
+            fullBoundsPlaceholder.zIndex = 200;
+            world.worldLayer.addChild(fullBoundsPlaceholder);
+
+            const activeBattlefieldPlaceholder = new Graphics();
+            activeBattlefieldPlaceholder
+                .rect(0, 0, props.battlefieldWidth, wallY)
+                .stroke({ color: 0xffd166, width: 2 });
+            activeBattlefieldPlaceholder.zIndex = 201;
+            world.worldLayer.addChild(activeBattlefieldPlaceholder);
+
+            const wallPlaceholder = new Graphics();
+            wallPlaceholder
+                .rect(0, wallY - 8, props.battlefieldWidth, 16)
+                .fill(0x6f7787)
+                .stroke({ color: 0xd9e2ff, width: 2 });
+            wallPlaceholder.zIndex = 15;
+            world.worldLayer.addChild(wallPlaceholder);
+
             // Tower with target hold
             const baseId = createEntityId(world);
             const gunId = createEntityId(world);
-            world.transforms.set(baseId, { position: { x: props.battlefieldWidth / 2, y: props.battlefieldHeight - 80 }, rotationRadians: 0 });
-            world.transforms.set(gunId,  { position: { x: props.battlefieldWidth / 2, y: props.battlefieldHeight - 80 }, rotationRadians: 0 });
+            world.transforms.set(baseId, { position: { x: props.battlefieldWidth / 2, y: wallY }, rotationRadians: 0 });
+            world.transforms.set(gunId,  { position: { x: props.battlefieldWidth / 2, y: wallY }, rotationRadians: -Math.PI / 2 });
             const towerVisual = buildTowerVisualContainer(
                 createTowerVisualDefinitionFromAssembly(props.resolvedTower),
                 { warn: () => {} }
@@ -159,7 +224,13 @@ export function BattleStage(props: {
                 const vh = app!.renderer.height;
                 camera.config.viewportWidth = vw;
                 camera.config.viewportHeight = vh;
-                camera.config.minZoom = computeMinZoomForWall({ wallLogicalWidth: props.wallLogicalWidth, viewportWidth: vw });
+                camera.config.minZoom = computeMinZoomForWall({
+                    wallLogicalWidth: props.wallLogicalWidth,
+                    viewportWidth: vw,
+                    battlefieldHeight: props.battlefieldHeight,
+                    viewportHeight: vh,
+                });
+                camera.config.maxZoom = camera.config.minZoom * 2;
                 setCameraScale(camera, camera.scale);
                 applyCameraTransform(camera);
             };
@@ -176,7 +247,19 @@ export function BattleStage(props: {
 
             app.destroy(true, { children: true, texture: true, textureSource: true, context: true }); // :contentReference[oaicite:3]{index=3}
         };
-    }, [props.wallLogicalWidth, props.battlefieldWidth, props.battlefieldHeight, props.resolvedTower]);
+    }, [
+        canvasSize.height,
+        canvasSize.width,
+        props.wallLogicalWidth,
+        props.battlefieldWidth,
+        props.battlefieldHeight,
+        props.wallY,
+        props.resolvedTower,
+    ]);
 
-    return <div ref={hostRef} style={{ width: '100%', height: '100%' }} />;
+    return (
+        <div ref={wrapperRef} style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}>
+            <div ref={hostRef} style={hostStyle} />
+        </div>
+    );
 }

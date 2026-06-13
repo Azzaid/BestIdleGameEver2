@@ -6,6 +6,11 @@ export const selectCityHexes = (state: RootState) => state.city.hexes;
 
 export const selectCityCellRadius = (state: RootState) => state.city.cellRadius;
 
+export const selectCitySideHexes = createSelector(
+    [selectCityCellRadius],
+    (cellRadius) => cellRadius + 1
+);
+
 export const selectCityBuildings = createSelector(
     [selectCityHexes],
     (hexes) => placeCityBuildings(hexes)
