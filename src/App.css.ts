@@ -8,7 +8,7 @@ export const appContainer = style({
 });
 
 export const appNav = style({
-  backgroundColor: vars.bgHi,
+  backgroundColor: vars.color.background.navbar,
   padding: '0 20px',
   display: 'flex',
   justifyContent: 'space-between',
@@ -42,7 +42,7 @@ export const navBarLink = style({
         transition: 'background-color 0.2s',
     selectors: {
         '&:hover': {
-            backgroundColor: vars.focus,
+            backgroundColor: vars.color.border.focus,
         },
     }
 });
@@ -50,7 +50,7 @@ export const navBarLink = style({
 export const appContent = style({
   flex: 1,
   overflow: 'auto',
-  backgroundColor: vars.bg,
+  backgroundColor: vars.color.background.app,
 });
 
 export const themeSwitcher = style({

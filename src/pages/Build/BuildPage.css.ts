@@ -66,43 +66,6 @@ export const towerImage = style({
   background: `linear-gradient(180deg, ${vars.color.background.surface}, ${vars.color.background.surfaceHover})`,
 });
 
-export const towerBaseShape = style({
-  position: 'absolute',
-  left: '50%',
-  bottom: '54px',
-  width: '132px',
-  height: '34px',
-  transform: 'translateX(-50%)',
-  border: `2px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
-  backgroundColor: vars.color.brand.primaryActive,
-});
-
-export const towerCoreShape = style({
-  position: 'absolute',
-  left: '50%',
-  bottom: '84px',
-  width: '72px',
-  height: '72px',
-  transform: 'translateX(-50%)',
-  border: `2px solid ${vars.color.border.default}`,
-  borderRadius: '50%',
-  backgroundColor: vars.color.brand.primary,
-});
-
-export const towerBarrelShape = style({
-  position: 'absolute',
-  left: '50%',
-  bottom: '118px',
-  width: '160px',
-  height: '18px',
-  transform: 'translateX(-8%) rotate(-18deg)',
-  transformOrigin: 'left center',
-  border: `2px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
-  backgroundColor: vars.color.text.inverse,
-});
-
 export const slotList = style({
   display: 'grid',
   gridTemplateColumns: '1fr',
@@ -217,6 +180,15 @@ export const costPill = style({
   border: `1px solid ${vars.color.border.default}`,
   borderRadius: '999px',
   fontSize: '12px',
+});
+
+export const missingCostPill = style({
+  padding: '4px 8px',
+  border: `1px solid ${vars.color.state.error}`,
+  borderRadius: '999px',
+  color: vars.color.state.error,
+  fontSize: '12px',
+  fontWeight: 700,
 });
 
 export const emptyText = style({

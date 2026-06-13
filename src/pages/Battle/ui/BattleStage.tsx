@@ -1,4 +1,4 @@
-import { Application } from 'pixi.js';
+import { Application, Container } from 'pixi.js';
 import { useEffect, useRef } from 'react';
 import { createWorld, createEntityId } from '../core/world';
 import { runSystems } from '../systems/runSystems';
@@ -11,6 +11,8 @@ import {
 } from '../core/camera';
 import { loadBattleAssets } from '../assets/assetLoader';
 import type { TowerAssemblyResolved } from '../../../models/battle/towerParts.ts';
+import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
+import { createTowerVisualDefinitionFromAssembly } from '../../../data/towers/visuals.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
 export function BattleStage(props: {
@@ -23,19 +25,23 @@ export function BattleStage(props: {
 
     useEffect(() => {
         let app: Application | null = null;
+        let cleanupInput = () => {};
+        let cleanupResize = () => {};
 
         (async () => {
+            if (!hostRef.current) return;
+
             app = new Application();
 
             // v8: init() is async; use canvas via app.canvas; resize plugin via resizeTo.
             await app.init({
-                resizeTo: hostRef.current!,               // auto-resize to the host <div>
+                resizeTo: hostRef.current,               // auto-resize to the host <div>
                 backgroundColor: 0x0b0e13,
                 antialias: true,
                 webgl: { powerPreference: 'high-performance' }, // was powerPreference in v7
             }); // :contentReference[oaicite:0]{index=0}
 
-            hostRef.current!.appendChild(app.canvas);
+            hostRef.current.appendChild(app.canvas);
 
             // Load assets (noop by default)
             await loadBattleAssets();
@@ -67,6 +73,18 @@ export function BattleStage(props: {
             const gunId = createEntityId(world);
             world.transforms.set(baseId, { position: { x: props.battlefieldWidth / 2, y: props.battlefieldHeight - 80 }, rotationRadians: 0 });
             world.transforms.set(gunId,  { position: { x: props.battlefieldWidth / 2, y: props.battlefieldHeight - 80 }, rotationRadians: 0 });
+            const towerVisual = buildTowerVisualContainer(
+                createTowerVisualDefinitionFromAssembly(props.resolvedTower),
+                { warn: () => {} }
+            );
+            towerVisual.container.zIndex = 30;
+            world.worldLayer.addChild(towerVisual.container);
+            world.sprites.set(baseId, towerVisual.container);
+
+            const gunAimPivot = new Container();
+            world.worldLayer.addChild(gunAimPivot);
+            world.sprites.set(gunId, gunAimPivot);
+
             world.towersData.set(baseId, {
                 rotationSpeed: props.resolvedTower.stats.rotationSpeed,
                 reloadSpeed: props.resolvedTower.stats.reloadSpeed,
@@ -128,6 +146,12 @@ export function BattleStage(props: {
             canvas.addEventListener('pointerdown', onPointerDown);
             window.addEventListener('pointermove', onPointerMove);
             window.addEventListener('pointerup', onPointerUp);
+            cleanupInput = () => {
+                canvas.removeEventListener('wheel', onWheel);
+                canvas.removeEventListener('pointerdown', onPointerDown);
+                window.removeEventListener('pointermove', onPointerMove);
+                window.removeEventListener('pointerup', onPointerUp);
+            };
 
             // v8 renderer still emits 'resize'
             const onResize = () => {
@@ -140,15 +164,15 @@ export function BattleStage(props: {
                 applyCameraTransform(camera);
             };
             app.renderer.on('resize', onResize); // :contentReference[oaicite:2]{index=2}
+            cleanupResize = () => {
+                app?.renderer.off('resize', onResize);
+            };
         })();
 
         return () => {
+            cleanupInput();
+            cleanupResize();
             if (!app) return;
-            const canvas = app.canvas;
-            canvas.removeEventListener('wheel', () => {});
-            canvas.removeEventListener('pointerdown', () => {});
-            window.removeEventListener('pointermove', () => {});
-            window.removeEventListener('pointerup', () => {});
 
             app.destroy(true, { children: true, texture: true, textureSource: true, context: true }); // :contentReference[oaicite:3]{index=3}
         };

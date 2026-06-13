@@ -1,11 +1,11 @@
 import {useTypedSelector} from "../store/hooks.ts";
-import {selectResilience, selectCityResolution} from "../store/upkeep/selectors.ts";
+import {selectResilience, selectTowerAwareCityResolution} from "../store/upkeep/selectors.ts";
 import {DEVELOPMENT_VECTORS} from "../models/DevlopmentVector.ts";
 import {UPKEEP_TYPES_BY_VECTOR} from "../models/Upkeep.ts";
 import * as s from './upkeepBar.css.ts';
 
 export const UpkeepBar = () => {
-    const {effectiveUpkeep, effectiveTrace} = useTypedSelector(selectCityResolution);
+    const {effectiveUpkeep, effectiveTrace} = useTypedSelector(selectTowerAwareCityResolution);
     const resilience = useTypedSelector(selectResilience);
 
     return (

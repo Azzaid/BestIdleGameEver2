@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js';
-import type { DisplayObject } from '@pixi/display';
 import type { EntityId } from '../../../models/battle/common.ts';
 import type { Transform } from '../../../models/battle/transform.ts';
 import type { MovementController } from '../../../models/battle/movement.ts';
@@ -10,6 +9,7 @@ import type { EnemyData } from '../../../models/battle/enemy.ts';
 import type { WaveSchedulerConfig, WaveSchedulerState } from '../../../models/battle/wave.ts';
 import { WaveSpawner } from '../spawn/waveSpawner';
 import type { EnemyBlueprint } from '../../../models/battle/enemyBlueprints';
+import { BATTLE_ENEMY_BLUEPRINTS, BATTLE_ENEMY_IDS } from '../../../data/battle/enemies.ts';
 
 export interface WorldConfig {
   battlefieldWidth: number;
@@ -40,14 +40,17 @@ export interface World {
 
   // View
   worldLayer: PIXI.Container;
-  sprites: Map<EntityId, DisplayObject>;
+  sprites: Map<EntityId, PIXI.ContainerChild>;
   healthBars: Map<EntityId, PIXI.Graphics>;
 
   // Housekeeping
   toRemove: Set<EntityId>;
+  wallLoad: number;
+  defeatedEnemies: number;
+  towerReloadRemainingSeconds: Map<EntityId, number>;
 
   // Projectiles metadata (POC; formalize later if you prefer)
-  projectileInfo: Map<EntityId, { damage: number; keywords: Set<string> }>;
+  projectileInfo: Map<EntityId, { damage: number; aoeRadius: number; keywords: Set<string> }>;
 }
 
 export function createWorld(config: WorldConfig): World {
@@ -66,6 +69,9 @@ export function createWorld(config: WorldConfig): World {
       sprites: new Map(),
       healthBars: new Map(),
       toRemove: new Set(),
+      wallLoad: 0,
+      defeatedEnemies: 0,
+      towerReloadRemainingSeconds: new Map(),
       projectileInfo: new Map(),
       spawners: [],
       waveScheduler: {
@@ -81,8 +87,8 @@ export function createWorld(config: WorldConfig): World {
               totalWavesSpawned: 0,
               enabled: true,
           },
-          enemyIds: [],  // TODO: fill from content
-          blueprints: {},
+          enemyIds: BATTLE_ENEMY_IDS,
+          blueprints: BATTLE_ENEMY_BLUEPRINTS,
       },
   };
 }

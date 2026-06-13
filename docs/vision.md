@@ -1,4 +1,4 @@
-# Best Idle Game Ever 2 — Vision
+no# Best Idle Game Ever 2 — Vision
 
 ## Purpose of this document
 

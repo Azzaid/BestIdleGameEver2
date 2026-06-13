@@ -9,13 +9,15 @@ export function resolveTowerStats(build: TowerBuild): TowerStatsResolved {
     if (part.modifiers) {
       for (const [field, value] of Object.entries(part.modifiers)) {
         const key = field as keyof TowerModifiers;
-        (stats as any)[key] = ((stats as any)[key] ?? 0) + (value as number);
+        if (value !== undefined) {
+          stats[key] += value;
+        }
       }
     }
     part.children?.forEach(applyPart);
   }
 
-  (Object.keys(build.slots) as Array<keyof typeof build.slots>).forEach((dir) => {
+  (Object.keys(build.slots) as unknown as Array<keyof typeof build.slots>).forEach((dir) => {
     const chain = build.slots[dir];
     chain?.forEach(applyPart);
   });

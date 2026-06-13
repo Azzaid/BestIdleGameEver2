@@ -1,4 +1,4 @@
-import { Vector2 } from './common.ts';
+import type { Vector2 } from './common.ts';
 
 /** Generic movement controller (attach ONE per entity). */
 export type MovementKind = 'wobble' | 'polyline' | 'wander' | 'flee' | 'blink' | 'linear';

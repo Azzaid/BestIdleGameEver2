@@ -1,4 +1,4 @@
-import { GunPart } from '../../../models/battle/towerParts.ts';
+import type { GunPart } from '../../../models/battle/towerParts.ts';
 
 export const PARTS: Record<string, GunPart> = {
   barrel_basic: {

@@ -16,7 +16,7 @@ export function PixiSyncSystem(world: World) {
       world.sprites.set(entityId, sp);
       display = sp;
     }
-    (display as any).position?.set(tf.position.x, tf.position.y);
-    (display as any).rotation = tf.rotationRadians ?? 0;
+    display.position.set(tf.position.x, tf.position.y);
+    display.rotation = tf.rotationRadians ?? 0;
   }
 }

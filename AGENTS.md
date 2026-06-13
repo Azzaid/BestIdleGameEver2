@@ -24,6 +24,8 @@ Styling uses vanilla-extract `*.css.ts` files colocated with pages/components. T
 
 `docs/project_spec.md` contains the most complete product and architecture notes. Keep it in sync when making significant structural or gameplay changes.
 
+For design intent and game mechanics, also refer to the docs folder before making related changes. Start with the Game Design Document in `docs`, then consult focused notes such as `docs/combat.md`, `docs/coreLoop.md`, `docs/economy.md`, `docs/research.md`, `docs/towers.md`, `docs/threat.md`, and `docs/ui-and-player-experience.md` as relevant.
+
 ## Important Directories
 
 - `src/pages` - top-level routed page experiences: Battle, Build, City, Research, and Statistics.
@@ -37,7 +39,7 @@ Styling uses vanilla-extract `*.css.ts` files colocated with pages/components. T
 - `src/theme` - vanilla-extract theme contract, theme values, and theme provider.
 - `src/styles` - global vanilla-extract styles only.
 - `src/assets` - bundled image assets, including city/building art.
-- `docs` - project specifications and design notes.
+- `docs` - project specifications, design notes, and game mechanics references.
 - `public` - static Vite public assets.
 
 ## Build and Test Commands

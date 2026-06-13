@@ -5,8 +5,8 @@ globalStyle(':root', {
   fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
   lineHeight: '1.5',
   fontWeight: '400',
-  color: vars.text,
-  backgroundColor: vars.bg,
+  color: vars.color.text.primary,
+  backgroundColor: vars.color.background.app,
   fontSynthesis: 'none',
   textRendering: 'optimizeLegibility',
   WebkitFontSmoothing: 'antialiased',
@@ -36,19 +36,19 @@ globalStyle('h1', {
   fontSize: '2em',
   lineHeight: '1.2',
   marginBottom: '20px',
-  color: vars.textHead,
+  color: vars.color.text.heading,
 });
 
 globalStyle('h2', {
   fontSize: '1.5em',
   marginBottom: '15px',
-  color: vars.textHead,
+  color: vars.color.text.heading,
 });
 
 globalStyle('h3', {
   fontSize: '1.2em',
   marginBottom: '10px',
-  color: vars.textHead,
+  color: vars.color.text.heading,
 });
 
 globalStyle('p', {
@@ -56,7 +56,7 @@ globalStyle('p', {
 });
 
 globalStyle('a', {
-  color: vars.el,
+  color: vars.color.brand.primary,
   textDecoration: 'none',
 });
 
@@ -71,18 +71,18 @@ globalStyle('button', {
   fontSize: '14px',
   fontWeight: '500',
   fontFamily: 'inherit',
-  backgroundColor: vars.el,
-  color: vars.text,
+  backgroundColor: vars.color.brand.primary,
+  color: vars.color.text.primary,
   cursor: 'pointer',
   transition: 'background-color 0.2s',
 });
 
 globalStyle('button:hover', {
-  backgroundColor: vars.elContrast,
+  backgroundColor: vars.color.brand.primaryHover,
 });
 
 globalStyle('button:focus, button:focus-visible', {
-  outline: `2px solid ${vars.border}`,
+  outline: `2px solid ${vars.color.border.focus}`,
   outlineOffset: '2px',
 });
 

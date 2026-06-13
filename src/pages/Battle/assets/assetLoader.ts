@@ -1,5 +1,3 @@
-import * as PIXI from 'pixi.js';
-
 /** Minimal loader wrapper. Replace with your own manifest/atlas setup. */
 export async function loadBattleAssets(): Promise<void> {
   // TODO: Add calls like:

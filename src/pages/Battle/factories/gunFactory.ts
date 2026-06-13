@@ -1,7 +1,6 @@
 import * as PIXI from 'pixi.js';
 import type { GunSlotDirection } from '../../../models/battle/tower.ts';
 import type { SpriteInfo } from '../../../models/battle/spriteInfo.ts';
-import type { DisplayObject } from '@pixi/display';
 import { createDisplayFromSpriteInfo } from './spriteFactory';
 
 /** Visual-only representation of a gun built from slot chains. */
@@ -18,12 +17,12 @@ export interface GunVisualBuild {
 }
 
 /** Composes a PIXI.Container for the gun. Children are placed per slot chain with cumulative offsets. */
-export function createGunContainer(build: GunVisualBuild): { container: PIXI.Container; partNodes: Map<string, DisplayObject> } {
+export function createGunContainer(build: GunVisualBuild): { container: PIXI.Container; partNodes: Map<string, PIXI.ContainerChild> } {
   const container = new PIXI.Container();
   container.sortableChildren = true;
   // We treat container position = origin; rotation around this origin
   container.position.set(build.origin.x, build.origin.y);
-  const partNodes = new Map<string, DisplayObject>();
+  const partNodes = new Map<string, PIXI.ContainerChild>();
 
   const slotDirs: GunSlotDirection[] = [0, 1, 2, 3];
   for (const dir of slotDirs) {

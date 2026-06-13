@@ -71,7 +71,7 @@ export class WaveSpawner {
             }
 
             // Spawn all swarm members with tiny offsets
-            swarmMembers.forEach((member, memberIndex) => {
+            swarmMembers.forEach((_member, memberIndex) => {
                 const offsetX = (memberIndex - (swarmMembers.length - 1) / 2) * this.options.swarmSpatialSpreadPx;
                 const delay = memberIndex * (this.options.swarmTemporalSpreadSec / Math.max(1, swarmMembers.length - 1));
                 this.spawnEnemyWithDelay(world, bp, baseX + offsetX, baseY, delay);
@@ -90,8 +90,8 @@ export class WaveSpawner {
         }
         // Minimal delayed spawn: use a temporary ticker hook
         let remaining = delaySec;
-        const step = (delta: number) => {
-            const dt = delta / 60; // Pixi ticker delta is frames; 60fps baseline
+        const step = (ticker: { deltaMS: number }) => {
+            const dt = ticker.deltaMS / 1000;
             remaining -= dt;
             if (remaining <= 0) {
                 world.config.app.ticker.remove(step);
@@ -121,8 +121,8 @@ export class WaveSpawner {
 
         // Visuals
         const view = createDisplayFromSpriteInfo(bp.sprite); // uses PIXI.Texture.from() — atlas must be loaded
-        (view as any).zIndex = 5;
-        (view as any).position?.set(spawnX, spawnY);
+        view.zIndex = 5;
+        view.position.set(spawnX, spawnY);
         world.worldLayer.addChild(view);
         world.sprites.set(id, view);
     }

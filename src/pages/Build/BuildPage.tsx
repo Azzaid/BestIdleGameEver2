@@ -14,7 +14,19 @@ import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
 import { selectActiveTower, selectResolvedActiveTower } from '../../store/towers/selectors.ts';
 import { selectTowerPart } from '../../store/towers/slice.ts';
 import { selectPurchasedTechsIds } from '../../store/research/selectors.ts';
-import { formatSupportCost, formatTowerSlot } from '../../models/battle/resolveTowerAssembly.ts';
+import { selectCityResolution, selectTowerAwareCityResolution } from '../../store/upkeep/selectors.ts';
+import { formatTowerSlot } from '../../models/battle/resolveTowerAssembly.ts';
+import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
+import { addUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
+import { TowerAssemblyPreview } from './TowerAssemblyPreview.tsx';
+
+interface SupportStatusItem {
+  resource: UpkeepTypesValue;
+  label: string;
+  requiredAmount: number;
+  availableAmount: number;
+  missingAmount: number;
+}
 
 function getPartKeywords(part: GunPart) {
   return Array.from(part.keywords);
@@ -32,11 +44,43 @@ function formatModifierList(part: GunPart) {
     .join(', ');
 }
 
+function getSupportStatus(required: UpkeepAmount, available: UpkeepAmount) {
+  return (Object.values(UPKEEP_TYPES) as UpkeepTypesValue[])
+    .flatMap((resource): SupportStatusItem[] => {
+      const requiredAmount = required[resource] ?? 0;
+      if (requiredAmount <= 0) return [];
+
+      const availableAmount = available[resource] ?? 0;
+      const missingAmount = Math.max(0, requiredAmount - availableAmount);
+
+      return [{
+        resource,
+        label: UPKEEP_SPRITES[resource],
+        requiredAmount,
+        availableAmount,
+        missingAmount,
+      }];
+    });
+}
+
+function hasEnoughUpkeep(required: UpkeepAmount, available: UpkeepAmount) {
+  return getSupportStatus(required, available).every((item) => item.missingAmount === 0);
+}
+
+function getAvailableUpkeepForSlot(
+  remainingUpkeep: UpkeepAmount,
+  currentSlotPartCost: UpkeepAmount
+) {
+  return addUpkeep(remainingUpkeep, currentSlotPartCost);
+}
+
 const BuildPage = () => {
   const dispatch = useTypedDispatch();
   const activeTower = useTypedSelector(selectActiveTower);
   const resolvedTower = useTypedSelector(selectResolvedActiveTower);
   const purchasedTechIds = useTypedSelector(selectPurchasedTechsIds);
+  const cityResolution = useTypedSelector(selectCityResolution);
+  const towerAwareCityResolution = useTypedSelector(selectTowerAwareCityResolution);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>('base');
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -96,9 +140,35 @@ const BuildPage = () => {
     },
     {
       id: 'support',
-      accessorFn: (row) => formatSupportCost(row.supportCost ?? {}).join(', '),
+      accessorFn: (row) => getSupportStatus(row.supportCost ?? {}, {}).map((item) => item.label).join(', '),
       header: 'Support',
-      cell: (info) => info.getValue() || 'None',
+      cell: (info) => {
+        const part = info.row.original;
+        const currentSlotPartCost = resolvedTower.selectedParts[activeTab]?.supportCost ?? {};
+        const availableForThisSlot = getAvailableUpkeepForSlot(
+          towerAwareCityResolution.effectiveUpkeep,
+          currentSlotPartCost
+        );
+        const supportStatus = getSupportStatus(part.supportCost ?? {}, availableForThisSlot);
+
+        if (supportStatus.length === 0) {
+          return <span className={s.emptyText}>None</span>;
+        }
+
+        return (
+          <div className={s.inlineList}>
+            {supportStatus.map((item) => (
+              <span
+                key={item.resource.description}
+                className={item.missingAmount > 0 ? s.missingCostPill : s.costPill}
+              >
+                {item.label} {item.requiredAmount}
+                {item.missingAmount > 0 ? ` / missing ${item.missingAmount}` : ''}
+              </span>
+            ))}
+          </div>
+        );
+      },
     },
     {
       id: 'select',
@@ -107,10 +177,18 @@ const BuildPage = () => {
       cell: (info) => {
         const part = info.row.original;
         const selected = selectedPartId === part.id;
+        const currentSlotPartCost = resolvedTower.selectedParts[activeTab]?.supportCost ?? {};
+        const availableForThisSlot = getAvailableUpkeepForSlot(
+          towerAwareCityResolution.effectiveUpkeep,
+          currentSlotPartCost
+        );
+        const enoughUpkeep = hasEnoughUpkeep(part.supportCost ?? {}, availableForThisSlot);
 
         return (
           <button
             className={s.installButton}
+            disabled={!selected && !enoughUpkeep}
+            title={!selected && !enoughUpkeep ? 'Not enough city upkeep for this tower build' : undefined}
             onClick={() => dispatch(selectTowerPart({ slot: activeTab, partId: part.id }))}
           >
             {selected ? 'Installed' : 'Install'}
@@ -118,7 +196,7 @@ const BuildPage = () => {
         );
       },
     },
-  ], [activeTab, dispatch, purchasedTechIds, selectedPartId]);
+  ], [activeTab, dispatch, purchasedTechIds, resolvedTower.selectedParts, selectedPartId, towerAwareCityResolution.effectiveUpkeep]);
 
   const table = useReactTable({
     data: activeSlotParts,
@@ -139,7 +217,7 @@ const BuildPage = () => {
 
   const virtualRows = rowVirtualizer.getVirtualItems();
   const totalSize = rowVirtualizer.getTotalSize();
-  const supportCost = formatSupportCost(resolvedTower.supportCost);
+  const supportCost = getSupportStatus(resolvedTower.supportCost, cityResolution.effectiveUpkeep);
   const statRows = [
     ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
     ['Reload', `${resolvedTower.stats.reloadSpeed.toFixed(2)} shots/s`],
@@ -161,10 +239,8 @@ const BuildPage = () => {
 
       <section className={s.assemblyGrid}>
         <div className={s.towerPreview}>
-          <div className={s.towerImage} aria-label="Tower assembly preview">
-            <div className={s.towerBaseShape} />
-            <div className={s.towerBarrelShape} />
-            <div className={s.towerCoreShape} />
+          <div className={s.towerImage}>
+            <TowerAssemblyPreview resolvedTower={resolvedTower} />
           </div>
 
           <div className={s.slotList}>
@@ -200,7 +276,15 @@ const BuildPage = () => {
             <h3 className={s.summaryTitle}>Support</h3>
             <div className={s.inlineList}>
               {supportCost.length > 0
-                ? supportCost.map((item) => <span key={item} className={s.costPill}>{item}</span>)
+                ? supportCost.map((item) => (
+                  <span
+                    key={item.resource.description}
+                    className={item.missingAmount > 0 ? s.missingCostPill : s.costPill}
+                  >
+                    {item.label} {item.requiredAmount}
+                    {item.missingAmount > 0 ? ` / missing ${item.missingAmount}` : ''}
+                  </span>
+                ))
                 : <span className={s.emptyText}>No support required</span>}
             </div>
           </div>

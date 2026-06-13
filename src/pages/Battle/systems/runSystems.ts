@@ -8,6 +8,8 @@ import { ProjectilesSystem } from './projectiles';
 import { HealthBarSystem } from './uiHealthBars';
 import { PixiSyncSystem } from './pixiSync';
 import {SpawnerSystem} from "./spawnerSystem.ts";
+import { HealthSystem } from './healthSystem.ts';
+import { WallLoadSystem } from './wallLoadSystem.ts';
 
 /** Per-frame update orchestrator */
 export function runSystems(world: World, dt: number) {
@@ -18,7 +20,9 @@ export function runSystems(world: World, dt: number) {
 
   MovementSystem(world, dt);
   LifespanSystem(world, dt);
-  ProjectilesSystem(world, dt);
+  ProjectilesSystem(world);
+  HealthSystem(world);
+  WallLoadSystem(world);
 
   HealthBarSystem(world);
 
@@ -31,10 +35,11 @@ export function runSystems(world: World, dt: number) {
       world.healths.delete(id);
       world.towersData.delete(id);
       world.enemiesData.delete(id);
+      world.towerReloadRemainingSeconds.delete(id);
       const hb = world.healthBars.get(id);
       if (hb) { hb.destroy(); world.healthBars.delete(id); }
       const view = world.sprites.get(id);
-      if (view) { (view as any).destroy?.({ children: true }); world.sprites.delete(id); }
+      if (view) { view.destroy({ children: true }); world.sprites.delete(id); }
       world.projectileInfo.delete(id);
     }
     world.toRemove.clear();
