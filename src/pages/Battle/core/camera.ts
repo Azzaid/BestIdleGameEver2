@@ -41,7 +41,6 @@ export function computeMinZoomForWall(args: {
     if (args.wallLogicalWidth <= 0 || args.battlefieldHeight <= 0) return 0.5;
 
     return Math.min(
-        1,
         args.viewportWidth / args.wallLogicalWidth,
         args.viewportHeight / args.battlefieldHeight
     );

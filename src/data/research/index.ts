@@ -37,6 +37,16 @@ export const researchThree: ResearchDB = {
         requiredBuildings: ['techProduce1'],
         requiredFreeUpkeep: {[UPKEEP_TYPES.electricity]: 3}
     },
+    'precision-fabrication': {
+        id: 'precision-fabrication',
+        parentId: 'basic-circuits',
+        name: 'Precision Fabrication',
+        vector: 'tech',
+        summary: 'Unlock high-tech component production and refined machine parts.',
+        unlocks: ['Machine Shop', 'Servo Weapons'],
+        requiredBuildings: ['techProduce1', 'techComponents1'],
+        requiredFreeUpkeep: {[UPKEEP_TYPES.electricity]: 4, [UPKEEP_TYPES.highTechComponents]: 1}
+    },
     'automation-i': {
         id: 'automation-i',
         parentId: 'tech',
@@ -55,6 +65,8 @@ export const researchThree: ResearchDB = {
         name: 'Seed Cultivation',
         vector: 'nature',
         summary: 'Unlock farms.',
+        unlocks: ['Compost Grove'],
+        requiredBuildings: ['natureBiomass1'],
         requiredFreeUpkeep: {[UPKEEP_TYPES.biomass]: 2}
     },
     'selection': {
@@ -63,7 +75,19 @@ export const researchThree: ResearchDB = {
         name: 'Selection',
         vector: 'nature',
         summary: 'Unlock bio research',
+        unlocks: ['Mutation Vat'],
+        requiredBuildings: ['natureBiomass1', 'natureMutagen1'],
         requiredFreeUpkeep: {[UPKEEP_TYPES.biomass]: 4}
+    },
+    'nature-weaponcraft': {
+        id: 'nature-weaponcraft',
+        parentId: 'selection',
+        name: 'Living Weaponcraft',
+        vector: 'nature',
+        summary: 'Shape roots, spores, and sinew into tower components.',
+        unlocks: ['Living tower parts'],
+        requiredBuildings: ['natureMutagen1'],
+        requiredFreeUpkeep: {[UPKEEP_TYPES.biomass]: 4, [UPKEEP_TYPES.mutagen]: 2}
     },
     'herbal-lore': {
         id: 'herbal-lore',
@@ -87,6 +111,8 @@ export const researchThree: ResearchDB = {
         name: 'Guild Charter',
         vector: 'medieval',
         summary: 'Trade & crafting bonuses.',
+        unlocks: ['Homestead Row', 'Market Square'],
+        requiredBuildings: ['medievalPeople1', 'medievalGold1'],
         requiredFreeUpkeep: {[UPKEEP_TYPES.people]: 2}
     },
     'fortifications': {
@@ -97,6 +123,16 @@ export const researchThree: ResearchDB = {
         summary: 'City walls & towers.',
         requiredFreeUpkeep: {[UPKEEP_TYPES.people]: 3, [UPKEEP_TYPES.gold]: 2}
     },
+    'medieval-artillery': {
+        id: 'medieval-artillery',
+        parentId: 'fortifications',
+        name: 'Siege Artillery',
+        vector: 'medieval',
+        summary: 'Standardize crews, fittings, and rugged tower attachments.',
+        unlocks: ['Iron Sight Collar'],
+        requiredBuildings: ['medievalPeople1', 'medievalGold1'],
+        requiredFreeUpkeep: {[UPKEEP_TYPES.people]: 4, [UPKEEP_TYPES.gold]: 3}
+    },
     'livingWood': {
         id: 'livingWood',
         parentId: 'fortifications',
@@ -105,5 +141,35 @@ export const researchThree: ResearchDB = {
         summary: 'City walls & towers.',
         alsoRequires: ['selection'],
         requiredFreeUpkeep: {[UPKEEP_TYPES.people]: 4, [UPKEEP_TYPES.gold]: 3}
+    },
+    'leyline-tapping': {
+        id: 'leyline-tapping',
+        parentId: 'aether',
+        name: 'Leyline Tapping',
+        vector: 'aether',
+        summary: 'Draw stable mana into city infrastructure.',
+        unlocks: ['Leyline Well'],
+        requiredBuildings: ['aetherMana1'],
+        requiredFreeUpkeep: {[UPKEEP_TYPES.mana]: 2}
+    },
+    'rune-supplies': {
+        id: 'rune-supplies',
+        parentId: 'leyline-tapping',
+        name: 'Rune Supplies',
+        vector: 'aether',
+        summary: 'Prepare charged materials for repeatable arcane engineering.',
+        unlocks: ['Rune Scriptorium'],
+        requiredBuildings: ['aetherMana1', 'aetherSupplies1'],
+        requiredFreeUpkeep: {[UPKEEP_TYPES.mana]: 4, [UPKEEP_TYPES.arcaneSupplies]: 1}
+    },
+    'aether-artillery': {
+        id: 'aether-artillery',
+        parentId: 'rune-supplies',
+        name: 'Aether Artillery',
+        vector: 'aether',
+        summary: 'Bind omen, focus, and phase effects into tower components.',
+        unlocks: ['Aether tower parts'],
+        requiredBuildings: ['aetherSupplies1'],
+        requiredFreeUpkeep: {[UPKEEP_TYPES.mana]: 5, [UPKEEP_TYPES.arcaneSupplies]: 2}
     },
 };
