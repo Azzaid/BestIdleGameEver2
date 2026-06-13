@@ -7,6 +7,7 @@ import {type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {selectCityHexes} from "../../store/city/selectors.ts";
 import {buildHex} from "../../store/city/slice.ts";
+import {coordKey} from "./Components/CityHex/hexUtils.ts";
 
 const CityPage = () => {
     const dispatch = useTypedDispatch();
@@ -14,7 +15,8 @@ const CityPage = () => {
     const [selectedHex, setSelectedHex] = useState<AxialCoordinate | null>(null);
 
     const handleBuildingSelect = (buildingKey: string, developmentVector: DevelopmentVectorValue) => {
-        dispatch(buildHex({...selectedHex!, buildingKey, developmentVector }))
+        if (!selectedHex) return;
+        dispatch(buildHex({...selectedHex!, cellKey:coordKey(selectedHex), buildingKey, developmentVector }))
     };
 
   return (

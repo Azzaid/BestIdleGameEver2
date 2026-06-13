@@ -1,145 +1,127 @@
-import { useRef, useState, useMemo, useCallback } from 'react';
-import * as s from './BuildPage.css.ts';
-import type { ColumnDef, ColumnFiltersState, VisibilityState } from '@tanstack/react-table'
+import { useMemo, useRef, useState } from 'react';
+import type { ColumnDef, ColumnFiltersState, VisibilityState } from '@tanstack/react-table';
 import {
+  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   useReactTable,
-  flexRender,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import * as s from './BuildPage.css.ts';
+import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/towers/parts.ts';
+import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
+import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
+import { selectActiveTower, selectResolvedActiveTower } from '../../store/towers/selectors.ts';
+import { selectTowerPart } from '../../store/towers/slice.ts';
+import { selectPurchasedTechsIds } from '../../store/research/selectors.ts';
+import { formatSupportCost, formatTowerSlot } from '../../models/battle/resolveTowerAssembly.ts';
 
-// Define types for tower components
- type ComponentType = 'barrel' | 'base' | 'aimSystem' | 'ammo' | 'barrelAttachment' | 'loadingSystem' | 'launchSystem';
- 
- interface TowerComponent {
-   id: string;
-   type: ComponentType;
-   name: string;
-   description: string;
-   keywords: string[];
-   // Additional properties could be added based on component type
- }
- 
- // Example components (in a real app, these would come from a database or state management)
- const exampleComponents: Record<ComponentType, TowerComponent[]> = {
-   barrel: [
-     { id: 'barrel1', type: 'barrel', name: 'Standard Barrel', description: 'A basic barrel', keywords: ['standard', 'basic'] },
-     { id: 'barrel2', type: 'barrel', name: 'Long Barrel', description: 'Increases range', keywords: ['long', 'range'] }
-   ],
-   base: [
-     { id: 'base1', type: 'base', name: 'Fixed Base', description: 'Cannot rotate', keywords: ['fixed', 'stable'] },
-     { id: 'base2', type: 'base', name: 'Rotating Base', description: 'Can rotate 360 degrees', keywords: ['rotating', 'mobile'] }
-   ],
-   aimSystem: [
-     { id: 'aim1', type: 'aimSystem', name: 'Basic Targeting', description: 'Targets nearest enemy', keywords: ['basic', 'nearest'] },
-     { id: 'aim2', type: 'aimSystem', name: 'Advanced Targeting', description: 'Targets strongest enemy', keywords: ['advanced', 'strongest'] }
-   ],
-   ammo: [
-     { id: 'ammo1', type: 'ammo', name: 'Standard Shells', description: 'Basic ammunition', keywords: ['standard', 'basic'] },
-     { id: 'ammo2', type: 'ammo', name: 'Explosive Shells', description: 'Area damage', keywords: ['explosive', 'area'] }
-   ],
-   barrelAttachment: [
-     { id: 'attach1', type: 'barrelAttachment', name: 'Muzzle Brake', description: 'Reduces recoil', keywords: ['muzzle', 'recoil'] },
-     { id: 'attach2', type: 'barrelAttachment', name: 'Silencer', description: 'Quieter firing', keywords: ['silent', 'stealth'] }
-   ],
-   loadingSystem: [
-     { id: 'load1', type: 'loadingSystem', name: 'Manual Loading', description: 'Slow but reliable', keywords: ['manual', 'reliable'] },
-     { id: 'load2', type: 'loadingSystem', name: 'Auto-Loader', description: 'Fast loading', keywords: ['auto', 'fast'] }
-   ],
-   launchSystem: [
-     { id: 'launch1', type: 'launchSystem', name: 'Gunpowder', description: 'Traditional propellant', keywords: ['traditional', 'reliable'] },
-     { id: 'launch2', type: 'launchSystem', name: 'Electromagnetic', description: 'High velocity', keywords: ['modern', 'velocity'] }
-   ]
- };
+function getPartKeywords(part: GunPart) {
+  return Array.from(part.keywords);
+}
 
- const componentTypeOrder: { key: ComponentType; label: string }[] = [
-   { key: 'barrel', label: 'Barrel' },
-   { key: 'base', label: 'Base' },
-   { key: 'aimSystem', label: 'Aiming System' },
-   { key: 'ammo', label: 'Ammunition' },
-   { key: 'barrelAttachment', label: 'Barrel Attachment' },
-   { key: 'loadingSystem', label: 'Loading System' },
-   { key: 'launchSystem', label: 'Launch System' },
- ];
- 
- const BuildPage = () => {
-  // State to track selected components
-  const [selectedComponents, setSelectedComponents] = useState<Record<ComponentType, TowerComponent | null>>({
-    barrel: null,
-    base: null,
-    aimSystem: null,
-    ammo: null,
-    barrelAttachment: null,
-    loadingSystem: null,
-    launchSystem: null
-  });
+function isPartUnlocked(part: GunPart, purchasedTechIds: readonly string[]) {
+  return (part.unlockRequirements ?? []).every((requirement) => purchasedTechIds.includes(requirement.researchId));
+}
 
-  // Active tab for parts listing
-  const [activeTab, setActiveTab] = useState<ComponentType>('barrel');
+function formatModifierList(part: GunPart) {
+  if (!part.modifiers) return 'No stat modifiers';
 
-  // Handle component selection (stable reference)
-  const selectComponent = useCallback((component: TowerComponent) => {
-    setSelectedComponents(prev => ({
-      ...prev,
-      [component.type]: component,
-    }));
-  }, []);
+  return Object.entries(part.modifiers)
+    .map(([key, value]) => `${key} ${Number(value) > 0 ? '+' : ''}${value}`)
+    .join(', ');
+}
 
-  // Data for the active tab (stable reference)
-  const data = useMemo(() => exampleComponents[activeTab], [activeTab]);
+const BuildPage = () => {
+  const dispatch = useTypedDispatch();
+  const activeTower = useTypedSelector(selectActiveTower);
+  const resolvedTower = useTypedSelector(selectResolvedActiveTower);
+  const purchasedTechIds = useTypedSelector(selectPurchasedTechsIds);
+  const [activeTab, setActiveTab] = useState<TowerPartSlot>('base');
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const scrollParentRef = useRef<HTMLDivElement>(null);
 
-  // TanStack Table: columns (stable reference)
-  const columns: ColumnDef<TowerComponent, unknown>[] = useMemo(() => [
+  const selectedPartId = activeTower?.selectedPartIds[activeTab];
+  const activeSlotParts = useMemo(
+    () => TOWER_PARTS.filter((part) => (
+      part.slot === activeTab && isPartUnlocked(part, purchasedTechIds)
+    )),
+    [activeTab, purchasedTechIds]
+  );
+
+  const columns: ColumnDef<GunPart, unknown>[] = useMemo(() => [
     {
       id: 'name',
       accessorKey: 'name',
       header: 'Name',
-      cell: info => info.getValue(),
-    },
-    {
-      id: 'description',
-      accessorKey: 'description',
-      header: 'Description',
-      cell: info => info.getValue(),
-    },
-    {
-      id: 'keywords',
-      accessorFn: row => row.keywords.join(', '),
-      header: 'Keywords',
-      cell: info => {
-        const row = info.row.original as TowerComponent;
+      cell: (info) => {
+        const part = info.row.original;
         return (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {row.keywords.map(k => (
-              <span key={k} className={s.keyword}>{k}</span>
-            ))}
+          <div className={s.partNameCell}>
+            <span>{part.name}</span>
           </div>
         );
       },
     },
     {
+      id: 'vector',
+      accessorKey: 'vector',
+      header: 'Vector',
+      cell: (info) => info.getValue() ?? 'default',
+    },
+    {
+      id: 'description',
+      accessorKey: 'description',
+      header: 'Description',
+      cell: (info) => info.getValue() ?? '',
+    },
+    {
+      id: 'keywords',
+      accessorFn: (row) => getPartKeywords(row).join(', '),
+      header: 'Keywords',
+      cell: (info) => (
+        <div className={s.keywords}>
+          {getPartKeywords(info.row.original).map((keyword) => (
+            <span key={keyword} className={s.keyword}>{keyword}</span>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'modifiers',
+      accessorFn: formatModifierList,
+      header: 'Modifiers',
+      cell: (info) => info.getValue(),
+    },
+    {
+      id: 'support',
+      accessorFn: (row) => formatSupportCost(row.supportCost ?? {}).join(', '),
+      header: 'Support',
+      cell: (info) => info.getValue() || 'None',
+    },
+    {
       id: 'select',
-      header: 'Select',
+      header: 'Install',
       enableColumnFilter: false,
-      cell: info => {
-        const row = info.row.original as TowerComponent;
-        const selected = selectedComponents[activeTab]?.id === row.id;
+      cell: (info) => {
+        const part = info.row.original;
+        const selected = selectedPartId === part.id;
+
         return (
-          <button onClick={() => selectComponent(row)}>
-            {selected ? 'Selected' : 'Select'}
+          <button
+            className={s.installButton}
+            onClick={() => dispatch(selectTowerPart({ slot: activeTab, partId: part.id }))}
+          >
+            {selected ? 'Installed' : 'Install'}
           </button>
         );
       },
     },
-  ], [activeTab, selectedComponents, selectComponent]);
-
-  // Column filters & visibility
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  ], [activeTab, dispatch, purchasedTechIds, selectedPartId]);
 
   const table = useReactTable({
-    data,
+    data: activeSlotParts,
     columns,
     state: { columnFilters, columnVisibility },
     onColumnFiltersChange: setColumnFilters,
@@ -148,123 +130,193 @@ import { useVirtualizer } from '@tanstack/react-virtual';
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  // Virtualizer over visible rows
-  const scrollParentRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
     count: table.getRowModel().rows.length,
     getScrollElement: () => scrollParentRef.current,
-    estimateSize: () => 48,
+    estimateSize: () => 56,
     overscan: 6,
   });
 
   const virtualRows = rowVirtualizer.getVirtualItems();
   const totalSize = rowVirtualizer.getTotalSize();
+  const supportCost = formatSupportCost(resolvedTower.supportCost);
+  const statRows = [
+    ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
+    ['Reload', `${resolvedTower.stats.reloadSpeed.toFixed(2)} shots/s`],
+    ['Range', `${resolvedTower.stats.targetingDistanceLimit.toFixed(0)} px`],
+    ['Projectile speed', `${resolvedTower.stats.projectileSpeed.toFixed(0)} px/s`],
+    ['Rotation', `${resolvedTower.stats.rotationSpeed.toFixed(2)} rad/s`],
+    ['Area', `${resolvedTower.stats.aoeRadius.toFixed(0)} px`],
+    ['Retarget', `${resolvedTower.stats.retargetCooldownSeconds.toFixed(2)} s`],
+  ];
 
   return (
     <div className={s.buildPage}>
-      <h1>Assemble Your Tower</h1>
-      <div className={s.towerPreview}>
-        <div className={s.towerImage}>
-          {/* This would be a visual representation of the tower with selected components */}
-          <div className={s.towerPlaceholder}>Tower Preview</div>
+      <header className={s.pageHeader}>
+        <div>
+          <h1 className={s.pageTitle}>Assemble Your Tower</h1>
+          <p className={s.pageSubtitle}>{activeTower?.name ?? 'Tower'} is assembled from machine parts, support systems, and targeting logic.</p>
         </div>
-        <div className={s.towerStats}>
-          <h3>Tower Stats</h3>
-          <p>Based on your selected components, your tower will have these properties:</p>
-          <ul>
-            <li>Range: {selectedComponents.barrel ? 'Enhanced' : 'Standard'}</li>
-            <li>Damage: {selectedComponents.ammo?.name === 'Explosive Shells' ? 'High' : 'Medium'}</li>
-            <li>Fire Rate: {selectedComponents.loadingSystem?.name === 'Auto-Loader' ? 'Fast' : 'Slow'}</li>
-            <li>Mobility: {selectedComponents.base?.name === 'Rotating Base' ? '360°' : 'Fixed'}</li>
-          </ul>
-        </div>
-      </div>
+      </header>
 
-      {/* Tabs for selecting component category */}
-      <div className={s.tabsContainer}>
-        {componentTypeOrder.map(({ key, label }) => (
-          <button
-            key={key}
-            className={`${s.tabButton} ${activeTab === key ? s.tabButtonActive : ''}`}
-            onClick={() => setActiveTab(key)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <section className={s.assemblyGrid}>
+        <div className={s.towerPreview}>
+          <div className={s.towerImage} aria-label="Tower assembly preview">
+            <div className={s.towerBaseShape} />
+            <div className={s.towerBarrelShape} />
+            <div className={s.towerCoreShape} />
+          </div>
 
-      {/* Column chooser and filters */}
-      <div className={s.controlsRow}>
-        <div className={s.columnChooser}>
-          {table.getAllLeafColumns().map(col => (
-            <label key={col.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <input
-                type="checkbox"
-                checked={col.getIsVisible()}
-                onChange={col.getToggleVisibilityHandler()}
-              />
-              {col.columnDef.header as string}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div className={s.tableContainer} ref={scrollParentRef}>
-        <table className={s.partsTable}>
-          <thead className={s.tableHead}>
-            {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id} className={s.tableRow}>
-                {headerGroup.headers.map(header => (
-                  <th key={header.id} className={s.tableHeaderCell}>
-                    {header.isPlaceholder ? null : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <div>{flexRender(header.column.columnDef.header, header.getContext())}</div>
-                        {header.column.getCanFilter() && header.column.id !== 'select' ? (
-                          <input
-                            className={s.filterInput}
-                            value={(header.column.getFilterValue() as string) ?? ''}
-                            onChange={e => header.column.setFilterValue(e.target.value)}
-                            placeholder={`Filter...`}
-                          />
-                        ) : null}
-                      </div>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {/* top spacer */}
-            {virtualRows.length > 0 && (
-              <tr style={{ height: virtualRows[0].start }}>
-                <td colSpan={table.getAllLeafColumns().length} />
-              </tr>
-            )}
-
-            {virtualRows.map(virtualRow => {
-              const row = table.getRowModel().rows[virtualRow.index];
-              const selected = selectedComponents[activeTab]?.id === row.original.id;
+          <div className={s.slotList}>
+            {TOWER_PART_SLOT_ORDER.map(({ key, label }) => {
+              const part = resolvedTower.selectedParts[key];
+              const active = activeTab === key;
               return (
-                <tr key={row.id} className={`${s.tableRow} ${selected ? s.selectedRow : ''}`}> 
-                  {row.getVisibleCells().map(cell => (
-                    <td key={cell.id} className={s.tableCell}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
+                <button
+                  key={key}
+                  className={`${s.slotButton} ${active ? s.slotButtonActive : ''}`}
+                  onClick={() => setActiveTab(key)}
+                >
+                  <span className={s.slotLabel}>{label}</span>
+                  <span className={s.slotPartName}>{part?.name ?? 'Empty'}</span>
+                </button>
               );
             })}
+          </div>
+        </div>
 
-            {/* bottom spacer */}
-            {virtualRows.length > 0 && (
-              <tr style={{ height: totalSize - (virtualRows[virtualRows.length - 1].end) }}>
-                <td colSpan={table.getAllLeafColumns().length} />
-              </tr>
+        <aside className={s.towerStats}>
+          <h2 className={s.panelTitle}>Resolved Build</h2>
+          <div className={s.statsGrid}>
+            {statRows.map(([label, value]) => (
+              <div key={label} className={s.statItem}>
+                <span className={s.statLabel}>{label}</span>
+                <strong className={s.statValue}>{value}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className={s.summaryBlock}>
+            <h3 className={s.summaryTitle}>Support</h3>
+            <div className={s.inlineList}>
+              {supportCost.length > 0
+                ? supportCost.map((item) => <span key={item} className={s.costPill}>{item}</span>)
+                : <span className={s.emptyText}>No support required</span>}
+            </div>
+          </div>
+
+          <div className={s.summaryBlock}>
+            <h3 className={s.summaryTitle}>Active Synergies</h3>
+            {resolvedTower.synergies.length > 0 ? (
+              <div className={s.synergyList}>
+                {resolvedTower.synergies.map((synergy) => (
+                  <div key={synergy.id} className={s.synergyItem}>
+                    <strong>{synergy.name}</strong>
+                    <span>{synergy.description}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className={s.emptyText}>No synergies active</span>
             )}
-          </tbody>
-        </table>
-      </div>
+          </div>
+
+          <div className={s.summaryBlock}>
+            <h3 className={s.summaryTitle}>Warnings</h3>
+            {resolvedTower.warnings.length > 0 ? (
+              <div className={s.warningList}>
+                {resolvedTower.warnings.map((warning) => (
+                  <span key={warning.id} className={s.warningItem}>{warning.message}</span>
+                ))}
+              </div>
+            ) : (
+              <span className={s.emptyText}>Ready for field testing</span>
+            )}
+          </div>
+        </aside>
+      </section>
+
+      <section className={s.partsPanel}>
+        <div className={s.partsHeader}>
+          <div>
+            <h2 className={s.panelTitle}>{formatTowerSlot(activeTab)} Parts</h2>
+            <p className={s.panelSubtitle}>Pick one available part for this slot.</p>
+          </div>
+          <div className={s.columnChooser}>
+            {table.getAllLeafColumns().map((column) => (
+              <label key={column.id} className={s.columnToggle}>
+                <input
+                  type="checkbox"
+                  checked={column.getIsVisible()}
+                  onChange={column.getToggleVisibilityHandler()}
+                />
+                {column.columnDef.header as string}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className={s.tableContainer} ref={scrollParentRef}>
+          <table className={s.partsTable}>
+            <thead className={s.tableHead}>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id} className={s.tableRow}>
+                  {headerGroup.headers.map((header) => (
+                    <th key={header.id} className={s.tableHeaderCell}>
+                      {header.isPlaceholder ? null : (
+                        <div className={s.headerContent}>
+                          <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
+                          {header.column.getCanFilter() && header.column.id !== 'select' ? (
+                            <input
+                              className={s.filterInput}
+                              value={(header.column.getFilterValue() as string) ?? ''}
+                              onChange={(event) => header.column.setFilterValue(event.target.value)}
+                              placeholder="Filter"
+                            />
+                          ) : null}
+                        </div>
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {virtualRows.length > 0 ? (
+                <tr style={{ height: virtualRows[0]?.start ?? 0 }}>
+                  <td colSpan={table.getAllLeafColumns().length} />
+                </tr>
+              ) : null}
+
+              {virtualRows.map((virtualRow) => {
+                const row = table.getRowModel().rows[virtualRow.index];
+                if (!row) return null;
+
+                const selected = selectedPartId === row.original.id;
+
+                return (
+                  <tr
+                    key={row.id}
+                    className={`${s.tableRow} ${selected ? s.selectedRow : ''}`}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className={s.tableCell}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+
+              {virtualRows.length > 0 ? (
+                <tr style={{ height: totalSize - (virtualRows[virtualRows.length - 1]?.end ?? 0) }}>
+                  <td colSpan={table.getAllLeafColumns().length} />
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 };

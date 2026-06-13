@@ -42,6 +42,8 @@ export const citySlice = createSlice({
     reducers: {
         buildHex: (state, action: PayloadAction<HexCell>) => {
             const hexToBuildIndex = state.hexes.findIndex(hex => hex.column === action.payload.column && hex.row === action.payload.row);
+            if (hexToBuildIndex === -1) return;
+
             state.hexes[hexToBuildIndex] = action.payload;
         },
     },

@@ -1,4 +1,5 @@
 import type {DevelopmentVectorKey} from "../DevlopmentVector.ts";
+import type {UpkeepAmount} from "../Upkeep.ts";
 
 export type ResearchNodeData = {
     id: string;
@@ -7,7 +8,8 @@ export type ResearchNodeData = {
     vector: DevelopmentVectorKey;
     summary?: string;
     unlocks?: string[];
-    costs?: { type: string; amount: number }[];
+    requiredBuildings?: string[];
+    requiredFreeUpkeep?: UpkeepAmount;
     notes?: string;
     /** Additional prerequisites (multi-parent DAG edges) */
     alsoRequires?: string[];             // other node IDs required

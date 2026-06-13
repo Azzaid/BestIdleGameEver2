@@ -1,0 +1,25 @@
+import {createSlice, type PayloadAction} from '@reduxjs/toolkit'
+
+interface ResearchState {
+    purchasedTechsIds: string[];
+}
+
+const initialState: ResearchState = {
+    purchasedTechsIds: ['root', 'aether'],
+}
+
+export const researchSlice = createSlice({
+    name: 'research',
+    initialState,
+    reducers: {
+        purchaseTech: (state, action: PayloadAction<string>) => {
+            if (!state.purchasedTechsIds.includes(action.payload)) {
+                state.purchasedTechsIds.push(action.payload);
+            }
+        },
+    },
+})
+
+export const {purchaseTech} = researchSlice.actions
+
+export default researchSlice

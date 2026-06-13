@@ -1,4 +1,5 @@
 import type {ResearchDB} from "../../models/research/researchDB.ts";
+import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
 
 export const researchThree: ResearchDB = {
     'root': {
@@ -24,7 +25,8 @@ export const researchThree: ResearchDB = {
         vector: 'tech',
         summary: 'Basic tools.',
         unlocks: ['Pickaxe', 'Axe', 'Hammer'],
-        costs: [{type: 'Copper', amount: 20}]
+        requiredBuildings: ['techProduce1'],
+        requiredFreeUpkeep: {[UPKEEP_TYPES.electricity]: 2}
     },
     'basic-circuits': {
         id: 'basic-circuits',
@@ -32,7 +34,8 @@ export const researchThree: ResearchDB = {
         name: 'Basic Circuits',
         vector: 'tech',
         summary: 'Tiny brains.',
-        costs: [{type: 'Copper', amount: 15}, {type: 'Resin', amount: 5}]
+        requiredBuildings: ['techProduce1'],
+        requiredFreeUpkeep: {[UPKEEP_TYPES.electricity]: 3}
     },
     'automation-i': {
         id: 'automation-i',
@@ -40,7 +43,9 @@ export const researchThree: ResearchDB = {
         name: 'Automation I',
         vector: 'tech',
         summary: 'First tier automation.',
-        alsoRequires: ['copper-tools', 'basic-circuits']
+        alsoRequires: ['copper-tools', 'basic-circuits'],
+        requiredBuildings: ['techProduce1'],
+        requiredFreeUpkeep: {[UPKEEP_TYPES.electricity]: 6}
     },
 
     'nature': {id: 'nature', parentId: 'root', name: 'Nature Branch', vector: 'nature', summary: 'Growth & food.'},
@@ -50,7 +55,7 @@ export const researchThree: ResearchDB = {
         name: 'Seed Cultivation',
         vector: 'nature',
         summary: 'Unlock farms.',
-        costs: [{type: 'Seeds', amount: 30}]
+        requiredFreeUpkeep: {[UPKEEP_TYPES.biomass]: 2}
     },
     'selection': {
         id: 'selection',
@@ -58,7 +63,7 @@ export const researchThree: ResearchDB = {
         name: 'Selection',
         vector: 'nature',
         summary: 'Unlock bio research',
-        costs: [{type: 'Seeds', amount: 30}]
+        requiredFreeUpkeep: {[UPKEEP_TYPES.biomass]: 4}
     },
     'herbal-lore': {
         id: 'herbal-lore',
@@ -82,7 +87,7 @@ export const researchThree: ResearchDB = {
         name: 'Guild Charter',
         vector: 'medieval',
         summary: 'Trade & crafting bonuses.',
-        costs: [{type: 'Parchment', amount: 3}]
+        requiredFreeUpkeep: {[UPKEEP_TYPES.people]: 2}
     },
     'fortifications': {
         id: 'fortifications',
@@ -90,7 +95,7 @@ export const researchThree: ResearchDB = {
         name: 'Fortifications',
         vector: 'medieval',
         summary: 'City walls & towers.',
-        costs: [{type: 'Stone', amount: 50}, {type: 'Timber', amount: 30}]
+        requiredFreeUpkeep: {[UPKEEP_TYPES.people]: 3, [UPKEEP_TYPES.gold]: 2}
     },
     'livingWood': {
         id: 'livingWood',
@@ -98,7 +103,7 @@ export const researchThree: ResearchDB = {
         name: 'Living Wood',
         vector: 'medieval',
         summary: 'City walls & towers.',
-        costs: [{type: 'Stone', amount: 50}, {type: 'Timber', amount: 30}],
-        alsoRequires: ['selection']
+        alsoRequires: ['selection'],
+        requiredFreeUpkeep: {[UPKEEP_TYPES.people]: 4, [UPKEEP_TYPES.gold]: 3}
     },
 };

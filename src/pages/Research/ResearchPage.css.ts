@@ -33,12 +33,13 @@ export const researchSelect = style({
 });
 
 export const researchTree = style({
-  flex: 1,
   position: 'relative',
+  height: '100%',
+  maxHeight: '100%',
   backgroundColor: '#f5f5f5',
   borderRadius: '8px',
   overflow: 'hidden',
-  minHeight: '600px',
+  minHeight: 0,
 });
 
 export const treeCanvas = style({

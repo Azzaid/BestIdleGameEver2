@@ -1,179 +1,353 @@
 import { style } from '@vanilla-extract/css';
+import { vars } from '../../theme/theme.css.ts';
 
 export const buildPage = style({
-  padding: '20px',
-  maxWidth: '1200px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '24px',
+  maxWidth: '1280px',
   margin: '0 auto',
+  padding: '24px',
 });
 
-export const towerPreview = style({
+export const pageHeader = style({
   display: 'flex',
-  marginBottom: '30px',
-  backgroundColor: '#f5f5f5',
-  borderRadius: '8px',
-  padding: '20px',
+  alignItems: 'flex-end',
+  justifyContent: 'space-between',
+  gap: '16px',
 });
 
-export const towerImage = style({
-  flex: 1,
-  minHeight: '300px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  border: '2px dashed #ccc',
-  marginRight: '20px',
+export const pageTitle = style({
+  margin: 0,
+  fontSize: '32px',
 });
 
-export const towerPlaceholder = style({
-  fontSize: '24px',
-  color: '#888',
+export const pageSubtitle = style({
+  margin: '6px 0 0',
+  maxWidth: '720px',
+  color: vars.color.text.primary,
+  opacity: 0.78,
 });
 
-export const towerStats = style({
-  flex: 1,
-  padding: '15px',
-  backgroundColor: 'white',
-  borderRadius: '5px',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-});
-
-// Tabs
-export const tabsContainer = style({
-  display: 'flex',
-  gap: '8px',
-  marginBottom: '12px',
-  flexWrap: 'wrap',
-});
-
-export const tabButton = style({
-  backgroundColor: '#e9eef3',
-  color: '#333',
-  border: '1px solid #cdd6df',
-  padding: '6px 12px',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  transition: 'background-color 0.2s',
-  selectors: {
-    '&:hover': { backgroundColor: '#dde6f0' },
+export const assemblyGrid = style({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1.1fr) minmax(320px, 0.9fr)',
+  gap: '20px',
+  alignItems: 'stretch',
+  '@media': {
+    '(max-width: 900px)': {
+      gridTemplateColumns: '1fr',
+    },
   },
 });
 
-export const tabButtonActive = style({
-  backgroundColor: '#cfe4ff',
-  borderColor: '#8db9ff',
-  fontWeight: 'bold',
+export const towerPreview = style({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(240px, 0.8fr) minmax(260px, 1fr)',
+  gap: '16px',
+  minHeight: '340px',
+  padding: '16px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '8px',
+  backgroundColor: vars.color.background.surface,
+  '@media': {
+    '(max-width: 720px)': {
+      gridTemplateColumns: '1fr',
+    },
+  },
 });
 
-// Parts table
-export const controlsRow = style({
-  display: 'flex',
-  gap: '16px',
+export const towerImage = style({
+  position: 'relative',
+  minHeight: '280px',
+  overflow: 'hidden',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '8px',
+  background: `linear-gradient(180deg, ${vars.color.background.surface}, ${vars.color.background.surfaceHover})`,
+});
+
+export const towerBaseShape = style({
+  position: 'absolute',
+  left: '50%',
+  bottom: '54px',
+  width: '132px',
+  height: '34px',
+  transform: 'translateX(-50%)',
+  border: `2px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.brand.primaryActive,
+});
+
+export const towerCoreShape = style({
+  position: 'absolute',
+  left: '50%',
+  bottom: '84px',
+  width: '72px',
+  height: '72px',
+  transform: 'translateX(-50%)',
+  border: `2px solid ${vars.color.border.default}`,
+  borderRadius: '50%',
+  backgroundColor: vars.color.brand.primary,
+});
+
+export const towerBarrelShape = style({
+  position: 'absolute',
+  left: '50%',
+  bottom: '118px',
+  width: '160px',
+  height: '18px',
+  transform: 'translateX(-8%) rotate(-18deg)',
+  transformOrigin: 'left center',
+  border: `2px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.text.inverse,
+});
+
+export const slotList = style({
+  display: 'grid',
+  gridTemplateColumns: '1fr',
+  gap: '8px',
+});
+
+export const slotButton = style({
+  display: 'grid',
+  gridTemplateColumns: '130px minmax(0, 1fr)',
+  gap: '12px',
   alignItems: 'center',
+  minHeight: '48px',
+  padding: '10px 12px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.background.surface,
+  color: vars.color.text.primary,
+  textAlign: 'left',
+  cursor: 'pointer',
+  selectors: {
+    '&:hover': {
+      borderColor: vars.color.brand.primary,
+    },
+  },
+  '@media': {
+    '(max-width: 520px)': {
+      gridTemplateColumns: '1fr',
+      gap: '4px',
+    },
+  },
+});
+
+export const slotButtonActive = style({
+  borderColor: vars.color.brand.primary,
+  backgroundColor: vars.color.state.selectedBg,
+});
+
+export const slotLabel = style({
+  fontSize: '12px',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+});
+
+export const slotPartName = style({
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
+
+export const towerStats = style({
+  padding: '16px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '8px',
+  backgroundColor: vars.color.background.surface,
+});
+
+export const panelTitle = style({
+  margin: 0,
+  fontSize: '20px',
+});
+
+export const panelSubtitle = style({
+  margin: '4px 0 0',
+  color: vars.color.text.primary,
+  opacity: 0.72,
+});
+
+export const statsGrid = style({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))',
+  gap: '8px',
+  marginTop: '14px',
+});
+
+export const statItem = style({
+  minHeight: '64px',
+  padding: '10px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+});
+
+export const statLabel = style({
+  display: 'block',
+  fontSize: '12px',
+  opacity: 0.7,
+});
+
+export const statValue = style({
+  display: 'block',
+  marginTop: '4px',
+  fontSize: '16px',
+});
+
+export const summaryBlock = style({
+  marginTop: '16px',
+});
+
+export const summaryTitle = style({
+  margin: '0 0 8px',
+  fontSize: '15px',
+});
+
+export const inlineList = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '6px',
+});
+
+export const costPill = style({
+  padding: '4px 8px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '999px',
+  fontSize: '12px',
+});
+
+export const emptyText = style({
+  color: vars.color.text.primary,
+  opacity: 0.65,
+});
+
+export const synergyList = style({
+  display: 'grid',
+  gap: '8px',
+});
+
+export const synergyItem = style({
+  display: 'grid',
+  gap: '3px',
+  padding: '8px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.state.selectedBg,
+});
+
+export const warningList = style({
+  display: 'grid',
+  gap: '6px',
+});
+
+export const warningItem = style({
+  padding: '7px 8px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  color: vars.color.text.primary,
+  backgroundColor: vars.color.state.selectedBg,
+});
+
+export const partsPanel = style({
+  padding: '16px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '8px',
+  backgroundColor: vars.color.background.surface,
+});
+
+export const partsHeader = style({
+  display: 'flex',
   justifyContent: 'space-between',
-  margin: '12px 0',
+  gap: '16px',
+  marginBottom: '12px',
   flexWrap: 'wrap',
 });
 
 export const columnChooser = style({
   display: 'flex',
+  alignItems: 'center',
   gap: '8px',
   flexWrap: 'wrap',
 });
 
-export const filterInput = style({
-  padding: '6px 8px',
-  borderRadius: '6px',
-  border: '1px solid #cdd6df',
+export const columnToggle = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
   fontSize: '13px',
 });
 
 export const tableContainer = style({
-  maxHeight: '320px',
+  maxHeight: '420px',
   overflow: 'auto',
-  marginTop: '8px',
 });
 
 export const partsTable = style({
   width: '100%',
+  minWidth: '940px',
   borderCollapse: 'separate',
   borderSpacing: '0 8px',
-  marginBottom: '24px',
 });
 
 export const tableHead = style({});
+
 export const tableHeaderCell = style({
+  padding: '8px 10px',
   textAlign: 'left',
-  fontSize: '14px',
-  color: '#555',
-  padding: '8px 12px',
+  fontSize: '13px',
+  color: vars.color.text.primary,
+});
+
+export const headerContent = style({
+  display: 'grid',
+  gap: '6px',
+});
+
+export const filterInput = style({
+  width: '100%',
+  minWidth: 0,
+  padding: '6px 8px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.background.surface,
+  color: vars.color.text.primary,
 });
 
 export const tableRow = style({
-  backgroundColor: 'white',
-  border: '1px solid #ddd',
-  borderRadius: '8px',
+  backgroundColor: vars.color.background.surface,
 });
 
 export const tableCell = style({
-  padding: '10px 12px',
-  fontSize: '14px',
-  color: '#333',
-});
-
-export const selectedRow = style({
-  outline: '2px solid #4CAF50',
-  backgroundColor: '#f0fff0',
-});
-
-// Legacy grid styles below kept (unused after tabs), can be removed later if desired
-export const componentSelection = style({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-  gap: '20px',
-});
-
-export const componentSlot = style({
-  backgroundColor: '#f5f5f5',
-  borderRadius: '8px',
-  padding: '15px',
-  marginBottom: '20px',
-});
-
-export const componentOptions = style({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '10px',
-});
-
-export const componentOption = style({
-  backgroundColor: 'white',
-  border: '2px solid #ddd',
-  borderRadius: '5px',
   padding: '10px',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  borderTop: `1px solid ${vars.color.border.default}`,
+  borderBottom: `1px solid ${vars.color.border.default}`,
+  fontSize: '14px',
   selectors: {
-    '&:hover': {
-      borderColor: '#aaa',
-      transform: 'translateY(-2px)',
+    '&:first-child': {
+      borderLeft: `1px solid ${vars.color.border.default}`,
+      borderTopLeftRadius: '6px',
+      borderBottomLeftRadius: '6px',
+    },
+    '&:last-child': {
+      borderRight: `1px solid ${vars.color.border.default}`,
+      borderTopRightRadius: '6px',
+      borderBottomRightRadius: '6px',
     },
   },
 });
 
-export const componentOptionSelected = style({
-  borderColor: '#4CAF50',
-  backgroundColor: '#f0fff0',
+export const selectedRow = style({
+  outline: `2px solid ${vars.color.brand.primary}`,
 });
 
-export const componentOptionTitle = style({
-  margin: '0 0 5px 0',
-  color: '#333',
-});
-
-export const componentOptionDesc = style({
-  margin: '0 0 10px 0',
-  color: '#666',
-  fontSize: '14px',
+export const partNameCell = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  flexWrap: 'wrap',
 });
 
 export const keywords = style({
@@ -183,9 +357,25 @@ export const keywords = style({
 });
 
 export const keyword = style({
-  backgroundColor: '#e0e0e0',
-  color: '#555',
+  padding: '3px 7px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '999px',
   fontSize: '12px',
-  padding: '3px 8px',
-  borderRadius: '12px',
+  backgroundColor: vars.color.state.selectedBg,
+});
+
+export const installButton = style({
+  minWidth: '78px',
+  padding: '7px 10px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.brand.primary,
+  color: vars.color.text.inverse,
+  cursor: 'pointer',
+  selectors: {
+    '&:disabled': {
+      cursor: 'not-allowed',
+      opacity: 0.55,
+    },
+  },
 });

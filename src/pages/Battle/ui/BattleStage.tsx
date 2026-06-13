@@ -10,12 +10,14 @@ import {
     setCameraScale,
 } from '../core/camera';
 import { loadBattleAssets } from '../assets/assetLoader';
+import type { TowerAssemblyResolved } from '../../../models/battle/towerParts.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
 export function BattleStage(props: {
     wallLogicalWidth: number;   // TODO: derive from city hex row width (Redux)
     battlefieldWidth: number;   // TODO: logical width in world units
     battlefieldHeight: number;  // TODO: logical height in world units
+    resolvedTower: TowerAssemblyResolved;
 }) {
     const hostRef = useRef<HTMLDivElement>(null);
 
@@ -66,20 +68,20 @@ export function BattleStage(props: {
             world.transforms.set(baseId, { position: { x: props.battlefieldWidth / 2, y: props.battlefieldHeight - 80 }, rotationRadians: 0 });
             world.transforms.set(gunId,  { position: { x: props.battlefieldWidth / 2, y: props.battlefieldHeight - 80 }, rotationRadians: 0 });
             world.towersData.set(baseId, {
-                rotationSpeed: 3.2,
-                reloadSpeed: 1.5,
-                burstCount: 1,
-                projectileDamage: 18,
-                projectileSpeed: 520,
-                aoeRadius: 0,
-                keywords: new Set(['projectile']),
-                targetingDistanceLimit: 360,
-                rangePixels: 320,
+                rotationSpeed: props.resolvedTower.stats.rotationSpeed,
+                reloadSpeed: props.resolvedTower.stats.reloadSpeed,
+                burstCount: props.resolvedTower.stats.burstCount,
+                projectileDamage: props.resolvedTower.stats.projectileDamage,
+                projectileSpeed: props.resolvedTower.stats.projectileSpeed,
+                aoeRadius: props.resolvedTower.stats.aoeRadius,
+                keywords: new Set(props.resolvedTower.keywords),
+                targetingDistanceLimit: props.resolvedTower.stats.targetingDistanceLimit,
+                rangePixels: props.resolvedTower.stats.targetingDistanceLimit,
                 currentTarget: undefined,
                 gunEntity: gunId,
-                retargetCooldownSeconds: 0.35,
+                retargetCooldownSeconds: props.resolvedTower.stats.retargetCooldownSeconds,
                 retargetRemainingSeconds: 0,
-                aimKeywords: ['closestToWall'],
+                aimKeywords: props.resolvedTower.aimKeywords,
             });
 
             // Ticker stays the same in v8 (TickerPlugin is built-in)
@@ -150,7 +152,7 @@ export function BattleStage(props: {
 
             app.destroy(true, { children: true, texture: true, textureSource: true, context: true }); // :contentReference[oaicite:3]{index=3}
         };
-    }, [props.wallLogicalWidth, props.battlefieldWidth, props.battlefieldHeight, hostRef.current]);
+    }, [props.wallLogicalWidth, props.battlefieldWidth, props.battlefieldHeight, props.resolvedTower]);
 
     return <div ref={hostRef} style={{ width: '100%', height: '100%' }} />;
 }

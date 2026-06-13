@@ -191,6 +191,8 @@ Use libraries like `vec2` or `pts.js` to assist with:
   - Description
   - Stat Modifiers
 - Build is resolved via effects and tag synergies.
+- Current implementation stores the active tower assembly in Redux as selected part ids, resolves it through `src/models/battle/resolveTowerAssembly.ts`, and shares the resolved stats, support costs, keywords, targeting keywords, warnings, and synergies between the Build and Battle pages.
+- Shared tower part content starts in `src/data/towers/parts.ts`; part rows may be locked by research ids, consume upkeep/support types, and contribute modifiers or targeting behavior.
 
 ### 15.3 Statistics Tab
 - DPS and efficiency stats.
@@ -223,4 +225,3 @@ Use libraries like `vec2` or `pts.js` to assist with:
 - No multiplayer
 - No complex AI/collision/physics
 - No real-time strategy map — focus remains on tower composition
-
