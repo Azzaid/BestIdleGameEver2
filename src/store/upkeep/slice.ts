@@ -14,12 +14,12 @@ export const upkeepSlice = createSlice({
         setResilience: (state, action: PayloadAction<number>) => {
             state.resilience = action.payload;
         },
-        recordWaveThreatReached: (state, action: PayloadAction<number>) => {
+        recordThreatReached: (state, action: PayloadAction<number>) => {
             state.resilience = Math.max(state.resilience, action.payload);
         },
     },
 })
 
-export const { recordWaveThreatReached, setResilience } = upkeepSlice.actions
+export const { recordThreatReached, setResilience } = upkeepSlice.actions
 
 export default upkeepSlice

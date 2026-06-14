@@ -25,6 +25,24 @@ const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
     return generatedCells;
 })
 
+const getRetreatedHexes = (existingHexes: HexCell[], cityRadius: number) => {
+    const existingByKey = new Map(existingHexes.map(hex => [hex.cellKey, hex]));
+
+    return getInitialHexes(cityRadius).map(hex => {
+        const existingHex = existingByKey.get(hex.cellKey);
+        if (hex.kind === "wall") {
+            return hex;
+        }
+
+        return existingHex
+            ? {
+                ...existingHex,
+                kind: "city" as const,
+            }
+            : hex;
+    });
+}
+
 // Define the initial state using that type
 const initialState: CityState = {
     hexes: getInitialHexes(),
@@ -44,9 +62,14 @@ export const citySlice = createSlice({
                 kind: state.hexes[hexToBuildIndex].kind,
             };
         },
+        retreatCityRadius: (state) => {
+            const nextRadius = Math.max(1, state.cellRadius - 1);
+            state.cellRadius = nextRadius;
+            state.hexes = getRetreatedHexes(state.hexes, nextRadius);
+        },
     },
 })
 
-export const { buildHex } = citySlice.actions
+export const { buildHex, retreatCityRadius } = citySlice.actions
 
 export default citySlice

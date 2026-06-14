@@ -10,10 +10,11 @@ import { PixiSyncSystem } from './pixiSync';
 import {SpawnerSystem} from "./spawnerSystem.ts";
 import { HealthSystem } from './healthSystem.ts';
 import { WallLoadSystem } from './wallLoadSystem.ts';
+import { SiegeSystem } from './siegeSystem.ts';
 
 /** Per-frame update orchestrator */
 export function runSystems(world: World, dt: number) {
-    SpawnerSystem(world, dt);
+  SpawnerSystem(world, dt);
   TargetingSystem(world);
   AimingSystem(world, dt);
   FiringSystem(world, dt);
@@ -23,6 +24,7 @@ export function runSystems(world: World, dt: number) {
   ProjectilesSystem(world);
   HealthSystem(world);
   WallLoadSystem(world);
+  SiegeSystem(world, dt);
 
   HealthBarSystem(world);
 

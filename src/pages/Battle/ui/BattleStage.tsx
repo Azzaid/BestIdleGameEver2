@@ -13,6 +13,7 @@ import { loadBattleAssets } from '../assets/assetLoader';
 import type { TowerAssemblyResolved } from '../../../models/battle/towerParts.ts';
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
 import { createTowerVisualDefinitionFromAssembly } from '../../../data/towers/visuals.ts';
+import type { BattleMetrics, BattleResult } from '../../../models/battle/world.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
 export function BattleStage(props: {
@@ -21,7 +22,13 @@ export function BattleStage(props: {
     battlefieldHeight: number;  // TODO: logical height in world units
     wallY: number;
     resolvedTower: TowerAssemblyResolved;
-    onWaveThreatReached?: (threat: number) => void;
+    initialThreat: number;
+    targetThreat: number;
+    threatGrowthPerSecond: number;
+    wallResilience: number;
+    wallIgnoredThreat: number;
+    onBattleMetrics?: (metrics: BattleMetrics) => void;
+    onBattleEnded?: (result: BattleResult) => void;
 }) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const hostRef = useRef<HTMLDivElement>(null);
@@ -109,7 +116,13 @@ export function BattleStage(props: {
                 battlefieldHeight: props.battlefieldHeight,
                 wallY,
                 app,
-                onWaveThreatReached: props.onWaveThreatReached,
+                initialThreat: props.initialThreat,
+                targetThreat: props.targetThreat,
+                threatGrowthPerSecond: props.threatGrowthPerSecond,
+                wallResilience: props.wallResilience,
+                wallIgnoredThreat: props.wallIgnoredThreat,
+                onBattleMetrics: props.onBattleMetrics,
+                onBattleEnded: props.onBattleEnded,
             });
             camera.container.addChild(world.worldLayer);
 
@@ -257,7 +270,13 @@ export function BattleStage(props: {
         props.battlefieldHeight,
         props.wallY,
         props.resolvedTower,
-        props.onWaveThreatReached,
+        props.initialThreat,
+        props.targetThreat,
+        props.threatGrowthPerSecond,
+        props.wallResilience,
+        props.wallIgnoredThreat,
+        props.onBattleMetrics,
+        props.onBattleEnded,
     ]);
 
     return (

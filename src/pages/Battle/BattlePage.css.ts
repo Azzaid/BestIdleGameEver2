@@ -10,6 +10,66 @@ export const battlePage = style({
   backgroundColor: vars.color.background.app,
 });
 
+export const battleShell = style({
+  position: 'relative',
+  width: '100%',
+  height: '100%',
+  display: 'grid',
+  placeItems: 'center',
+});
+
+export const battleHud = style({
+  position: 'absolute',
+  top: '12px',
+  left: '12px',
+  zIndex: 2,
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '8px',
+  color: vars.color.text.primary,
+});
+
+export const battleMetric = style({
+  display: 'grid',
+  gap: '2px',
+  minWidth: '128px',
+  padding: '8px 10px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.background.surface,
+  boxShadow: vars.color.shadow.card,
+});
+
+export const battleMetricLabel = style({
+  color: vars.color.text.muted,
+  fontSize: '0.75rem',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+});
+
+export const battleMetricValue = style({
+  color: vars.color.text.heading,
+  fontSize: '1.1rem',
+  fontWeight: 800,
+});
+
+export const battleNotice = style({
+  position: 'absolute',
+  left: '50%',
+  bottom: '18px',
+  zIndex: 2,
+  width: 'min(680px, calc(100% - 32px))',
+  transform: 'translateX(-50%)',
+  padding: '12px 14px',
+  border: `1px solid ${vars.color.border.strong}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.background.surface,
+  boxShadow: vars.color.shadow.popover,
+  color: vars.color.text.heading,
+  fontWeight: 700,
+  textAlign: 'center',
+});
+
 export const battleLocked = style({
   display: 'grid',
   placeItems: 'center',

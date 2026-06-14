@@ -19,16 +19,18 @@ export function createWorld(config: WorldConfig): World {
       sprites: new Map(),
       healthBars: new Map(),
       toRemove: new Set(),
-      wallLoad: 0,
+      siegePressure: 0,
       defeatedEnemies: 0,
+      currentThreat: config.initialThreat,
+      battleEnded: false,
       towerReloadRemainingSeconds: new Map(),
       projectileInfo: new Map(),
       spawners: [],
       waveScheduler: {
           config: {
               timeBetweenWavesSeconds: 12,     // TODO: set from battle rules
-              initialWaveStrength: 60,         // TODO: set from battle rules
-              waveStrengthIncrementFactor: 1.15, // TODO: set from battle rules
+              initialWaveStrength: Math.max(1, config.initialThreat),
+              waveStrengthIncrementFactor: 1,
               maxConcurrentSpawners: 3,
           },
           state: {

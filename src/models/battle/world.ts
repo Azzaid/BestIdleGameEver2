@@ -15,7 +15,24 @@ export interface WorldConfig {
   battlefieldHeight: number;
   wallY: number;
   app: PIXI.Application;
-  onWaveThreatReached?: (threat: number) => void;
+  initialThreat: number;
+  targetThreat: number;
+  threatGrowthPerSecond: number;
+  wallResilience: number;
+  wallIgnoredThreat: number;
+  onBattleMetrics?: (metrics: BattleMetrics) => void;
+  onBattleEnded?: (result: BattleResult) => void;
+}
+
+export interface BattleMetrics {
+  threat: number;
+  targetThreat: number;
+  siegePressure: number;
+  wallResilience: number;
+}
+
+export interface BattleResult extends BattleMetrics {
+  outcome: "held" | "overwhelmed";
 }
 
 export interface World {
@@ -41,8 +58,10 @@ export interface World {
   healthBars: Map<EntityId, PIXI.Graphics>;
 
   toRemove: Set<EntityId>;
-  wallLoad: number;
+  siegePressure: number;
   defeatedEnemies: number;
+  currentThreat: number;
+  battleEnded: boolean;
   towerReloadRemainingSeconds: Map<EntityId, number>;
 
   projectileInfo: Map<EntityId, { damage: number; aoeRadius: number; keywords: Set<string> }>;

@@ -86,7 +86,9 @@ Usage in styles:
 - City tiles without texture render a colored hex fallback with the building id so unfinished content remains visible.
 - City trace is shown in the shared top upkeep bar as a capped meter against current city resilience. The meter fill never overflows beyond resilience, shifts from gray through green/yellow to red as it approaches the cap, and marks the city as besieged when trace is greater than resilience.
 - The city starts with base wall segments, no committed tower, and a besieged state caused by the noise of setting camp.
-- Resilience is battle progress: the highest wave threat reached on the battle screen before the wall's defensive capacity is overwhelmed. Wall buildings no longer define the trace cap.
+- Resilience is battle progress: the highest threat reached on the battle screen before the wall's defensive capacity is overwhelmed. Wall buildings do not define the city trace cap, but their combined resilience defines how much active siege pressure the wall can endure during a battle.
+- Battle uses a growing threat counter instead of a player-facing wave counter. Threat starts at 80% of the current city trace and grows until it reaches city trace or the siege breaks the wall line.
+- Enemies stop once their hit radius reaches the wall. Stopped enemies add siege pressure equal to their pressure reduced by the wall's ignored threat. If combined siege pressure exceeds combined wall resilience, the battle ends before the city trace target and the city retreats by one radius, losing all cells outside the new radius and rebuilding the new top row as wall.
 - While besieged, research and city/wall building actions are disabled. Tower rebuilding is also blocked, except when the player has no committed tower yet.
 - Battle is blocked until the player assembles the first tower and commits it with Rebuild. The most basic tower components are medieval and require no upkeep.
   - Styles: src/pages/City/CityPage.css.ts.

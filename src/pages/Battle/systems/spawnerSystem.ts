@@ -11,6 +11,8 @@ import { WaveSpawner } from '../../../models/battle/waveSpawner.ts';
  * Call this FIRST in runSystems() so newly spawned enemies exist for the rest of the frame.
  */
 export function SpawnerSystem(world: World, dtSeconds: number) {
+    if (world.battleEnded) return;
+
     // 1) Update existing spawners (front of frame)
     if (world.spawners.length > 0) {
         for (const spawner of world.spawners) {
@@ -33,10 +35,7 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
 
     // Time to spawn a new wave?
     if (sched.state.timeUntilNextWaveSeconds <= 0) {
-        // Compute required strength for this wave
-        const k = sched.state.currentWaveIndex;
-        const requiredStrength =
-            sched.config.initialWaveStrength * Math.pow(sched.config.waveStrengthIncrementFactor, k);
+        const requiredStrength = Math.max(1, world.currentThreat);
 
         // PLAN (TODO: enforce constraints if you add them later)
         const enemyIds = sched.enemyIds;                       // TODO: ensure this is filled at scene start
@@ -59,7 +58,6 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
         });
         spawner.enqueuePlan(plan);
         world.spawners.push(spawner);
-        world.config.onWaveThreatReached?.(plan.totalStrength);
 
         // Bookkeeping for next wave
         sched.state.currentWaveIndex += 1;

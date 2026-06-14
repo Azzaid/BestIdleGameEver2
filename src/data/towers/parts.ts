@@ -80,7 +80,7 @@ export const TOWER_PARTS: GunPart[] = [
     sprite: { textureKey: 'ammo_standard' },
     attachmentOffset: { x: 0, y: 0 },
     keywords: new Set(['projectile']),
-    modifiers: { projectileDamage: 2 },
+    modifiers: { projectileDamage: 3 },
     supportCost: {},
   },
   {
