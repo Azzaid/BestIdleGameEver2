@@ -42,19 +42,12 @@ export const assemblyGrid = style({
 });
 
 export const towerPreview = style({
-  display: 'grid',
-  gridTemplateColumns: 'minmax(240px, 0.8fr) minmax(260px, 1fr)',
-  gap: '16px',
+  display: 'block',
   minHeight: '340px',
   padding: '16px',
   border: `1px solid ${vars.color.border.default}`,
   borderRadius: '8px',
   backgroundColor: vars.color.background.surface,
-  '@media': {
-    '(max-width: 720px)': {
-      gridTemplateColumns: '1fr',
-    },
-  },
 });
 
 export const towerImage = style({
@@ -74,11 +67,9 @@ export const slotList = style({
 
 export const slotButton = style({
   display: 'grid',
-  gridTemplateColumns: '130px minmax(0, 1fr)',
-  gap: '12px',
-  alignItems: 'center',
+  gap: '3px',
   minHeight: '48px',
-  padding: '10px 12px',
+  padding: '8px 10px',
   border: `1px solid ${vars.color.border.default}`,
   borderRadius: '6px',
   backgroundColor: vars.color.background.surface,
@@ -88,12 +79,6 @@ export const slotButton = style({
   selectors: {
     '&:hover': {
       borderColor: vars.color.brand.primary,
-    },
-  },
-  '@media': {
-    '(max-width: 520px)': {
-      gridTemplateColumns: '1fr',
-      gap: '4px',
     },
   },
 });
@@ -117,10 +102,30 @@ export const slotPartName = style({
 });
 
 export const towerStats = style({
+  display: 'flex',
+  flexDirection: 'column',
   padding: '16px',
   border: `1px solid ${vars.color.border.default}`,
   borderRadius: '8px',
   backgroundColor: vars.color.background.surface,
+});
+
+export const slotStrip = style({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
+  gap: '8px',
+  padding: '10px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '8px',
+  backgroundColor: vars.color.background.surface,
+  '@media': {
+    '(max-width: 1000px)': {
+      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+    },
+    '(max-width: 640px)': {
+      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    },
+  },
 });
 
 export const panelTitle = style({
@@ -162,6 +167,13 @@ export const statValue = style({
 
 export const summaryBlock = style({
   marginTop: '16px',
+});
+
+export const statsActions = style({
+  display: 'flex',
+  gap: '10px',
+  marginTop: 'auto',
+  paddingTop: '18px',
 });
 
 export const summaryTitle = style({
@@ -253,7 +265,7 @@ export const columnToggle = style({
 });
 
 export const tableContainer = style({
-  maxHeight: '420px',
+  maxHeight: '360px',
   overflow: 'auto',
 });
 
@@ -350,4 +362,76 @@ export const installButton = style({
       opacity: 0.55,
     },
   },
+});
+
+export const rebuildButton = style({
+  flex: 1,
+  minHeight: '40px',
+  padding: '8px 12px',
+  border: `1px solid ${vars.color.brand.primary}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.brand.primary,
+  color: vars.color.text.inverse,
+  fontWeight: 700,
+  cursor: 'pointer',
+  selectors: {
+    '&:disabled': {
+      cursor: 'not-allowed',
+      opacity: 0.55,
+    },
+  },
+});
+
+export const cancelButton = style({
+  flex: 1,
+  minHeight: '40px',
+  padding: '8px 12px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.background.surface,
+  color: vars.color.text.primary,
+  cursor: 'pointer',
+  selectors: {
+    '&:disabled': {
+      cursor: 'not-allowed',
+      opacity: 0.55,
+    },
+  },
+});
+
+export const paginationBar = style({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '12px',
+  marginTop: '12px',
+  flexWrap: 'wrap',
+});
+
+export const paginationControls = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+});
+
+export const paginationButton = style({
+  minHeight: '34px',
+  padding: '6px 10px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.background.surface,
+  color: vars.color.text.primary,
+  cursor: 'pointer',
+  selectors: {
+    '&:disabled': {
+      cursor: 'not-allowed',
+      opacity: 0.5,
+    },
+  },
+});
+
+export const paginationSummary = style({
+  fontSize: '13px',
+  color: vars.color.text.primary,
+  opacity: 0.75,
 });

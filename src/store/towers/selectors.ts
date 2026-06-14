@@ -15,7 +15,19 @@ export const selectActiveTowerAssembly = createSelector(
   (tower) => ({ selectedPartIds: tower?.selectedPartIds ?? {} })
 );
 
+export const selectActiveTowerDraftAssembly = createSelector(
+  [selectTowersState, selectActiveTower],
+  (towersState, tower) => ({
+    selectedPartIds: towersState.towerDrafts[towersState.activeTowerId] ?? tower?.selectedPartIds ?? {},
+  })
+);
+
 export const selectResolvedActiveTower = createSelector(
   [selectActiveTowerAssembly, selectPurchasedTechsIds],
+  (assembly, purchasedTechIds) => resolveTowerAssembly(assembly, purchasedTechIds)
+);
+
+export const selectResolvedActiveTowerDraft = createSelector(
+  [selectActiveTowerDraftAssembly, selectPurchasedTechsIds],
   (assembly, purchasedTechIds) => resolveTowerAssembly(assembly, purchasedTechIds)
 );

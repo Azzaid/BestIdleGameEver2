@@ -1,23 +1,23 @@
-import { useMemo, useRef, useState } from 'react';
-import type { ColumnDef, ColumnFiltersState, VisibilityState } from '@tanstack/react-table';
+import { useMemo, useState } from 'react';
+import type { ColumnDef, ColumnFiltersState, PaginationState, VisibilityState } from '@tanstack/react-table';
 import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import * as s from './BuildPage.css.ts';
 import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/towers/parts.ts';
 import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
-import { selectActiveTower, selectResolvedActiveTower } from '../../store/towers/selectors.ts';
-import { selectTowerPart } from '../../store/towers/slice.ts';
+import { selectActiveTower, selectActiveTowerDraftAssembly, selectResolvedActiveTowerDraft } from '../../store/towers/selectors.ts';
+import { cancelTowerDraft, commitTowerDraft, selectTowerDraftPart } from '../../store/towers/slice.ts';
 import { selectPurchasedTechsIds } from '../../store/research/selectors.ts';
-import { selectCityResolution, selectTowerAwareCityResolution } from '../../store/upkeep/selectors.ts';
+import { selectCityResolution } from '../../store/upkeep/selectors.ts';
 import { formatTowerSlot } from '../../models/battle/resolveTowerAssembly.ts';
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
-import { addUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
+import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
 import { TowerAssemblyPreview } from './TowerAssemblyPreview.tsx';
 
 interface SupportStatusItem {
@@ -77,16 +77,21 @@ function getAvailableUpkeepForSlot(
 const BuildPage = () => {
   const dispatch = useTypedDispatch();
   const activeTower = useTypedSelector(selectActiveTower);
-  const resolvedTower = useTypedSelector(selectResolvedActiveTower);
+  const towerDraftAssembly = useTypedSelector(selectActiveTowerDraftAssembly);
+  const resolvedTower = useTypedSelector(selectResolvedActiveTowerDraft);
   const purchasedTechIds = useTypedSelector(selectPurchasedTechsIds);
   const cityResolution = useTypedSelector(selectCityResolution);
-  const towerAwareCityResolution = useTypedSelector(selectTowerAwareCityResolution);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>('base');
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const scrollParentRef = useRef<HTMLDivElement>(null);
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 8 });
 
-  const selectedPartId = activeTower?.selectedPartIds[activeTab];
+  const selectSlot = (slot: TowerPartSlot) => {
+    setActiveTab(slot);
+    setPagination((current) => ({ ...current, pageIndex: 0 }));
+  };
+
+  const selectedPartId = towerDraftAssembly.selectedPartIds[activeTab];
   const activeSlotParts = useMemo(
     () => TOWER_PARTS.filter((part) => (
       part.slot === activeTab && isPartUnlocked(part, purchasedTechIds)
@@ -146,7 +151,7 @@ const BuildPage = () => {
         const part = info.row.original;
         const currentSlotPartCost = resolvedTower.selectedParts[activeTab]?.supportCost ?? {};
         const availableForThisSlot = getAvailableUpkeepForSlot(
-          towerAwareCityResolution.effectiveUpkeep,
+          deductUpkeep(cityResolution.effectiveUpkeep, resolvedTower.supportCost),
           currentSlotPartCost
         );
         const supportStatus = getSupportStatus(part.supportCost ?? {}, availableForThisSlot);
@@ -177,47 +182,37 @@ const BuildPage = () => {
       cell: (info) => {
         const part = info.row.original;
         const selected = selectedPartId === part.id;
-        const currentSlotPartCost = resolvedTower.selectedParts[activeTab]?.supportCost ?? {};
-        const availableForThisSlot = getAvailableUpkeepForSlot(
-          towerAwareCityResolution.effectiveUpkeep,
-          currentSlotPartCost
-        );
-        const enoughUpkeep = hasEnoughUpkeep(part.supportCost ?? {}, availableForThisSlot);
 
         return (
           <button
             className={s.installButton}
-            disabled={!selected && !enoughUpkeep}
-            title={!selected && !enoughUpkeep ? 'Not enough city upkeep for this tower build' : undefined}
-            onClick={() => dispatch(selectTowerPart({ slot: activeTab, partId: part.id }))}
+            onClick={() => dispatch(selectTowerDraftPart({ slot: activeTab, partId: part.id }))}
           >
             {selected ? 'Installed' : 'Install'}
           </button>
         );
       },
     },
-  ], [activeTab, dispatch, purchasedTechIds, resolvedTower.selectedParts, selectedPartId, towerAwareCityResolution.effectiveUpkeep]);
+  ], [activeTab, cityResolution.effectiveUpkeep, dispatch, purchasedTechIds, resolvedTower.selectedParts, resolvedTower.supportCost, selectedPartId]);
 
   const table = useReactTable({
     data: activeSlotParts,
     columns,
-    state: { columnFilters, columnVisibility },
+    state: { columnFilters, columnVisibility, pagination },
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const rowVirtualizer = useVirtualizer({
-    count: table.getRowModel().rows.length,
-    getScrollElement: () => scrollParentRef.current,
-    estimateSize: () => 56,
-    overscan: 6,
-  });
-
-  const virtualRows = rowVirtualizer.getVirtualItems();
-  const totalSize = rowVirtualizer.getTotalSize();
   const supportCost = getSupportStatus(resolvedTower.supportCost, cityResolution.effectiveUpkeep);
+  const canRebuild = hasEnoughUpkeep(resolvedTower.supportCost, cityResolution.effectiveUpkeep);
+  const draftChanged = JSON.stringify(activeTower?.selectedPartIds ?? {}) !== JSON.stringify(towerDraftAssembly.selectedPartIds);
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const firstVisibleRow = filteredRowCount === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
+  const lastVisibleRow = Math.min(filteredRowCount, (pagination.pageIndex + 1) * pagination.pageSize);
   const statRows = [
     ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
     ['Reload', `${resolvedTower.stats.reloadSpeed.toFixed(2)} shots/s`],
@@ -241,23 +236,6 @@ const BuildPage = () => {
         <div className={s.towerPreview}>
           <div className={s.towerImage}>
             <TowerAssemblyPreview resolvedTower={resolvedTower} />
-          </div>
-
-          <div className={s.slotList}>
-            {TOWER_PART_SLOT_ORDER.map(({ key, label }) => {
-              const part = resolvedTower.selectedParts[key];
-              const active = activeTab === key;
-              return (
-                <button
-                  key={key}
-                  className={`${s.slotButton} ${active ? s.slotButtonActive : ''}`}
-                  onClick={() => setActiveTab(key)}
-                >
-                  <span className={s.slotLabel}>{label}</span>
-                  <span className={s.slotPartName}>{part?.name ?? 'Empty'}</span>
-                </button>
-              );
-            })}
           </div>
         </div>
 
@@ -317,7 +295,42 @@ const BuildPage = () => {
               <span className={s.emptyText}>Ready for field testing</span>
             )}
           </div>
+
+          <div className={s.statsActions}>
+            <button
+              className={s.rebuildButton}
+              disabled={!canRebuild}
+              title={!canRebuild ? 'City support is too low for this draft tower' : undefined}
+              onClick={() => dispatch(commitTowerDraft(undefined))}
+            >
+              Rebuild
+            </button>
+            <button
+              className={s.cancelButton}
+              disabled={!draftChanged}
+              onClick={() => dispatch(cancelTowerDraft(undefined))}
+            >
+              Cancel
+            </button>
+          </div>
         </aside>
+      </section>
+
+      <section className={s.slotStrip} aria-label="Tower part slots">
+        {TOWER_PART_SLOT_ORDER.map(({ key, label }) => {
+          const part = resolvedTower.selectedParts[key];
+          const active = activeTab === key;
+          return (
+            <button
+              key={key}
+              className={`${s.slotButton} ${active ? s.slotButtonActive : ''}`}
+              onClick={() => selectSlot(key)}
+            >
+              <span className={s.slotLabel}>{label}</span>
+              <span className={s.slotPartName}>{part?.name ?? 'Empty'}</span>
+            </button>
+          );
+        })}
       </section>
 
       <section className={s.partsPanel}>
@@ -340,7 +353,7 @@ const BuildPage = () => {
           </div>
         </div>
 
-        <div className={s.tableContainer} ref={scrollParentRef}>
+        <div className={s.tableContainer}>
           <table className={s.partsTable}>
             <thead className={s.tableHead}>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -366,16 +379,7 @@ const BuildPage = () => {
               ))}
             </thead>
             <tbody>
-              {virtualRows.length > 0 ? (
-                <tr style={{ height: virtualRows[0]?.start ?? 0 }}>
-                  <td colSpan={table.getAllLeafColumns().length} />
-                </tr>
-              ) : null}
-
-              {virtualRows.map((virtualRow) => {
-                const row = table.getRowModel().rows[virtualRow.index];
-                if (!row) return null;
-
+              {table.getRowModel().rows.map((row) => {
                 const selected = selectedPartId === row.original.id;
 
                 return (
@@ -392,13 +396,40 @@ const BuildPage = () => {
                 );
               })}
 
-              {virtualRows.length > 0 ? (
-                <tr style={{ height: totalSize - (virtualRows[virtualRows.length - 1]?.end ?? 0) }}>
-                  <td colSpan={table.getAllLeafColumns().length} />
+              {table.getRowModel().rows.length === 0 ? (
+                <tr className={s.tableRow}>
+                  <td className={s.tableCell} colSpan={table.getAllLeafColumns().length}>
+                    No parts match the current filters.
+                  </td>
                 </tr>
               ) : null}
             </tbody>
           </table>
+        </div>
+
+        <div className={s.paginationBar}>
+          <span className={s.paginationSummary}>
+            {firstVisibleRow}-{lastVisibleRow} of {filteredRowCount}
+          </span>
+          <div className={s.paginationControls}>
+            <button
+              className={s.paginationButton}
+              disabled={!table.getCanPreviousPage()}
+              onClick={() => table.previousPage()}
+            >
+              Previous
+            </button>
+            <span className={s.paginationSummary}>
+              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
+            </span>
+            <button
+              className={s.paginationButton}
+              disabled={!table.getCanNextPage()}
+              onClick={() => table.nextPage()}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </section>
     </div>
