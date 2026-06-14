@@ -1,0 +1,34 @@
+import type { ResearchNodeData } from './ResearchNode.ts';
+
+export type RequirementStatus = {
+    requiredBuildings: {id: string; name: string; met: boolean}[];
+    requiredFreeUpkeep: {name: string; required: number; available: number; met: boolean}[];
+};
+
+export type StubData = {
+    id: string;
+    missingOf: string;
+    target: string;
+    progressText: string;
+    vector: ResearchNodeData['vector'];
+};
+
+export type FlatNode = {
+    id: string;
+    width: number;
+    height: number;
+    data: { kind: 'normal' | 'stub'; data: ResearchNodeData | StubData }
+};
+
+export type FlatEdgeData = { kind?: 'normal' | 'preview' | 'stub' };
+export type FlatEdge = { id: string; from: string; to: string; data: FlatEdgeData };
+
+export type NodeCardProps = {
+    data: ResearchNodeData,
+    nodeWidth: number,
+    nodeHeight: number,
+    requirements: RequirementStatus,
+    isResearched: boolean,
+    canResearch: boolean,
+    onResearch: () => void,
+};
