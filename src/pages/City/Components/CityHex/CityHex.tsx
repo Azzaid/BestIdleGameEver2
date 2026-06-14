@@ -1,13 +1,15 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
-import type {AxialCoordinate, HexCell} from "../../../../models/city/HexGrid.ts";
+import type {HexCell} from "../../../../models/city/HexGrid.ts";
 import {
     axialCoordinateToPixelPosition, clampPan,
     computeCityBounds,
     getHexagonPolygonPoints, maxZoomThatFits,
-    pixelPositionToAxialCoordinate
+    pixelPositionToAxialCoordinate,
+    coordKey
 } from "./hexUtils.ts";
 import cityBackground from '../../../../assets/city/background/Top-down_map_view_circular_lan.jpeg'
+import {ALL_WALL_BUILDINGS} from "../../../../data/wall.ts";
 
 const HEX_RADIUS_PX = 32;
 const HEX_STROKE_WIDTH = 2;
@@ -36,7 +38,7 @@ export default function CityHex({
                                     onSelect=()=>{}
                                          }: {
     cells: HexCell[];
-    onSelect?: (cell: AxialCoordinate) => void;
+    onSelect?: (cell: HexCell) => void;
 }) {
     // Precompute geometry
     const preparedCells = useMemo(() => {
@@ -98,8 +100,12 @@ export default function CityHex({
         const worldY = (y - cameraOffsetY) / zoomFactor;
 
         const { column, row } = pixelPositionToAxialCoordinate(worldX, worldY, HEX_RADIUS_PX);
-        onSelect({ column, row })
-        setSelectedCellKey(`${column},${row}`);
+        const cellKey = coordKey({column, row});
+        const selectedCell = cells.find((cell) => cell.cellKey === cellKey);
+        if (!selectedCell) return;
+
+        onSelect(selectedCell)
+        setSelectedCellKey(cellKey);
     };
 
     const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -267,10 +273,17 @@ export default function CityHex({
                     style={{ imageRendering: "pixelated" }}
                 />
                 {preparedCells.map((cell) => {
-                    const { centerX, centerY, cellKey, developmentVector, buildingKey} = cell;
+                    const { centerX, centerY, cellKey, developmentVector, buildingKey, kind} = cell;
                     const isSelected = cellKey === selectedCellKey;
                     const isHovered = cellKey === hoveredCellKey;
                     const clipId = `clip-${cellKey}`;
+                    const spriteUrl = kind === "city" && buildingKey
+                        ? buildingsSpriteAtlas[developmentVector]?.[buildingKey]
+                        : undefined;
+                    const fallbackName = kind === "wall" && buildingKey
+                        ? ALL_WALL_BUILDINGS[buildingKey]?.name ?? buildingKey
+                        : buildingKey;
+                    const fallbackFill = getFallbackFill(fallbackName ?? cellKey, kind);
 
                     return (
                         <g
@@ -283,7 +296,7 @@ export default function CityHex({
 
                             <use
                                 href="#hexagonPath"
-                                fill="#8016161b"
+                                fill={kind === "wall" ? "#2c2f38" : "#8016161b"}
                                 stroke={
                                 isSelected
                                     ? "#2e2a17"
@@ -294,9 +307,9 @@ export default function CityHex({
                                 vectorEffect="non-scaling-stroke"
                             />
 
-                            {buildingKey && buildingsSpriteAtlas[developmentVector] && buildingsSpriteAtlas[developmentVector][buildingKey] && (
+                            {spriteUrl && (
                                 <image
-                                    href={buildingsSpriteAtlas[developmentVector][buildingKey]}
+                                    href={spriteUrl}
                                     x={-SPRITE_WIDTH / 2}
                                     y={-SPRITE_HEIGHT / 2}
                                     width={SPRITE_WIDTH}
@@ -306,10 +319,55 @@ export default function CityHex({
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}
                                 />
                             )}
+                            {buildingKey && !spriteUrl && (
+                                <>
+                                    <use
+                                        href="#hexagonPath"
+                                        fill={fallbackFill}
+                                        clipPath={`url(#${clipId})`}
+                                        style={{ pointerEvents: "none" }}
+                                    />
+                                    <text
+                                        x="0"
+                                        y="-4"
+                                        textAnchor="middle"
+                                        dominantBaseline="middle"
+                                        fill="#f5f1e8"
+                                        fontSize="8"
+                                        fontWeight="700"
+                                        style={{ pointerEvents: "none", paintOrder: "stroke", stroke: "#111", strokeWidth: 2 }}
+                                    >
+                                        {fallbackName}
+                                    </text>
+                                    <text
+                                        x="0"
+                                        y="8"
+                                        textAnchor="middle"
+                                        dominantBaseline="middle"
+                                        fill="#f5f1e8"
+                                        fontSize="7"
+                                        style={{ pointerEvents: "none", paintOrder: "stroke", stroke: "#111", strokeWidth: 2 }}
+                                    >
+                                        {buildingKey}
+                                    </text>
+                                </>
+                            )}
                         </g>
                     );
                 })}
             </g>
         </svg>
     );
+}
+
+function getFallbackFill(seed: string, kind: HexCell["kind"]) {
+    let hash = 0;
+    for (let index = 0; index < seed.length; index++) {
+        hash = seed.charCodeAt(index) + ((hash << 5) - hash);
+    }
+
+    const hue = Math.abs(hash) % 360;
+    const saturation = kind === "wall" ? 22 : 46;
+    const lightness = kind === "wall" ? 35 : 32;
+    return `hsl(${hue} ${saturation}% ${lightness}%)`;
 }

@@ -15,6 +15,7 @@ const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
                 column,
                 row,
                 cellKey: coordKey({column, row}),
+                kind: row === -cityRadius ? "wall" : "city",
                 buildingKey: null,
                 developmentVector: DEVELOPMENT_VECTORS.default,
             });
@@ -44,7 +45,10 @@ export const citySlice = createSlice({
             const hexToBuildIndex = state.hexes.findIndex(hex => hex.column === action.payload.column && hex.row === action.payload.row);
             if (hexToBuildIndex === -1) return;
 
-            state.hexes[hexToBuildIndex] = action.payload;
+            state.hexes[hexToBuildIndex] = {
+                ...action.payload,
+                kind: state.hexes[hexToBuildIndex].kind,
+            };
         },
     },
 })

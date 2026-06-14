@@ -1,13 +1,13 @@
 # Project Specification: Tower Defense Idle (best_idle_game_ever_2)
 
-Last updated: 2025-08-08 16:24 (local)
+Last updated: 2026-06-14 (local)
 
 ## 1. Purpose and Scope
 A browser-based tower-defense idle game prototype with multiple views:
 - Battle: canvas-based battlefield rendering and basic controls.
 - Build: choose components to assemble a tower from slots (barrel, base, aimSystem, ammo, barrelAttachment, loadingSystem, launchSystem).
 - Research: navigate a tech tree; unlock nodes with research points, visualize dependencies.
-- City: canvas-based city visualization with clickable buildings and resource panel.
+- City: SVG hex city visualization with clickable city and wall tiles, build panels, and resolved stats.
 - Statistics: display sample time-series stats (damage, gold, accuracy) with simple canvas charts.
 
 The UI supports dynamic theming tied to gameplay emphasis (research path/build composition) and a manual theme switcher for demonstration.
@@ -18,7 +18,7 @@ The UI supports dynamic theming tied to gameplay emphasis (research path/build c
 - Routing: react-router-dom v7.
 - Styling: vanilla-extract (typed CSS-in-TS) with theme contracts.
 - Theming: vanilla-extract createTheme/contract; runtime selection via ThemeProvider.
-- Canvas: HTML canvas used directly for simple rendering (Battle, City, Statistics graphs).
+- Canvas/SVG: HTML canvas used for Battle and Statistics graphs; SVG is used for the interactive City hex map.
 
 Directory overview:
 - src/
@@ -80,7 +80,10 @@ Usage in styles:
   - Styles: the canvas background/legend are inline; vanilla-extract file remains for page-level layout (filters, container) but node internals are rendered via SVG/HTML in the custom renderer.
 
 - CityPage
-  - Canvas city map with buildings; on click, shows info panel; actions panel & resources summary.
+  - SVG hex city map with buildings; on click, shows build options and the selected tile's resolved stats.
+  - Top hex row is reserved for wall hexes. Wall hexes use a separate wall build catalog containing wall segments and tower bases.
+  - Building placement uses city building data for normal city hexes and wall building data for wall hexes.
+  - City tiles without texture render a colored hex fallback with the building id so unfinished content remains visible.
   - Styles: src/pages/City/CityPage.css.ts.
 
 - StatisticsPage
@@ -201,6 +204,9 @@ Use libraries like `vec2` or `pts.js` to assist with:
 
 ### 15.4 City View (Future)
 - Visual city layout with empty or filled building slots.
+- Selecting an existing building shows resolved upkeep, output, and trace after adjacency effects.
+- The top hex row represents the city wall and offers wall-specific construction.
+- Wall segments and tower bases have upkeep cost, resilience, camo level, ignored threat, and keyword-driven special effects such as slow, harm, and push.
 - Buildings provide persistent bonuses (e.g., unlockers, multipliers, synergy buffs).
 - Examples:
   - Foundry: Improves metal-based parts

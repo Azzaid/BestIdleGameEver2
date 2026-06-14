@@ -4,7 +4,7 @@ export type RoleKeyword = typeof ROLE_KEYWORDS[number];
 export const RESOURCE_KEYWORDS = ["people","gold","electricity","mana","biomass","mutagen","arcane","highTechComponents"] as const;
 export type ResourceKeyword = typeof RESOURCE_KEYWORDS[number];
 
-export const MECHANIC_KEYWORDS = ["aura","chain","area","singleTarget","scalesWithLevel"] as const;
+export const MECHANIC_KEYWORDS = ["aura","chain","area","singleTarget","scalesWithLevel","slow","harm","push","visibility"] as const;
 export type MechanicKeyword = typeof MECHANIC_KEYWORDS[number];
 
 export const VECTOR_KEYWORDS = ["tech","nature","medieval","aether"] as const;
