@@ -1,0 +1,29 @@
+import type {UpkeepAmount, UpkeepDescription} from "../Upkeep.ts";
+import type {BuildingTypesValue} from "./BuildingTypes.ts";
+import type {BuildingKeyword} from "./Keywords.ts";
+
+export type WallEffectKeyword = Extract<BuildingKeyword, "slow" | "harm" | "push" | "visibility">;
+
+export type WallSpecialEffect = {
+    keyword: WallEffectKeyword;
+    value: number;
+    description: string;
+};
+
+export interface WallBuilding {
+    id: string;
+    name: string;
+    type: BuildingTypesValue;
+    requiredUpkeep: UpkeepAmount;
+    requiredUpkeepDescription: UpkeepDescription;
+    resilience: number;
+    camoLevel: number;
+    ignoredThreat: number;
+    specialEffects: WallSpecialEffect[];
+    description: string;
+}
+
+export type WallBuildingAtlas = {
+    wallSegments: Record<string, WallBuilding>;
+    towerBases: Record<string, WallBuilding>;
+};
