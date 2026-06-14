@@ -17,8 +17,12 @@ const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
                 row,
                 cellKey: coordKey({column, row}),
                 kind: row === -cityRadius ? "wall" : "city",
-                buildingKey: row === -cityRadius ? "timberBulwark" : null,
-                developmentVector: DEVELOPMENT_VECTORS.default,
+                buildingKey: null,
+                developmentVector: DEVELOPMENT_VECTORS.medieval,
+                wallKey: row === -cityRadius ? "timberBulwark" : null,
+                wallDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
+                wallTopKey: null,
+                wallTopDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
             });
         }
     }
@@ -62,6 +66,20 @@ export const citySlice = createSlice({
                 kind: state.hexes[hexToBuildIndex].kind,
             };
         },
+        buildWall: (state, action: PayloadAction<{cellKey: string; wallKey: string}>) => {
+            const hex = state.hexes.find(cell => cell.cellKey === action.payload.cellKey);
+            if (!hex || hex.kind !== "wall") return;
+
+            hex.wallKey = action.payload.wallKey;
+            hex.wallDevelopmentVector = DEVELOPMENT_VECTORS.medieval;
+        },
+        buildWallTop: (state, action: PayloadAction<{cellKey: string; wallTopKey: string}>) => {
+            const hex = state.hexes.find(cell => cell.cellKey === action.payload.cellKey);
+            if (!hex || hex.kind !== "wall") return;
+
+            hex.wallTopKey = action.payload.wallTopKey;
+            hex.wallTopDevelopmentVector = DEVELOPMENT_VECTORS.medieval;
+        },
         retreatCityRadius: (state) => {
             const nextRadius = Math.max(1, state.cellRadius - 1);
             state.cellRadius = nextRadius;
@@ -70,6 +88,6 @@ export const citySlice = createSlice({
     },
 })
 
-export const { buildHex, retreatCityRadius } = citySlice.actions
+export const { buildHex, buildWall, buildWallTop, retreatCityRadius } = citySlice.actions
 
 export default citySlice

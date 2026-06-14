@@ -8,5 +8,9 @@ export type HexCell = AxialCoordinate & {
     cellKey: string;
     kind: HexCellKind;
     buildingKey: string | null;
-    developmentVector: DevelopmentVectorValue
+    developmentVector: DevelopmentVectorValue;
+    wallKey?: string | null;
+    wallDevelopmentVector?: DevelopmentVectorValue;
+    wallTopKey?: string | null;
+    wallTopDevelopmentVector?: DevelopmentVectorValue;
 };

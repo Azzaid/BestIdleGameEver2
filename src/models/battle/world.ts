@@ -18,6 +18,7 @@ export interface WorldConfig {
   initialThreat: number;
   targetThreat: number;
   threatGrowthPerSecond: number;
+  completesWhenThreatTargetReached: boolean;
   wallResilience: number;
   wallIgnoredThreat: number;
   onBattleMetrics?: (metrics: BattleMetrics) => void;

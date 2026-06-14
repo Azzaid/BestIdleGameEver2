@@ -14,7 +14,7 @@ export function BuildingSelector({
                                      blocked = false,
                                      blockedReason,
                                  }: BuildingSelectorProps) {
-    const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.default);
+    const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.medieval);
     const {effectiveTrace, effectiveUpkeep} = useTypedSelector(selectCityResolution);
 
     return (

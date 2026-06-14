@@ -1,4 +1,4 @@
-import type { EnemyBlueprint } from '../../models/battle/enemyBlueprints.ts';
+import type {EnemyBlueprint} from "../../models/battle/enemyBlueprints.ts";
 
 function createWallboundMovement(speedPixelsPerSecond: number, wobbleAmplitudePixels = 0): EnemyBlueprint['createMovement'] {
   return (spawnX, _spawnY, world) => ({
@@ -12,7 +12,7 @@ function createWallboundMovement(speedPixelsPerSecond: number, wobbleAmplitudePi
   });
 }
 
-export const BATTLE_ENEMY_BLUEPRINTS: Record<string, EnemyBlueprint> = {
+export const wastelandEnemies: Record<string, EnemyBlueprint> = {
   scrapling: {
     id: 'scrapling',
     displayName: 'Scrapling',
@@ -59,5 +59,3 @@ export const BATTLE_ENEMY_BLUEPRINTS: Record<string, EnemyBlueprint> = {
     createMovement: createWallboundMovement(42, 10),
   },
 };
-
-export const BATTLE_ENEMY_IDS = Object.keys(BATTLE_ENEMY_BLUEPRINTS);

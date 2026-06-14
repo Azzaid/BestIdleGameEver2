@@ -40,3 +40,5 @@ export interface EnemyBlueprint {
     swarmSize?: number;          // e.g. 3..6 means 3 to 6 copies
     swarmSizeMax?: number;       // if provided, use [swarmSize..swarmSizeMax] random
 }
+
+export type EnemyBlueprintAtlas = Record<string, Record<string, EnemyBlueprint>>;

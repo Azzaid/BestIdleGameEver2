@@ -10,5 +10,4 @@ export const BUILDINGS_ATLAS: BuildingAtlas = {
     [DEVELOPMENT_VECTORS.nature]: natureBuildings,
     [DEVELOPMENT_VECTORS.medieval]: medievalBuildings,
     [DEVELOPMENT_VECTORS.aether]: aetherBuildings,
-    [DEVELOPMENT_VECTORS.default]: {},
 };

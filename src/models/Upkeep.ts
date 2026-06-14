@@ -23,7 +23,6 @@ export const UPKEEP_TYPES_BY_VECTOR = {
     [DEVELOPMENT_VECTORS.nature]: [UPKEEP_TYPES.biomass, UPKEEP_TYPES.mutagen],
     [DEVELOPMENT_VECTORS.medieval]: [UPKEEP_TYPES.people, UPKEEP_TYPES.gold],
     [DEVELOPMENT_VECTORS.aether]: [UPKEEP_TYPES.mana, UPKEEP_TYPES.arcaneSupplies],
-    [DEVELOPMENT_VECTORS.default]: [],
 }
 
 // Here will be url strings

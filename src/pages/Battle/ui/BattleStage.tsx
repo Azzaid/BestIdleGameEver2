@@ -25,6 +25,7 @@ export function BattleStage(props: {
     initialThreat: number;
     targetThreat: number;
     threatGrowthPerSecond: number;
+    completesWhenThreatTargetReached: boolean;
     wallResilience: number;
     wallIgnoredThreat: number;
     onBattleMetrics?: (metrics: BattleMetrics) => void;
@@ -119,6 +120,7 @@ export function BattleStage(props: {
                 initialThreat: props.initialThreat,
                 targetThreat: props.targetThreat,
                 threatGrowthPerSecond: props.threatGrowthPerSecond,
+                completesWhenThreatTargetReached: props.completesWhenThreatTargetReached,
                 wallResilience: props.wallResilience,
                 wallIgnoredThreat: props.wallIgnoredThreat,
                 onBattleMetrics: props.onBattleMetrics,
@@ -273,6 +275,7 @@ export function BattleStage(props: {
         props.initialThreat,
         props.targetThreat,
         props.threatGrowthPerSecond,
+        props.completesWhenThreatTargetReached,
         props.wallResilience,
         props.wallIgnoredThreat,
         props.onBattleMetrics,

@@ -27,7 +27,7 @@ export function SiegeSystem(world: World, dt: number) {
     return;
   }
 
-  if (world.currentThreat >= world.config.targetThreat) {
+  if (world.config.completesWhenThreatTargetReached && world.currentThreat >= world.config.targetThreat) {
     world.battleEnded = true;
     world.waveScheduler.state.enabled = false;
     world.config.onBattleEnded?.({

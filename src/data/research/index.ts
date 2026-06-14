@@ -1,4 +1,4 @@
-import type {ResearchDB} from "../../models/research/researchDB.ts";
+import type {ResearchAtlas, ResearchDB} from "../../models/research/researchDB.ts";
 import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
 
 export const researchThree: ResearchDB = {
@@ -6,7 +6,7 @@ export const researchThree: ResearchDB = {
         id: 'root',
         parentId: null,
         name: 'Curiosity',
-        vector: 'default',
+        vector: 'medieval',
         summary: 'First you need to ask. What if? Then stuff starts exploding.'
     },
     'aether': {
@@ -173,3 +173,15 @@ export const researchThree: ResearchDB = {
         requiredFreeUpkeep: {[UPKEEP_TYPES.mana]: 5, [UPKEEP_TYPES.arcaneSupplies]: 2}
     },
 };
+
+const createEmptyResearchAtlas = (): ResearchAtlas => ({
+    tech: {},
+    nature: {},
+    medieval: {},
+    aether: {},
+});
+
+export const RESEARCH_ATLAS = Object.values(researchThree).reduce<ResearchAtlas>((atlas, node) => {
+    atlas[node.vector][node.id] = node;
+    return atlas;
+}, createEmptyResearchAtlas());

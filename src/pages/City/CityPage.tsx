@@ -6,12 +6,11 @@ import {BuildingSelector} from "./Components/BuildingSelector/BuildingSelector.t
 import {type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {selectCityBuildings, selectCityHexes} from "../../store/city/selectors.ts";
-import {buildHex} from "../../store/city/slice.ts";
+import {buildHex, buildWall, buildWallTop} from "../../store/city/slice.ts";
 import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
-import {ALL_WALL_BUILDINGS, WALL_BUILDINGS_ATLAS} from "../../data/wall.ts";
+import {ALL_WALL_BUILDINGS, TOWER_BASE_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
-import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
 import {selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
 
@@ -32,11 +31,17 @@ const CityPage = () => {
 
     const handleWallBuildingSelect = (buildingKey: string) => {
         if (!selectedHex || traceStatus.isBesieged) return;
-        dispatch(buildHex({...selectedHex, buildingKey, developmentVector: DEVELOPMENT_VECTORS.default }))
+        dispatch(buildWall({cellKey: selectedHex.cellKey, wallKey: buildingKey}))
+    };
+
+    const handleWallTopBuildingSelect = (buildingKey: string) => {
+        if (!selectedHex || traceStatus.isBesieged) return;
+        dispatch(buildWallTop({cellKey: selectedHex.cellKey, wallTopKey: buildingKey}))
     };
 
     const selectedBuilding = selectedHex ? cityBuildings.get(selectedHex.cellKey) : undefined;
-    const selectedWallBuilding = selectedHex?.buildingKey ? ALL_WALL_BUILDINGS[selectedHex.buildingKey] : undefined;
+    const selectedWallBuilding = selectedHex?.wallKey ? ALL_WALL_BUILDINGS[selectedHex.wallKey] : undefined;
+    const selectedWallTopBuilding = selectedHex?.wallTopKey ? ALL_WALL_BUILDINGS[selectedHex.wallTopKey] : undefined;
 
   return (
     <div className={s.cityPage}>
@@ -49,11 +54,13 @@ const CityPage = () => {
                     selectedHex={selectedHex}
                     selectedBuilding={selectedBuilding}
                     selectedWallBuilding={selectedWallBuilding}
+                    selectedWallTopBuilding={selectedWallTopBuilding}
                     wallResolution={wallResolution}
                 />
                 {selectedHex.kind === "wall"
                     ? <WallBuildingSelector
-                        onBuild={handleWallBuildingSelect}
+                        onBuildWall={handleWallBuildingSelect}
+                        onBuildWallTop={handleWallTopBuildingSelect}
                         blocked={traceStatus.isBesieged}
                         blockedReason={BESIEGED_BUILD_BLOCK_REASON}
                     />
@@ -73,6 +80,7 @@ function SelectedHexPanel({
     selectedHex,
     selectedBuilding,
     selectedWallBuilding,
+    selectedWallTopBuilding,
     wallResolution,
 }: SelectedHexPanelProps) {
     return (
@@ -100,10 +108,19 @@ function SelectedHexPanel({
 
             {selectedWallBuilding && (
                 <div className={s.statSection}>
-                    <h3 className={s.statHeading}>{selectedWallBuilding.name}</h3>
+                    <h3 className={s.statHeading}>Wall: {selectedWallBuilding.name}</h3>
                     <MetricGroup title="Upkeep" values={selectedWallBuilding.requiredUpkeep} />
                     <WallStats wallBuilding={selectedWallBuilding} />
                     <p className={s.panelDescription}>{selectedWallBuilding.description}</p>
+                </div>
+            )}
+
+            {selectedWallTopBuilding && (
+                <div className={s.statSection}>
+                    <h3 className={s.statHeading}>On wall: {selectedWallTopBuilding.name}</h3>
+                    <MetricGroup title="Upkeep" values={selectedWallTopBuilding.requiredUpkeep} />
+                    <WallStats wallBuilding={selectedWallTopBuilding} />
+                    <p className={s.panelDescription}>{selectedWallTopBuilding.description}</p>
                 </div>
             )}
 
@@ -128,7 +145,7 @@ function SelectedHexPanel({
                 </div>
             )}
 
-            {!selectedBuilding && !selectedWallBuilding && (
+            {!selectedBuilding && !selectedWallBuilding && !selectedWallTopBuilding && (
                 <p className={s.panelDescription}>Empty tile. Choose something below to build here.</p>
             )}
         </aside>
@@ -230,18 +247,20 @@ function hasUpkeepValues(values?: UpkeepAmount) {
 }
 
 function WallBuildingSelector({
-    onBuild,
+    onBuildWall,
+    onBuildWallTop,
     blocked,
     blockedReason,
 }: {
-    onBuild: (buildingId: string) => void;
+    onBuildWall: (buildingId: string) => void;
+    onBuildWallTop: (buildingId: string) => void;
     blocked: boolean;
     blockedReason: string;
 }) {
     return (
         <div className={s.wallSelector}>
-            <WallBuildingList title="Wall segments" buildings={Object.values(WALL_BUILDINGS_ATLAS.wallSegments)} onBuild={onBuild} blocked={blocked} blockedReason={blockedReason} />
-            <WallBuildingList title="Tower bases" buildings={Object.values(WALL_BUILDINGS_ATLAS.towerBases)} onBuild={onBuild} blocked={blocked} blockedReason={blockedReason} />
+            <WallBuildingList title="Wall" buildings={Object.values(WALL_SEGMENT_BUILDINGS)} onBuild={onBuildWall} blocked={blocked} blockedReason={blockedReason} />
+            <WallBuildingList title="On top of wall" buildings={Object.values(TOWER_BASE_BUILDINGS)} onBuild={onBuildWallTop} blocked={blocked} blockedReason={blockedReason} />
         </div>
     );
 }

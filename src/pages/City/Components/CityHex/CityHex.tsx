@@ -9,7 +9,7 @@ import {
     coordKey
 } from "./hexUtils.ts";
 import cityBackground from '../../../../assets/city/background/Top-down_map_view_circular_lan.jpeg'
-import {ALL_WALL_BUILDINGS} from "../../../../data/wall.ts";
+import {ALL_WALL_BUILDINGS} from "../../../../data/wall/index.ts";
 
 const HEX_RADIUS_PX = 32;
 const HEX_STROKE_WIDTH = 2;
@@ -273,15 +273,20 @@ export default function CityHex({
                     style={{ imageRendering: "pixelated" }}
                 />
                 {preparedCells.map((cell) => {
-                    const { centerX, centerY, cellKey, developmentVector, buildingKey, kind} = cell;
+                    const { centerX, centerY, cellKey, developmentVector, buildingKey, kind, wallKey, wallTopKey} = cell;
                     const isSelected = cellKey === selectedCellKey;
                     const isHovered = cellKey === hoveredCellKey;
                     const clipId = `clip-${cellKey}`;
                     const spriteUrl = kind === "city" && buildingKey
                         ? buildingsSpriteAtlas[developmentVector]?.[buildingKey]
                         : undefined;
-                    const fallbackName = kind === "wall" && buildingKey
-                        ? ALL_WALL_BUILDINGS[buildingKey]?.name ?? buildingKey
+                    const wallName = wallKey ? ALL_WALL_BUILDINGS[wallKey]?.name ?? wallKey : undefined;
+                    const wallTopName = wallTopKey ? ALL_WALL_BUILDINGS[wallTopKey]?.name ?? wallTopKey : undefined;
+                    const fallbackName = kind === "wall"
+                        ? [wallName, wallTopName].filter(Boolean).join(" + ")
+                        : buildingKey;
+                    const fallbackKey = kind === "wall"
+                        ? [wallKey, wallTopKey].filter(Boolean).join("+")
                         : buildingKey;
                     const fallbackFill = getFallbackFill(fallbackName ?? cellKey, kind);
 
@@ -319,7 +324,7 @@ export default function CityHex({
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}
                                 />
                             )}
-                            {buildingKey && !spriteUrl && (
+                            {fallbackKey && !spriteUrl && (
                                 <>
                                     <use
                                         href="#hexagonPath"
@@ -348,7 +353,7 @@ export default function CityHex({
                                         fontSize="7"
                                         style={{ pointerEvents: "none", paintOrder: "stroke", stroke: "#111", strokeWidth: 2 }}
                                     >
-                                        {buildingKey}
+                                        {fallbackKey}
                                     </text>
                                 </>
                             )}

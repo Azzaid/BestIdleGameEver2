@@ -63,6 +63,8 @@ export interface TowerSynergyRule {
   addAimKeywords?: string[];
 }
 
+export type TowerPartsAtlas = Record<DevelopmentVectorKey, Record<string, GunPart>>;
+
 export interface ResolvedTowerSynergy {
   id: string;
   name: string;

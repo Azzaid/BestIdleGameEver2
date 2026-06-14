@@ -6,5 +6,6 @@ export type SelectedHexPanelProps = {
     selectedHex: HexCell;
     selectedBuilding?: PlacedBuilding;
     selectedWallBuilding?: WallBuilding;
+    selectedWallTopBuilding?: WallBuilding;
     wallResolution: WallResolution;
 };

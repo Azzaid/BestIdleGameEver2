@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import type { EntityId } from '../../../models/battle/common.ts';
 import type { World, WorldConfig } from '../../../models/battle/world.ts';
-import { BATTLE_ENEMY_BLUEPRINTS, BATTLE_ENEMY_IDS } from '../../../data/battle/enemies.ts';
+import { BATTLE_ENEMY_BLUEPRINTS, BATTLE_ENEMY_IDS } from '../../../data/enemies/index.ts';
 
 export function createWorld(config: WorldConfig): World {
   const worldLayer = new PIXI.Container();

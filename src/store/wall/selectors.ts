@@ -1,5 +1,5 @@
 import {createSelector} from "@reduxjs/toolkit";
-import {ALL_WALL_BUILDINGS} from "../../data/wall.ts";
+import {ALL_WALL_BUILDINGS} from "../../data/wall/index.ts";
 import type {RootState} from "../../models/store/appStore.ts";
 import {selectCityHexes} from "../city/selectors.ts";
 import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
@@ -24,16 +24,20 @@ export const selectWallResolution = createSelector(
         };
 
         hexes.forEach((hex) => {
-            if (hex.kind !== "wall" || !hex.buildingKey) return;
+            if (hex.kind !== "wall") return;
 
-            const wallBuilding = ALL_WALL_BUILDINGS[hex.buildingKey];
-            if (!wallBuilding) return;
+            [hex.wallKey, hex.wallTopKey].forEach((wallBuildingKey) => {
+                if (!wallBuildingKey) return;
 
-            resolution.requiredUpkeep = addUpkeep(resolution.requiredUpkeep, wallBuilding.requiredUpkeep);
-            resolution.resilience += wallBuilding.resilience;
-            resolution.camoLevel += wallBuilding.camoLevel;
-            resolution.ignoredThreat += wallBuilding.ignoredThreat;
-            resolution.specialEffects.push(...wallBuilding.specialEffects);
+                const wallBuilding = ALL_WALL_BUILDINGS[wallBuildingKey];
+                if (!wallBuilding) return;
+
+                resolution.requiredUpkeep = addUpkeep(resolution.requiredUpkeep, wallBuilding.requiredUpkeep);
+                resolution.resilience += wallBuilding.resilience;
+                resolution.camoLevel += wallBuilding.camoLevel;
+                resolution.ignoredThreat += wallBuilding.ignoredThreat;
+                resolution.specialEffects.push(...wallBuilding.specialEffects);
+            });
         });
 
         return resolution;

@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import * as s from './BuildPage.css.ts';
-import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/towers/parts.ts';
+import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/towers/index.ts';
 import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
 import { selectActiveTower, selectActiveTowerDraftAssembly, selectHasActiveTowerBuild, selectResolvedActiveTowerDraft } from '../../store/towers/selectors.ts';
@@ -113,7 +113,7 @@ const BuildPage = () => {
       id: 'vector',
       accessorKey: 'vector',
       header: 'Vector',
-      cell: (info) => info.getValue() ?? 'default',
+      cell: (info) => info.getValue() ?? 'medieval',
     },
     {
       id: 'description',

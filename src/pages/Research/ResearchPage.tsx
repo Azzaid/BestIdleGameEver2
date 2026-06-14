@@ -206,7 +206,11 @@ export default function ResearchPage() {
     const [viewport, setViewport] = useState({width: 0, height: 0});
     const purchased = useMemo(() => new Set(purchasedTechsIds), [purchasedTechsIds]);
     const builtBuildingIds = useMemo(() => {
-        return new Set(cityHexes.flatMap(hex => hex.buildingKey ? [hex.buildingKey] : []));
+        return new Set(cityHexes.flatMap(hex => [
+            hex.buildingKey,
+            hex.wallKey,
+            hex.wallTopKey,
+        ].filter((buildingId): buildingId is string => Boolean(buildingId))));
     }, [cityHexes]);
 
     const {nodes, edges} = useMemo(

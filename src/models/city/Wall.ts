@@ -1,6 +1,7 @@
 import type {UpkeepAmount, UpkeepDescription} from "../Upkeep.ts";
 import type {BuildingTypesValue} from "./BuildingTypes.ts";
 import type {BuildingKeyword} from "./Keywords.ts";
+import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
 
 export type WallEffectKeyword = Extract<BuildingKeyword, "slow" | "harm" | "push" | "visibility">;
 
@@ -23,10 +24,7 @@ export interface WallBuilding {
     description: string;
 }
 
-export type WallBuildingAtlas = {
-    wallSegments: Record<string, WallBuilding>;
-    towerBases: Record<string, WallBuilding>;
-};
+export type WallBuildingAtlas = { [k in DevelopmentVectorValue]: Record<string, WallBuilding> };
 
 export type WallResolution = {
     requiredUpkeep: UpkeepAmount;

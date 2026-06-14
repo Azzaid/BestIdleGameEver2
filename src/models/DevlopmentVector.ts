@@ -3,7 +3,6 @@ export const DEVELOPMENT_VECTORS = {
     nature: Symbol('Nature'),
     medieval: Symbol('Medieval'),
     aether: Symbol('Aether'),
-    default: Symbol('Default')
 } as const;
 
 export type DevelopmentVectorKey = keyof typeof DEVELOPMENT_VECTORS;

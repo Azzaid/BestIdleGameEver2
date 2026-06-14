@@ -7,7 +7,7 @@ import { selectCitySideHexes } from "../../store/city/selectors.ts";
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from "../../data/constants.ts";
 import { Link } from "react-router-dom";
 import { recordThreatReached } from "../../store/upkeep/slice.ts";
-import { selectTowerAwareCityResolution } from "../../store/upkeep/selectors.ts";
+import { selectCityTraceStatus, selectTowerAwareCityResolution } from "../../store/upkeep/selectors.ts";
 import { selectWallResolution } from "../../store/wall/selectors.ts";
 import { retreatCityRadius } from "../../store/city/slice.ts";
 import type { BattleMetrics, BattleResult } from "../../models/battle/world.ts";
@@ -23,10 +23,12 @@ const BattlePage = () => {
     const hasActiveTowerBuild = useTypedSelector(selectHasActiveTowerBuild);
     const citySideHexes = useTypedSelector(selectCitySideHexes);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
+    const traceStatus = useTypedSelector(selectCityTraceStatus);
     const wallResolution = useTypedSelector(selectWallResolution);
+    const isSiege = traceStatus.isBesieged;
     const targetThreat = Math.max(0, cityResolution.effectiveTrace);
-    const initialThreat = targetThreat * THREAT_START_RATIO;
-    const threatGrowthPerSecond = targetThreat > initialThreat
+    const initialThreat = isSiege ? targetThreat * THREAT_START_RATIO : targetThreat;
+    const threatGrowthPerSecond = isSiege && targetThreat > initialThreat
         ? (targetThreat - initialThreat) / SIEGE_DURATION_SECONDS
         : 0;
     const [metrics, setMetrics] = useState<BattleMetrics>(() => ({
@@ -43,6 +45,7 @@ const BattlePage = () => {
         targetThreat,
         initialThreat,
         threatGrowthPerSecond,
+        isSiege,
         wallResolution.resilience,
         wallResolution.ignoredThreat,
         wallLogicalWidth,
@@ -51,6 +54,7 @@ const BattlePage = () => {
         targetThreat,
         initialThreat,
         threatGrowthPerSecond,
+        isSiege,
         wallResolution.resilience,
         wallResolution.ignoredThreat,
         wallLogicalWidth,
@@ -107,6 +111,7 @@ const BattlePage = () => {
                             initialThreat={initialThreat}
                             targetThreat={targetThreat}
                             threatGrowthPerSecond={threatGrowthPerSecond}
+                            completesWhenThreatTargetReached={isSiege}
                             wallResilience={wallResolution.resilience}
                             wallIgnoredThreat={wallResolution.ignoredThreat}
                             onBattleMetrics={setMetrics}
