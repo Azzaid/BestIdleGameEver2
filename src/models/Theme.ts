@@ -92,3 +92,9 @@ export type Theme = {
         },
     },
 }
+
+export type ThemeContextValue = {
+    theme: ThemeName;
+    setTheme: (t: ThemeName) => void;
+    getThemeValues: (t?: ThemeName) => Theme;
+};

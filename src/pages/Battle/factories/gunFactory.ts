@@ -1,20 +1,7 @@
 import * as PIXI from 'pixi.js';
 import type { GunSlotDirection } from '../../../models/battle/tower.ts';
-import type { SpriteInfo } from '../../../models/battle/spriteInfo.ts';
+import type { GunVisualBuild } from '../../../models/battle/gunVisual.ts';
 import { createDisplayFromSpriteInfo } from './spriteFactory';
-
-/** Visual-only representation of a gun built from slot chains. */
-export interface PartVisual {
-  id: string;
-  sprite: SpriteInfo;
-  attachmentOffset: { x: number; y: number };
-}
-
-export interface GunVisualBuild {
-  slots: Partial<Record<GunSlotDirection, PartVisual[]>>;
-  /** World position of slot-0 root (used as shared pivot origin). */
-  origin: { x: number; y: number };
-}
 
 /** Composes a PIXI.Container for the gun. Children are placed per slot chain with cumulative offsets. */
 export function createGunContainer(build: GunVisualBuild): { container: PIXI.Container; partNodes: Map<string, PIXI.ContainerChild> } {

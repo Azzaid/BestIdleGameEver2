@@ -1,18 +1,9 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {ALL_WALL_BUILDINGS} from "../../data/wall.ts";
-import type {RootState} from "../index.ts";
+import type {RootState} from "../../models/store/appStore.ts";
 import {selectCityHexes} from "../city/selectors.ts";
-import type {WallBuilding} from "../../models/city/Wall.ts";
-import type {UpkeepAmount} from "../../models/Upkeep.ts";
+import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
 import {addUpkeep} from "../../pages/City/Components/CityHex/upkeepUtils.ts";
-
-export type WallResolution = {
-    requiredUpkeep: UpkeepAmount;
-    resilience: number;
-    camoLevel: number;
-    ignoredThreat: number;
-    specialEffects: WallBuilding["specialEffects"];
-};
 
 export const selectUnlockedWallBuildingIds = (state: RootState) => state.wall.unlockedWallBuildingIds;
 

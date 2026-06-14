@@ -21,6 +21,7 @@ export function BattleStage(props: {
     battlefieldHeight: number;  // TODO: logical height in world units
     wallY: number;
     resolvedTower: TowerAssemblyResolved;
+    onWaveThreatReached?: (threat: number) => void;
 }) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const hostRef = useRef<HTMLDivElement>(null);
@@ -108,6 +109,7 @@ export function BattleStage(props: {
                 battlefieldHeight: props.battlefieldHeight,
                 wallY,
                 app,
+                onWaveThreatReached: props.onWaveThreatReached,
             });
             camera.container.addChild(world.worldLayer);
 
@@ -255,6 +257,7 @@ export function BattleStage(props: {
         props.battlefieldHeight,
         props.wallY,
         props.resolvedTower,
+        props.onWaveThreatReached,
     ]);
 
     return (

@@ -1,5 +1,6 @@
 import type {AxialCoordinate, HexCell} from "../../../../models/city/HexGrid.ts";
 import type {HexDirection} from "../../../../models/city/Adjancency.ts";
+import type {Bounds, HasAxial} from "../../../../models/city/hexLayout.ts";
 
 export const coordKey = ({column, row}: AxialCoordinate) => `${column},${row}`;
 
@@ -74,8 +75,6 @@ export function pixelPositionToAxialCoordinate(
     return {column: roundedCubeX, row: roundedCubeZ};
 }
 
-type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
-
 export const computeCityBounds  = (preparedCells: { centerX: number; centerY: number }[], hexRadiusPx: number): Bounds => {
     // For a pointy-top hex: half width = √3/2 * R, half height = R
     const halfWidth = (Math.sqrt(3) / 2) * hexRadiusPx;
@@ -139,8 +138,6 @@ export const maxZoomThatFits = (bounds: Bounds, vbw: number, vbh: number) => {
     const contentH = bounds.maxY - bounds.minY;
     return Math.min(vbw / contentW, vbh / contentH);
 }
-
-type HasAxial<T> = T & AxialCoordinate;
 
 // ---- Math helpers --------------------------------------------------------
 

@@ -1,27 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { TowerPartSlot } from '../../models/battle/towerParts.ts';
-
-export interface StoredTowerAssembly {
-  id: string;
-  name: string;
-  selectedPartIds: Partial<Record<TowerPartSlot, string>>;
-}
-
-interface TowersState {
-  activeTowerId: string;
-  towers: Record<string, StoredTowerAssembly>;
-  towerDrafts: Record<string, Partial<Record<TowerPartSlot, string>>>;
-}
+import type {TowersState} from "../../models/store/towers.ts";
 
 const starterTowerId = 'tower-1';
-const starterTowerParts: Partial<Record<TowerPartSlot, string>> = {
-  base: 'base_fixed_mount',
-  barrel: 'barrel_basic',
-  ammo: 'ammo_standard',
-  aimSystem: 'aim_wall_watch',
-  loadingSystem: 'loader_manual_crew',
-  launchSystem: 'launch_gunpowder',
-};
+const emptyStarterTowerParts: Partial<Record<TowerPartSlot, string>> = {};
 
 const initialState: TowersState = {
   activeTowerId: starterTowerId,
@@ -29,11 +11,11 @@ const initialState: TowersState = {
     [starterTowerId]: {
       id: starterTowerId,
       name: 'Wall Prototype',
-      selectedPartIds: starterTowerParts,
+      selectedPartIds: emptyStarterTowerParts,
     },
   },
   towerDrafts: {
-    [starterTowerId]: starterTowerParts,
+    [starterTowerId]: emptyStarterTowerParts,
   },
 };
 

@@ -47,6 +47,14 @@ export const navBarLink = style({
     }
 });
 
+export const navBarLinkBlocked = style([
+  navBarLink,
+  {
+    color: vars.color.text.muted,
+    opacity: 0.65,
+  },
+]);
+
 export const appContent = style({
   flex: 1,
   overflow: 'auto',
@@ -57,4 +65,41 @@ export const themeSwitcher = style({
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
+});
+
+export const blockedPage = style({
+  display: 'grid',
+  placeItems: 'center',
+  alignContent: 'center',
+  gap: '12px',
+  minHeight: '100%',
+  padding: '32px',
+  color: vars.color.text.primary,
+  textAlign: 'center',
+});
+
+export const blockedTitle = style({
+  margin: 0,
+  color: vars.color.state.error,
+  fontSize: '2rem',
+});
+
+export const blockedText = style({
+  margin: 0,
+  maxWidth: '520px',
+  color: vars.color.text.primary,
+});
+
+export const blockedLink = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '40px',
+  padding: '8px 14px',
+  borderRadius: '6px',
+  border: `1px solid ${vars.color.brand.primary}`,
+  background: vars.color.brand.primary,
+  color: vars.color.text.inverse,
+  textDecoration: 'none',
+  fontWeight: 700,
 });

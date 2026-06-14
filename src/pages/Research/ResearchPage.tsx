@@ -2,8 +2,8 @@ import {type WheelEvent, useCallback, useEffect, useMemo, useRef, useState} from
 import {Canvas, CanvasPosition, Edge, type CanvasDirection, type EdgeProps, type ElkRoot, type NodeProps} from 'reaflow';
 import type {ResearchNodeData} from "../../models/research/ResearchNode.ts";
 import {anyMet, isUnlocked, prereqsOf} from "./util.ts";
-import {NodeCard, type RequirementStatus} from "./Components/NodeCard.tsx";
-import {type StubData, StubNode} from "./Components/StubNode.tsx";
+import {NodeCard} from "./Components/NodeCard.tsx";
+import {StubNode} from "./Components/StubNode.tsx";
 import type {ResearchDB} from "../../models/research/researchDB.ts";
 import {researchThree} from "../../data/research";
 import * as s from "./ResearchPage.css.ts";
@@ -11,22 +11,11 @@ import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {purchaseTech} from "../../store/research/slice.ts";
 import {selectCityHexes} from "../../store/city/selectors.ts";
-import {selectCityResolution} from "../../store/upkeep/selectors.ts";
+import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
-
-/** =========================
- *  Data model (normalized)
- *  ========================= */
-type FlatNode = {
-    id: string;
-    width: number;
-    height: number;
-    data: { kind: 'normal' | 'stub'; data: ResearchNodeData | StubData }
-};
-type FlatEdgeData = { kind?: 'normal' | 'preview' | 'stub' };
-type FlatEdge = { id: string; from: string; to: string; data: FlatEdgeData };
+import type { FlatEdge, FlatEdgeData, FlatNode, RequirementStatus, StubData } from "../../models/research/researchView.ts";
 
 const NODE_W = 220;
 const NODE_H = 190;
@@ -211,6 +200,7 @@ export default function ResearchPage() {
     const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
     const cityHexes = useTypedSelector(selectCityHexes);
     const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
+    const traceStatus = useTypedSelector(selectCityTraceStatus);
     const viewportRef = useRef<HTMLDivElement>(null);
     const [layout, setLayout] = useState<ElkRoot | null>(null);
     const [viewport, setViewport] = useState({width: 0, height: 0});
@@ -309,7 +299,8 @@ export default function ResearchPage() {
                         const canResearch = !isResearched
                             && isUnlocked(data, purchased)
                             && requirements.requiredBuildings.every(requirement => requirement.met)
-                            && hasEnoughFreeUpkeep(data.requiredFreeUpkeep, effectiveUpkeep);
+                            && hasEnoughFreeUpkeep(data.requiredFreeUpkeep, effectiveUpkeep)
+                            && !traceStatus.isBesieged;
 
                         return (
                             <g transform={`translate(${props.x + NODE_W / 2}, ${props.y + NODE_H / 2})`}>
@@ -320,7 +311,10 @@ export default function ResearchPage() {
                                     requirements={requirements}
                                     isResearched={isResearched}
                                     canResearch={canResearch}
-                                    onResearch={() => dispatch(purchaseTech(data.id))}
+                                    onResearch={() => {
+                                        if (traceStatus.isBesieged) return;
+                                        dispatch(purchaseTech(data.id));
+                                    }}
                                 />
                             </g>
                         );

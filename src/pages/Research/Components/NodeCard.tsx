@@ -1,10 +1,5 @@
-import type {ResearchNodeData} from "../../../models/research/ResearchNode.ts";
 import {themeMap} from "../../../theme/theme.css.ts";
-
-export type RequirementStatus = {
-    requiredBuildings: {id: string; name: string; met: boolean}[];
-    requiredFreeUpkeep: {name: string; required: number; available: number; met: boolean}[];
-};
+import type {NodeCardProps} from "../../../models/research/researchView.ts";
 
 export function NodeCard({
                              data,
@@ -14,15 +9,7 @@ export function NodeCard({
                              isResearched,
                              canResearch,
                              onResearch,
-                         }: {
-    data: ResearchNodeData,
-    nodeWidth: number,
-    nodeHeight: number,
-    requirements: RequirementStatus,
-    isResearched: boolean,
-    canResearch: boolean,
-    onResearch: () => void,
-}) {
+                         }: NodeCardProps) {
     const vectorTheme = themeMap[data.vector];
     const buttonEnabled = canResearch && !isResearched;
 

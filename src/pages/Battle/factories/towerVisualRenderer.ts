@@ -4,20 +4,10 @@ import type {
   TowerVisualNodeDefinition,
   TowerVisualPartDefinition,
   TowerVisualPoint,
+  TowerVisualRenderOptions,
   TowerVisualSize,
+  BuiltTowerVisualContainer,
 } from '../../../models/battle/towerVisual.ts';
-
-export interface TowerVisualRenderOptions {
-  warn?: (message: string) => void;
-  fallbackFillColor?: number;
-  fallbackBorderColor?: number;
-  fallbackTextColor?: number;
-}
-
-export interface BuiltTowerVisualContainer {
-  container: PIXI.Container;
-  partContainers: Map<string, PIXI.Container>;
-}
 
 const defaultFallbackSize: TowerVisualSize = { width: 56, height: 36 };
 

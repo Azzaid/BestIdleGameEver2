@@ -10,24 +10,28 @@ import {buildHex} from "../../store/city/slice.ts";
 import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
 import {ALL_WALL_BUILDINGS, WALL_BUILDINGS_ATLAS} from "../../data/wall.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
-import {selectWallResolution, type WallResolution} from "../../store/wall/selectors.ts";
+import {selectWallResolution} from "../../store/wall/selectors.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
-import type {PlacedBuilding} from "../../models/city/Building.ts";
+import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
+import {selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
+
+const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise resilience in battle before building.";
 
 const CityPage = () => {
     const dispatch = useTypedDispatch();
     const hexes = useTypedSelector(selectCityHexes);
     const cityBuildings = useTypedSelector(selectCityBuildings);
     const wallResolution = useTypedSelector(selectWallResolution);
+    const traceStatus = useTypedSelector(selectCityTraceStatus);
     const [selectedHex, setSelectedHex] = useState<HexCell | null>(null);
 
     const handleBuildingSelect = (buildingKey: string, developmentVector: DevelopmentVectorValue) => {
-        if (!selectedHex) return;
+        if (!selectedHex || traceStatus.isBesieged) return;
         dispatch(buildHex({...selectedHex, buildingKey, developmentVector }))
     };
 
     const handleWallBuildingSelect = (buildingKey: string) => {
-        if (!selectedHex) return;
+        if (!selectedHex || traceStatus.isBesieged) return;
         dispatch(buildHex({...selectedHex, buildingKey, developmentVector: DEVELOPMENT_VECTORS.default }))
     };
 
@@ -48,20 +52,21 @@ const CityPage = () => {
                     wallResolution={wallResolution}
                 />
                 {selectedHex.kind === "wall"
-                    ? <WallBuildingSelector onBuild={handleWallBuildingSelect} />
-                    : <BuildingSelector onBuild={handleBuildingSelect}/>
+                    ? <WallBuildingSelector
+                        onBuild={handleWallBuildingSelect}
+                        blocked={traceStatus.isBesieged}
+                        blockedReason={BESIEGED_BUILD_BLOCK_REASON}
+                    />
+                    : <BuildingSelector
+                        onBuild={handleBuildingSelect}
+                        blocked={traceStatus.isBesieged}
+                        blockedReason={BESIEGED_BUILD_BLOCK_REASON}
+                    />
                 }
             </div>
         }
     </div>
   );
-};
-
-type SelectedHexPanelProps = {
-    selectedHex: HexCell;
-    selectedBuilding?: PlacedBuilding;
-    selectedWallBuilding?: WallBuilding;
-    wallResolution: WallResolution;
 };
 
 function SelectedHexPanel({
@@ -224,11 +229,19 @@ function hasUpkeepValues(values?: UpkeepAmount) {
     return Boolean(values && Object.values(values).some((value) => value !== undefined && value !== 0));
 }
 
-function WallBuildingSelector({onBuild}: {onBuild: (buildingId: string) => void}) {
+function WallBuildingSelector({
+    onBuild,
+    blocked,
+    blockedReason,
+}: {
+    onBuild: (buildingId: string) => void;
+    blocked: boolean;
+    blockedReason: string;
+}) {
     return (
         <div className={s.wallSelector}>
-            <WallBuildingList title="Wall segments" buildings={Object.values(WALL_BUILDINGS_ATLAS.wallSegments)} onBuild={onBuild} />
-            <WallBuildingList title="Tower bases" buildings={Object.values(WALL_BUILDINGS_ATLAS.towerBases)} onBuild={onBuild} />
+            <WallBuildingList title="Wall segments" buildings={Object.values(WALL_BUILDINGS_ATLAS.wallSegments)} onBuild={onBuild} blocked={blocked} blockedReason={blockedReason} />
+            <WallBuildingList title="Tower bases" buildings={Object.values(WALL_BUILDINGS_ATLAS.towerBases)} onBuild={onBuild} blocked={blocked} blockedReason={blockedReason} />
         </div>
     );
 }
@@ -237,10 +250,14 @@ function WallBuildingList({
     title,
     buildings,
     onBuild,
+    blocked,
+    blockedReason,
 }: {
     title: string;
     buildings: WallBuilding[];
     onBuild: (buildingId: string) => void;
+    blocked: boolean;
+    blockedReason: string;
 }) {
     return (
         <section className={s.wallCategory}>
@@ -252,7 +269,13 @@ function WallBuildingList({
                             <h4 className={s.wallCardTitle}>{building.name}</h4>
                             <WallStats wallBuilding={building} />
                         </div>
-                        <button className={s.wallBuildButton} type="button" onClick={() => onBuild(building.id)}>
+                        <button
+                            className={s.wallBuildButton}
+                            type="button"
+                            disabled={blocked}
+                            title={blocked ? blockedReason : undefined}
+                            onClick={() => onBuild(building.id)}
+                        >
                             Build
                         </button>
                     </article>

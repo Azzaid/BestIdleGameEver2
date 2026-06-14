@@ -1,4 +1,4 @@
-import type { World } from '../core/world';
+import type { World } from '../../../models/battle/world.ts';
 
 export function HealthSystem(world: World) {
   for (const [entityId, health] of world.healths) {

@@ -11,22 +11,15 @@ import * as s from './BuildPage.css.ts';
 import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/towers/parts.ts';
 import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
-import { selectActiveTower, selectActiveTowerDraftAssembly, selectResolvedActiveTowerDraft } from '../../store/towers/selectors.ts';
+import { selectActiveTower, selectActiveTowerDraftAssembly, selectHasActiveTowerBuild, selectResolvedActiveTowerDraft } from '../../store/towers/selectors.ts';
 import { cancelTowerDraft, commitTowerDraft, selectTowerDraftPart } from '../../store/towers/slice.ts';
 import { selectPurchasedTechsIds } from '../../store/research/selectors.ts';
-import { selectCityResolution } from '../../store/upkeep/selectors.ts';
+import { selectCityResolution, selectCityTraceStatus } from '../../store/upkeep/selectors.ts';
 import { formatTowerSlot } from '../../models/battle/resolveTowerAssembly.ts';
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
 import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
 import { TowerAssemblyPreview } from './TowerAssemblyPreview.tsx';
-
-interface SupportStatusItem {
-  resource: UpkeepTypesValue;
-  label: string;
-  requiredAmount: number;
-  availableAmount: number;
-  missingAmount: number;
-}
+import type { SupportStatusItem } from '../../models/build/buildPage.ts';
 
 function getPartKeywords(part: GunPart) {
   return Array.from(part.keywords);
@@ -77,14 +70,17 @@ function getAvailableUpkeepForSlot(
 const BuildPage = () => {
   const dispatch = useTypedDispatch();
   const activeTower = useTypedSelector(selectActiveTower);
+  const hasActiveTowerBuild = useTypedSelector(selectHasActiveTowerBuild);
   const towerDraftAssembly = useTypedSelector(selectActiveTowerDraftAssembly);
   const resolvedTower = useTypedSelector(selectResolvedActiveTowerDraft);
   const purchasedTechIds = useTypedSelector(selectPurchasedTechsIds);
   const cityResolution = useTypedSelector(selectCityResolution);
+  const traceStatus = useTypedSelector(selectCityTraceStatus);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>('base');
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 8 });
+  const canModifyTower = !traceStatus.isBesieged || !hasActiveTowerBuild;
 
   const selectSlot = (slot: TowerPartSlot) => {
     setActiveTab(slot);
@@ -186,14 +182,19 @@ const BuildPage = () => {
         return (
           <button
             className={s.installButton}
-            onClick={() => dispatch(selectTowerDraftPart({ slot: activeTab, partId: part.id }))}
+            disabled={!canModifyTower}
+            title={!canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined}
+            onClick={() => {
+              if (!canModifyTower) return;
+              dispatch(selectTowerDraftPart({ slot: activeTab, partId: part.id }));
+            }}
           >
             {selected ? 'Installed' : 'Install'}
           </button>
         );
       },
     },
-  ], [activeTab, cityResolution.effectiveUpkeep, dispatch, purchasedTechIds, resolvedTower.selectedParts, resolvedTower.supportCost, selectedPartId]);
+  ], [activeTab, canModifyTower, cityResolution.effectiveUpkeep, dispatch, purchasedTechIds, resolvedTower.selectedParts, resolvedTower.supportCost, selectedPartId]);
 
   const table = useReactTable({
     data: activeSlotParts,
@@ -208,7 +209,10 @@ const BuildPage = () => {
   });
 
   const supportCost = getSupportStatus(resolvedTower.supportCost, cityResolution.effectiveUpkeep);
-  const canRebuild = hasEnoughUpkeep(resolvedTower.supportCost, cityResolution.effectiveUpkeep);
+  const hasCompleteDraft = resolvedTower.warnings.length === 0;
+  const canRebuild = hasEnoughUpkeep(resolvedTower.supportCost, cityResolution.effectiveUpkeep)
+    && hasCompleteDraft
+    && canModifyTower;
   const draftChanged = JSON.stringify(activeTower?.selectedPartIds ?? {}) !== JSON.stringify(towerDraftAssembly.selectedPartIds);
   const filteredRowCount = table.getFilteredRowModel().rows.length;
   const firstVisibleRow = filteredRowCount === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
@@ -300,8 +304,14 @@ const BuildPage = () => {
             <button
               className={s.rebuildButton}
               disabled={!canRebuild}
-              title={!canRebuild ? 'City support is too low for this draft tower' : undefined}
-              onClick={() => dispatch(commitTowerDraft(undefined))}
+              title={!canModifyTower
+                ? 'The city is besieged. Tower rebuilding is blocked.'
+                : !hasCompleteDraft ? 'Select all required tower components before rebuilding.'
+                : !canRebuild ? 'City support is too low for this draft tower' : undefined}
+              onClick={() => {
+                if (!canRebuild) return;
+                dispatch(commitTowerDraft(undefined));
+              }}
             >
               Rebuild
             </button>

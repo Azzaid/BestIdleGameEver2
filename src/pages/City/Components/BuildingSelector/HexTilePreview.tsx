@@ -1,16 +1,6 @@
 import { useId } from "react";
 import * as s from "./BuildingSelector.css";
-
-type HexTilePreviewProps = {
-    imageUrl?: string;          // single small image file
-    size?: number;              // overall SVG box; default 64
-    padding?: number;           // 0..1, shrink image inside hex to avoid touching border
-    fit?: "cover" | "contain";  // how image fits the inner box
-    fill?: string;              // hex background fill
-    stroke?: string;            // hex border color
-    strokeWidth?: number;       // hex border width
-    ariaLabel?: string;
-};
+import type {HexTilePreviewProps} from "../../../../models/city/buildingSelector.ts";
 
 export function HexTilePreview({
                                    imageUrl,

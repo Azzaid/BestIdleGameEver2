@@ -1,21 +1,5 @@
 import type {EnemyBlueprint} from '../../../models/battle/enemyBlueprints.ts';
-
-export interface PlannedSpawn {
-    enemyId: string;
-    // swarmIndex: 0 for single spawns; when part of a swarm, index within that swarm
-    swarmIndex?: number;
-}
-
-export interface WavePlan {
-    picks: PlannedSpawn[];
-    totalStrength: number;
-}
-
-export interface WavePlannerOptions {
-    underfillTolerance?: number;   // e.g. 0.1 means can end at 90% of required
-    overfillTolerance?: number;    // e.g. 0.05 means can exceed by 5%
-    maxUnits?: number;             // hard cap for sanity
-}
+import type { PlannedSpawn, WavePlan, WavePlannerOptions } from '../../../models/battle/wave.ts';
 
 /**
  * Randomized knapsack-ish planner:

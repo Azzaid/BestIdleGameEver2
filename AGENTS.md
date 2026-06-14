@@ -59,6 +59,7 @@ There is no formal unit test command or test framework configured yet. For behav
 - Keep page-specific code under the relevant `src/pages/<PageName>` folder.
 - Keep shared, reusable UI in `src/components`.
 - Keep domain types and data outside React components when they are not view-specific.
+- Keep all TypeScript classes in corresponding files under `src/models`.
 - Use Redux Toolkit slices for shared app state. Add selectors beside the slice when derived data is needed.
 - Import local TypeScript modules with explicit `.ts`/`.tsx` extensions, matching the existing code and `allowImportingTsExtensions` setting.
 - Preserve the existing semicolon-light style unless editing a nearby block that already uses semicolons consistently.

@@ -1,8 +1,5 @@
 import {createSlice, type PayloadAction} from '@reduxjs/toolkit'
-
-interface ResearchState {
-    purchasedTechsIds: string[];
-}
+import type {ResearchState} from "../../models/store/research.ts";
 
 const initialState: ResearchState = {
     purchasedTechsIds: ['root', 'aether'],

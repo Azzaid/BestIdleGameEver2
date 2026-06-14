@@ -1,7 +1,7 @@
 import type { SpriteInfo } from './spriteInfo.ts';
 import type { EnemyKind } from './enemy.ts';
 import type { MovementController } from './movement.ts';
-import type { World } from '../../pages/Battle/core/world.ts';
+import type { World } from './world.ts';
 
 export type MovementFactory = (
     spawnX: number,

@@ -4,9 +4,8 @@ import type {
   TowerVisualNodeDefinition,
   TowerVisualPartDefinition,
   TowerVisualDefinition,
+  VisualSlotLayout,
 } from '../../models/battle/towerVisual.ts';
-
-type VisualSlotLayout = Pick<TowerVisualPartDefinition, 'rootSocket' | 'outputSockets' | 'fallbackSize' | 'renderLayer'>;
 
 const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
   base: {

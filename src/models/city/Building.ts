@@ -28,3 +28,5 @@ export interface Building {
 }
 
 export interface PlacedBuilding extends Building, HexResolvedStats, AxialCoordinate {}
+
+export type BuildingAtlas = { [k in DevelopmentVectorValue]: {[key: string]: Building} }

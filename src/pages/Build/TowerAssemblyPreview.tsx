@@ -1,13 +1,9 @@
 import { Application } from 'pixi.js';
 import { useEffect, useMemo, useRef } from 'react';
-import type { TowerAssemblyResolved } from '../../models/battle/towerParts.ts';
+import type { TowerAssemblyPreviewProps } from '../../models/build/towerAssemblyPreview.ts';
 import { createTowerVisualDefinitionFromAssembly } from '../../data/towers/visuals.ts';
 import { loadBattleAssets } from '../Battle/assets/assetLoader.ts';
 import { buildTowerVisualContainer } from '../Battle/factories/towerVisualRenderer.ts';
-
-interface TowerAssemblyPreviewProps {
-  resolvedTower: TowerAssemblyResolved;
-}
 
 export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProps) {
   const hostRef = useRef<HTMLDivElement>(null);

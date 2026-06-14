@@ -1,18 +1,6 @@
 import { useRef, useEffect } from 'react';
 import * as s from './StatisticsPage.css.ts';
-
-// Define types for statistics data
-interface StatPoint {
-  timestamp: number;
-  value: number;
-}
-
-interface StatSeries {
-  id: string;
-  name: string;
-  color: string;
-  data: StatPoint[];
-}
+import type { StatSeries } from '../../models/statistics/statistics.ts';
 
 const StatisticsPage = () => {
   // Canvas references for each graph

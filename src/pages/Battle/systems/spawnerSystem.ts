@@ -1,6 +1,6 @@
-import type { World } from '../core/world';
+import type { World } from '../../../models/battle/world.ts';
 import { planWaveComposition } from '../spawn/wavePlanner';
-import { WaveSpawner } from '../spawn/waveSpawner';
+import { WaveSpawner } from '../../../models/battle/waveSpawner.ts';
 
 /**
  * SpawnerSystem:
@@ -59,6 +59,7 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
         });
         spawner.enqueuePlan(plan);
         world.spawners.push(spawner);
+        world.config.onWaveThreatReached?.(plan.totalStrength);
 
         // Bookkeeping for next wave
         sched.state.currentWaveIndex += 1;

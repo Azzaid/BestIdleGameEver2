@@ -2,14 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 
 // Ensures vanilla-extract emits CSS and bundles it.
 import { themeMap } from './theme.css.ts';
-import {THEME_NAME_LIST, type ThemeName} from "../models/Theme.ts";
-
-type ThemeContextValue = {
-    theme: ThemeName;
-    setTheme: (t: ThemeName) => void;
-    /** Returns the raw values object for a theme (useful for JS-driven SVG, charts, etc.). */
-    getThemeValues: (t?: ThemeName) => (typeof themeMap)[ThemeName];
-};
+import {THEME_NAME_LIST, type ThemeContextValue, type ThemeName} from "../models/Theme.ts";
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = 'app-theme';

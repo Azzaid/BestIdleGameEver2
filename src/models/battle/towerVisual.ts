@@ -1,3 +1,4 @@
+import type * as PIXI from 'pixi.js';
 import type { SpriteInfo } from './spriteInfo.ts';
 
 export interface TowerVisualPoint {
@@ -31,4 +32,18 @@ export interface TowerVisualNodeDefinition {
 
 export interface TowerVisualDefinition {
   root: TowerVisualNodeDefinition;
+}
+
+export type VisualSlotLayout = Pick<TowerVisualPartDefinition, 'rootSocket' | 'outputSockets' | 'fallbackSize' | 'renderLayer'>;
+
+export interface TowerVisualRenderOptions {
+  warn?: (message: string) => void;
+  fallbackFillColor?: number;
+  fallbackBorderColor?: number;
+  fallbackTextColor?: number;
+}
+
+export interface BuiltTowerVisualContainer {
+  container: PIXI.Container;
+  partContainers: Map<string, PIXI.Container>;
 }

@@ -3,16 +3,21 @@ import {vars} from "../theme/theme.css.ts";
 
 export const upkeepBar = style({
     display: 'flex',
-    height: '50px',
-    padding: '3px',
+    minHeight: '64px',
+    padding: '6px 12px',
     width: '100%',
     boxSizing: 'border-box',
     backgroundColor: vars.color.background.navbar,
     color:vars.color.text.heading,
-    gap: '20px',
+    gap: '16px',
+    alignItems: 'center',
+    overflowX: 'auto',
 });
 
 export const vectorCard = style({
+    display: 'grid',
+    gap: '2px',
+    flex: '0 0 auto',
 });
 
 export const resourceEntry = style({
@@ -32,4 +37,59 @@ export const resourceIcon = style({
 
 export const resourceText = style({});
 
-export const traceMeter = style({});
+export const traceMeter = style({
+    display: 'grid',
+    gap: '4px',
+    minWidth: '240px',
+    maxWidth: '420px',
+    flex: '1 1 320px',
+});
+
+export const traceMeterHeader = style({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
+    fontSize: '0.78rem',
+    lineHeight: 1,
+});
+
+export const traceMeterTitle = style({
+    fontWeight: 700,
+    textTransform: 'uppercase',
+});
+
+export const traceStageStable = style({
+    color: vars.color.text.muted,
+    fontWeight: 700,
+});
+
+export const traceStageBesieged = style({
+    color: vars.color.state.error,
+    fontWeight: 800,
+});
+
+export const traceTrack = style({
+    position: 'relative',
+    height: '12px',
+    borderRadius: '999px',
+    overflow: 'hidden',
+    background: 'rgb(43 48 55 / 0.24)',
+    border: `1px solid ${vars.color.border.default}`,
+});
+
+export const traceFill = style({
+    height: '100%',
+    maxWidth: '100%',
+    borderRadius: '999px',
+    transition: 'width 180ms ease, background-color 180ms ease',
+});
+
+export const traceNumbers = style({
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '8px',
+    color: vars.color.text.muted,
+    fontSize: '0.75rem',
+    lineHeight: 1,
+});

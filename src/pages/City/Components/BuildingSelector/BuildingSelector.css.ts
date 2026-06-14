@@ -139,8 +139,9 @@ export const buildBtn = style({
     fontSize: tokens.font.md,
     fontWeight: 600,
     selectors: {
-        "&:hover": { filter: "brightness(1.05)" },
-        "&:active": { transform: "translateY(1px)" },
+        "&:hover:not(:disabled)": { filter: "brightness(1.05)" },
+        "&:active:not(:disabled)": { transform: "translateY(1px)" },
+        "&:disabled": { cursor: "not-allowed", opacity: 0.55 },
     },
 });
 

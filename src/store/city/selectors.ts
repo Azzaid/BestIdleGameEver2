@@ -1,4 +1,4 @@
-import type {RootState} from "../index.ts";
+import type {RootState} from "../../models/store/appStore.ts";
 import {createSelector} from "@reduxjs/toolkit";
 import {placeCityBuildings} from "../../pages/City/Components/CityHex/adjacencyUtils.ts";
 

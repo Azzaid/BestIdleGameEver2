@@ -1,4 +1,4 @@
-import type { World } from '../core/world';
+import type { World } from '../../../models/battle/world.ts';
 import { applyDamageModifiers } from '../keywords/damageResolver';
 
 export function ProjectilesSystem(world: World) {

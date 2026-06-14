@@ -25,3 +25,19 @@ export interface WaveSchedulerState {
     /** Whether auto waves are enabled (toggle if you want manual trigger). */
     enabled: boolean;
 }
+
+export interface PlannedSpawn {
+    enemyId: string;
+    swarmIndex?: number;
+}
+
+export interface WavePlan {
+    picks: PlannedSpawn[];
+    totalStrength: number;
+}
+
+export interface WavePlannerOptions {
+    underfillTolerance?: number;
+    overfillTolerance?: number;
+    maxUnits?: number;
+}

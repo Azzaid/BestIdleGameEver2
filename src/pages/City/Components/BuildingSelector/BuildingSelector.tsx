@@ -7,14 +7,12 @@ import {HexTilePreview} from "./HexTilePreview.tsx";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
 import {useTypedSelector} from "../../../../store/hooks.ts";
 import {selectCityResolution} from "../../../../store/upkeep/selectors.ts";
-
-
-export type BuildingSelectorProps = {
-    onBuild: (buildingId: string, activeVector: symbol) => void;
-};
+import type {BuildingSelectorProps} from "../../../../models/city/buildingSelector.ts";
 
 export function BuildingSelector({
                                      onBuild,
+                                     blocked = false,
+                                     blockedReason,
                                  }: BuildingSelectorProps) {
     const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.default);
     const {effectiveTrace, effectiveUpkeep} = useTypedSelector(selectCityResolution);
@@ -74,8 +72,11 @@ export function BuildingSelector({
                                 </div>
                                 <button
                                     className={s.buildBtn}
+                                    type="button"
+                                    disabled={blocked}
                                     onClick={() => onBuild(building.id, activeVector)}
                                     aria-label={`Build ${building.name}`}
+                                    title={blocked ? blockedReason : undefined}
                                 >
                                     Build
                                 </button>

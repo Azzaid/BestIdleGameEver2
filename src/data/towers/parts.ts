@@ -31,7 +31,7 @@ export const TOWER_PARTS: GunPart[] = [
     attachmentOffset: { x: 0, y: 0 },
     keywords: new Set(['stable', 'grounded']),
     modifiers: { rotationSpeed: -0.5, projectileDamage: 3, retargetCooldownSeconds: 0.1 },
-    supportCost: { [UPKEEP_TYPES.people]: 1 },
+    supportCost: {},
   },
   {
     id: 'base_servo_ring',
@@ -56,7 +56,7 @@ export const TOWER_PARTS: GunPart[] = [
     attachmentOffset: { x: 16, y: 0 },
     keywords: new Set(['projectile']),
     modifiers: { projectileSpeed: 100 },
-    supportCost: { [UPKEEP_TYPES.people]: 1 },
+    supportCost: {},
   },
   {
     id: 'barrel_long_rail',
@@ -81,7 +81,7 @@ export const TOWER_PARTS: GunPart[] = [
     attachmentOffset: { x: 0, y: 0 },
     keywords: new Set(['projectile']),
     modifiers: { projectileDamage: 2 },
-    supportCost: { [UPKEEP_TYPES.people]: 1 },
+    supportCost: {},
   },
   {
     id: 'ammo_explosive',
@@ -114,13 +114,13 @@ export const TOWER_PARTS: GunPart[] = [
     slot: 'aimSystem',
     name: 'Wall Watch',
     description: 'Prioritizes enemies closest to the wall.',
-    vector: 'tech',
+    vector: 'medieval',
     sprite: { textureKey: 'aim_wall_watch' },
     attachmentOffset: { x: 0, y: -8 },
     keywords: new Set(['targeting', 'defensive']),
     aimKeywords: ['closestToWall'],
     modifiers: { retargetCooldownSeconds: -0.04 },
-    supportCost: { [UPKEEP_TYPES.electricity]: 1 },
+    supportCost: {},
   },
   {
     id: 'aim_splash_spotter',
@@ -184,7 +184,7 @@ export const TOWER_PARTS: GunPart[] = [
     attachmentOffset: { x: 0, y: -8 },
     keywords: new Set(['manual', 'reliable']),
     modifiers: { reloadSpeed: -0.15, projectileDamage: 2 },
-    supportCost: { [UPKEEP_TYPES.people]: 2 },
+    supportCost: {},
   },
   {
     id: 'loader_fast',
@@ -209,7 +209,7 @@ export const TOWER_PARTS: GunPart[] = [
     attachmentOffset: { x: 0, y: 0 },
     keywords: new Set(['chemical', 'reliable']),
     modifiers: { projectileDamage: 3, projectileSpeed: 40 },
-    supportCost: { [UPKEEP_TYPES.people]: 1 },
+    supportCost: {},
   },
   {
     id: 'launch_electromagnetic',

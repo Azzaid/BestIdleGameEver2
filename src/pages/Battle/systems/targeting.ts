@@ -1,5 +1,5 @@
 // /battle/systems/targeting.ts
-import type { World } from '../core/world';
+import type { World } from '../../../models/battle/world.ts';
 import type {EntityId} from "../../../models/battle/common.ts";
 
 

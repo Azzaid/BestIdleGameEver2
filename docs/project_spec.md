@@ -83,7 +83,12 @@ Usage in styles:
   - SVG hex city map with buildings; on click, shows build options and the selected tile's resolved stats.
   - Top hex row is reserved for wall hexes. Wall hexes use a separate wall build catalog containing wall segments and tower bases.
   - Building placement uses city building data for normal city hexes and wall building data for wall hexes.
-  - City tiles without texture render a colored hex fallback with the building id so unfinished content remains visible.
+- City tiles without texture render a colored hex fallback with the building id so unfinished content remains visible.
+- City trace is shown in the shared top upkeep bar as a capped meter against current city resilience. The meter fill never overflows beyond resilience, shifts from gray through green/yellow to red as it approaches the cap, and marks the city as besieged when trace is greater than resilience.
+- The city starts with base wall segments, no committed tower, and a besieged state caused by the noise of setting camp.
+- Resilience is battle progress: the highest wave threat reached on the battle screen before the wall's defensive capacity is overwhelmed. Wall buildings no longer define the trace cap.
+- While besieged, research and city/wall building actions are disabled. Tower rebuilding is also blocked, except when the player has no committed tower yet.
+- Battle is blocked until the player assembles the first tower and commits it with Rebuild. The most basic tower components are medieval and require no upkeep.
   - Styles: src/pages/City/CityPage.css.ts.
 
 - StatisticsPage

@@ -1,4 +1,4 @@
-import type { World } from '../core/world';
+import type { World } from '../../../models/battle/world.ts';
 
 function shortestAngleDelta(current: number, desired: number): number {
   let d = desired - current;

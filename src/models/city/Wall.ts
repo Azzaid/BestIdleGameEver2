@@ -27,3 +27,11 @@ export type WallBuildingAtlas = {
     wallSegments: Record<string, WallBuilding>;
     towerBases: Record<string, WallBuilding>;
 };
+
+export type WallResolution = {
+    requiredUpkeep: UpkeepAmount;
+    resilience: number;
+    camoLevel: number;
+    ignoredThreat: number;
+    specialEffects: WallBuilding["specialEffects"];
+};

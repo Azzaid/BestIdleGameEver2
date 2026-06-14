@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import type { RootState } from '../index.ts';
+import type { RootState } from '../../models/store/appStore.ts';
 import { resolveTowerAssembly } from '../../models/battle/resolveTowerAssembly.ts';
 import { selectPurchasedTechsIds } from '../research/selectors.ts';
 
@@ -30,4 +30,9 @@ export const selectResolvedActiveTower = createSelector(
 export const selectResolvedActiveTowerDraft = createSelector(
   [selectActiveTowerDraftAssembly, selectPurchasedTechsIds],
   (assembly, purchasedTechIds) => resolveTowerAssembly(assembly, purchasedTechIds)
+);
+
+export const selectHasActiveTowerBuild = createSelector(
+  [selectResolvedActiveTower],
+  (resolvedTower) => resolvedTower.warnings.length === 0
 );

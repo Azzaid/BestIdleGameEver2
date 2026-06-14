@@ -1,9 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
-import type {AxialCoordinate, HexCell} from "../../models/city/HexGrid.ts";
+import type {HexCell} from "../../models/city/HexGrid.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {INITIAL_CITY_CELL_RADIUS} from "../../data/constants.ts";
 import {coordKey} from "../../pages/City/Components/CityHex/hexUtils.ts";
+import type {CityState} from "../../models/store/city.ts";
 
 const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
     const generatedCells: HexCell[] = [];
@@ -16,20 +17,13 @@ const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
                 row,
                 cellKey: coordKey({column, row}),
                 kind: row === -cityRadius ? "wall" : "city",
-                buildingKey: null,
+                buildingKey: row === -cityRadius ? "timberBulwark" : null,
                 developmentVector: DEVELOPMENT_VECTORS.default,
             });
         }
     }
     return generatedCells;
 })
-
-// Define a type for the slice state
-interface CityState {
-    hexes: HexCell[],
-    cellRadius: number,
-    selectedHex?: AxialCoordinate,
-}
 
 // Define the initial state using that type
 const initialState: CityState = {

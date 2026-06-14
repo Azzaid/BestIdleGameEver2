@@ -1,4 +1,4 @@
-import type { World } from '../core/world';
+import type { World } from '../../../models/battle/world.ts';
 import { TargetingSystem } from './targeting';
 import { AimingSystem } from './aiming';
 import { FiringSystem } from './firing';

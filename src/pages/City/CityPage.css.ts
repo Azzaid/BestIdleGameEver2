@@ -148,4 +148,10 @@ export const wallBuildButton = style({
     background: vars.color.brand.primary,
     color: vars.color.text.primary,
     cursor: 'pointer',
+    selectors: {
+        '&:disabled': {
+            cursor: 'not-allowed',
+            opacity: 0.55,
+        },
+    },
 });
