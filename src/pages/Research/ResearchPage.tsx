@@ -13,6 +13,7 @@ import {purchaseTech} from "../../store/research/slice.ts";
 import {selectCityHexes} from "../../store/city/selectors.ts";
 import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
+import {STRUCTURES_BY_ID} from "../../data/structures/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
 import type { FlatEdge, FlatEdgeData, FlatNode, RequirementStatus, StubData } from "../../models/research/researchView.ts";
@@ -42,6 +43,18 @@ function getBuildingName(buildingId: string): string {
     }
 
     return buildingId;
+}
+
+function getStructureName(structureId: string): string {
+    return STRUCTURES_BY_ID[structureId]?.name ?? structureId;
+}
+
+function hasStructureRequirements(structureId: string, builtBuildingIds: Set<string>): boolean {
+    const structure = STRUCTURES_BY_ID[structureId];
+    if (!structure) return false;
+
+    return builtBuildingIds.has(structure.coreBuildingId)
+        && structure.requiredAdjacentBuildingIds.every(buildingId => builtBuildingIds.has(buildingId));
 }
 
 function hasEnoughFreeUpkeep(required: UpkeepAmount | undefined, available: UpkeepAmount): boolean {
@@ -81,6 +94,11 @@ function getRequirementStatus(
             id: buildingId,
             name: getBuildingName(buildingId),
             met: builtBuildingIds.has(buildingId),
+        })),
+        requiredStructures: (data.requiredStructures ?? []).map(structureId => ({
+            id: structureId,
+            name: getStructureName(structureId),
+            met: hasStructureRequirements(structureId, builtBuildingIds),
         })),
         requiredFreeUpkeep: describeFreeUpkeepRequirement(data.requiredFreeUpkeep, effectiveUpkeep),
     };
@@ -303,6 +321,7 @@ export default function ResearchPage() {
                         const canResearch = !isResearched
                             && isUnlocked(data, purchased)
                             && requirements.requiredBuildings.every(requirement => requirement.met)
+                            && requirements.requiredStructures.every(requirement => requirement.met)
                             && hasEnoughFreeUpkeep(data.requiredFreeUpkeep, effectiveUpkeep)
                             && !traceStatus.isBesieged;
 

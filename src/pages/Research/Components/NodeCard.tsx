@@ -53,11 +53,18 @@ export function NodeCard({
                     ) : null}
                     <div style={{marginTop: 6}}>
                         <div style={{opacity: 0.8, fontWeight: 600, color: vectorTheme.color.text.primary}}>Requires</div>
-                        {requirements.requiredBuildings.length || requirements.requiredFreeUpkeep.length ? (
+                        {requirements.requiredBuildings.length
+                        || requirements.requiredStructures.length
+                        || requirements.requiredFreeUpkeep.length ? (
                             <ul style={{margin: 2, paddingLeft: 16}}>
                                 {requirements.requiredBuildings.map(building => (
                                     <li key={building.id} style={{opacity: building.met ? 1 : 0.55}}>
                                         {building.met ? 'OK' : 'Missing'} {building.name}
+                                    </li>
+                                ))}
+                                {requirements.requiredStructures.map(structure => (
+                                    <li key={structure.id} style={{opacity: structure.met ? 1 : 0.55}}>
+                                        {structure.met ? 'OK' : 'Missing'} {structure.name}
                                     </li>
                                 ))}
                                 {requirements.requiredFreeUpkeep.map(upkeep => (

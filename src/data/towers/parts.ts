@@ -20,7 +20,7 @@ export const REQUIRED_TOWER_PART_SLOTS: TowerPartSlot[] = [
   'launchSystem',
 ];
 
-export const TOWER_PARTS: GunPart[] = [
+export const TOWER_PART_DEFINITIONS: GunPart[] = [
   {
     id: 'base_fixed_mount',
     slot: 'base',
@@ -44,7 +44,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['powered', 'precise']),
     modifiers: { rotationSpeed: 1.1, retargetCooldownSeconds: -0.08 },
     supportCost: { [UPKEEP_TYPES.electricity]: 3, [UPKEEP_TYPES.highTechComponents]: 1 },
-    unlockRequirements: [{ researchId: 'root', label: 'Basic Engineering' }],
   },
   {
     id: 'barrel_basic',
@@ -69,7 +68,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['projectile', 'precision', 'piercing']),
     modifiers: { projectileSpeed: 180, projectileDamage: 4, targetingDistanceLimit: 120 },
     supportCost: { [UPKEEP_TYPES.electricity]: 3, [UPKEEP_TYPES.highTechComponents]: 2 },
-    unlockRequirements: [{ researchId: 'root', label: 'Basic Engineering' }],
   },
   {
     id: 'ammo_standard',
@@ -94,7 +92,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['aoe', 'explosive']),
     modifiers: { aoeRadius: 32, projectileDamage: 5, projectileSpeed: -60 },
     supportCost: { [UPKEEP_TYPES.electricity]: 2, [UPKEEP_TYPES.highTechComponents]: 1 },
-    unlockRequirements: [{ researchId: 'root', label: 'Basic Engineering' }],
   },
   {
     id: 'ammo_spore_capsules',
@@ -107,7 +104,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['biological', 'poison', 'control']),
     modifiers: { projectileDamage: -2, aoeRadius: 18 },
     supportCost: { [UPKEEP_TYPES.biomass]: 3, [UPKEEP_TYPES.mutagen]: 1 },
-    unlockRequirements: [{ researchId: 'nature', label: 'Living Weapons' }],
   },
   {
     id: 'aim_wall_watch',
@@ -147,7 +143,6 @@ export const TOWER_PARTS: GunPart[] = [
     aimKeywords: ['mostMaxHP'],
     modifiers: { retargetCooldownSeconds: 0.18, targetingDistanceLimit: 80 },
     supportCost: { [UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.arcaneSupplies]: 1 },
-    unlockRequirements: [{ researchId: 'aether', label: 'Aetheric Studies' }],
   },
   {
     id: 'attachment_muzzle_brake',
@@ -172,7 +167,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['arcane', 'amplifier']),
     modifiers: { projectileDamage: 8, reloadSpeed: -0.2, rotationSpeed: -0.3 },
     supportCost: { [UPKEEP_TYPES.mana]: 2 },
-    unlockRequirements: [{ researchId: 'aether', label: 'Aetheric Studies' }],
   },
   {
     id: 'loader_manual_crew',
@@ -197,7 +191,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['rapid', 'mechanical']),
     modifiers: { reloadSpeed: 0.5 },
     supportCost: { [UPKEEP_TYPES.electricity]: 3 },
-    unlockRequirements: [{ researchId: 'root', label: 'Basic Engineering' }],
   },
   {
     id: 'launch_gunpowder',
@@ -222,7 +215,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['powered', 'precision']),
     modifiers: { projectileSpeed: 220, projectileDamage: 4, reloadSpeed: -0.08 },
     supportCost: { [UPKEEP_TYPES.electricity]: 5, [UPKEEP_TYPES.highTechComponents]: 2 },
-    unlockRequirements: [{ researchId: 'root', label: 'Basic Engineering' }],
   },
   {
     id: 'attachment_iron_sight_collar',
@@ -235,7 +227,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['stable', 'reliable', 'sighting']),
     modifiers: { projectileDamage: 2, retargetCooldownSeconds: -0.03 },
     supportCost: { [UPKEEP_TYPES.people]: 1, [UPKEEP_TYPES.gold]: 1 },
-    unlockRequirements: [{ researchId: 'medieval-artillery', label: 'Siege Artillery' }],
   },
   {
     id: 'base_root_cluster',
@@ -248,7 +239,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['biological', 'stable', 'regenerative']),
     modifiers: { rotationSpeed: -0.15, retargetCooldownSeconds: -0.04 },
     supportCost: { [UPKEEP_TYPES.biomass]: 3 },
-    unlockRequirements: [{ researchId: 'nature-weaponcraft', label: 'Living Weaponcraft' }],
   },
   {
     id: 'barrel_thorn_bore',
@@ -261,7 +251,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['projectile', 'biological', 'piercing']),
     modifiers: { projectileDamage: 3, projectileSpeed: 70 },
     supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.mutagen]: 1 },
-    unlockRequirements: [{ researchId: 'nature-weaponcraft', label: 'Living Weaponcraft' }],
   },
   {
     id: 'aim_predator_sense',
@@ -275,7 +264,6 @@ export const TOWER_PARTS: GunPart[] = [
     aimKeywords: ['leastHP'],
     modifiers: { retargetCooldownSeconds: -0.07, rotationSpeed: 0.2 },
     supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.mutagen]: 1 },
-    unlockRequirements: [{ researchId: 'nature-weaponcraft', label: 'Living Weaponcraft' }],
   },
   {
     id: 'attachment_spore_nozzle',
@@ -288,7 +276,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['biological', 'poison', 'amplifier']),
     modifiers: { aoeRadius: 14, projectileSpeed: -25 },
     supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.mutagen]: 1 },
-    unlockRequirements: [{ researchId: 'nature-weaponcraft', label: 'Living Weaponcraft' }],
   },
   {
     id: 'loader_peristaltic_sac',
@@ -301,7 +288,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['biological', 'sustained']),
     modifiers: { reloadSpeed: 0.25, burstCount: 1 },
     supportCost: { [UPKEEP_TYPES.biomass]: 3, [UPKEEP_TYPES.mutagen]: 1 },
-    unlockRequirements: [{ researchId: 'nature-weaponcraft', label: 'Living Weaponcraft' }],
   },
   {
     id: 'launch_muscle_sling',
@@ -314,7 +300,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['biological', 'reliable']),
     modifiers: { projectileSpeed: 90, reloadSpeed: 0.1 },
     supportCost: { [UPKEEP_TYPES.biomass]: 3 },
-    unlockRequirements: [{ researchId: 'nature-weaponcraft', label: 'Living Weaponcraft' }],
   },
   {
     id: 'base_levitation_gimbal',
@@ -327,7 +312,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['arcane', 'mobile', 'precise']),
     modifiers: { rotationSpeed: 0.8, retargetCooldownSeconds: -0.05 },
     supportCost: { [UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.arcaneSupplies]: 1 },
-    unlockRequirements: [{ researchId: 'aether-artillery', label: 'Aether Artillery' }],
   },
   {
     id: 'barrel_phase_channel',
@@ -340,7 +324,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['projectile', 'arcane', 'piercing']),
     modifiers: { projectileDamage: 5, projectileSpeed: 80, targetingDistanceLimit: 70 },
     supportCost: { [UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.arcaneSupplies]: 1 },
-    unlockRequirements: [{ researchId: 'aether-artillery', label: 'Aether Artillery' }],
   },
   {
     id: 'ammo_mana_bolt',
@@ -353,7 +336,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['arcane', 'resonant']),
     modifiers: { projectileDamage: 7, reloadSpeed: -0.12 },
     supportCost: { [UPKEEP_TYPES.mana]: 3 },
-    unlockRequirements: [{ researchId: 'aether-artillery', label: 'Aether Artillery' }],
   },
   {
     id: 'loader_rune_carousel',
@@ -366,7 +348,6 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['arcane', 'cycling']),
     modifiers: { reloadSpeed: 0.35, burstCount: 1, rotationSpeed: -0.1 },
     supportCost: { [UPKEEP_TYPES.mana]: 2, [UPKEEP_TYPES.arcaneSupplies]: 2 },
-    unlockRequirements: [{ researchId: 'aether-artillery', label: 'Aether Artillery' }],
   },
   {
     id: 'launch_gravity_pulse',
@@ -379,12 +360,13 @@ export const TOWER_PARTS: GunPart[] = [
     keywords: new Set(['arcane', 'powered']),
     modifiers: { projectileSpeed: 170, projectileDamage: 3, reloadSpeed: -0.05 },
     supportCost: { [UPKEEP_TYPES.mana]: 4, [UPKEEP_TYPES.arcaneSupplies]: 1 },
-    unlockRequirements: [{ researchId: 'aether-artillery', label: 'Aether Artillery' }],
   },
 ];
 
+export const TOWER_PARTS = TOWER_PART_DEFINITIONS;
+
 export const TOWER_PARTS_BY_ID = Object.fromEntries(
-  TOWER_PARTS.map((part) => [part.id, part])
+  TOWER_PART_DEFINITIONS.map((part) => [part.id, part])
 ) as Record<string, GunPart>;
 
 export const TOWER_SYNERGY_RULES: TowerSynergyRule[] = [

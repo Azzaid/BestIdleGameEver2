@@ -9,6 +9,7 @@ export type ResearchNodeData = {
     summary?: string;
     unlocks?: string[];
     requiredBuildings?: string[];
+    requiredStructures?: string[];
     requiredFreeUpkeep?: UpkeepAmount;
     notes?: string;
     /** Additional prerequisites (multi-parent DAG edges) */

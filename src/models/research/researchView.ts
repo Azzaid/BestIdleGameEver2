@@ -2,6 +2,7 @@ import type { ResearchNodeData } from './ResearchNode.ts';
 
 export type RequirementStatus = {
     requiredBuildings: {id: string; name: string; met: boolean}[];
+    requiredStructures: {id: string; name: string; met: boolean}[];
     requiredFreeUpkeep: {name: string; required: number; available: number; met: boolean}[];
 };
 

@@ -10,6 +10,7 @@ import BuildPage from './pages/Build/BuildPage'
 import ResearchPage from './pages/Research/ResearchPage'
 import CityPage from './pages/City/CityPage'
 import StatisticsPage from './pages/Statistics/StatisticsPage'
+import ProgressionPage from './pages/Progression/ProgressionPage.tsx'
 import {THEME_NAMES} from "./models/Theme.ts";
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedSelector} from "./store/hooks.ts";
@@ -57,6 +58,9 @@ function App() {
                           <li>
                               <Link className={appTheme.navBarLink} to="/statistics">Statistics</Link>
                           </li>
+                          <li>
+                              <Link className={appTheme.navBarLink} to="/progression">Progression</Link>
+                          </li>
                       </ul>
                       <ThemeSwitcher />
                   </nav>
@@ -69,6 +73,7 @@ function App() {
                           <Route path="/research" element={traceStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />} />
                           <Route path="/city" element={<CityPage />} />
                           <Route path="/statistics" element={<StatisticsPage />} />
+                          <Route path="/progression" element={<ProgressionPage />} />
                       </Routes>
                   </main>
               </div>
