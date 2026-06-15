@@ -1,5 +1,9 @@
 export const TRACE_PER_HEX = 5;
 
+export const TRACE_PER_DEMOLISHED_HEX = 5;
+
+export const TRACE_PER_SURVIVED_SIEGE = 1;
+
 export const INITIAL_CITY_CELL_RADIUS = 1;
 
 export const BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX = 100;

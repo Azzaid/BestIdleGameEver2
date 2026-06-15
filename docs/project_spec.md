@@ -241,9 +241,13 @@ Threat interacts with:
 - expansion gating;
 - crises;
 - migration decisions;
+- demolition and city rebuilding;
+- settlement-site openness;
 - ending requirements.
 
 Containment is battle-proven defensive capacity. It gates expansion, research, megaprojects, and some endings. The player may temporarily exceed safe threat/containment margins, creating threat debt, blocked growth, and stronger attacks rather than immediate city destruction.
+
+Demolishing buildings permanently increases the current city's base visibility/threat. The in-world explanation is that rubble, waste, damaged machinery, polluted biomass, ritual residue, and other remains must be moved outside the walls to reclaim internal space, and those external scars attract monsters. Obsolete early buildings therefore either occupy land or pollute the city's visibility budget. Migration is the clean way to escape accumulated demolition scars.
 
 Current prototype terminology also uses city trace and resilience:
 
@@ -263,7 +267,9 @@ City rules and goals:
 - The city uses a hex grid.
 - Land is acquired through expansion.
 - Expansion increases available land, flexibility, perimeter, complexity, and threat.
+- Each settlement site has Openness, which raises maximum city size while multiplying city visibility/threat.
 - Buildings produce support, consume support, create threat, reduce threat, strengthen neighbors, unlock research, form multistructures, and may create crises.
+- Demolishing buildings frees land but leaves permanent demolition threat on the current city.
 - Placement matters through adjacency and district formation.
 - The city should feel like a living puzzle-machine.
 
@@ -612,6 +618,7 @@ Open design questions:
 - Final game title.
 - Final name for Threat/Trace/Visibility/Attention.
 - Exact threat formula and whether threat decays naturally.
+- Exact demolition threat values and Openness size/threat scaling.
 - Target city size and whether city shape matters mechanically.
 - Whether support storage exists at all.
 - Deficit soft penalties.

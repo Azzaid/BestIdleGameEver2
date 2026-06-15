@@ -6,7 +6,7 @@ import {BuildingSelector} from "./Components/BuildingSelector/BuildingSelector.t
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {selectCityBuildings, selectCityHexes, selectCityStructureCandidates} from "../../store/city/selectors.ts";
-import {buildHex, buildWall, buildWallTop} from "../../store/city/slice.ts";
+import {buildHex, buildWall, buildWallTop, demolishHex} from "../../store/city/slice.ts";
 import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
 import {ALL_WALL_BUILDINGS, TOWER_BASE_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
@@ -43,6 +43,12 @@ const CityPage = () => {
         dispatch(buildWallTop({cellKey: selectedHex.cellKey, wallTopKey: buildingKey}))
     };
 
+    const handleDemolishSelectedHex = () => {
+        if (!selectedHex || traceStatus.isBesieged) return;
+        dispatch(demolishHex({cellKey: selectedHex.cellKey}));
+        setSelectedHex(null);
+    };
+
     const selectedBuilding = selectedHex ? cityBuildings.get(selectedHex.cellKey) : undefined;
     const selectedWallBuilding = selectedHex?.wallKey ? ALL_WALL_BUILDINGS[selectedHex.wallKey] : undefined;
     const selectedWallTopBuilding = selectedHex?.wallTopKey ? ALL_WALL_BUILDINGS[selectedHex.wallTopKey] : undefined;
@@ -64,6 +70,9 @@ const CityPage = () => {
                     selectedWallTopBuilding={selectedWallTopBuilding}
                     structureCandidates={selectedStructureCandidates}
                     wallResolution={wallResolution}
+                    blocked={traceStatus.isBesieged}
+                    blockedReason={BESIEGED_BUILD_BLOCK_REASON}
+                    onDemolish={handleDemolishSelectedHex}
                 />
                 {selectedHex.kind === "wall"
                     ? <WallBuildingSelector
@@ -91,6 +100,9 @@ function SelectedHexPanel({
     selectedWallTopBuilding,
     structureCandidates,
     wallResolution,
+    blocked,
+    blockedReason,
+    onDemolish,
 }: SelectedHexPanelProps) {
     return (
         <aside className={s.selectionPanel}>
@@ -113,6 +125,17 @@ function SelectedHexPanel({
                     <AdjacencyEffectSummary building={selectedBuilding} />
                     <MultistructureStatus structureCandidates={structureCandidates} />
                     <p className={s.panelDescription}>{selectedBuilding.adjacencyDescription}</p>
+                    {selectedHex.kind === "city" && (
+                        <button
+                            className={s.demolishButton}
+                            type="button"
+                            disabled={blocked}
+                            title={blocked ? blockedReason : undefined}
+                            onClick={onDemolish}
+                        >
+                            Demolish
+                        </button>
+                    )}
                 </div>
             )}
 

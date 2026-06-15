@@ -52,7 +52,7 @@ export const UpkeepBar = () => {
             })}
             <div
                 className={s.traceMeter}
-                aria-label={`City trace ${effectiveTrace} of ${traceStatus.resilience} resilience`}
+                aria-label={`City trace ${effectiveTrace} of ${traceStatus.resilience} resilience, ${traceStatus.scarTrace} trail`}
             >
                 <div className={s.traceMeterHeader}>
                     <span className={s.traceMeterTitle}>City Trace</span>
@@ -62,18 +62,23 @@ export const UpkeepBar = () => {
                 </div>
                 <div className={s.traceTrack}>
                     <div
+                        className={s.traceScarFill}
+                        style={{
+                            width: `${traceStatus.scarFillRatio * 100}%`,
+                        }}
+                    />
+                    <div
                         className={s.traceFill}
                         style={{
-                            width: `${traceStatus.fillRatio * 100}%`,
+                            left: `${traceStatus.scarFillRatio * 100}%`,
+                            width: `${traceStatus.activeFillRatio * 100}%`,
                             backgroundColor: traceFillColor,
                         }}
                     />
                 </div>
                 <div className={s.traceNumbers}>
                     <span>{effectiveTrace}/{traceStatus.resilience}</span>
-                    {effectiveTrace > traceStatus.displayedTrace && (
-                        <span>{effectiveTrace} total</span>
-                    )}
+                    <span>Trail {traceStatus.scarTrace}</span>
                 </div>
             </div>
         </div>

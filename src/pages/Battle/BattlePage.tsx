@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { recordThreatReached } from "../../store/upkeep/slice.ts";
 import { selectCityTraceStatus, selectTowerAwareCityResolution } from "../../store/upkeep/selectors.ts";
 import { selectWallResolution } from "../../store/wall/selectors.ts";
-import { retreatCityRadius } from "../../store/city/slice.ts";
+import { recordSurvivedSiege, retreatCityRadius } from "../../store/city/slice.ts";
 import type { BattleMetrics, BattleResult } from "../../models/battle/world.ts";
 import {
     BATTLEFIELD_RANGE_MULTIPLIER,
@@ -81,6 +81,7 @@ const BattlePage = () => {
         dispatch(recordThreatReached(result.threat));
 
         if (result.outcome === "held") {
+            dispatch(recordSurvivedSiege());
             setBattleMessage("Siege is over. The wall shifts back into pressure watch.");
             setBattleMode("pressure");
             return;

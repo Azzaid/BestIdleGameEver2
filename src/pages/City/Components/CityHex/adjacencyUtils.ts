@@ -155,7 +155,8 @@ export const placeCityBuildings = (
 
 export function resolveCityUpkeepAndTrace(
     hexes: HexCell[],
-    city: PlacedCityMap
+    city: PlacedCityMap,
+    scarTrace = 0,
 ): CityResolution {
     const resolvedCity: CityResolution = {
         requiredUpkeep: {} as UpkeepAmount,
@@ -163,6 +164,7 @@ export function resolveCityUpkeepAndTrace(
         effectiveUpkeep: {} as UpkeepAmount,
         buildingsTrace: 0,
         territoryTrace: 0,
+        scarTrace,
         effectiveTrace: 0,
     };
 
@@ -175,7 +177,7 @@ export function resolveCityUpkeepAndTrace(
     resolvedCity.territoryTrace = hexes.length * TRACE_PER_HEX;
 
     resolvedCity.effectiveUpkeep = deductUpkeep(resolvedCity.providedUpkeep, resolvedCity.requiredUpkeep);
-    resolvedCity.effectiveTrace = resolvedCity.buildingsTrace + resolvedCity.territoryTrace;
+    resolvedCity.effectiveTrace = resolvedCity.buildingsTrace + resolvedCity.territoryTrace + resolvedCity.scarTrace;
 
     return resolvedCity
 }

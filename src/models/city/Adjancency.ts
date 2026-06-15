@@ -59,5 +59,6 @@ export interface CityResolution {
     effectiveUpkeep: UpkeepAmount,
     territoryTrace: number;
     buildingsTrace: number;
+    scarTrace: number;
     effectiveTrace: number;
 }

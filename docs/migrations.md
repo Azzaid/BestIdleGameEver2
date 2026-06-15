@@ -89,12 +89,57 @@ Examples:
 - region exhausted;
 - better location discovered;
 - threat becoming difficult to manage;
+- demolition scars accumulating too much visibility;
+- old one-use buildings clogging valuable city space;
 - specific ending requirements;
 - specialist accumulation strategy.
 
 Migration should feel like an opportunity.
 
 Not a punishment.
+
+---
+
+# Demolition Pressure
+
+Rebuilding a city creates permanent scars.
+
+When buildings are demolished, the city clears internal space but pushes rubble, trash, ritual residue, broken machines, contaminated biomass, and other waste outside the walls.
+
+This permanently increases that city's visibility/Threat.
+
+The player therefore faces a long-term settlement question:
+
+- keep obsolete early buildings and lose usable land;
+- demolish them and make the city easier for monsters to find;
+- migrate and start a cleaner settlement elsewhere.
+
+This gives migration a practical role beyond prestige.
+
+A mature city can become powerful but dirty: full of efficient districts, old foundations, external dumps, and accumulated attention.
+
+A new city is smaller but cleaner.
+
+---
+
+# Openness and New Sites
+
+Every potential settlement site has Openness.
+
+Openness determines:
+
+- maximum possible city size;
+- visibility/Threat multiplier.
+
+Hidden terrain supports smaller, safer cities.
+
+Open terrain supports larger, more visible cities.
+
+This makes migration site choice strategic.
+
+Early migrations may search for concealed places that reduce pressure.
+
+Late migrations may deliberately choose open locations because the civilization has the technology, camouflage, logistics, and containment needed to build a much larger city there.
 
 ---
 

@@ -5,8 +5,6 @@ import {BUILDINGS_ATLAS} from "../../../../data/buildings";
 import {UPKEEP_TYPES} from "../../../../models/Upkeep.ts";
 import {HexTilePreview} from "./HexTilePreview.tsx";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
-import {useTypedSelector} from "../../../../store/hooks.ts";
-import {selectCityResolution} from "../../../../store/upkeep/selectors.ts";
 import type {BuildingSelectorProps} from "../../../../models/city/buildingSelector.ts";
 
 export function BuildingSelector({
@@ -15,7 +13,6 @@ export function BuildingSelector({
                                      blockedReason,
                                  }: BuildingSelectorProps) {
     const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.medieval);
-    const {effectiveTrace, effectiveUpkeep} = useTypedSelector(selectCityResolution);
 
     return (
         <div className={s.wrapper} data-theme={activeVector.description}>

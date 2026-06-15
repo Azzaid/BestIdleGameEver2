@@ -10,4 +10,7 @@ export type SelectedHexPanelProps = {
     selectedWallTopBuilding?: WallBuilding;
     structureCandidates: StructureDetectionResult[];
     wallResolution: WallResolution;
+    blocked: boolean;
+    blockedReason: string;
+    onDemolish: () => void;
 };

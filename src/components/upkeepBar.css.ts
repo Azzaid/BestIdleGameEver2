@@ -79,10 +79,23 @@ export const traceTrack = style({
 });
 
 export const traceFill = style({
+    position: 'absolute',
+    top: 0,
     height: '100%',
     maxWidth: '100%',
     borderRadius: '999px',
-    transition: 'width 180ms ease, background-color 180ms ease',
+    transition: 'left 180ms ease, width 180ms ease, background-color 180ms ease',
+});
+
+export const traceScarFill = style({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: '100%',
+    maxWidth: '100%',
+    borderRadius: '999px',
+    background: 'rgb(112 118 128 / 0.9)',
+    transition: 'width 180ms ease',
 });
 
 export const traceNumbers = style({

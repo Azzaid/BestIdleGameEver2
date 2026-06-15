@@ -8,6 +8,8 @@ export const selectCityHexes = (state: RootState) => state.city.hexes;
 
 export const selectCityCellRadius = (state: RootState) => state.city.cellRadius;
 
+export const selectCityScarTrace = (state: RootState) => state.city.scarTrace;
+
 export const selectCityBattlefield = (state: RootState) => state.city.battlefield;
 
 export const selectCitySideHexes = createSelector(

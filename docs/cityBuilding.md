@@ -110,6 +110,12 @@ The player also gains:
 
 Expansion is never free.
 
+The maximum city size is also limited by the settlement site's Openness.
+
+Open land can support a larger city footprint.
+
+Hidden or cramped land keeps the city smaller.
+
 ---
 
 # Why Expansion Matters
@@ -190,6 +196,30 @@ Larger settlements are easier to notice.
 Buildings generate additional Threat.
 
 Different vectors generate different amounts.
+
+---
+
+# Demolition and City Scars
+
+Demolishing buildings is allowed, but it is not clean.
+
+When a building is removed:
+
+- the hex becomes available again;
+- the building's normal active effects end;
+- the city gains permanent demolition Threat.
+
+Lore reason:
+
+Rubble, trash, broken machinery, spoiled biomass, ritual residue, and other remains must be hauled outside the walls to clear the site. Those dumps, scars, smells, lights, and disturbances attract monsters.
+
+This makes rebuilding a meaningful decision.
+
+The player can keep outdated buildings and let them occupy land.
+
+Or the player can demolish them and permanently increase the city's visibility.
+
+This is especially important for early one-use buildings. They should not be harmless stepping stones forever. They either clog the city layout or pollute the visibility budget.
 
 ---
 
@@ -572,6 +602,41 @@ Arcane Region
 - magical bonuses
 - magical threats
 
+---
+
+# Site Openness
+
+Openness is a settlement-site property.
+
+It describes how exposed the surrounding terrain is.
+
+Low Openness:
+
+- forests;
+- ravines;
+- ruins;
+- caves;
+- dense terrain.
+
+High Openness:
+
+- plains;
+- plateaus;
+- shorelines;
+- cleared wasteland.
+
+Openness creates a core city-building tradeoff:
+
+- higher Openness increases maximum city size;
+- higher Openness multiplies city visibility/Threat;
+- lower Openness hides the city better but limits long-term expansion.
+
+Advanced technologies, better camouflage, stronger containment, and improved logistics let the player exploit more open terrain.
+
+Early settlements should often prefer low-openness locations.
+
+Late settlements can choose open land because they can survive the attention.
+
 These modifiers force adaptation.
 
 ---
@@ -624,8 +689,9 @@ Whenever a new building is added:
 
 1. What support does it affect?
 2. What Threat does it generate?
-3. What adjacency does it create?
-4. What district does it belong to?
-5. What problem does it solve?
+3. What demolition Threat does it leave behind?
+4. What adjacency does it create?
+5. What district does it belong to?
+6. What problem does it solve?
 
 If those questions cannot be answered clearly, the building probably should not exist.

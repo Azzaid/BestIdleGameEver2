@@ -185,3 +185,23 @@ export const wallBuildButton = style({
         },
     },
 });
+
+export const demolishButton = style({
+    justifySelf: 'start',
+    padding: '6px 12px',
+    borderRadius: 6,
+    border: `1px solid ${vars.color.border.default}`,
+    background: vars.color.background.app,
+    color: vars.color.text.primary,
+    cursor: 'pointer',
+    selectors: {
+        '&:hover': {
+            borderColor: vars.color.state.error,
+            color: vars.color.state.error,
+        },
+        '&:disabled': {
+            cursor: 'not-allowed',
+            opacity: 0.55,
+        },
+    },
+});

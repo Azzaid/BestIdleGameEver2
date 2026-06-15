@@ -141,6 +141,31 @@ Different categories generate different amounts.
 
 ---
 
+# Demolition Trace
+
+Demolishing a building permanently increases the city's base Threat.
+
+Reason:
+
+The building disappears from the city grid, but its rubble, waste, broken machinery, contaminated soil, ritual residue, and other remains must be dragged outside the walls to free usable land.
+
+The cleared hex becomes useful again.
+
+The settlement becomes easier to find.
+
+This creates a direct tradeoff:
+
+- keep obsolete one-shot buildings and lose city space;
+- demolish them and permanently raise city visibility.
+
+Early disposable buildings should therefore create long-term pressure. They either occupy precious land or leave a visible scar on the city when removed.
+
+Demolition Threat is part of the city's persistent local history. It should not naturally decay during the same settlement lifecycle.
+
+Migration is the clean way to escape accumulated demolition scars.
+
+---
+
 ## Technology Threat
 
 Usually high.
@@ -236,8 +261,42 @@ Examples:
 
 - technologies;
 - regional bonuses;
+- terrain openness;
 - structures;
 - crises.
+
+---
+
+# Terrain Openness
+
+Every settlement site has an Openness value.
+
+Openness represents how exposed the surrounding terrain is.
+
+Examples:
+
+Dense forest:
+
+- low Openness;
+- lower visibility multiplier;
+- smaller maximum city size.
+
+Open plain:
+
+- high Openness;
+- higher visibility multiplier;
+- larger maximum city size.
+
+Openness affects two things:
+
+1. maximum possible city size;
+2. multiplier applied to the city's visibility/Threat scale.
+
+This makes open terrain attractive but dangerous.
+
+A low-tech settlement usually prefers hidden, cramped terrain.
+
+An advanced civilization with better walls, camouflage, logistics, and containment can exploit larger, more open locations.
 
 ---
 
