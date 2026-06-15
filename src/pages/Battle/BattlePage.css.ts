@@ -18,6 +18,22 @@ export const battleShell = style({
   placeItems: 'center',
 });
 
+export const battleShellSiege = style({
+  selectors: {
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      inset: '10px',
+      zIndex: 1,
+      pointerEvents: 'none',
+      border: `2px solid ${vars.color.state.warning}`,
+      borderRadius: '8px',
+      boxShadow: `inset 0 0 36px color-mix(in srgb, ${vars.color.state.warning} 28%, transparent)`,
+      opacity: 0.75,
+    },
+  },
+});
+
 export const battleHud = style({
   position: 'absolute',
   top: '12px',

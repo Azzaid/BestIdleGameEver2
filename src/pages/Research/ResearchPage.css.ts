@@ -34,11 +34,14 @@ export const researchSelect = style({
 
 export const researchTree = style({
   position: 'relative',
+  width: '100%',
   height: '100%',
   maxHeight: '100%',
   backgroundColor: '#f5f5f5',
   borderRadius: '8px',
   overflow: 'hidden',
+  overscrollBehavior: 'contain',
+  touchAction: 'none',
   minHeight: 0,
 });
 

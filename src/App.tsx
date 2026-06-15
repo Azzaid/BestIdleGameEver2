@@ -15,7 +15,7 @@ import {THEME_NAMES} from "./models/Theme.ts";
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedSelector} from "./store/hooks.ts";
 import {selectCityTraceStatus} from "./store/upkeep/selectors.ts";
-import {selectHasActiveTowerBuild} from "./store/towers/selectors.ts";
+import {selectHasAnyTowerBuild} from "./store/towers/selectors.ts";
 
 //this is temporary theme switcher
 function ThemeSwitcher() {
@@ -33,8 +33,8 @@ function ThemeSwitcher() {
 
 function App() {
   const traceStatus = useTypedSelector(selectCityTraceStatus);
-  const hasActiveTowerBuild = useTypedSelector(selectHasActiveTowerBuild);
-  const isBuildBlocked = traceStatus.isBesieged && hasActiveTowerBuild;
+  const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
+  const isBuildBlocked = traceStatus.isBesieged && hasAnyTowerBuild;
 
   return (
       <ThemeProvider initialTheme={'tech'}>

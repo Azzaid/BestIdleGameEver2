@@ -29,13 +29,26 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
     // Tick the countdown
     sched.state.timeUntilNextWaveSeconds -= dtSeconds;
 
+    if (
+        world.config.fastForwardWavesWhenCleared
+        && sched.state.totalWavesSpawned > 0
+        && world.spawners.length === 0
+        && world.enemiesData.size === 0
+        && sched.state.timeUntilNextWaveSeconds > 0
+    ) {
+        sched.state.timeUntilNextWaveSeconds = 0;
+    }
+
     // Respect a cap on concurrent spawners (optional)
     const maxConcurrent = sched.config.maxConcurrentSpawners ?? Infinity;
     if (world.spawners.length >= maxConcurrent) return;
 
     // Time to spawn a new wave?
     if (sched.state.timeUntilNextWaveSeconds <= 0) {
-        const requiredStrength = Math.max(1, world.currentThreat);
+        const requiredStrength = Math.max(
+            1,
+            world.currentThreat * world.config.waveThreatToCityThreatRatio
+        );
 
         // PLAN (TODO: enforce constraints if you add them later)
         const enemyIds = sched.enemyIds;                       // TODO: ensure this is filled at scene start

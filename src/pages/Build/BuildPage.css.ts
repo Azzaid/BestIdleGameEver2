@@ -41,6 +41,56 @@ export const assemblyGrid = style({
   },
 });
 
+export const towerSelector = style({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+  gap: '8px',
+  '@media': {
+    '(max-width: 760px)': {
+      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    },
+  },
+});
+
+export const towerSelectorButton = style({
+  display: 'grid',
+  gap: '4px',
+  minHeight: '54px',
+  padding: '9px 10px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.background.surface,
+  color: vars.color.text.primary,
+  textAlign: 'left',
+  cursor: 'pointer',
+  selectors: {
+    '&:hover': {
+      borderColor: vars.color.brand.primary,
+    },
+  },
+});
+
+export const towerSelectorButtonActive = style({
+  borderColor: vars.color.brand.primary,
+  backgroundColor: vars.color.state.selectedBg,
+});
+
+export const towerSelectorName = style({
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  color: vars.color.text.heading,
+  fontWeight: 800,
+});
+
+export const towerSelectorStatus = style({
+  color: vars.color.text.muted,
+  fontSize: '0.78rem',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+});
+
 export const towerPreview = style({
   display: 'block',
   minHeight: '340px',

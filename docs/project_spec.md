@@ -85,7 +85,7 @@ Important directories:
 Content data layout:
 
 - `src/data/buildings` uses vector-keyed atlas modules.
-- `src/data/wall` uses the same atlas pattern, keyed by development vector and flattened for wall lookup. Wall hexes store a wall layer and a wall-top layer separately.
+- `src/data/wall` uses the same atlas pattern, keyed by development vector and flattened for wall lookup. Wall segment content lives under `segments`, wall-top superstructure content lives under `superstructures`, and wall hexes store those two layers separately.
 - `src/data/towers` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research` exposes a vector-keyed research atlas and flattened helpers for the research tree.
 - `src/data/enemies` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
@@ -352,7 +352,7 @@ Current implementation:
 - The Build page stores selected tower part ids in Redux.
 - `src/models/battle/resolveTowerAssembly.ts` resolves stats, support costs, keywords, targeting behavior, warnings, and synergies.
 - Build and Battle share resolved tower state.
-- Shared tower content starts in `src/data/towers/parts.ts`.
+- Shared tower content starts in `src/data/towers/parts`, with tower parts split by development vector.
 - Battle is blocked until the player assembles the first tower and commits it with Rebuild.
 - The most basic tower components are medieval and require no upkeep.
 
@@ -548,7 +548,7 @@ Future statistics should focus on understanding:
 Current content layout:
 
 - `src/data/buildings/` uses vector-keyed atlas modules.
-- `src/data/wall/` uses the same atlas pattern, keyed by development vector and flattened for wall lookup. Wall hexes store a wall layer and a wall-top layer separately.
+- `src/data/wall/` uses the same atlas pattern, keyed by development vector and flattened for wall lookup. Wall segment content lives under `segments`, wall-top superstructure content lives under `superstructures`, and wall hexes store those two layers separately.
 - `src/data/enemies/` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
 - `src/data/towers/` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research/` exposes a vector-keyed research atlas and flattened helpers for the research tree.

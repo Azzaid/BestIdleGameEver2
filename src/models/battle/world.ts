@@ -18,6 +18,9 @@ export interface WorldConfig {
   initialThreat: number;
   targetThreat: number;
   threatGrowthPerSecond: number;
+  waveThreatToCityThreatRatio: number;
+  timeBetweenWavesSeconds: number;
+  fastForwardWavesWhenCleared: boolean;
   completesWhenThreatTargetReached: boolean;
   wallResilience: number;
   wallIgnoredThreat: number;

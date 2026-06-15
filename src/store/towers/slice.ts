@@ -1,28 +1,40 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { TowerPartSlot } from '../../models/battle/towerParts.ts';
 import type {TowersState} from "../../models/store/towers.ts";
+import { MAX_TOWER_SLOTS } from '../../data/constants.ts';
 
 const starterTowerId = 'tower-1';
 const emptyStarterTowerParts: Partial<Record<TowerPartSlot, string>> = {};
+const towerIds = Array.from({ length: MAX_TOWER_SLOTS }, (_, index) => `tower-${index + 1}`);
 
 const initialState: TowersState = {
   activeTowerId: starterTowerId,
-  towers: {
-    [starterTowerId]: {
-      id: starterTowerId,
-      name: 'Wall Prototype',
-      selectedPartIds: emptyStarterTowerParts,
+  towers: Object.fromEntries(towerIds.map((towerId, index) => [
+    towerId,
+    {
+      id: towerId,
+      name: index === 0 ? 'Wall Prototype' : `Tower ${index + 1}`,
+      selectedPartIds: {},
     },
-  },
-  towerDrafts: {
-    [starterTowerId]: emptyStarterTowerParts,
-  },
+  ])),
+  towerDrafts: Object.fromEntries(towerIds.map((towerId) => [towerId, {}])),
 };
+
+initialState.towers[starterTowerId].selectedPartIds = emptyStarterTowerParts;
+initialState.towerDrafts[starterTowerId] = emptyStarterTowerParts;
 
 export const towersSlice = createSlice({
   name: 'towers',
   initialState,
   reducers: {
+    selectTower: (
+      state,
+      action: PayloadAction<{ towerId: string }>
+    ) => {
+      if (!state.towers[action.payload.towerId]) return;
+
+      state.activeTowerId = action.payload.towerId;
+    },
     selectTowerPart: (
       state,
       action: PayloadAction<{ towerId?: string; slot: TowerPartSlot; partId: string }>
@@ -106,6 +118,7 @@ export const {
   clearTowerPart,
   commitTowerDraft,
   renameTower,
+  selectTower,
   selectTowerDraftPart,
   selectTowerPart,
 } = towersSlice.actions;

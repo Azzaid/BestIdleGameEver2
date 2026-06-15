@@ -25,6 +25,9 @@ export function BattleStage(props: {
     initialThreat: number;
     targetThreat: number;
     threatGrowthPerSecond: number;
+    waveThreatToCityThreatRatio: number;
+    timeBetweenWavesSeconds: number;
+    fastForwardWavesWhenCleared: boolean;
     completesWhenThreatTargetReached: boolean;
     wallResilience: number;
     wallIgnoredThreat: number;
@@ -120,6 +123,9 @@ export function BattleStage(props: {
                 initialThreat: props.initialThreat,
                 targetThreat: props.targetThreat,
                 threatGrowthPerSecond: props.threatGrowthPerSecond,
+                waveThreatToCityThreatRatio: props.waveThreatToCityThreatRatio,
+                timeBetweenWavesSeconds: props.timeBetweenWavesSeconds,
+                fastForwardWavesWhenCleared: props.fastForwardWavesWhenCleared,
                 completesWhenThreatTargetReached: props.completesWhenThreatTargetReached,
                 wallResilience: props.wallResilience,
                 wallIgnoredThreat: props.wallIgnoredThreat,
@@ -275,6 +281,9 @@ export function BattleStage(props: {
         props.initialThreat,
         props.targetThreat,
         props.threatGrowthPerSecond,
+        props.waveThreatToCityThreatRatio,
+        props.timeBetweenWavesSeconds,
+        props.fastForwardWavesWhenCleared,
         props.completesWhenThreatTargetReached,
         props.wallResilience,
         props.wallIgnoredThreat,

@@ -11,11 +11,18 @@ import { selectCityTraceStatus, selectTowerAwareCityResolution } from "../../sto
 import { selectWallResolution } from "../../store/wall/selectors.ts";
 import { retreatCityRadius } from "../../store/city/slice.ts";
 import type { BattleMetrics, BattleResult } from "../../models/battle/world.ts";
+import {
+    BATTLEFIELD_RANGE_MULTIPLIER,
+    BATTLE_WALL_APRON_HEIGHT,
+    BATTLE_WAVE_THREAT_TO_CITY_THREAT_RATIO,
+    PRESSURE_WAVE_INTERVAL_SECONDS,
+    SIEGE_DURATION_SECONDS,
+    SIEGE_THREAT_START_RATIO,
+    SIEGE_VICTORY_CITY_THREAT_RATIO,
+    SIEGE_WAVE_INTERVAL_SECONDS,
+} from "../../data/constants.ts";
 
-const BATTLEFIELD_RANGE_MULTIPLIER = 1.2;
-const WALL_APRON_HEIGHT = 80;
-const THREAT_START_RATIO = 0.8;
-const SIEGE_DURATION_SECONDS = 60;
+type BattleMode = "siege" | "pressure";
 
 const BattlePage = () => {
     const dispatch = useTypedDispatch();
@@ -25,12 +32,19 @@ const BattlePage = () => {
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const wallResolution = useTypedSelector(selectWallResolution);
-    const isSiege = traceStatus.isBesieged;
-    const targetThreat = Math.max(0, cityResolution.effectiveTrace);
-    const initialThreat = isSiege ? targetThreat * THREAT_START_RATIO : targetThreat;
+    const [battleMode, setBattleMode] = useState<BattleMode>(() => traceStatus.isBesieged ? "siege" : "pressure");
+    const isSiege = battleMode === "siege" && traceStatus.isBesieged;
+    const cityThreat = Math.max(0, cityResolution.effectiveTrace);
+    const targetThreat = isSiege
+        ? cityThreat * SIEGE_VICTORY_CITY_THREAT_RATIO
+        : cityThreat;
+    const initialThreat = isSiege ? cityThreat * SIEGE_THREAT_START_RATIO : targetThreat;
     const threatGrowthPerSecond = isSiege && targetThreat > initialThreat
         ? (targetThreat - initialThreat) / SIEGE_DURATION_SECONDS
         : 0;
+    const timeBetweenWavesSeconds = isSiege
+        ? SIEGE_WAVE_INTERVAL_SECONDS
+        : PRESSURE_WAVE_INTERVAL_SECONDS;
     const [metrics, setMetrics] = useState<BattleMetrics>(() => ({
         threat: initialThreat,
         targetThreat,
@@ -40,11 +54,12 @@ const BattlePage = () => {
     const [battleMessage, setBattleMessage] = useState<string | null>(null);
     const wallLogicalWidth = citySideHexes * BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX;
     const battlefieldLength = resolvedTower.stats.targetingDistanceLimit * BATTLEFIELD_RANGE_MULTIPLIER;
-    const battlefieldHeight = battlefieldLength + WALL_APRON_HEIGHT;
+    const battlefieldHeight = battlefieldLength + BATTLE_WALL_APRON_HEIGHT;
     const battleKey = useMemo(() => [
         targetThreat,
         initialThreat,
         threatGrowthPerSecond,
+        timeBetweenWavesSeconds,
         isSiege,
         wallResolution.resilience,
         wallResolution.ignoredThreat,
@@ -54,6 +69,7 @@ const BattlePage = () => {
         targetThreat,
         initialThreat,
         threatGrowthPerSecond,
+        timeBetweenWavesSeconds,
         isSiege,
         wallResolution.resilience,
         wallResolution.ignoredThreat,
@@ -64,24 +80,33 @@ const BattlePage = () => {
         dispatch(recordThreatReached(result.threat));
 
         if (result.outcome === "held") {
-            setBattleMessage("Siege is over. City grows stronger and can withstand more.");
+            setBattleMessage("Siege is over. The wall shifts back into pressure watch.");
+            setBattleMode("pressure");
             return;
         }
 
         if (result.threat < result.targetThreat) {
             dispatch(retreatCityRadius());
-            setBattleMessage("City wall where owerwhelmed and we had to retreat and loose part of a captured territory.");
+            setBattleMessage("The wall was overwhelmed. The city retreated and pressure watch resumed.");
+            setBattleMode("pressure");
             return;
         }
 
-        setBattleMessage("Siege is over. City grows stronger and can withstand more.");
+        setBattleMessage("Pressure exceeded wall resilience. Improve the wall or tower build.");
+        setBattleMode("pressure");
     }, [dispatch]);
 
     return (
         <div className={styles.battlePage}>
             {hasActiveTowerBuild ? (
-                <div className={styles.battleShell}>
+                <div className={`${styles.battleShell} ${isSiege ? styles.battleShellSiege : ''}`}>
                     <div className={styles.battleHud} aria-live="polite">
+                        <div className={styles.battleMetric}>
+                            <span className={styles.battleMetricLabel}>Mode</span>
+                            <span className={styles.battleMetricValue}>
+                                {isSiege ? "Siege" : "Pressure"}
+                            </span>
+                        </div>
                         <div className={styles.battleMetric}>
                             <span className={styles.battleMetricLabel}>Threat</span>
                             <span className={styles.battleMetricValue}>
@@ -100,24 +125,25 @@ const BattlePage = () => {
                             {battleMessage}
                         </div>
                     )}
-                    {!battleMessage && (
-                        <BattleStage
-                            key={battleKey}
-                            wallLogicalWidth={wallLogicalWidth}
-                            battlefieldWidth={wallLogicalWidth}
-                            battlefieldHeight={battlefieldHeight}
-                            wallY={battlefieldLength}
-                            resolvedTower={resolvedTower}
-                            initialThreat={initialThreat}
-                            targetThreat={targetThreat}
-                            threatGrowthPerSecond={threatGrowthPerSecond}
-                            completesWhenThreatTargetReached={isSiege}
-                            wallResilience={wallResolution.resilience}
-                            wallIgnoredThreat={wallResolution.ignoredThreat}
-                            onBattleMetrics={setMetrics}
-                            onBattleEnded={handleBattleEnded}
-                        />
-                    )}
+                    <BattleStage
+                        key={battleKey}
+                        wallLogicalWidth={wallLogicalWidth}
+                        battlefieldWidth={wallLogicalWidth}
+                        battlefieldHeight={battlefieldHeight}
+                        wallY={battlefieldLength}
+                        resolvedTower={resolvedTower}
+                        initialThreat={initialThreat}
+                        targetThreat={targetThreat}
+                        threatGrowthPerSecond={threatGrowthPerSecond}
+                        waveThreatToCityThreatRatio={BATTLE_WAVE_THREAT_TO_CITY_THREAT_RATIO}
+                        timeBetweenWavesSeconds={timeBetweenWavesSeconds}
+                        fastForwardWavesWhenCleared={isSiege}
+                        completesWhenThreatTargetReached={isSiege}
+                        wallResilience={wallResolution.resilience}
+                        wallIgnoredThreat={wallResolution.ignoredThreat}
+                        onBattleMetrics={setMetrics}
+                        onBattleEnded={handleBattleEnded}
+                    />
                 </div>
             ) : (
                 <section className={styles.battleLocked}>

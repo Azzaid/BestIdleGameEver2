@@ -8,7 +8,7 @@ import {
   TOWER_PART_SLOT_ORDER,
   TOWER_PART_DEFINITIONS,
   TOWER_SYNERGY_RULES,
-} from "./parts.ts";
+} from "./parts/index.ts";
 
 const createEmptyTowerPartsAtlas = (): TowerPartsAtlas => ({
   tech: {},

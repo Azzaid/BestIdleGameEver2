@@ -5,6 +5,11 @@ import { selectPurchasedTechsIds } from '../research/selectors.ts';
 
 export const selectTowersState = (state: RootState) => state.towers;
 
+export const selectTowerList = createSelector(
+  [selectTowersState],
+  (towersState) => Object.values(towersState.towers)
+);
+
 export const selectActiveTower = createSelector(
   [selectTowersState],
   (towersState) => towersState.towers[towersState.activeTowerId]
@@ -35,4 +40,11 @@ export const selectResolvedActiveTowerDraft = createSelector(
 export const selectHasActiveTowerBuild = createSelector(
   [selectResolvedActiveTower],
   (resolvedTower) => resolvedTower.warnings.length === 0
+);
+
+export const selectHasAnyTowerBuild = createSelector(
+  [selectTowerList, selectPurchasedTechsIds],
+  (towers, purchasedTechIds) => towers.some((tower) => (
+    resolveTowerAssembly({ selectedPartIds: tower.selectedPartIds }, purchasedTechIds).warnings.length === 0
+  ))
 );

@@ -1,4 +1,5 @@
 import {BUILDINGS_ATLAS} from "../buildings/index.ts";
+import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {researchThree} from "../research/index.ts";
 import {STRUCTURES} from "../structures/index.ts";
 import {TOWER_PARTS} from "../towers/index.ts";
@@ -6,9 +7,9 @@ import {buildProgressionGraph, validateProgressionGraph} from "./progression.ts"
 import {PROGRESSION_RULES} from "./rules.ts";
 import type {ProgressionRegistry} from "./types.ts";
 
-const buildingNames = Object.values(BUILDINGS_ATLAS).reduce<Record<string, string>>(
-  (names, buildingsById) => {
-    for (const building of Object.values(buildingsById)) {
+const buildingNames = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string, string>>(
+  (names, vector) => {
+    for (const building of Object.values(BUILDINGS_ATLAS[vector])) {
       names[building.id] = building.name;
     }
     return names;

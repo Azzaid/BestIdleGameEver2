@@ -28,7 +28,7 @@ export function createWorld(config: WorldConfig): World {
       spawners: [],
       waveScheduler: {
           config: {
-              timeBetweenWavesSeconds: 12,     // TODO: set from battle rules
+              timeBetweenWavesSeconds: config.timeBetweenWavesSeconds,
               initialWaveStrength: Math.max(1, config.initialThreat),
               waveStrengthIncrementFactor: 1,
               maxConcurrentSpawners: 3,

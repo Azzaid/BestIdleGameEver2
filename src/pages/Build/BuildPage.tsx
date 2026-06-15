@@ -11,8 +11,8 @@ import * as s from './BuildPage.css.ts';
 import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/towers/index.ts';
 import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
-import { selectActiveTower, selectActiveTowerDraftAssembly, selectHasActiveTowerBuild, selectResolvedActiveTowerDraft } from '../../store/towers/selectors.ts';
-import { cancelTowerDraft, commitTowerDraft, selectTowerDraftPart } from '../../store/towers/slice.ts';
+import { selectActiveTower, selectActiveTowerDraftAssembly, selectHasAnyTowerBuild, selectResolvedActiveTowerDraft, selectTowerList } from '../../store/towers/selectors.ts';
+import { cancelTowerDraft, commitTowerDraft, selectTower, selectTowerDraftPart } from '../../store/towers/slice.ts';
 import { selectPurchasedTechsIds } from '../../store/research/selectors.ts';
 import { selectCityResolution, selectCityTraceStatus } from '../../store/upkeep/selectors.ts';
 import { formatTowerSlot } from '../../models/battle/resolveTowerAssembly.ts';
@@ -70,7 +70,8 @@ function getAvailableUpkeepForSlot(
 const BuildPage = () => {
   const dispatch = useTypedDispatch();
   const activeTower = useTypedSelector(selectActiveTower);
-  const hasActiveTowerBuild = useTypedSelector(selectHasActiveTowerBuild);
+  const towers = useTypedSelector(selectTowerList);
+  const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
   const towerDraftAssembly = useTypedSelector(selectActiveTowerDraftAssembly);
   const resolvedTower = useTypedSelector(selectResolvedActiveTowerDraft);
   const purchasedTechIds = useTypedSelector(selectPurchasedTechsIds);
@@ -80,7 +81,7 @@ const BuildPage = () => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 8 });
-  const canModifyTower = !traceStatus.isBesieged || !hasActiveTowerBuild;
+  const canModifyTower = !traceStatus.isBesieged || !hasAnyTowerBuild;
 
   const selectSlot = (slot: TowerPartSlot) => {
     setActiveTab(slot);
@@ -235,6 +236,29 @@ const BuildPage = () => {
           <p className={s.pageSubtitle}>{activeTower?.name ?? 'Tower'} is assembled from machine parts, support systems, and targeting logic.</p>
         </div>
       </header>
+
+      <section className={s.towerSelector} aria-label="Tower slots">
+        {towers.map((tower) => {
+          const selected = tower.id === activeTower?.id;
+          const committedPartsCount = Object.keys(tower.selectedPartIds).length;
+
+          return (
+            <button
+              key={tower.id}
+              className={`${s.towerSelectorButton} ${selected ? s.towerSelectorButtonActive : ''}`}
+              onClick={() => {
+                dispatch(selectTower({ towerId: tower.id }));
+                setPagination((current) => ({ ...current, pageIndex: 0 }));
+              }}
+            >
+              <span className={s.towerSelectorName}>{tower.name}</span>
+              <span className={s.towerSelectorStatus}>
+                {committedPartsCount > 0 ? `${committedPartsCount} parts` : 'Empty'}
+              </span>
+            </button>
+          );
+        })}
+      </section>
 
       <section className={s.assemblyGrid}>
         <div className={s.towerPreview}>
