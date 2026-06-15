@@ -205,3 +205,13 @@ export const demolishButton = style({
         },
     },
 });
+
+export const buildingLockedNote = style({
+    margin: 0,
+    padding: '12px',
+    border: `1px solid ${vars.color.border.default}`,
+    borderRadius: 8,
+    background: vars.color.background.surface,
+    color: vars.color.text.muted,
+    lineHeight: 1.4,
+});

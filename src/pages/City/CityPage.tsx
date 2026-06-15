@@ -30,7 +30,11 @@ const CityPage = () => {
 
     const handleBuildingSelect = (buildingKey: string, developmentVector: DevelopmentVectorValue) => {
         if (!selectedHex || traceStatus.isBesieged) return;
-        dispatch(buildHex({...selectedHex, buildingKey, developmentVector }))
+        if (selectedHex.kind !== "city" || selectedHex.buildingKey) return;
+
+        const builtHex = {...selectedHex, buildingKey, developmentVector};
+        dispatch(buildHex(builtHex));
+        setSelectedHex(builtHex);
     };
 
     const handleWallBuildingSelect = (buildingKey: string) => {
@@ -55,6 +59,14 @@ const CityPage = () => {
     const selectedStructureCandidates = selectedHex
         ? structureCandidates.filter(candidate => candidate.coreHex.cellKey === selectedHex.cellKey)
         : [];
+    const selectedHexIsPartOfCompleteStructure = selectedHex
+        ? structureCandidates.some(candidate => {
+            if (!candidate.isComplete) return false;
+            if (candidate.coreHex.cellKey === selectedHex.cellKey) return true;
+
+            return candidate.matchedSatellites.some(match => match.hex.cellKey === selectedHex.cellKey);
+        })
+        : false;
 
   return (
     <div className={s.cityPage}>
@@ -69,6 +81,7 @@ const CityPage = () => {
                     selectedWallBuilding={selectedWallBuilding}
                     selectedWallTopBuilding={selectedWallTopBuilding}
                     structureCandidates={selectedStructureCandidates}
+                    isPartOfCompleteStructure={selectedHexIsPartOfCompleteStructure}
                     wallResolution={wallResolution}
                     blocked={traceStatus.isBesieged}
                     blockedReason={BESIEGED_BUILD_BLOCK_REASON}
@@ -81,7 +94,11 @@ const CityPage = () => {
                         blocked={traceStatus.isBesieged}
                         blockedReason={BESIEGED_BUILD_BLOCK_REASON}
                     />
-                    : <BuildingSelector
+                    : selectedHex.buildingKey
+                        ? <p className={s.buildingLockedNote}>
+                            Demolish the existing building before using this hex again.
+                        </p>
+                        : <BuildingSelector
                         onBuild={handleBuildingSelect}
                         blocked={traceStatus.isBesieged}
                         blockedReason={BESIEGED_BUILD_BLOCK_REASON}
@@ -99,6 +116,7 @@ function SelectedHexPanel({
     selectedWallBuilding,
     selectedWallTopBuilding,
     structureCandidates,
+    isPartOfCompleteStructure,
     wallResolution,
     blocked,
     blockedReason,
@@ -133,7 +151,7 @@ function SelectedHexPanel({
                             title={blocked ? blockedReason : undefined}
                             onClick={onDemolish}
                         >
-                            Demolish
+                            {isPartOfCompleteStructure ? "Demolish Structure" : "Demolish"}
                         </button>
                     )}
                 </div>

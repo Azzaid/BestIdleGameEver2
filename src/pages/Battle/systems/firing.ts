@@ -1,6 +1,7 @@
 import type { World } from '../../../models/battle/world.ts';
 import { createEntityId } from '../core/world';
 import * as PIXI from 'pixi.js';
+import { getProjectileSpawnPosition } from './towerAim.ts';
 
 /** Spawns burst and sets retarget cooldown to hold current target briefly. */
 export function FiringSystem(world: World, dt: number) {
@@ -18,11 +19,7 @@ export function FiringSystem(world: World, dt: number) {
     for (let i = 0; i < tower.burstCount; i++) {
       const t = tower.burstCount === 1 ? 0 : (i / (tower.burstCount - 1) - 0.5);
       const angle = center + t * spread;
-      const spawnOffset = tower.projectileSpawnOffset;
-      const spawnPosition = {
-        x: baseTf.position.x + Math.cos(center) * spawnOffset.x - Math.sin(center) * spawnOffset.y,
-        y: baseTf.position.y + Math.sin(center) * spawnOffset.x + Math.cos(center) * spawnOffset.y,
-      };
+      const spawnPosition = getProjectileSpawnPosition(baseTf.position, center, tower.projectileSpawnOffset);
       const id = createEntityId(world);
       world.transforms.set(id, { position: spawnPosition, rotationRadians: angle });
       world.movements.set(id, { kind: 'linear', velocityPixelsPerSecond: { x: Math.cos(angle) * tower.projectileSpeed, y: Math.sin(angle) * tower.projectileSpeed } });

@@ -1,57 +1,11 @@
 import type { World } from '../../../models/battle/world.ts';
+import { predictProjectileAimAngle } from './towerAim.ts';
 
 function shortestAngleDelta(current: number, desired: number): number {
   let d = desired - current;
   while (d > Math.PI) d -= 2 * Math.PI;
   while (d < -Math.PI) d += 2 * Math.PI;
   return d;
-}
-
-function predictAimAngleForLinear(
-  world: World,
-  towerId: number,
-  targetId: number,
-  projectileSpeed: number
-): number {
-  const towerPos = world.transforms.get(towerId)!.position;
-  const enemyTf = world.transforms.get(targetId)!;
-  const mv = world.movements.get(targetId);
-
-  if (!mv || mv.kind !== 'linear') {
-    return Math.atan2(enemyTf.position.y - towerPos.y, enemyTf.position.x - towerPos.x);
-  }
-
-  const ex = enemyTf.position.x;
-  const ey = enemyTf.position.y;
-  const vx = mv.velocityPixelsPerSecond.x;
-  const vy = mv.velocityPixelsPerSecond.y;
-  const rx = ex - towerPos.x;
-  const ry = ey - towerPos.y;
-  const v2 = vx * vx + vy * vy;
-  const s2 = projectileSpeed * projectileSpeed;
-  const a = v2 - s2;
-  const b = 2 * (rx * vx + ry * vy);
-  const c = rx * rx + ry * ry;
-  let t: number;
-
-  if (Math.abs(a) < 1e-6) {
-    if (Math.abs(b) < 1e-6) return Math.atan2(ry, rx);
-    t = -c / b;
-  } else {
-    const disc = b * b - 4 * a * c;
-    if (disc < 0) return Math.atan2(ry, rx);
-
-    const sqrt = Math.sqrt(disc);
-    const t1 = (-b - sqrt) / (2 * a);
-    const t2 = (-b + sqrt) / (2 * a);
-    t = Math.min(t1, t2);
-    if (t < 0) t = Math.max(t1, t2);
-    if (t < 0) return Math.atan2(ry, rx);
-  }
-
-  const aimX = ex + vx * t;
-  const aimY = ey + vy * t;
-  return Math.atan2(aimY - towerPos.y, aimX - towerPos.x);
 }
 
 export function AimingSystem(world: World, dt: number) {
@@ -62,7 +16,17 @@ export function AimingSystem(world: World, dt: number) {
     const gunTf = world.transforms.get(tower.gunEntity);
     if (!baseTf || !gunTf) continue;
 
-    const desired = predictAimAngleForLinear(world, towerId, tower.currentTarget, tower.projectileSpeed);
+    const targetTransform = world.transforms.get(tower.currentTarget);
+    if (!targetTransform) continue;
+
+    const desired = predictProjectileAimAngle({
+      basePosition: baseTf.position,
+      currentAngleRadians: gunTf.rotationRadians,
+      projectileSpawnOffset: tower.projectileSpawnOffset,
+      targetTransform,
+      targetMovement: world.movements.get(tower.currentTarget),
+      projectileSpeed: tower.projectileSpeed,
+    });
     const delta = shortestAngleDelta(gunTf.rotationRadians, desired);
     const maxTurn = tower.rotationSpeed * dt;
     const applied = Math.max(-maxTurn, Math.min(maxTurn, delta));

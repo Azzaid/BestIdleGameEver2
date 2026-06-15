@@ -88,25 +88,11 @@ export const citySlice = createSlice({
             const hexToBuildIndex = state.hexes.findIndex(hex => hex.column === action.payload.column && hex.row === action.payload.row);
             if (hexToBuildIndex === -1) return;
             const currentHex = state.hexes[hexToBuildIndex];
-            const replacesExistingBuilding = currentHex.kind === "city"
-                && Boolean(currentHex.buildingKey)
-                && currentHex.buildingKey !== action.payload.buildingKey;
-            const demolishedHexKeys = replacesExistingBuilding
-                ? new Set(getDemolishedHexKeys(state.hexes, currentHex))
-                : new Set<string>();
-
-            if (replacesExistingBuilding) {
-                state.scarTrace += demolishedHexKeys.size * TRACE_PER_DEMOLISHED_HEX;
-                state.hexes.forEach((hex, index) => {
-                    if (index === hexToBuildIndex || !demolishedHexKeys.has(hex.cellKey)) return;
-
-                    hex.buildingKey = null;
-                });
-            }
+            if (currentHex.kind !== "city" || currentHex.buildingKey) return;
 
             state.hexes[hexToBuildIndex] = {
                 ...action.payload,
-                kind: state.hexes[hexToBuildIndex].kind,
+                kind: currentHex.kind,
             };
         },
         buildWall: (state, action: PayloadAction<{cellKey: string; wallKey: string}>) => {

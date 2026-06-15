@@ -184,9 +184,9 @@ export function BattleStage(props: {
             world.worldLayer.addChild(gunAimPivot);
             world.sprites.set(gunId, gunAimPivot);
 
-            const barrelId = props.resolvedTower.selectedParts.barrel?.id;
-            const projectileSpawnOffset = barrelId
-                ? findTowerVisualSocketOffset(towerVisualDefinition, barrelId, 'muzzle') ?? { x: 0, y: 0 }
+            const launchSystemId = props.resolvedTower.selectedParts.launchSystem?.id;
+            const projectileSpawnOffset = launchSystemId
+                ? findTowerVisualSocketOffset(towerVisualDefinition, launchSystemId, 'muzzle') ?? { x: 0, y: 0 }
                 : { x: 0, y: 0 };
 
             world.towersData.set(baseId, {

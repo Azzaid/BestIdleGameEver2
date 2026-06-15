@@ -55,7 +55,9 @@ const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
   },
   launchSystem: {
     rootSocket: { x: -18, y: 0 },
-    outputSockets: {},
+    outputSockets: {
+      muzzle: { x: 0, y: 0 },
+    },
     fallbackSize: { width: 48, height: 34 },
     renderLayer: 2,
   },
