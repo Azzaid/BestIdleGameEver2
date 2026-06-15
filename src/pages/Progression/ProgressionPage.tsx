@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {Canvas, CanvasPosition, Edge, type CanvasDirection, type EdgeProps, type ElkRoot, type NodeProps} from "reaflow";
+import {Canvas, CanvasPosition, Edge, type CanvasDirection, type CanvasRef, type EdgeProps, type ElkRoot, type NodeProps} from "reaflow";
 import {
   PROGRESSION_GRAPH,
   PROGRESSION_VALIDATION_ERRORS,
@@ -11,7 +11,7 @@ const NODE_WIDTH = 180;
 const NODE_HEIGHT = 72;
 const MIN_ZOOM_FALLBACK = -0.9;
 const MAX_ZOOM_FACTOR = 10;
-const WHEEL_ZOOM_SENSITIVITY = 0.00045;
+const WHEEL_ZOOM_SENSITIVITY = 0.00056;
 const MIN_CANVAS_SIZE = 8000;
 const CANVAS_VIEWPORT_PADDING = 2;
 const GRAPH_PADDING = 96;
@@ -54,8 +54,33 @@ function clampZoom(zoom: number, minZoomFactor: number): number {
   return Math.min(MAX_ZOOM_FACTOR + 1, Math.max(minZoomFactor + 1, zoom));
 }
 
+function getGraphElement(svgElement: SVGSVGElement): SVGGElement | null {
+  return Array.from(svgElement.children).find((element): element is SVGGElement => (
+    element instanceof SVGGElement
+  )) ?? null;
+}
+
+function getLocalSvgPoint(
+  svgElement: SVGSVGElement,
+  graphMatrix: DOMMatrix,
+  clientX: number,
+  clientY: number,
+): DOMPoint | null {
+  try {
+    const point = svgElement.createSVGPoint();
+    point.x = clientX;
+    point.y = clientY;
+
+    return point.matrixTransform(graphMatrix.inverse());
+  } catch {
+    return null;
+  }
+}
+
 export default function ProgressionPage() {
   const viewportRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<CanvasRef>(null);
+  const zoomAnchorSequenceRef = useRef(0);
   const [search, setSearch] = useState("");
   const [layout, setLayout] = useState<ElkRoot | null>(null);
   const [viewport, setViewport] = useState({width: 0, height: 0});
@@ -120,23 +145,71 @@ export default function ProgressionPage() {
   const minZoom = getFitMinZoom(layout, viewport);
   const canvasWidth = Math.max(
     MIN_CANVAS_SIZE,
-    Math.ceil((layout?.width ?? 0) * Math.max(zoom, 1) + viewport.width * CANVAS_VIEWPORT_PADDING),
+    Math.ceil((layout?.width ?? 0) * (MAX_ZOOM_FACTOR + 1) + viewport.width * CANVAS_VIEWPORT_PADDING),
   );
   const canvasHeight = Math.max(
     MIN_CANVAS_SIZE,
-    Math.ceil((layout?.height ?? 0) * Math.max(zoom, 1) + viewport.height * CANVAS_VIEWPORT_PADDING),
+    Math.ceil((layout?.height ?? 0) * (MAX_ZOOM_FACTOR + 1) + viewport.height * CANVAS_VIEWPORT_PADDING),
   );
 
-  const zoomByWheel = useCallback((deltaY: number, deltaMode: number) => {
-    const deltaUnit = deltaMode === 1
+  const zoomAtPoint = useCallback((event: globalThis.WheelEvent) => {
+    if (!layout) return;
+
+    const viewportElement = viewportRef.current;
+    const canvas = canvasRef.current;
+    const scrollElement = canvas?.containerRef?.current;
+    const svgElement = canvas?.svgRef?.current;
+    const graphElement = svgElement ? getGraphElement(svgElement) : null;
+    const graphMatrix = graphElement?.getScreenCTM();
+    if (!viewportElement || !canvas || !scrollElement || !svgElement || !graphElement || !graphMatrix) return;
+
+    const deltaUnit = event.deltaMode === 1
       ? 16
-      : deltaMode === 2
+      : event.deltaMode === 2
         ? viewport.height
         : 1;
-    const zoomDelta = deltaY * deltaUnit * WHEEL_ZOOM_SENSITIVITY;
+    const wheelDelta = event.deltaY * deltaUnit;
+    const currentZoom = canvas.zoom ?? zoom;
+    const nextZoom = clampZoom(
+      currentZoom * Math.exp(-wheelDelta * WHEEL_ZOOM_SENSITIVITY),
+      minZoom,
+    );
 
-    setZoom(currentZoom => clampZoom(currentZoom - zoomDelta, minZoom));
-  }, [minZoom, viewport.height]);
+    if (nextZoom === currentZoom) return;
+
+    const graphPoint = getLocalSvgPoint(svgElement, graphMatrix, event.clientX, event.clientY);
+    if (!graphPoint) return;
+
+    const anchorSequence = zoomAnchorSequenceRef.current + 1;
+    zoomAnchorSequenceRef.current = anchorSequence;
+
+    setZoom(nextZoom);
+    canvas.setZoom?.(nextZoom - 1);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (zoomAnchorSequenceRef.current !== anchorSequence) return;
+
+        const latestCanvas = canvasRef.current;
+        const latestScrollElement = latestCanvas?.containerRef?.current;
+        const latestSvgElement = latestCanvas?.svgRef?.current;
+        const latestGraphElement = latestSvgElement ? getGraphElement(latestSvgElement) : null;
+        const latestMatrix = latestGraphElement?.getScreenCTM();
+        if (!latestCanvas || !latestScrollElement || !latestMatrix) return;
+
+        const movedPoint = graphPoint.matrixTransform(latestMatrix);
+        const nextScrollLeft = latestScrollElement.scrollLeft + movedPoint.x - event.clientX;
+        const nextScrollTop = latestScrollElement.scrollTop + movedPoint.y - event.clientY;
+        const maxScrollLeft = Math.max(0, canvasWidth - latestScrollElement.clientWidth);
+        const maxScrollTop = Math.max(0, canvasHeight - latestScrollElement.clientHeight);
+        const nextScroll: [number, number] = [
+          Math.min(maxScrollLeft, Math.max(0, nextScrollLeft)),
+          Math.min(maxScrollTop, Math.max(0, nextScrollTop)),
+        ];
+
+        latestCanvas.setScrollXY?.(nextScroll, false);
+      });
+    });
+  }, [canvasHeight, canvasWidth, layout, minZoom, viewport.height, zoom]);
 
   const handleZoomChange = useCallback((nextZoom: number) => {
     setZoom(clampZoom(nextZoom, minZoom));
@@ -161,8 +234,10 @@ export default function ProgressionPage() {
   }, []);
 
   useEffect(() => {
-    setZoom(currentZoom => clampZoom(currentZoom, minZoom));
-  }, [minZoom]);
+    const nextZoom = clampZoom(canvasRef.current?.zoom ?? zoom, minZoom);
+    setZoom(nextZoom);
+    canvasRef.current?.setZoom?.(nextZoom - 1);
+  }, [minZoom, zoom]);
 
   useEffect(() => {
     const viewportElement = viewportRef.current;
@@ -171,13 +246,13 @@ export default function ProgressionPage() {
     const handleNativeWheel = (event: globalThis.WheelEvent) => {
       event.preventDefault();
       event.stopPropagation();
-      zoomByWheel(event.deltaY, event.deltaMode);
+      zoomAtPoint(event);
     };
 
-    viewportElement.addEventListener("wheel", handleNativeWheel, {passive: false});
+    viewportElement.addEventListener("wheel", handleNativeWheel, {passive: false, capture: true});
 
-    return () => viewportElement.removeEventListener("wheel", handleNativeWheel);
-  }, [zoomByWheel]);
+    return () => viewportElement.removeEventListener("wheel", handleNativeWheel, {capture: true});
+  }, [zoomAtPoint]);
 
   return (
     <section className={s.page}>
@@ -225,6 +300,7 @@ export default function ProgressionPage() {
       </aside>
       <div ref={viewportRef} className={s.canvas}>
         <Canvas
+          ref={canvasRef}
           nodes={nodes}
           edges={edges}
           panType="drag"
