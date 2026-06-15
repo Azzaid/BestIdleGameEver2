@@ -61,7 +61,7 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
 
         // SPAWNER
         const spawner = new WaveSpawner(blueprints, {
-            spawnTopPadding: getVisibleSpawnY(world),
+            spawnTopPadding: getBattlefieldEntryY(),
             spawnAreaLeft: 48,
             spawnAreaRight: world.config.battlefieldWidth - 48,
             baseIntervalSeconds: 0.4,
@@ -79,10 +79,6 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
     }
 }
 
-function getVisibleSpawnY(world: World) {
-    const towerRanges = Array.from(world.towersData.values())
-        .map((tower) => tower.targetingDistanceLimit);
-    const maxTowerRange = Math.max(240, ...towerRanges);
-
-    return Math.max(24, world.config.wallY - maxTowerRange * 0.9);
+function getBattlefieldEntryY() {
+    return -32;
 }

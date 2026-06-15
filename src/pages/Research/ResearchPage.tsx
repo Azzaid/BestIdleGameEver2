@@ -8,7 +8,7 @@ import * as s from "./ResearchPage.css.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {purchaseTech} from "../../store/research/slice.ts";
-import {selectCityHexes} from "../../store/city/selectors.ts";
+import {selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
 import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
 import {STRUCTURES_BY_ID} from "../../data/structures/index.ts";
@@ -61,14 +61,6 @@ function getStructureName(structureId: string): string {
     return STRUCTURES_BY_ID[structureId]?.name ?? structureId;
 }
 
-function hasStructureRequirements(structureId: string, builtBuildingIds: Set<string>): boolean {
-    const structure = STRUCTURES_BY_ID[structureId];
-    if (!structure) return false;
-
-    return builtBuildingIds.has(structure.coreBuildingId)
-        && structure.requiredAdjacentBuildingIds.every(buildingId => builtBuildingIds.has(buildingId));
-}
-
 function hasEnoughFreeUpkeep(required: UpkeepAmount | undefined, available: UpkeepAmount): boolean {
     if (!required) return true;
 
@@ -99,6 +91,7 @@ function describeFreeUpkeepRequirement(
 function getRequirementStatus(
     data: ResearchNodeData,
     builtBuildingIds: Set<string>,
+    completeStructureIds: Set<string>,
     effectiveUpkeep: UpkeepAmount,
 ): RequirementStatus {
     return {
@@ -110,7 +103,7 @@ function getRequirementStatus(
         requiredStructures: (data.requiredStructures ?? []).map(structureId => ({
             id: structureId,
             name: getStructureName(structureId),
-            met: hasStructureRequirements(structureId, builtBuildingIds),
+            met: completeStructureIds.has(structureId),
         })),
         requiredFreeUpkeep: describeFreeUpkeepRequirement(data.requiredFreeUpkeep, effectiveUpkeep),
     };
@@ -120,6 +113,7 @@ export default function ResearchPage() {
     const dispatch = useTypedDispatch();
     const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
     const cityHexes = useTypedSelector(selectCityHexes);
+    const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
     const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const viewportRef = useRef<HTMLDivElement>(null);
@@ -244,7 +238,7 @@ export default function ResearchPage() {
                     }
 
                     const data = payload.data as ResearchNodeData;
-                    const requirements = getRequirementStatus(data, builtBuildingIds, effectiveUpkeep);
+                    const requirements = getRequirementStatus(data, builtBuildingIds, completeStructureIds, effectiveUpkeep);
                     const isResearched = purchased.has(data.id);
                     const canResearch = !isResearched
                         && isResearchUnlocked(data, purchased)

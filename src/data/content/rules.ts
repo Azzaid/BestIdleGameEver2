@@ -11,7 +11,7 @@ export const PROGRESSION_RULES = defineProgression([
   unlocks("building", "aetherMana1").fromStart(),
 
   unlocks("towerPart", "base_fixed_mount").fromStart(),
-  unlocks("towerPart", "barrel_basic").fromStart(),
+  unlocks("towerPart", "medieval_barrel_sling-crude-base").fromStart(),
   unlocks("towerPart", "ammo_standard").fromStart(),
   unlocks("towerPart", "aim_wall_watch").fromStart(),
   unlocks("towerPart", "aim_splash_spotter").fromStart(),

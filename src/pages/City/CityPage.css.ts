@@ -102,6 +102,36 @@ export const effectList = style({
     paddingLeft: '18px',
 });
 
+export const multistructureStatus = style({
+    display: 'grid',
+    gap: '8px',
+});
+
+export const multistructureCandidate = style({
+    display: 'grid',
+    gap: '8px',
+    padding: '10px',
+    border: `1px solid ${vars.color.border.default}`,
+    background: vars.color.background.app,
+    borderRadius: 8,
+});
+
+export const structureListTitle = style({
+    margin: '0 0 4px',
+    color: vars.color.text.muted,
+    fontSize: '0.78rem',
+    fontWeight: 700,
+    textTransform: 'uppercase',
+});
+
+export const structureList = style({
+    display: 'grid',
+    gap: '2px',
+    margin: 0,
+    paddingLeft: '18px',
+    color: vars.color.text.primary,
+});
+
 export const wallSelector = style({
     display: 'grid',
     gap: '12px',

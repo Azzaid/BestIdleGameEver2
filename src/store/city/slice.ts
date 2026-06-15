@@ -3,6 +3,7 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {INITIAL_CITY_CELL_RADIUS} from "../../data/constants.ts";
+import { DEFAULT_BATTLE_BACKGROUND_ID } from "../../data/battle/backgrounds.ts";
 import {coordKey} from "../../pages/City/Components/CityHex/hexUtils.ts";
 import type {CityState} from "../../models/store/city.ts";
 
@@ -50,7 +51,11 @@ const getRetreatedHexes = (existingHexes: HexCell[], cityRadius: number) => {
 // Define the initial state using that type
 const initialState: CityState = {
     hexes: getInitialHexes(),
-    cellRadius: INITIAL_CITY_CELL_RADIUS
+    cellRadius: INITIAL_CITY_CELL_RADIUS,
+    battlefield: {
+        backgroundId: DEFAULT_BATTLE_BACKGROUND_ID,
+        detailSeed: 1,
+    },
 }
 
 export const citySlice = createSlice({

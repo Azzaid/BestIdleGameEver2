@@ -88,6 +88,10 @@ function createPartDisplay(
 
     const sprite = new PIXI.Sprite(PIXI.Texture.from(part.sprite.textureKey));
     sprite.anchor.set(0.5);
+    if (part.targetSpriteSize) {
+      sprite.width = part.targetSpriteSize.width;
+      sprite.height = part.targetSpriteSize.height;
+    }
     display.addChild(sprite);
     return display;
   }
@@ -106,9 +110,11 @@ function buildNode(
   partContainer.zIndex = part.renderLayer ?? 0;
   partContainer.label = part.id;
 
-  const partDisplay = createPartDisplay(part, options);
-  partDisplay.zIndex = part.renderLayer ?? 0;
-  partContainer.addChild(partDisplay);
+  if (part.visible !== false) {
+    const partDisplay = createPartDisplay(part, options);
+    partDisplay.zIndex = part.renderLayer ?? 0;
+    partContainer.addChild(partDisplay);
+  }
   partContainers.set(part.id, partContainer);
 
   for (const attachment of nodeDefinition.attachments ?? []) {

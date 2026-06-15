@@ -1,4 +1,4 @@
-import { Application, Container, Graphics } from 'pixi.js';
+import { Application, Container, Graphics, Texture, TilingSprite } from 'pixi.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createWorld, createEntityId } from '../core/world';
 import { runSystems } from '../systems/runSystems';
@@ -10,9 +10,11 @@ import {
     setCameraScale,
 } from '../core/camera';
 import { loadBattleAssets } from '../assets/assetLoader';
+import { BATTLE_BACKGROUNDS } from '../../../data/battle/backgrounds.ts';
+import type { BattleBackgroundId } from '../../../data/battle/backgrounds.ts';
 import type { TowerAssemblyResolved } from '../../../models/battle/towerParts.ts';
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
-import { createTowerVisualDefinitionFromAssembly } from '../../../data/towers/visuals.ts';
+import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/towers/visuals.ts';
 import type { BattleMetrics, BattleResult } from '../../../models/battle/world.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
@@ -21,6 +23,7 @@ export function BattleStage(props: {
     battlefieldWidth: number;   // TODO: logical width in world units
     battlefieldHeight: number;  // TODO: logical height in world units
     wallY: number;
+    backgroundId: BattleBackgroundId;
     resolvedTower: TowerAssemblyResolved;
     initialThreat: number;
     targetThreat: number;
@@ -90,8 +93,9 @@ export function BattleStage(props: {
 
             hostRef.current.appendChild(app.canvas);
 
-            // Load assets (noop by default)
-            await loadBattleAssets();
+            await loadBattleAssets({
+                backgroundId: props.backgroundId,
+            });
 
             const viewportWidth = app.renderer.width;
             const viewportHeight = app.renderer.height;
@@ -134,6 +138,15 @@ export function BattleStage(props: {
             });
             camera.container.addChild(world.worldLayer);
 
+            const backgroundDefinition = BATTLE_BACKGROUNDS[props.backgroundId];
+            const battlefieldBackground = new TilingSprite({
+                texture: Texture.from(backgroundDefinition.textureAlias),
+                width: props.battlefieldWidth,
+                height: props.battlefieldHeight,
+            });
+            battlefieldBackground.zIndex = -100;
+            world.worldLayer.addChild(battlefieldBackground);
+
             const fullBoundsPlaceholder = new Graphics();
             fullBoundsPlaceholder
                 .rect(0, 0, props.battlefieldWidth, props.battlefieldHeight)
@@ -161,10 +174,8 @@ export function BattleStage(props: {
             const gunId = createEntityId(world);
             world.transforms.set(baseId, { position: { x: props.battlefieldWidth / 2, y: wallY }, rotationRadians: 0 });
             world.transforms.set(gunId,  { position: { x: props.battlefieldWidth / 2, y: wallY }, rotationRadians: -Math.PI / 2 });
-            const towerVisual = buildTowerVisualContainer(
-                createTowerVisualDefinitionFromAssembly(props.resolvedTower),
-                { warn: () => {} }
-            );
+            const towerVisualDefinition = createTowerVisualDefinitionFromAssembly(props.resolvedTower);
+            const towerVisual = buildTowerVisualContainer(towerVisualDefinition, { warn: () => {} });
             towerVisual.container.zIndex = 30;
             world.worldLayer.addChild(towerVisual.container);
             world.sprites.set(baseId, towerVisual.container);
@@ -172,6 +183,11 @@ export function BattleStage(props: {
             const gunAimPivot = new Container();
             world.worldLayer.addChild(gunAimPivot);
             world.sprites.set(gunId, gunAimPivot);
+
+            const barrelId = props.resolvedTower.selectedParts.barrel?.id;
+            const projectileSpawnOffset = barrelId
+                ? findTowerVisualSocketOffset(towerVisualDefinition, barrelId, 'muzzle') ?? { x: 0, y: 0 }
+                : { x: 0, y: 0 };
 
             world.towersData.set(baseId, {
                 rotationSpeed: props.resolvedTower.stats.rotationSpeed,
@@ -185,6 +201,7 @@ export function BattleStage(props: {
                 rangePixels: props.resolvedTower.stats.targetingDistanceLimit,
                 currentTarget: undefined,
                 gunEntity: gunId,
+                projectileSpawnOffset,
                 retargetCooldownSeconds: props.resolvedTower.stats.retargetCooldownSeconds,
                 retargetRemainingSeconds: 0,
                 aimKeywords: props.resolvedTower.aimKeywords,
@@ -268,7 +285,7 @@ export function BattleStage(props: {
             cleanupResize();
             if (!app) return;
 
-            app.destroy(true, { children: true, texture: true, textureSource: true, context: true }); // :contentReference[oaicite:3]{index=3}
+            app.destroy(true, { children: true, texture: false, textureSource: false, context: true }); // :contentReference[oaicite:3]{index=3}
         };
     }, [
         canvasSize.height,
@@ -277,6 +294,7 @@ export function BattleStage(props: {
         props.battlefieldWidth,
         props.battlefieldHeight,
         props.wallY,
+        props.backgroundId,
         props.resolvedTower,
         props.initialThreat,
         props.targetThreat,

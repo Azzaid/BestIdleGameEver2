@@ -3,7 +3,7 @@ import {useCallback, useMemo, useState} from "react";
 import { useTypedDispatch, useTypedSelector } from "../../store/hooks.ts";
 import { selectHasActiveTowerBuild, selectResolvedActiveTower } from "../../store/towers/selectors.ts";
 import * as styles from './BattlePage.css.ts';
-import { selectCitySideHexes } from "../../store/city/selectors.ts";
+import { selectCityBattlefield, selectCitySideHexes } from "../../store/city/selectors.ts";
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from "../../data/constants.ts";
 import { Link } from "react-router-dom";
 import { recordThreatReached } from "../../store/upkeep/slice.ts";
@@ -29,6 +29,7 @@ const BattlePage = () => {
     const resolvedTower = useTypedSelector(selectResolvedActiveTower);
     const hasActiveTowerBuild = useTypedSelector(selectHasActiveTowerBuild);
     const citySideHexes = useTypedSelector(selectCitySideHexes);
+    const cityBattlefield = useTypedSelector(selectCityBattlefield);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const wallResolution = useTypedSelector(selectWallResolution);
@@ -131,6 +132,7 @@ const BattlePage = () => {
                         battlefieldWidth={wallLogicalWidth}
                         battlefieldHeight={battlefieldHeight}
                         wallY={battlefieldLength}
+                        backgroundId={cityBattlefield.backgroundId}
                         resolvedTower={resolvedTower}
                         initialThreat={initialThreat}
                         targetThreat={targetThreat}

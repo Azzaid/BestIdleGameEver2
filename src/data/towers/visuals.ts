@@ -6,6 +6,7 @@ import type {
   TowerVisualDefinition,
   VisualSlotLayout,
 } from '../../models/battle/towerVisual.ts';
+import { TOWER_PART_VISUAL_METADATA } from './partVisualMetadata.ts';
 
 const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
   base: {
@@ -63,58 +64,125 @@ const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
 function createVisualPartForSlot(slot: TowerPartSlot, resolvedTower: TowerAssemblyResolved): TowerVisualPartDefinition {
   const selectedPart = resolvedTower.selectedParts[slot];
   const layout = slotVisualLayouts[slot];
+  const visualMetadata = selectedPart ? TOWER_PART_VISUAL_METADATA[selectedPart.id] : undefined;
 
   return {
     id: selectedPart?.id ?? `empty_${slot}`,
     sprite: selectedPart?.sprite,
     ...layout,
+    rootSocket: visualMetadata?.inputSocket ?? layout.rootSocket,
+    outputSockets: {
+      ...layout.outputSockets,
+      ...visualMetadata?.outputSockets,
+    },
+    targetSpriteSize: visualMetadata?.targetSpriteSize ?? layout.targetSpriteSize,
   };
 }
 
-function createNodeForSlot(slot: TowerPartSlot, resolvedTower: TowerAssemblyResolved): TowerVisualNodeDefinition {
+function createNodeForInstalledSlot(
+  slot: TowerPartSlot,
+  resolvedTower: TowerAssemblyResolved
+): TowerVisualNodeDefinition | undefined {
+  if (!resolvedTower.selectedParts[slot]) return undefined;
+
   return {
     part: createVisualPartForSlot(slot, resolvedTower),
   };
 }
 
+function createRootNode(resolvedTower: TowerAssemblyResolved): TowerVisualNodeDefinition {
+  if (resolvedTower.selectedParts.base) {
+    return {
+      part: createVisualPartForSlot('base', resolvedTower),
+    };
+  }
+
+  const baseLayout = slotVisualLayouts.base;
+
+  return {
+    part: {
+      id: 'tower_visual_anchor',
+      visible: false,
+      ...baseLayout,
+    },
+  };
+}
+
+function createAttachment(
+  parentSocket: string,
+  child: TowerVisualNodeDefinition | undefined
+): TowerVisualAttachmentDefinition | undefined {
+  if (!child) return undefined;
+
+  return {
+    parentSocket,
+    child,
+  };
+}
+
+function compactAttachments(
+  attachments: Array<TowerVisualAttachmentDefinition | undefined>
+): TowerVisualAttachmentDefinition[] | undefined {
+  const installedAttachments = attachments.filter((attachment): attachment is TowerVisualAttachmentDefinition => Boolean(attachment));
+  return installedAttachments.length > 0 ? installedAttachments : undefined;
+}
+
 export function createTowerVisualDefinitionFromAssembly(
   resolvedTower: TowerAssemblyResolved
 ): TowerVisualDefinition {
-  const barrelNode = createNodeForSlot('barrel', resolvedTower);
-  barrelNode.attachments = [
-    {
-      parentSocket: 'ammo',
-      child: createNodeForSlot('ammo', resolvedTower),
-    },
-    {
-      parentSocket: 'barrelAttachment',
-      child: createNodeForSlot('barrelAttachment', resolvedTower),
-    },
-  ];
+  const barrelNode = createNodeForInstalledSlot('barrel', resolvedTower);
 
-  const baseAttachments: TowerVisualAttachmentDefinition[] = [
-    {
-      parentSocket: 'barrel',
-      child: barrelNode,
-    },
-    {
-      parentSocket: 'aimSystem',
-      child: createNodeForSlot('aimSystem', resolvedTower),
-    },
-    {
-      parentSocket: 'loadingSystem',
-      child: createNodeForSlot('loadingSystem', resolvedTower),
-    },
-    {
-      parentSocket: 'launchSystem',
-      child: createNodeForSlot('launchSystem', resolvedTower),
-    },
-  ];
+  if (barrelNode) {
+    barrelNode.attachments = compactAttachments([
+      createAttachment('ammo', createNodeForInstalledSlot('ammo', resolvedTower)),
+      createAttachment('barrelAttachment', createNodeForInstalledSlot('barrelAttachment', resolvedTower)),
+    ]);
+  }
+
+  const rootNode = createRootNode(resolvedTower);
+  rootNode.attachments = compactAttachments([
+    createAttachment('barrel', barrelNode),
+    createAttachment('aimSystem', createNodeForInstalledSlot('aimSystem', resolvedTower)),
+    createAttachment('loadingSystem', createNodeForInstalledSlot('loadingSystem', resolvedTower)),
+    createAttachment('launchSystem', createNodeForInstalledSlot('launchSystem', resolvedTower)),
+  ]);
 
   return {
-    root: {
-      part: createVisualPartForSlot('base', resolvedTower),
-      attachments: baseAttachments,
-    },
+    root: rootNode,
   };
+}
+
+export function findTowerVisualSocketOffset(
+  towerVisualDefinition: TowerVisualDefinition,
+  partId: string,
+  socketName: string
+) {
+  function findInNode(node: TowerVisualNodeDefinition, nodeOffset: { x: number; y: number }): { x: number; y: number } | undefined {
+    if (node.part.id === partId) {
+      const socket = node.part.outputSockets[socketName];
+      if (socket) {
+        return {
+          x: nodeOffset.x + socket.x,
+          y: nodeOffset.y + socket.y,
+        };
+      }
+    }
+
+    for (const attachment of node.attachments ?? []) {
+      const parentSocket = node.part.outputSockets[attachment.parentSocket];
+      if (!parentSocket) continue;
+
+      const childRootSocket = attachment.child.part.rootSocket;
+      const childOffset = {
+        x: nodeOffset.x + parentSocket.x - childRootSocket.x,
+        y: nodeOffset.y + parentSocket.y - childRootSocket.y,
+      };
+      const found = findInNode(attachment.child, childOffset);
+      if (found) return found;
+    }
+
+    return undefined;
+  }
+
+  return findInNode(towerVisualDefinition.root, { x: 0, y: 0 });
 }

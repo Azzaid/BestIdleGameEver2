@@ -18,8 +18,13 @@ export function FiringSystem(world: World, dt: number) {
     for (let i = 0; i < tower.burstCount; i++) {
       const t = tower.burstCount === 1 ? 0 : (i / (tower.burstCount - 1) - 0.5);
       const angle = center + t * spread;
+      const spawnOffset = tower.projectileSpawnOffset;
+      const spawnPosition = {
+        x: baseTf.position.x + Math.cos(center) * spawnOffset.x - Math.sin(center) * spawnOffset.y,
+        y: baseTf.position.y + Math.sin(center) * spawnOffset.x + Math.cos(center) * spawnOffset.y,
+      };
       const id = createEntityId(world);
-      world.transforms.set(id, { position: { ...baseTf.position }, rotationRadians: angle });
+      world.transforms.set(id, { position: spawnPosition, rotationRadians: angle });
       world.movements.set(id, { kind: 'linear', velocityPixelsPerSecond: { x: Math.cos(angle) * tower.projectileSpeed, y: Math.sin(angle) * tower.projectileSpeed } });
       world.lifespans.set(id, { remainingSeconds: 2.0 });
       world.projectileInfo.set(id, { damage: tower.projectileDamage, aoeRadius: tower.aoeRadius, keywords: tower.keywords });

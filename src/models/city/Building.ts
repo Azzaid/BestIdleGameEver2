@@ -14,6 +14,7 @@ export interface Building {
     level:number,
     size:number,
     isMultiHex: boolean;
+    isMultistructure: boolean;
     vector: DevelopmentVectorValue;
     requiredUpkeep: UpkeepAmount
     requiredUpkeepDescription: UpkeepDescription;

@@ -17,6 +17,7 @@ export interface TowerData {
   rangePixels: number;
   currentTarget?: EntityId;
   gunEntity: EntityId;
+  projectileSpawnOffset: { x: number; y: number };
 
     aimKeywords: string[]; // TODO: set from Redux build results
 

@@ -14,8 +14,10 @@ export interface TowerVisualSize {
 export interface TowerVisualPartDefinition {
   id: string;
   sprite?: SpriteInfo;
+  visible?: boolean;
   rootSocket: TowerVisualPoint;
   outputSockets: Record<string, TowerVisualPoint>;
+  targetSpriteSize?: TowerVisualSize;
   fallbackSize?: TowerVisualSize;
   renderLayer?: number;
 }
@@ -34,7 +36,7 @@ export interface TowerVisualDefinition {
   root: TowerVisualNodeDefinition;
 }
 
-export type VisualSlotLayout = Pick<TowerVisualPartDefinition, 'rootSocket' | 'outputSockets' | 'fallbackSize' | 'renderLayer'>;
+export type VisualSlotLayout = Pick<TowerVisualPartDefinition, 'rootSocket' | 'outputSockets' | 'targetSpriteSize' | 'fallbackSize' | 'renderLayer'>;
 
 export interface TowerVisualRenderOptions {
   warn?: (message: string) => void;

@@ -3,9 +3,9 @@ import * as s from './CityPage.css.ts';
 import CityHex from "./Components/CityHex/CityHex.tsx";
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {BuildingSelector} from "./Components/BuildingSelector/BuildingSelector.tsx";
-import {type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
+import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
-import {selectCityBuildings, selectCityHexes} from "../../store/city/selectors.ts";
+import {selectCityBuildings, selectCityHexes, selectCityStructureCandidates} from "../../store/city/selectors.ts";
 import {buildHex, buildWall, buildWallTop} from "../../store/city/slice.ts";
 import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
 import {ALL_WALL_BUILDINGS, TOWER_BASE_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
@@ -13,6 +13,9 @@ import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
 import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
 import {selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
+import type {PlacedBuilding} from "../../models/city/Building.ts";
+import type {StructureDetectionResult} from "../../models/city/multistructureDetection.ts";
+import {BUILDINGS_ATLAS} from "../../data/buildings";
 
 const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise resilience in battle before building.";
 
@@ -20,6 +23,7 @@ const CityPage = () => {
     const dispatch = useTypedDispatch();
     const hexes = useTypedSelector(selectCityHexes);
     const cityBuildings = useTypedSelector(selectCityBuildings);
+    const structureCandidates = useTypedSelector(selectCityStructureCandidates);
     const wallResolution = useTypedSelector(selectWallResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const [selectedHex, setSelectedHex] = useState<HexCell | null>(null);
@@ -42,6 +46,9 @@ const CityPage = () => {
     const selectedBuilding = selectedHex ? cityBuildings.get(selectedHex.cellKey) : undefined;
     const selectedWallBuilding = selectedHex?.wallKey ? ALL_WALL_BUILDINGS[selectedHex.wallKey] : undefined;
     const selectedWallTopBuilding = selectedHex?.wallTopKey ? ALL_WALL_BUILDINGS[selectedHex.wallTopKey] : undefined;
+    const selectedStructureCandidates = selectedHex
+        ? structureCandidates.filter(candidate => candidate.coreHex.cellKey === selectedHex.cellKey)
+        : [];
 
   return (
     <div className={s.cityPage}>
@@ -55,6 +62,7 @@ const CityPage = () => {
                     selectedBuilding={selectedBuilding}
                     selectedWallBuilding={selectedWallBuilding}
                     selectedWallTopBuilding={selectedWallTopBuilding}
+                    structureCandidates={selectedStructureCandidates}
                     wallResolution={wallResolution}
                 />
                 {selectedHex.kind === "wall"
@@ -81,6 +89,7 @@ function SelectedHexPanel({
     selectedBuilding,
     selectedWallBuilding,
     selectedWallTopBuilding,
+    structureCandidates,
     wallResolution,
 }: SelectedHexPanelProps) {
     return (
@@ -102,6 +111,7 @@ function SelectedHexPanel({
                         </div>
                     </dl>
                     <AdjacencyEffectSummary building={selectedBuilding} />
+                    <MultistructureStatus structureCandidates={structureCandidates} />
                     <p className={s.panelDescription}>{selectedBuilding.adjacencyDescription}</p>
                 </div>
             )}
@@ -149,6 +159,54 @@ function SelectedHexPanel({
                 <p className={s.panelDescription}>Empty tile. Choose something below to build here.</p>
             )}
         </aside>
+    );
+}
+
+function MultistructureStatus({structureCandidates}: {structureCandidates: StructureDetectionResult[]}) {
+    if (!structureCandidates.length) {
+        return <p className={s.emptyStats}>No multistructure transformation from this tile.</p>;
+    }
+
+    return (
+        <div className={s.multistructureStatus}>
+            <h4 className={s.metricTitle}>Multistructure</h4>
+            {structureCandidates.map(candidate => (
+                <div key={`${candidate.structure.id}-${candidate.coreHex.cellKey}`} className={s.multistructureCandidate}>
+                    <div className={s.metricRow}>
+                        <span>{candidate.structure.name}</span>
+                        <strong>{candidate.isComplete ? "Ready" : "Missing satellites"}</strong>
+                    </div>
+                    {candidate.structure.description && (
+                        <p className={s.panelDescription}>{candidate.structure.description}</p>
+                    )}
+                    {candidate.matchedSatellites.length > 0 && (
+                        <StructureBuildingList
+                            title="Connected"
+                            buildingIds={candidate.matchedSatellites.map(match => match.buildingId)}
+                        />
+                    )}
+                    {candidate.missingBuildingIds.length > 0 && (
+                        <StructureBuildingList
+                            title="Needed adjacent"
+                            buildingIds={candidate.missingBuildingIds}
+                        />
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function StructureBuildingList({title, buildingIds}: {title: string; buildingIds: string[]}) {
+    return (
+        <div>
+            <h5 className={s.structureListTitle}>{title}</h5>
+            <ul className={s.structureList}>
+                {buildingIds.map((buildingId, index) => (
+                    <li key={`${buildingId}-${index}`}>{getBuildingName(buildingId)}</li>
+                ))}
+            </ul>
+        </div>
     );
 }
 
@@ -244,6 +302,15 @@ function AdjacencyEffectSummary({building}: {building: PlacedBuilding}) {
 
 function hasUpkeepValues(values?: UpkeepAmount) {
     return Boolean(values && Object.values(values).some((value) => value !== undefined && value !== 0));
+}
+
+function getBuildingName(buildingId: string): string {
+    for (const vector of Object.values(DEVELOPMENT_VECTORS)) {
+        const building = BUILDINGS_ATLAS[vector][buildingId];
+        if (building) return building.name;
+    }
+
+    return buildingId;
 }
 
 function WallBuildingSelector({
