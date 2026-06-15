@@ -6,6 +6,7 @@ import {PROGRESSION_RULES} from "../content/rules.ts";
 import {getProgressionUnlockLabels, getRuleForTarget} from "../content/progression.ts";
 import {STRUCTURES} from "../structures/index.ts";
 import {TOWER_PART_DEFINITIONS} from "../towers/parts/index.ts";
+import {validateResearchGraph} from "../../models/research/researchGraph.ts";
 import {aetherResearch} from "./aether.ts";
 import {medievalResearch} from "./medieval.ts";
 import {natureResearch} from "./nature.ts";
@@ -37,7 +38,7 @@ const progressionRegistry = {
   structures: Object.fromEntries(STRUCTURES.map(structure => [structure.id, structure.name])),
 };
 
-export const researchThree: ResearchDB = Object.fromEntries(
+export const researchTree: ResearchDB = Object.fromEntries(
   Object.values(researchDefinitions).map(research => {
     const rule = getRuleForTarget(PROGRESSION_RULES, "research", research.id);
     const requiredBuildings = rule?.requires?.buildings;
@@ -58,6 +59,15 @@ export const researchThree: ResearchDB = Object.fromEntries(
   }),
 );
 
+const requiredResearchById = Object.fromEntries(
+  Object.values(researchTree).map(research => {
+    const rule = getRuleForTarget(PROGRESSION_RULES, "research", research.id);
+    return [research.id, rule?.requires?.research ?? []];
+  }),
+);
+
+export const researchGraphValidationErrors = validateResearchGraph(researchTree, requiredResearchById);
+
 const createEmptyResearchAtlas = (): ResearchAtlas => ({
   tech: {},
   nature: {},
@@ -65,7 +75,7 @@ const createEmptyResearchAtlas = (): ResearchAtlas => ({
   aether: {},
 });
 
-export const RESEARCH_ATLAS = Object.values(researchThree).reduce<ResearchAtlas>((atlas, node) => {
+export const RESEARCH_ATLAS = Object.values(researchTree).reduce<ResearchAtlas>((atlas, node) => {
   atlas[node.vector][node.id] = node;
   return atlas;
 }, createEmptyResearchAtlas());

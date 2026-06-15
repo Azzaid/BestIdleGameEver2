@@ -2,7 +2,7 @@ import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {GunPart, TowerPartsAtlas} from "../../models/battle/towerParts.ts";
 import {PROGRESSION_RULES} from "../content/rules.ts";
 import {getResearchRequirementsForTarget} from "../content/progression.ts";
-import {researchThree} from "../research/index.ts";
+import {researchTree} from "../research/index.ts";
 import {
   REQUIRED_TOWER_PART_SLOTS,
   TOWER_PART_SLOT_ORDER,
@@ -26,7 +26,7 @@ const TOWER_PART_LIST = TOWER_PART_DEFINITIONS.map<GunPart>(part => {
     ...part,
     unlockRequirements: requiredResearchIds.map(researchId => ({
       researchId,
-      label: researchThree[researchId]?.name ?? researchId,
+      label: researchTree[researchId]?.name ?? researchId,
     })),
   };
 });

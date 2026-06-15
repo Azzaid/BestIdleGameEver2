@@ -45,6 +45,22 @@ export const researchTree = style({
   minHeight: 0,
 });
 
+export const researchTreeControls = style({
+  position: 'absolute',
+  top: '12px',
+  right: '12px',
+  zIndex: 2,
+  display: 'flex',
+  gap: '8px',
+});
+
+export const researchTreeControl = style({
+  minHeight: '32px',
+  padding: '4px 10px',
+  borderRadius: '6px',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.16)',
+});
+
 export const treeCanvas = style({
   position: 'relative',
   width: '100%',
