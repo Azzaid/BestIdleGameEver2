@@ -9,17 +9,22 @@ import type {BuildingSelectorProps} from "../../../../models/city/buildingSelect
 
 export function BuildingSelector({
                                      onBuild,
+                                     unlockedBuildingIds,
                                      blocked = false,
                                      blockedReason,
                                  }: BuildingSelectorProps) {
     const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.medieval);
+    const activeBuildings = Object.values(BUILDINGS_ATLAS[activeVector])
+        .filter(building => unlockedBuildingIds.has(building.id));
 
     return (
         <div className={s.wrapper} data-theme={activeVector.description}>
             {/* Tabs */}
             <div className={s.tabs} role="tablist" aria-label="Development vectors">
                 {Object.values(DEVELOPMENT_VECTORS).map(vector => {
-                    const count = Object.values(BUILDINGS_ATLAS[vector]).length;
+                    const count = Object.values(BUILDINGS_ATLAS[vector])
+                        .filter(building => unlockedBuildingIds.has(building.id))
+                        .length;
                     const disabled = count === 0;
                     return (
                         <button
@@ -32,7 +37,7 @@ export function BuildingSelector({
                             className={s.tabButton[activeVector === vector ? 'active' : 'regular']}
                             onClick={() => !disabled && setActiveVector(vector)}
                             disabled={disabled}
-                            title={disabled ? "No buildings yet" : undefined}
+                            title={disabled ? "No unlocked buildings yet" : undefined}
                             data-vector={vector}
                         >
                             <span className={s.tabDot} aria-hidden />
@@ -45,8 +50,7 @@ export function BuildingSelector({
 
             {/* Cards list */}
             <div className={s.list} role="list">
-                {Object.keys(BUILDINGS_ATLAS[activeVector]).map(buildingKey => {
-                    const building = BUILDINGS_ATLAS[activeVector][buildingKey];
+                {activeBuildings.map(building => {
                     return (
                         <article key={building.id} role="listitem" className={s.card} aria-labelledby={`${building.id}-name`}>
                             {/* Zone 1 — Header (name + cost + build btn) */}

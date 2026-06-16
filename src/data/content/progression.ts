@@ -7,6 +7,14 @@ import type {
   ProgressionRequirements,
   ProgressionRule,
 } from "./types.ts";
+import type {UpkeepAmount, UpkeepTypesValue} from "../../models/Upkeep.ts";
+
+export type ProgressionUnlockContext = {
+  researchIds: ReadonlySet<string>;
+  buildingIds: ReadonlySet<string>;
+  structureIds: ReadonlySet<string>;
+  freeUpkeep: UpkeepAmount;
+};
 
 export function contentRef(kind: ProgressionNodeKind, id: string): ProgressionNodeRef {
   return {kind, id};
@@ -41,6 +49,27 @@ export function getResearchRequirementsForTarget(
   id: string,
 ): string[] {
   return getRuleForTarget(rules, kind, id)?.requires?.research ?? [];
+}
+
+export function areProgressionRequirementsMet(
+  requirements: ProgressionRequirements | undefined,
+  context: ProgressionUnlockContext,
+): boolean {
+  if (!requirements) return true;
+
+  return requirementsAreInSet(requirements.research, context.researchIds)
+    && requirementsAreInSet(requirements.buildings, context.buildingIds)
+    && requirementsAreInSet(requirements.structures, context.structureIds)
+    && hasEnoughFreeUpkeep(requirements.freeUpkeep, context.freeUpkeep);
+}
+
+export function isProgressionRuleUnlocked(
+  rule: ProgressionRule | undefined,
+  context: ProgressionUnlockContext,
+): boolean {
+  if (!rule) return false;
+
+  return areProgressionRequirementsMet(rule.requires, context);
 }
 
 export function getProgressionUnlockLabels(
@@ -160,6 +189,18 @@ export function validateProgressionGraph(
 
 function getNodeKey(ref: ProgressionNodeRef): string {
   return `${ref.kind}:${ref.id}`;
+}
+
+function requirementsAreInSet(required: readonly string[] | undefined, available: ReadonlySet<string>): boolean {
+  return (required ?? []).every(id => available.has(id));
+}
+
+function hasEnoughFreeUpkeep(required: UpkeepAmount | undefined, available: UpkeepAmount): boolean {
+  if (!required) return true;
+
+  return (Object.getOwnPropertySymbols(required) as UpkeepTypesValue[]).every(resource => {
+    return (available[resource] ?? 0) >= (required[resource] ?? 0);
+  });
 }
 
 function getRegistryName(registry: ProgressionRegistry, ref: ProgressionNodeRef): string | undefined {

@@ -1,5 +1,6 @@
 export type BuildingSelectorProps = {
     onBuild: (buildingId: string, activeVector: symbol) => void;
+    unlockedBuildingIds: ReadonlySet<string>;
     blocked?: boolean;
     blockedReason?: string;
 };

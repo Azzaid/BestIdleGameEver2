@@ -1,21 +1,29 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import * as s from './CityPage.css.ts';
 import CityHex from "./Components/CityHex/CityHex.tsx";
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {BuildingSelector} from "./Components/BuildingSelector/BuildingSelector.tsx";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
-import {selectCityBuildings, selectCityHexes, selectCityStructureCandidates} from "../../store/city/selectors.ts";
+import {
+    selectCityBuildings,
+    selectCityHexes,
+    selectCityStructureCandidates,
+    selectCompleteCityStructureIds,
+} from "../../store/city/selectors.ts";
 import {buildHex, buildWall, buildWallTop, demolishHex} from "../../store/city/slice.ts";
 import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
 import {ALL_WALL_BUILDINGS, TOWER_PLATFORM_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
 import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
-import {selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
+import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
 import type {PlacedBuilding} from "../../models/city/Building.ts";
 import type {StructureDetectionResult} from "../../models/city/multistructureDetection.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
+import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
+import {PROGRESSION_RULES} from "../../data/content/rules.ts";
+import {getRuleForTarget, isProgressionRuleUnlocked} from "../../data/content/progression.ts";
 
 const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise resilience in battle before building.";
 
@@ -24,13 +32,41 @@ const CityPage = () => {
     const hexes = useTypedSelector(selectCityHexes);
     const cityBuildings = useTypedSelector(selectCityBuildings);
     const structureCandidates = useTypedSelector(selectCityStructureCandidates);
+    const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
     const wallResolution = useTypedSelector(selectWallResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
+    const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
+    const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
     const [selectedHex, setSelectedHex] = useState<HexCell | null>(null);
+    const builtBuildingIds = useMemo(() => {
+        return new Set(hexes.flatMap(hex => [
+            hex.buildingKey,
+            hex.wallKey,
+            hex.wallTopKey,
+        ].filter((buildingId): buildingId is string => Boolean(buildingId))));
+    }, [hexes]);
+    const unlockedBuildingIds = useMemo(() => {
+        const context = {
+            researchIds: new Set(purchasedTechsIds),
+            buildingIds: builtBuildingIds,
+            structureIds: completeStructureIds,
+            freeUpkeep: effectiveUpkeep,
+        };
+
+        return new Set(Object.values(DEVELOPMENT_VECTORS).flatMap(vector => {
+            return Object.values(BUILDINGS_ATLAS[vector])
+                .filter(building => isProgressionRuleUnlocked(
+                    getRuleForTarget(PROGRESSION_RULES, "building", building.id),
+                    context,
+                ))
+                .map(building => building.id);
+        }));
+    }, [builtBuildingIds, completeStructureIds, effectiveUpkeep, purchasedTechsIds]);
 
     const handleBuildingSelect = (buildingKey: string, developmentVector: DevelopmentVectorValue) => {
         if (!selectedHex || traceStatus.isBesieged) return;
         if (selectedHex.kind !== "city" || selectedHex.buildingKey) return;
+        if (!unlockedBuildingIds.has(buildingKey)) return;
 
         const builtHex = {...selectedHex, buildingKey, developmentVector};
         dispatch(buildHex(builtHex));
@@ -100,6 +136,7 @@ const CityPage = () => {
                         </p>
                         : <BuildingSelector
                         onBuild={handleBuildingSelect}
+                        unlockedBuildingIds={unlockedBuildingIds}
                         blocked={traceStatus.isBesieged}
                         blockedReason={BESIEGED_BUILD_BLOCK_REASON}
                     />
