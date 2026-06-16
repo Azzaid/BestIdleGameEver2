@@ -7,6 +7,7 @@ export const natureGunparts = {
   },
   ammo: {
     sporeCapsules: "ammo_spore_capsules",
+    poisonedStones: "nature_ammo_poisoned-stones",
   },
   aimSystems: {
     predatorSense: "aim_predator_sense",

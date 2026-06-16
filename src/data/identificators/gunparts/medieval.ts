@@ -1,12 +1,13 @@
 export const medievalGunparts = {
   bases: {
-    fixedMount: "base_fixed_mount",
+    crudeWoodFrame: "medieval_base_crude-wood",
   },
   barrels: {
     crudeWood: "medieval_barrel_crude-wood",
+    goodWood: "medieval_barrel_good-wood",
   },
   ammo: {
-    standardShells: "ammo_standard",
+    stoneBasket: "medieval_ammo_crude-stone",
   },
   aimSystems: {
     wallWatch: "aim_wall_watch",
@@ -17,8 +18,9 @@ export const medievalGunparts = {
   },
   loadingSystems: {
     manualCrew: "loader_manual_crew",
+    trainedGunner: "medieval_loader_trained-gunner",
   },
   launchSystems: {
-    gunpowderCharge: "launch_gunpowder",
+    crudeSling: "medieval_launcher_crude-sling",
   },
 } as const;

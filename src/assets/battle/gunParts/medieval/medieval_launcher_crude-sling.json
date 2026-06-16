@@ -1,22 +1,23 @@
 {
-  "id": "launch_gunpowder",
+  "id": "medieval_launcher_crude-sling",
   "spriteId": "medieval_launcher_crude-sling",
   "sourceSpriteSize": {
     "width": 1536,
     "height": 1024
   },
   "targetSpriteSize": {
-    "width": 132,
-    "height": 88
+    "width": 150,
+    "height": 100
   },
+  "rotationDegrees": 270,
   "inputSocket": {
-    "x": 768,
-    "y": 720
+    "x": 777,
+    "y": 285
   },
   "outputSockets": {
-    "muzzle": {
-      "x": 768,
-      "y": 466
+    "charge": {
+      "x": 770,
+      "y": 793
     }
   }
 }

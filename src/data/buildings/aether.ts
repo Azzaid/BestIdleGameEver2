@@ -43,4 +43,51 @@ export const aetherBuildings: {[key: string]: Building} = {
         description: "Scribes bind powders, lenses, and sigils into supplies that hold a spell under pressure.",
         keywords: ["production", "arcane", "aether", "laboratory"]
     },
+    [buildings.aether.dolmen]: {
+        id: buildings.aether.dolmen,
+        name: "Dolmen",
+        type: BUILDING_TYPES.produce,
+        level: 1,
+        size: 1,
+        isMultiHex: false,
+        isMultistructure: false,
+        vector: DEVELOPMENT_VECTORS.aether,
+        requiredUpkeep: {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 2},
+        requiredUpkeepDescription: {
+            [UPKEEP_TYPES.people]: "Needs 2 keepers to manage visitors and rites",
+            [UPKEEP_TYPES.gold]: "Consumes 2 value in offerings and carved stones",
+        },
+        trace: 20,
+        providedUpkeep: {[UPKEEP_TYPES.mana]: 4},
+        providedUpkeepDescription: {[UPKEEP_TYPES.mana]: "Produces 4 unstable mana through early ritual practice"},
+        adjacency: [],
+        adjacencyDescription: "Not affected",
+        description: "A raised stone place where market gossip becomes omen, ritual, and a very nervous kind of accounting.",
+        keywords: ["production", "mana", "aether", "ritual"]
+    },
+    [buildings.aether.shamanHut]: {
+        id: buildings.aether.shamanHut,
+        name: "Shaman hut",
+        type: BUILDING_TYPES.produce,
+        level: 1,
+        size: 1,
+        isMultiHex: false,
+        isMultistructure: false,
+        vector: DEVELOPMENT_VECTORS.aether,
+        requiredUpkeep: {[UPKEEP_TYPES.people]: 3, [UPKEEP_TYPES.mana]: 2},
+        requiredUpkeepDescription: {
+            [UPKEEP_TYPES.people]: "Needs 3 attendants, patients, and witnesses",
+            [UPKEEP_TYPES.mana]: "Consumes 2 mana in repeated rites",
+        },
+        trace: 26,
+        providedUpkeep: {[UPKEEP_TYPES.mana]: 7, [UPKEEP_TYPES.arcaneSupplies]: 1},
+        providedUpkeepDescription: {
+            [UPKEEP_TYPES.mana]: "Produces 7 mana",
+            [UPKEEP_TYPES.arcaneSupplies]: "Produces 1 early arcane supply",
+        },
+        adjacency: [],
+        adjacencyDescription: "Not affected",
+        description: "A dangerous compromise between medicine, prophecy, and weaponized superstition.",
+        keywords: ["production", "mana", "arcane", "aether", "ritual"]
+    },
 }

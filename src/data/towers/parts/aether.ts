@@ -41,6 +41,18 @@ export const aetherTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.arcaneSupplies]: 1 },
     },
   {
+      id: gunparts.bases.aether.floatingPlatform,
+      slot: 'base',
+      name: 'Floating Platform',
+      description: 'A rough tower platform held just above the wall by magic stones. It turns faster because it has less wall under it.',
+      vector: 'aether',
+      sprite: { textureKey: 'base_levitation_gimbal' },
+      attachmentOffset: { x: 0, y: 0 },
+      keywords: new Set(['arcane', 'mobile', 'stone']),
+      modifiers: { rotationSpeed: 0.55, retargetCooldownSeconds: -0.03 },
+      supportCost: { [UPKEEP_TYPES.mana]: 2, [UPKEEP_TYPES.gold]: 1 },
+    },
+  {
       id: gunparts.barrels.aether.phaseChannel,
       slot: 'barrel',
       name: 'Phase Channel',

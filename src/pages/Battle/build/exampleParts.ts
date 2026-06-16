@@ -4,7 +4,7 @@ import {gunparts} from '../../../data/identificators/index.ts';
 export const PARTS: Record<string, GunPart> = {
   [gunparts.barrels.medieval.crudeWood]: {
     id: gunparts.barrels.medieval.crudeWood,
-    name: 'Basic Barrel',
+    name: 'Crude Barrel',
     sprite: { textureKey: 'medieval_barrel_crude-wood' },
     attachmentOffset: { x: 16, y: 0 },
     keywords: new Set(['projectile']),
@@ -18,10 +18,10 @@ export const PARTS: Record<string, GunPart> = {
     keywords: new Set(),
     modifiers: { reloadSpeed: 0.5 },
   },
-  [gunparts.ammo.tech.explosive]: {
-    id: gunparts.ammo.tech.explosive,
-    name: 'Explosive Ammo',
-    sprite: { textureKey: 'ammo_explosive' },
+  [gunparts.ammo.medieval.stoneBasket]: {
+    id: gunparts.ammo.medieval.stoneBasket,
+    name: 'Stone Basket',
+    sprite: { textureKey: 'medieval_ammo_crude-stone' },
     attachmentOffset: { x: 0, y: 0 },
     keywords: new Set(['aoe']),
     modifiers: { aoeRadius: 32, projectileDamage: 5 },

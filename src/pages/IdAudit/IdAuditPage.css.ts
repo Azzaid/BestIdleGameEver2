@@ -61,6 +61,54 @@ export const tableWrap = style({
   background: vars.color.background.surface,
 });
 
+export const filters = style({
+  display: "grid",
+  gridTemplateColumns: "minmax(220px, 1.4fr) repeat(4, minmax(150px, 1fr)) auto",
+  gap: "10px",
+  alignItems: "end",
+  padding: "12px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "8px",
+  background: vars.color.background.surface,
+  "@media": {
+    "(max-width: 1100px)": {
+      gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    },
+  },
+});
+
+export const field = style({
+  display: "grid",
+  gap: "6px",
+});
+
+export const filterLabel = style({
+  color: vars.color.text.muted,
+  fontSize: "0.75rem",
+  fontWeight: 700,
+  textTransform: "uppercase",
+});
+
+export const input = style({
+  minHeight: "36px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "6px",
+  padding: "6px 8px",
+  background: vars.color.background.app,
+  color: vars.color.text.primary,
+});
+
+export const toggle = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "8px",
+  minHeight: "36px",
+  padding: "6px 8px",
+  color: vars.color.text.primary,
+  fontWeight: 700,
+  whiteSpace: "nowrap",
+});
+
 export const table = style({
   width: "100%",
   borderCollapse: "collapse",

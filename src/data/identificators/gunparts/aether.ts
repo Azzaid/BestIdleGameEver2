@@ -1,6 +1,7 @@
 export const aetherGunparts = {
   bases: {
     levitationGimbal: "base_levitation_gimbal",
+    floatingPlatform: "aether_base_floating-platform",
   },
   barrels: {
     phaseChannel: "barrel_phase_channel",

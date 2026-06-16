@@ -3,7 +3,7 @@ import type {ResearchState} from "../../models/store/research.ts";
 import {technologies} from "../../data/identificators/index.ts";
 
 const initialState: ResearchState = {
-    purchasedTechsIds: [technologies.medieval.root, technologies.aether.branch],
+    purchasedTechsIds: [technologies.medieval.root],
 }
 
 export const researchSlice = createSlice({

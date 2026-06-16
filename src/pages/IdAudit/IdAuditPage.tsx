@@ -1,4 +1,5 @@
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
+import {useMemo, useState} from "react";
 import {PROGRESSION_RULES} from "../../data/content/rules.ts";
 import {getRuleForTarget} from "../../data/content/progression.ts";
 import {BATTLE_ENEMY_BLUEPRINTS} from "../../data/enemies/index.ts";
@@ -30,6 +31,8 @@ type AuditRow = {
   assetStatus: AuditStatus;
   notes: string;
 };
+
+type StatusFilter = AuditStatus | "any";
 
 const metadataModules = import.meta.glob("../../assets/battle/gunParts/**/*.json", {
   eager: true,
@@ -180,6 +183,19 @@ function getUnregisteredRows(rows: readonly AuditRow[]): AuditRow[] {
     unregisteredRows.push(createUnregisteredRow("Tower Part", part.id, part.name));
   }
 
+  for (const id of new Set([...gunPartMetadataIds, ...gunPartImageIds])) {
+    if (registeredIds.has(id)) continue;
+    unregisteredRows.push({
+      category: "Tower Part Asset",
+      path: "missing identificator asset",
+      id,
+      dataStatus: TOWER_PARTS_BY_ID[id] ? "ok" : "missing",
+      progressionStatus: "none",
+      assetStatus: "ok",
+      notes: "Asset file exists but id is not in src/data/identificators",
+    });
+  }
+
   for (const enemy of Object.values(BATTLE_ENEMY_BLUEPRINTS)) {
     if (registeredIds.has(enemy.id)) continue;
     unregisteredRows.push(createUnregisteredRow("Enemy", enemy.id, enemy.displayName));
@@ -212,12 +228,44 @@ function createUnregisteredRow(category: string, id: string, name?: string): Aud
 }
 
 export default function IdAuditPage() {
-  const registeredRows = createRows();
-  const rows = [...registeredRows, ...getUnregisteredRows(registeredRows)];
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [dataFilter, setDataFilter] = useState<StatusFilter>("any");
+  const [progressionFilter, setProgressionFilter] = useState<StatusFilter>("any");
+  const [assetFilter, setAssetFilter] = useState<StatusFilter>("any");
+  const [problemsOnly, setProblemsOnly] = useState(false);
+  const registeredRows = useMemo(() => createRows(), []);
+  const rows = useMemo(() => [...registeredRows, ...getUnregisteredRows(registeredRows)], [registeredRows]);
+  const categories = useMemo(() => [...new Set(rows.map(row => row.category))].sort(), [rows]);
+  const filteredRows = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return rows
+      .filter(row => categoryFilter === "all" || row.category === categoryFilter)
+      .filter(row => dataFilter === "any" || row.dataStatus === dataFilter)
+      .filter(row => progressionFilter === "any" || row.progressionStatus === progressionFilter)
+      .filter(row => assetFilter === "any" || row.assetStatus === assetFilter)
+      .filter(row => !problemsOnly || (
+        row.dataStatus === "missing"
+        || row.progressionStatus === "missing"
+        || row.assetStatus === "missing"
+        || row.path.startsWith("missing identificator")
+      ))
+      .filter(row => {
+        if (!query) return true;
+        return [
+          row.category,
+          row.path,
+          row.id,
+          row.name ?? "",
+          row.notes,
+        ].some(value => value.toLowerCase().includes(query));
+      });
+  }, [assetFilter, categoryFilter, dataFilter, problemsOnly, progressionFilter, rows, search]);
   const missingData = rows.filter(row => row.dataStatus === "missing").length;
   const missingProgression = rows.filter(row => row.progressionStatus === "missing").length;
   const missingAssets = rows.filter(row => row.assetStatus === "missing").length;
-  const unregistered = rows.filter(row => row.path === "missing identificator").length;
+  const unregistered = rows.filter(row => row.path.startsWith("missing identificator")).length;
 
   return (
     <section className={s.page}>
@@ -230,11 +278,42 @@ export default function IdAuditPage() {
 
       <div className={s.summary}>
         <SummaryItem label="Registered IDs" value={registeredRows.length} />
+        <SummaryItem label="Shown Rows" value={filteredRows.length} />
         <SummaryItem label="Missing Data" value={missingData} />
         <SummaryItem label="Missing Progression" value={missingProgression} />
         <SummaryItem label="Missing Assets" value={missingAssets} />
         <SummaryItem label="Unregistered Data" value={unregistered} />
       </div>
+
+      <section className={s.filters} aria-label="ID table filters">
+        <label className={s.field}>
+          <span className={s.filterLabel}>Search</span>
+          <input
+            className={s.input}
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+            placeholder="Path, id, name, notes"
+          />
+        </label>
+        <label className={s.field}>
+          <span className={s.filterLabel}>Category</span>
+          <select className={s.input} value={categoryFilter} onChange={event => setCategoryFilter(event.target.value)}>
+            <option value="all">All categories</option>
+            {categories.map(category => <option key={category} value={category}>{category}</option>)}
+          </select>
+        </label>
+        <StatusSelect label="Data" value={dataFilter} onChange={setDataFilter} />
+        <StatusSelect label="Progression" value={progressionFilter} onChange={setProgressionFilter} />
+        <StatusSelect label="Assets" value={assetFilter} onChange={setAssetFilter} />
+        <label className={s.toggle}>
+          <input
+            type="checkbox"
+            checked={problemsOnly}
+            onChange={event => setProblemsOnly(event.target.checked)}
+          />
+          Problems only
+        </label>
+      </section>
 
       <div className={s.tableWrap}>
         <table className={s.table}>
@@ -251,7 +330,7 @@ export default function IdAuditPage() {
             </tr>
           </thead>
           <tbody>
-            {rows.map(row => (
+            {filteredRows.map(row => (
               <tr key={`${row.category}:${row.path}:${row.id}`}>
                 <td className={s.cell}>{row.category}</td>
                 <td className={`${s.cell} ${s.mono}`}>{row.path}</td>
@@ -267,6 +346,28 @@ export default function IdAuditPage() {
         </table>
       </div>
     </section>
+  );
+}
+
+function StatusSelect({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: StatusFilter;
+  onChange: (value: StatusFilter) => void;
+}) {
+  return (
+    <label className={s.field}>
+      <span className={s.filterLabel}>{label}</span>
+      <select className={s.input} value={value} onChange={event => onChange(event.target.value as StatusFilter)}>
+        <option value="any">Any</option>
+        <option value="ok">OK</option>
+        <option value="missing">Missing</option>
+        <option value="none">N/A</option>
+      </select>
+    </label>
   );
 }
 

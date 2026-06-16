@@ -1,17 +1,23 @@
 {
-  "id": "ammo_standard",
+  "id": "medieval_ammo_crude-stone",
   "spriteId": "medieval_ammo_crude-stone",
   "sourceSpriteSize": {
     "width": 1024,
     "height": 1024
   },
   "targetSpriteSize": {
-    "width": 34,
-    "height": 34
+    "width": 70,
+    "height": 70
   },
+  "rotationDegrees": 0,
   "inputSocket": {
-    "x": 512,
-    "y": 512
+    "x": 154,
+    "y": 497
   },
-  "outputSockets": {}
+  "outputSockets": {
+    "feed": {
+      "x": 914,
+      "y": 497
+    }
+  }
 }

@@ -1,8 +1,15 @@
 export const medievalTechnologies = {
   root: "root",
   branch: "medieval",
+  foraging: "foraging",
+  scrapTools: "scrap-tools",
+  workableTimber: "workable-timber",
   guildCharter: "guild-charter",
   fortifications: "fortifications",
   artillery: "medieval-artillery",
+  money: "money",
+  trainedGunner: "trained-gunner",
+  woodworking: "woodworking",
+  stoneworking: "stoneworking",
   livingWood: "livingWood",
 } as const;

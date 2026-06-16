@@ -16,6 +16,18 @@ export const natureTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.biomass]: 3, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
+      id: gunparts.ammo.nature.poisonedStones,
+      slot: 'ammo',
+      name: 'Poisoned Stones',
+      description: 'Herbal toxins soaked into sling stones. They add lingering harm, but careful handling slows the firing rhythm.',
+      vector: 'nature',
+      sprite: { textureKey: 'medieval_ammo_crude-stone' },
+      attachmentOffset: { x: 0, y: 0 },
+      keywords: new Set(['projectile', 'poison', 'biological', 'stone']),
+      modifiers: { projectileDamage: 5, reloadSpeed: -0.12, projectileSpeed: -30 },
+      supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.people]: 1 },
+    },
+  {
       id: gunparts.bases.nature.rootCluster,
       slot: 'base',
       name: 'Root Cluster',
