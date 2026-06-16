@@ -3,7 +3,7 @@ import {useCallback, useMemo, useState} from "react";
 import { useTypedDispatch, useTypedSelector } from "../../store/hooks.ts";
 import { selectHasAnyTowerBuild, selectResolvedAvailableTowers } from "../../store/towers/selectors.ts";
 import * as styles from './BattlePage.css.ts';
-import { selectCityBattlefield, selectCitySideHexes } from "../../store/city/selectors.ts";
+import { selectCityBattlefield, selectCityHexes, selectCitySideHexes } from "../../store/city/selectors.ts";
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from "../../data/constants.ts";
 import { Link } from "react-router-dom";
 import { recordThreatReached } from "../../store/upkeep/slice.ts";
@@ -11,6 +11,7 @@ import { selectCityTraceStatus, selectTowerAwareCityResolution } from "../../sto
 import { selectWallResolution } from "../../store/wall/selectors.ts";
 import { recordSurvivedSiege, retreatCityRadius } from "../../store/city/slice.ts";
 import type { BattleMetrics, BattleResult } from "../../models/battle/world.ts";
+import type { BattleWallSegment } from "../../models/battle/wallSegment.ts";
 import {
     BATTLEFIELD_RANGE_MULTIPLIER,
     BATTLE_WALL_APRON_HEIGHT,
@@ -35,10 +36,21 @@ const BattlePage = () => {
     );
     const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
     const citySideHexes = useTypedSelector(selectCitySideHexes);
+    const cityHexes = useTypedSelector(selectCityHexes);
     const cityBattlefield = useTypedSelector(selectCityBattlefield);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const wallResolution = useTypedSelector(selectWallResolution);
+    const battleWallSegments = useMemo<BattleWallSegment[]>(() => {
+        return cityHexes
+            .filter(hex => hex.kind === "wall")
+            .sort((left, right) => left.column - right.column)
+            .map(hex => ({
+                cellKey: hex.cellKey,
+                wallKey: hex.wallKey ?? null,
+                wallDevelopmentVector: hex.wallDevelopmentVector ?? null,
+            }));
+    }, [cityHexes]);
     const [battleMode, setBattleMode] = useState<BattleMode>(() => traceStatus.isBesieged ? "siege" : "pressure");
     const isSiege = battleMode === "siege" && traceStatus.isBesieged;
     const cityThreat = Math.max(0, cityResolution.effectiveTrace);
@@ -73,6 +85,7 @@ const BattlePage = () => {
         wallResolution.ignoredThreat,
         wallLogicalWidth,
         battlefieldHeight,
+        battleWallSegments.map(segment => `${segment.cellKey}:${segment.wallKey ?? ""}:${segment.wallDevelopmentVector?.description ?? ""}`).join("|"),
     ].join(":"), [
         targetThreat,
         initialThreat,
@@ -83,6 +96,7 @@ const BattlePage = () => {
         wallResolution.ignoredThreat,
         wallLogicalWidth,
         battlefieldHeight,
+        battleWallSegments,
     ]);
     const handleBattleEnded = useCallback((result: BattleResult) => {
         dispatch(recordThreatReached(result.threat));
@@ -137,6 +151,7 @@ const BattlePage = () => {
                     <BattleStage
                         key={battleKey}
                         wallLogicalWidth={wallLogicalWidth}
+                        wallSegments={battleWallSegments}
                         battlefieldWidth={wallLogicalWidth}
                         battlefieldHeight={battlefieldHeight}
                         wallY={battlefieldLength}

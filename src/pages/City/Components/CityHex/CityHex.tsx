@@ -1,5 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
+import {wallSpritesAtlas} from "../../../../models/sprites/walls/wallsSpriteAtlas.ts";
+import {wallTopSpritesAtlas} from "../../../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
 import type {HexCell} from "../../../../models/city/HexGrid.ts";
 import {
     axialCoordinateToPixelPosition, clampPan,
@@ -10,8 +12,6 @@ import {
 } from "./hexUtils.ts";
 import cityBackground from '../../../../assets/city/background/Top-down_map_view_circular_lan.jpeg'
 import {ALL_WALL_BUILDINGS} from "../../../../data/wall/index.ts";
-import medievalCrudeWoodTowerPlatform from "../../../../assets/battle/gunParts/medieval/medieval_base_crude-wood.png";
-import {superstructures} from "../../../../data/identificators/index.ts";
 
 const HEX_RADIUS_PX = 32;
 const HEX_STROKE_WIDTH = 2;
@@ -33,10 +33,6 @@ const backgroundWorldHeight = imagePixelHeight * backgroundScale;
 // Center it on world origin so it aligns with your grid centered at (0,0)
 const backgroundX = -backgroundWorldWidth  / 2;
 const backgroundY = -backgroundWorldHeight / 2;
-
-const wallTopSpriteAtlas: Record<string, string> = {
-    [superstructures.medieval.scaffoldTowerBase]: medievalCrudeWoodTowerPlatform,
-};
 
 
 export default function CityHex({
@@ -279,14 +275,30 @@ export default function CityHex({
                     style={{ imageRendering: "pixelated" }}
                 />
                 {preparedCells.map((cell) => {
-                    const { centerX, centerY, cellKey, developmentVector, buildingKey, kind, wallKey, wallTopKey} = cell;
+                    const {
+                        centerX,
+                        centerY,
+                        cellKey,
+                        developmentVector,
+                        buildingKey,
+                        kind,
+                        wallKey,
+                        wallDevelopmentVector,
+                        wallTopKey,
+                    } = cell;
                     const isSelected = cellKey === selectedCellKey;
                     const isHovered = cellKey === hoveredCellKey;
                     const clipId = `clip-${cellKey}`;
                     const spriteUrl = kind === "city" && buildingKey
                         ? buildingsSpriteAtlas[developmentVector]?.[buildingKey]
                         : undefined;
-                    const wallTopSpriteUrl = kind === "wall" && wallTopKey ? wallTopSpriteAtlas[wallTopKey] : undefined;
+                    const wallSpriteUrl = kind === "wall" && wallKey && wallDevelopmentVector
+                        ? wallSpritesAtlas[wallDevelopmentVector]?.[wallKey]
+                        : undefined;
+                    const wallTopSpriteUrl = kind === "wall" && wallTopKey && wallDevelopmentVector
+                        ? wallTopSpritesAtlas[wallDevelopmentVector]?.[wallTopKey]
+                        : undefined;
+                    const hasTexture = Boolean(spriteUrl || wallSpriteUrl || wallTopSpriteUrl);
                     const wallName = wallKey ? ALL_WALL_BUILDINGS[wallKey]?.name ?? wallKey : undefined;
                     const wallTopName = wallTopKey ? ALL_WALL_BUILDINGS[wallTopKey]?.name ?? wallTopKey : undefined;
                     const fallbackName = kind === "wall"
@@ -308,7 +320,7 @@ export default function CityHex({
 
                             <use
                                 href="#hexagonPath"
-                                fill={kind === "wall" ? "#2c2f38" : "#8016161b"}
+                                fill={hasTexture ? "transparent" : kind === "wall" ? "#2c2f38" : "#8016161b"}
                                 stroke={
                                 isSelected
                                     ? "#2e2a17"
@@ -331,6 +343,18 @@ export default function CityHex({
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}
                                 />
                             )}
+                            {wallSpriteUrl && (
+                                <image
+                                    href={wallSpriteUrl}
+                                    x={-SPRITE_WIDTH / 2}
+                                    y={-SPRITE_HEIGHT / 2}
+                                    width={SPRITE_WIDTH}
+                                    height={SPRITE_HEIGHT}
+                                    preserveAspectRatio="xMidYMid meet"
+                                    clipPath={`url(#${clipId})`}
+                                    style={{ imageRendering: "pixelated", pointerEvents: "none" }}
+                                />
+                            )}
                             {wallTopSpriteUrl && (
                                 <image
                                     href={wallTopSpriteUrl}
@@ -343,7 +367,7 @@ export default function CityHex({
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}
                                 />
                             )}
-                            {fallbackKey && !spriteUrl && !wallTopSpriteUrl && (
+                            {fallbackKey && !spriteUrl && !wallSpriteUrl && !wallTopSpriteUrl && (
                                 <>
                                     <use
                                         href="#hexagonPath"

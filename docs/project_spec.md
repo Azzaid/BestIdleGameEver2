@@ -79,6 +79,7 @@ Important directories:
 - `src/data` contains static gameplay data and constants.
 - `src/theme` contains theme tokens and runtime theme selection.
 - `src/styles` contains global vanilla-extract styles.
+- `src/assets` contains active textures organized by gameplay type plus `src/assets/unused` for images not currently loaded.
 - `docs` contains product, design, architecture, and open-question notes.
 - `public` contains static Vite assets.
 
@@ -91,6 +92,14 @@ Content data layout:
 - `src/data/enemies` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
 - `src/data/identificators` is the single source of truth for content ids. Category folders collect ids by vector or biome and expose structured paths such as `buildings.aether.leylineWell` and `gunparts.barrels.medieval.crudeWood`.
 - `/ids` renders an audit table that compares registered ids against data definitions, progression rules, and available assets.
+
+Texture asset layout:
+
+- City building textures live in `src/assets/city/buildings/<vector>` and are registered through `src/models/sprites/buildings`.
+- City wall segment textures and metadata live in `src/assets/city/walls/<vector>` and are registered through `src/models/sprites/walls`.
+- City wall-top/superstructure textures live in `src/assets/city/wallTops/<vector>` and are registered through `src/models/sprites/wallTops`.
+- Battle tower component textures and metadata live in `src/assets/battle/towerParts/<vector>` and are registered through `src/data/towers/partVisualMetadata.ts`.
+- Images not currently loaded by code belong under `src/assets/unused`.
 
 Future architecture direction:
 

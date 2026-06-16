@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Texture, TilingSprite } from 'pixi.js';
+import { Application, Assets, Container, Graphics, Sprite, Texture, TilingSprite } from 'pixi.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createWorld, createEntityId } from '../core/world';
 import { runSystems } from '../systems/runSystems';
@@ -17,10 +17,14 @@ import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
 import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/towers/visuals.ts';
 import type { BattleMetrics, BattleResult } from '../../../models/battle/world.ts';
 import { INITIAL_TOWER_AIM_RADIANS } from '../../../models/battle/tower.ts';
+import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
+import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from '../../../data/constants.ts';
+import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
 export function BattleStage(props: {
     wallLogicalWidth: number;   // TODO: derive from city hex row width (Redux)
+    wallSegments: BattleWallSegment[];
     battlefieldWidth: number;   // TODO: logical width in world units
     battlefieldHeight: number;  // TODO: logical height in world units
     wallY: number;
@@ -96,6 +100,7 @@ export function BattleStage(props: {
 
             await loadBattleAssets({
                 backgroundId: props.backgroundId,
+                wallSegments: props.wallSegments,
             });
 
             const viewportWidth = app.renderer.width;
@@ -162,13 +167,14 @@ export function BattleStage(props: {
             activeBattlefieldPlaceholder.zIndex = 201;
             world.worldLayer.addChild(activeBattlefieldPlaceholder);
 
-            const wallPlaceholder = new Graphics();
-            wallPlaceholder
-                .rect(0, wallY - 8, props.battlefieldWidth, 16)
-                .fill(0x6f7787)
-                .stroke({ color: 0xd9e2ff, width: 2 });
-            wallPlaceholder.zIndex = 15;
-            world.worldLayer.addChild(wallPlaceholder);
+            const wallLayer = createBattleWallLayer({
+                wallSegments: props.wallSegments,
+                wallY,
+                segmentSize: BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX,
+                battlefieldWidth: props.battlefieldWidth,
+            });
+            wallLayer.zIndex = 15;
+            world.worldLayer.addChild(wallLayer);
 
             props.resolvedTowers.forEach((resolvedTower, index) => {
                 const baseId = createEntityId(world);
@@ -294,6 +300,7 @@ export function BattleStage(props: {
         canvasSize.height,
         canvasSize.width,
         props.wallLogicalWidth,
+        props.wallSegments,
         props.battlefieldWidth,
         props.battlefieldHeight,
         props.wallY,
@@ -317,4 +324,54 @@ export function BattleStage(props: {
             <div ref={hostRef} style={hostStyle} />
         </div>
     );
+}
+
+function createBattleWallLayer({
+    wallSegments,
+    wallY,
+    segmentSize,
+    battlefieldWidth,
+}: {
+    wallSegments: BattleWallSegment[];
+    wallY: number;
+    segmentSize: number;
+    battlefieldWidth: number;
+}) {
+    const wallLayer = new Container();
+
+    if (wallSegments.length === 0) {
+        const fallbackWall = new Graphics();
+        fallbackWall
+            .rect(0, wallY - 8, battlefieldWidth, 16)
+            .fill(0x6f7787)
+            .stroke({ color: 0xd9e2ff, width: 2 });
+        wallLayer.addChild(fallbackWall);
+        return wallLayer;
+    }
+
+    wallSegments.forEach((segment, index) => {
+        const x = index * segmentSize;
+        const textureAlias = segment.wallKey && segment.wallDevelopmentVector
+            ? wallSpriteMetadataAtlas[segment.wallDevelopmentVector][segment.wallKey]?.spriteId
+            : undefined;
+
+        if (textureAlias && Assets.cache.has(textureAlias)) {
+            const sprite = new Sprite(Texture.from(textureAlias));
+            sprite.x = x;
+            sprite.y = wallY - segmentSize / 2;
+            sprite.width = segmentSize;
+            sprite.height = segmentSize;
+            wallLayer.addChild(sprite);
+            return;
+        }
+
+        const fallbackSegment = new Graphics();
+        fallbackSegment
+            .rect(x, wallY - segmentSize / 2, segmentSize, segmentSize)
+            .fill(0x6f7787)
+            .stroke({ color: 0xd9e2ff, width: 2 });
+        wallLayer.addChild(fallbackSegment);
+    });
+
+    return wallLayer;
 }

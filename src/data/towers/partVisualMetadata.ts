@@ -1,11 +1,11 @@
-import medievalBarrelSlingCrudeBaseMetadata from '../../assets/battle/gunParts/medieval/medieval_barrel_crude-wood.json';
-import medievalBarrelSlingCrudeBaseUrl from '../../assets/battle/gunParts/medieval/medieval_barrel_crude-wood.png';
-import medievalBaseCrudeWoodMetadata from '../../assets/battle/gunParts/medieval/medieval_base_crude-wood.json';
-import medievalBaseCrudeWoodUrl from '../../assets/battle/gunParts/medieval/medieval_base_crude-wood.png';
-import medievalAmmoCrudeStoneMetadata from '../../assets/battle/gunParts/medieval/medieval_ammo_crude-stone.json';
-import medievalAmmoCrudeStoneUrl from '../../assets/battle/gunParts/medieval/medieval_ammo_crude-stone.png';
-import medievalLauncherCrudeSlingMetadata from '../../assets/battle/gunParts/medieval/medieval_launcher_crude-sling.json';
-import medievalLauncherCrudeSlingUrl from '../../assets/battle/gunParts/medieval/medieval_launcher_crude-sling.png';
+import medievalBarrelSlingCrudeBaseMetadata from '../../assets/battle/towerParts/medieval/medieval_barrel_crude-wood.json';
+import medievalBarrelSlingCrudeBaseUrl from '../../assets/battle/towerParts/medieval/medieval_barrel_crude-wood.png';
+import medievalBaseCrudeWoodMetadata from '../../assets/battle/towerParts/medieval/medieval_base_crude-wood.json';
+import medievalBaseCrudeWoodUrl from '../../assets/battle/towerParts/medieval/medieval_base_crude-wood.png';
+import medievalAmmoCrudeStoneMetadata from '../../assets/battle/towerParts/medieval/medieval_ammo_crude-stone.json';
+import medievalAmmoCrudeStoneUrl from '../../assets/battle/towerParts/medieval/medieval_ammo_crude-stone.png';
+import medievalLauncherCrudeSlingMetadata from '../../assets/battle/towerParts/medieval/medieval_launcher_crude-sling.json';
+import medievalLauncherCrudeSlingUrl from '../../assets/battle/towerParts/medieval/medieval_launcher_crude-sling.png';
 import type { TowerPartVisualMetadata } from '../../models/battle/towerPartVisualMetadata.ts';
 import type { TowerVisualPoint, TowerVisualSize } from '../../models/battle/towerVisual.ts';
 

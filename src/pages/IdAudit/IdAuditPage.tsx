@@ -34,11 +34,11 @@ type AuditRow = {
 
 type StatusFilter = AuditStatus | "any";
 
-const metadataModules = import.meta.glob("../../assets/battle/gunParts/**/*.json", {
+const metadataModules = import.meta.glob("../../assets/battle/towerParts/**/*.json", {
   eager: true,
 }) as Record<string, { default: { id: string } }>;
 
-const imageModules = import.meta.glob("../../assets/battle/gunParts/**/*.png", {
+const imageModules = import.meta.glob("../../assets/battle/towerParts/**/*.png", {
   eager: true,
   query: "?url",
   import: "default",

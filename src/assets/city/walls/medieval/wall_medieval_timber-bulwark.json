@@ -1,0 +1,13 @@
+{
+  "id": "wall_medieval_timber-bulwark",
+  "spriteId": "wall_medieval_timber-bulwark",
+  "wallId": "timberBulwark",
+  "sourceSpriteSize": {
+    "width": 1024,
+    "height": 1024
+  },
+  "targetSpriteSize": {
+    "width": 56,
+    "height": 56
+  }
+}

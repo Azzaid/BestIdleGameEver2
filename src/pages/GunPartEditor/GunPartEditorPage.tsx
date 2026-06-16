@@ -21,11 +21,11 @@ interface EditorAsset {
   src?: string;
 }
 
-const metadataModules = import.meta.glob('../../assets/battle/gunParts/**/*.json', {
+const metadataModules = import.meta.glob('../../assets/battle/towerParts/**/*.json', {
   eager: true,
 }) as Record<string, { default: TowerPartVisualMetadata }>;
 
-const imageModules = import.meta.glob('../../assets/battle/gunParts/**/*.png', {
+const imageModules = import.meta.glob('../../assets/battle/towerParts/**/*.png', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -686,7 +686,7 @@ export default function GunPartEditorPage() {
               </svg>
             ) : (
               <div className={s.emptyStage}>
-                This part does not have a PNG under src/assets/battle/gunParts yet. Add the sprite asset, then it will appear here for socket editing.
+                This part does not have a PNG under src/assets/battle/towerParts yet. Add the sprite asset, then it will appear here for socket editing.
               </div>
             )}
           </div>

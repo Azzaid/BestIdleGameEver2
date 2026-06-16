@@ -38,9 +38,21 @@ For design intent and game mechanics, also refer to the docs folder before makin
 - `src/data` - static gameplay data and constants.
 - `src/theme` - vanilla-extract theme contract, theme values, and theme provider.
 - `src/styles` - global vanilla-extract styles only.
-- `src/assets` - bundled image assets, including city/building art.
+- `src/assets` - bundled image assets, organized by active texture type plus `src/assets/unused` for images not currently loaded.
 - `docs` - project specifications, design notes, and game mechanics references.
 - `public` - static Vite public assets.
+
+## Texture Asset Workflow
+
+Use `docs/texture-assets.md` before adding or moving wall, wall-top/superstructure, building, or tower component textures. The short version:
+
+- Active city building textures live under `src/assets/city/buildings/<vector>` and are registered in `src/models/sprites/buildings/<vector>.ts`.
+- Active wall segment textures live under `src/assets/city/walls/<vector>` and are registered in `src/models/sprites/walls/<vector>.ts`.
+- Active wall-top/superstructure textures live under `src/assets/city/wallTops/<vector>` and are registered in `src/models/sprites/wallTops/<vector>.ts`.
+- Active tower component textures and metadata live under `src/assets/battle/towerParts/<vector>` and are registered in `src/data/towers/partVisualMetadata.ts`.
+- Active texture loading should go through sprite atlases/registries. Do not import one-off gameplay textures directly in page components when a registry exists.
+- Move images that are not currently loaded by code to `src/assets/unused`, preserving source subfolders when useful.
+- After adding texture content, check `/ids`; for tower component sockets also use `/gun-part-editor`.
 
 ## Build and Test Commands
 

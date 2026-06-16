@@ -3,6 +3,8 @@ import { BATTLE_BACKGROUNDS } from '../../../data/battle/backgrounds.ts';
 import type { BattleBackgroundId } from '../../../data/battle/backgrounds.ts';
 import { TOWER_PARTS } from '../../../data/towers/index.ts';
 import { TOWER_PART_VISUAL_ASSETS } from '../../../data/towers/partVisualMetadata.ts';
+import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
+import { wallSpriteMetadataAtlas, wallSpritesAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 
 export async function loadBattleBackground(backgroundId: BattleBackgroundId): Promise<void> {
     const background = BATTLE_BACKGROUNDS[backgroundId];
@@ -30,11 +32,34 @@ export async function loadTowerPartAssets(): Promise<void> {
     await Assets.load(assetsToLoad);
 }
 
+export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): Promise<void> {
+    const queuedAliases = new Set<string>();
+    const assetsToLoad = wallSegments.flatMap((segment) => {
+        if (!segment.wallKey || !segment.wallDevelopmentVector) return [];
+
+        const metadata = wallSpriteMetadataAtlas[segment.wallDevelopmentVector][segment.wallKey];
+        const src = wallSpritesAtlas[segment.wallDevelopmentVector][segment.wallKey];
+        if (!metadata || !src || Assets.cache.has(metadata.spriteId) || queuedAliases.has(metadata.spriteId)) return [];
+        queuedAliases.add(metadata.spriteId);
+
+        return [{
+            alias: metadata.spriteId,
+            src,
+        }];
+    });
+
+    if (assetsToLoad.length === 0) return;
+
+    await Assets.load(assetsToLoad);
+}
+
 /** Loads only assets needed by the current battle scene. */
 export async function loadBattleAssets(args?: {
     backgroundId?: BattleBackgroundId;
+    wallSegments?: BattleWallSegment[];
 }): Promise<void> {
     await loadTowerPartAssets();
+    await loadBattleWallAssets(args?.wallSegments ?? []);
 
     if (args?.backgroundId) {
         await loadBattleBackground(args.backgroundId);
