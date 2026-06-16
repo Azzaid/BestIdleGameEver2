@@ -49,7 +49,7 @@ export const medievalResearch: ResearchDB = {
     parentId: technologies.medieval.branch,
     name: "Fortifications",
     vector: "medieval",
-    summary: "City walls, tower bases, and more deliberate defensive work.",
+    summary: "City walls, tower platforms, and more deliberate defensive work.",
   },
   [technologies.medieval.artillery]: {
     id: technologies.medieval.artillery,

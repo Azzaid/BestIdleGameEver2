@@ -25,3 +25,17 @@ export const PRESSURE_WAVE_INTERVAL_SECONDS = 18;
 export const BATTLE_WAVE_THREAT_TO_CITY_THREAT_RATIO = 1;
 
 export const MAX_TOWER_SLOTS = 5;
+
+export const TOWER_WEIGHT_ROTATION_PENALTY = 0.08;
+
+export const BASE_TOWER_STATS = {
+    rotationSpeed: 2.5,
+    reloadSpeed: 1.0,
+    burstCount: 1,
+    projectileDamage: 10,
+    projectileSpeed: 500,
+    aoeRadius: 0,
+    targetingDistanceLimit: 360,
+    retargetCooldownSeconds: 0.25,
+    weight: 0,
+};

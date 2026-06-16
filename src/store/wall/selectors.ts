@@ -4,6 +4,7 @@ import type {RootState} from "../../models/store/appStore.ts";
 import {selectCityHexes} from "../city/selectors.ts";
 import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
 import {addUpkeep} from "../../pages/City/Components/CityHex/upkeepUtils.ts";
+import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 
 export const selectUnlockedWallBuildingIds = (state: RootState) => state.wall.unlockedWallBuildingIds;
 
@@ -42,4 +43,13 @@ export const selectWallResolution = createSelector(
 
         return resolution;
     }
+);
+
+export const selectBuiltTowerPlatformCount = createSelector(
+    [selectCityHexes],
+    (hexes): number => hexes.filter((hex) => {
+        if (hex.kind !== "wall" || !hex.wallTopKey) return false;
+
+        return ALL_WALL_BUILDINGS[hex.wallTopKey]?.type === BUILDING_TYPES.towerBase;
+    }).length
 );

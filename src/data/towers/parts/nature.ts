@@ -13,6 +13,7 @@ export const natureTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['biological', 'poison', 'control']),
       modifiers: { projectileDamage: -2, aoeRadius: 18 },
+      weight: 1,
       supportCost: { [UPKEEP_TYPES.biomass]: 3, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
@@ -25,11 +26,12 @@ export const natureTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['projectile', 'poison', 'biological', 'stone']),
       modifiers: { projectileDamage: 5, reloadSpeed: -0.12, projectileSpeed: -30 },
+      weight: 2,
       supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.people]: 1 },
     },
   {
       id: gunparts.bases.nature.rootCluster,
-      slot: 'base',
+      slot: 'platform',
       name: 'Root Cluster',
       description: 'Living anchors burrow into the wall and flex with recoil instead of resisting it.',
       vector: 'nature',
@@ -37,6 +39,7 @@ export const natureTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['biological', 'stable', 'regenerative']),
       modifiers: { rotationSpeed: -0.15, retargetCooldownSeconds: -0.04 },
+      weight: 3,
       supportCost: { [UPKEEP_TYPES.biomass]: 3 },
     },
   {
@@ -49,6 +52,7 @@ export const natureTowerParts: GunPart[] = [
       attachmentOffset: { x: 20, y: 0 },
       keywords: new Set(['projectile', 'biological', 'piercing']),
       modifiers: { projectileDamage: 3, projectileSpeed: 70 },
+      weight: 2,
       supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
@@ -62,6 +66,7 @@ export const natureTowerParts: GunPart[] = [
       keywords: new Set(['targeting', 'biological', 'predatory']),
       aimKeywords: ['leastHP'],
       modifiers: { retargetCooldownSeconds: -0.07, rotationSpeed: 0.2 },
+      weight: 1,
       supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
@@ -74,6 +79,7 @@ export const natureTowerParts: GunPart[] = [
       attachmentOffset: { x: 24, y: 0 },
       keywords: new Set(['biological', 'poison', 'amplifier']),
       modifiers: { aoeRadius: 14, projectileSpeed: -25 },
+      weight: 1,
       supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
@@ -86,6 +92,7 @@ export const natureTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: -8 },
       keywords: new Set(['biological', 'sustained']),
       modifiers: { reloadSpeed: 0.25, burstCount: 1 },
+      weight: 2,
       supportCost: { [UPKEEP_TYPES.biomass]: 3, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
@@ -98,6 +105,7 @@ export const natureTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['biological', 'reliable']),
       modifiers: { projectileSpeed: 90, reloadSpeed: 0.1 },
+      weight: 2,
       supportCost: { [UPKEEP_TYPES.biomass]: 3 },
     },
 ];

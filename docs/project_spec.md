@@ -299,7 +299,7 @@ The wall is the central connector between city and combat.
 In the city view:
 
 - The wall appears as the top row of city hexes.
-- Wall hexes can contain wall-specific buildings such as wall segments and tower bases.
+- Wall hexes can contain wall-specific buildings such as wall segments and tower platforms.
 
 In battle:
 

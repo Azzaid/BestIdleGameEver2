@@ -5,7 +5,7 @@ import {natureTowerParts} from './nature.ts';
 import {techTowerParts} from './tech.ts';
 
 export const TOWER_PART_SLOT_ORDER: { key: TowerPartSlot; label: string }[] = [
-  { key: 'base', label: 'Base' },
+  { key: 'platform', label: 'Platform / Turret' },
   { key: 'barrel', label: 'Barrel' },
   { key: 'ammo', label: 'Ammunition' },
   { key: 'aimSystem', label: 'Aiming System' },
@@ -15,7 +15,6 @@ export const TOWER_PART_SLOT_ORDER: { key: TowerPartSlot; label: string }[] = [
 ];
 
 export const REQUIRED_TOWER_PART_SLOTS: TowerPartSlot[] = [
-  'base',
   'ammo',
   'launchSystem',
 ];

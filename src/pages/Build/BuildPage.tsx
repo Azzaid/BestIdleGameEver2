@@ -11,8 +11,8 @@ import * as s from './BuildPage.css.ts';
 import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/towers/index.ts';
 import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
-import { selectActiveTower, selectActiveTowerDraftAssembly, selectHasAnyTowerBuild, selectResolvedActiveTowerDraft, selectTowerList } from '../../store/towers/selectors.ts';
-import { cancelTowerDraft, commitTowerDraft, selectTower, selectTowerDraftPart } from '../../store/towers/slice.ts';
+import { selectActiveTower, selectActiveTowerDraftAssembly, selectAvailableTowerList, selectHasAnyTowerBuild, selectResolvedActiveTowerDraft } from '../../store/towers/selectors.ts';
+import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTower, selectTowerDraftPart } from '../../store/towers/slice.ts';
 import { selectPurchasedTechsIds } from '../../store/research/selectors.ts';
 import { selectCityResolution, selectCityTraceStatus } from '../../store/upkeep/selectors.ts';
 import { formatTowerSlot } from '../../models/battle/resolveTowerAssembly.ts';
@@ -70,14 +70,14 @@ function getAvailableUpkeepForSlot(
 const BuildPage = () => {
   const dispatch = useTypedDispatch();
   const activeTower = useTypedSelector(selectActiveTower);
-  const towers = useTypedSelector(selectTowerList);
+  const towers = useTypedSelector(selectAvailableTowerList);
   const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
   const towerDraftAssembly = useTypedSelector(selectActiveTowerDraftAssembly);
   const resolvedTower = useTypedSelector(selectResolvedActiveTowerDraft);
   const purchasedTechIds = useTypedSelector(selectPurchasedTechsIds);
   const cityResolution = useTypedSelector(selectCityResolution);
   const traceStatus = useTypedSelector(selectCityTraceStatus);
-  const [activeTab, setActiveTab] = useState<TowerPartSlot>('base');
+  const [activeTab, setActiveTab] = useState<TowerPartSlot>('platform');
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 8 });
@@ -138,6 +138,12 @@ const BuildPage = () => {
       id: 'modifiers',
       accessorFn: formatModifierList,
       header: 'Modifiers',
+      cell: (info) => info.getValue(),
+    },
+    {
+      id: 'weight',
+      accessorFn: (row) => row.weight ?? 0,
+      header: 'Weight',
       cell: (info) => info.getValue(),
     },
     {
@@ -224,6 +230,7 @@ const BuildPage = () => {
     ['Range', `${resolvedTower.stats.targetingDistanceLimit.toFixed(0)} px`],
     ['Projectile speed', `${resolvedTower.stats.projectileSpeed.toFixed(0)} px/s`],
     ['Rotation', `${resolvedTower.stats.rotationSpeed.toFixed(2)} rad/s`],
+    ['Weight', resolvedTower.stats.weight.toFixed(0)],
     ['Area', `${resolvedTower.stats.aoeRadius.toFixed(0)} px`],
     ['Retarget', `${resolvedTower.stats.retargetCooldownSeconds.toFixed(2)} s`],
   ];
@@ -373,6 +380,15 @@ const BuildPage = () => {
             <h2 className={s.panelTitle}>{formatTowerSlot(activeTab)} Parts</h2>
             <p className={s.panelSubtitle}>Pick one available part for this slot.</p>
           </div>
+          <button
+            className={s.cancelButton}
+            type="button"
+            disabled={!selectedPartId || !canModifyTower}
+            title={!canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined}
+            onClick={() => dispatch(clearTowerDraftPart({ slot: activeTab }))}
+          >
+            Clear Slot
+          </button>
           <div className={s.columnChooser}>
             {table.getAllLeafColumns().map((column) => (
               <label key={column.id} className={s.columnToggle}>

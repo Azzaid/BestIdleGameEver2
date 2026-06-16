@@ -1,6 +1,7 @@
 import { TOWER_PARTS_BY_ID, TOWER_PART_SLOT_ORDER, TOWER_SYNERGY_RULES, REQUIRED_TOWER_PART_SLOTS } from '../../data/towers/index.ts';
+import { BASE_TOWER_STATS, TOWER_WEIGHT_ROTATION_PENALTY } from '../../data/constants.ts';
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../Upkeep.ts';
-import { BASE_TOWER, type GunPart, type TowerAssembly, type TowerAssemblyResolved, type TowerModifiers, type TowerPartSlot } from './towerParts.ts';
+import type { GunPart, TowerAssembly, TowerAssemblyResolved, TowerModifiers, TowerPartSlot } from './towerParts.ts';
 
 const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'reloadSpeed' | 'burstCount' | 'projectileDamage' | 'projectileSpeed' | 'targetingDistanceLimit' | 'retargetCooldownSeconds'> = {
   rotationSpeed: 0.25,
@@ -52,7 +53,7 @@ export function resolveTowerAssembly(
   assembly: TowerAssembly,
   purchasedTechIds: readonly string[] = []
 ): TowerAssemblyResolved {
-  const stats = { ...BASE_TOWER, keywords: new Set(BASE_TOWER.keywords) };
+  const stats = { ...BASE_TOWER_STATS, keywords: new Set<string>() };
   const selectedParts: TowerAssemblyResolved['selectedParts'] = {};
   const supportCost: UpkeepAmount = {};
   const aimKeywords: string[] = [];
@@ -73,6 +74,7 @@ export function resolveTowerAssembly(
     }
 
     selectedParts[slot] = part;
+    stats.weight += part.weight ?? 0;
     part.keywords.forEach((keyword) => stats.keywords.add(keyword));
     applyModifiers(stats, part.modifiers);
     addSupportCost(supportCost, part.supportCost);
@@ -133,6 +135,7 @@ export function resolveTowerAssembly(
     aimKeywords.push('closestToWall');
   }
 
+  stats.rotationSpeed -= stats.weight * TOWER_WEIGHT_ROTATION_PENALTY;
   clampStats(stats);
 
   return {

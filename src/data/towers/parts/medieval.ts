@@ -5,14 +5,15 @@ import {gunparts} from '../../identificators/index.ts';
 export const medievalTowerParts: GunPart[] = [
   {
       id: gunparts.bases.medieval.crudeWoodFrame,
-      slot: 'base',
-      name: 'Crude Wood Frame',
-      description: 'A first wall frame lashed from rough wood. It holds a launcher and ammunition before the city knows how to make a barrel.',
+      slot: 'platform',
+      name: 'Crude Wood Turret',
+      description: 'A rough rotating scaffold lashed onto a wall tower platform. It helps primitive launchers turn despite awkward weight.',
       vector: 'medieval',
       sprite: { textureKey: 'medieval_base_crude-wood' },
       attachmentOffset: { x: 0, y: 0 },
-      keywords: new Set(['rough', 'grounded']),
-      modifiers: { rotationSpeed: -0.35, projectileDamage: 1, retargetCooldownSeconds: 0.08 },
+      keywords: new Set(['rough', 'grounded', 'turret']),
+      modifiers: { rotationSpeed: 0.25, projectileDamage: 1, retargetCooldownSeconds: 0.04 },
+      weight: 1,
       supportCost: {},
     },
   {
@@ -25,6 +26,7 @@ export const medievalTowerParts: GunPart[] = [
       attachmentOffset: { x: 16, y: 0 },
       keywords: new Set(['projectile', 'sling']),
       modifiers: { projectileSpeed: 90 },
+      weight: 2,
       supportCost: {},
     },
   {
@@ -37,6 +39,7 @@ export const medievalTowerParts: GunPart[] = [
       attachmentOffset: { x: 22, y: 0 },
       keywords: new Set(['projectile', 'sling', 'stable', 'wood']),
       modifiers: { projectileSpeed: 135, projectileDamage: 2, retargetCooldownSeconds: -0.02 },
+      weight: 3,
       supportCost: { [UPKEEP_TYPES.people]: 1, [UPKEEP_TYPES.gold]: 1 },
     },
   {
@@ -49,6 +52,7 @@ export const medievalTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['projectile', 'stone']),
       modifiers: { projectileDamage: 2, projectileSpeed: -20 },
+      weight: 2,
       supportCost: {},
     },
   {
@@ -62,6 +66,7 @@ export const medievalTowerParts: GunPart[] = [
       keywords: new Set(['targeting', 'defensive']),
       aimKeywords: ['closestToWall'],
       modifiers: { retargetCooldownSeconds: -0.04 },
+      weight: 1,
       supportCost: {},
     },
   {
@@ -75,6 +80,7 @@ export const medievalTowerParts: GunPart[] = [
       keywords: new Set(['targeting', 'intuition']),
       aimKeywords: ['generatingMostSiegePressure', 'top8', 'coverMoreEnemiesWithAOEEffect'],
       modifiers: { retargetCooldownSeconds: 0.06 },
+      weight: 1,
       supportCost: { [UPKEEP_TYPES.people]: 2 },
     },
   {
@@ -87,6 +93,7 @@ export const medievalTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: -8 },
       keywords: new Set(['manual', 'reliable']),
       modifiers: { reloadSpeed: -0.15, projectileDamage: 2 },
+      weight: 2,
       supportCost: {},
     },
   {
@@ -99,6 +106,7 @@ export const medievalTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: -8 },
       keywords: new Set(['manual', 'trained', 'rapid']),
       modifiers: { reloadSpeed: 0.35, retargetCooldownSeconds: -0.04 },
+      weight: 2,
       supportCost: { [UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 2 },
     },
   {
@@ -111,6 +119,7 @@ export const medievalTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['mechanical', 'rough']),
       modifiers: { projectileDamage: 2, projectileSpeed: 50, reloadSpeed: -0.05 },
+      weight: 3,
       supportCost: {},
     },
   {
@@ -123,6 +132,7 @@ export const medievalTowerParts: GunPart[] = [
       attachmentOffset: { x: 24, y: 0 },
       keywords: new Set(['stable', 'reliable', 'sighting']),
       modifiers: { projectileDamage: 2, retargetCooldownSeconds: -0.03 },
+      weight: 1,
       supportCost: { [UPKEEP_TYPES.people]: 1, [UPKEEP_TYPES.gold]: 1 },
     },
 ];

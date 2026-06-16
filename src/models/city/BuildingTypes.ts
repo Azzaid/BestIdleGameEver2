@@ -2,7 +2,7 @@ export const BUILDING_TYPES = {
     produce: Symbol("Produce"),
     research: Symbol("Research"),
     wallSegment: Symbol("Wall Segment"),
-    towerBase: Symbol("Tower Base"),
+    towerBase: Symbol("Tower Platform"),
 }
 
 export type BuildingTypesKey = keyof typeof BUILDING_TYPES;

@@ -5,7 +5,7 @@ import {gunparts} from '../../identificators/index.ts';
 export const techTowerParts: GunPart[] = [
   {
       id: gunparts.bases.tech.servoRing,
-      slot: 'base',
+      slot: 'platform',
       name: 'Servo Ring',
       description: 'Powered rotation for fast target changes and wide tracking arcs.',
       vector: 'tech',
@@ -13,6 +13,7 @@ export const techTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['powered', 'precise']),
       modifiers: { rotationSpeed: 1.1, retargetCooldownSeconds: -0.08 },
+      weight: 2,
       supportCost: { [UPKEEP_TYPES.electricity]: 3, [UPKEEP_TYPES.highTechComponents]: 1 },
     },
   {
@@ -25,6 +26,7 @@ export const techTowerParts: GunPart[] = [
       attachmentOffset: { x: 22, y: 0 },
       keywords: new Set(['projectile', 'precision', 'piercing']),
       modifiers: { projectileSpeed: 180, projectileDamage: 4, targetingDistanceLimit: 120 },
+      weight: 4,
       supportCost: { [UPKEEP_TYPES.electricity]: 3, [UPKEEP_TYPES.highTechComponents]: 2 },
     },
   {
@@ -37,6 +39,7 @@ export const techTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['aoe', 'explosive']),
       modifiers: { aoeRadius: 32, projectileDamage: 5, projectileSpeed: -60 },
+      weight: 3,
       supportCost: { [UPKEEP_TYPES.electricity]: 2, [UPKEEP_TYPES.highTechComponents]: 1 },
     },
   {
@@ -49,6 +52,7 @@ export const techTowerParts: GunPart[] = [
       attachmentOffset: { x: 24, y: 0 },
       keywords: new Set(['stable']),
       modifiers: { reloadSpeed: 0.15, projectileSpeed: 40 },
+      weight: 1,
       supportCost: { [UPKEEP_TYPES.highTechComponents]: 1 },
     },
   {
@@ -61,6 +65,7 @@ export const techTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: -8 },
       keywords: new Set(['rapid', 'mechanical']),
       modifiers: { reloadSpeed: 0.5 },
+      weight: 3,
       supportCost: { [UPKEEP_TYPES.electricity]: 3 },
     },
   {
@@ -73,6 +78,7 @@ export const techTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['powered', 'precision']),
       modifiers: { projectileSpeed: 220, projectileDamage: 4, reloadSpeed: -0.08 },
+      weight: 4,
       supportCost: { [UPKEEP_TYPES.electricity]: 5, [UPKEEP_TYPES.highTechComponents]: 2 },
     },
 ];

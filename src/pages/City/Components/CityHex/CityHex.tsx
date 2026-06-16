@@ -10,6 +10,8 @@ import {
 } from "./hexUtils.ts";
 import cityBackground from '../../../../assets/city/background/Top-down_map_view_circular_lan.jpeg'
 import {ALL_WALL_BUILDINGS} from "../../../../data/wall/index.ts";
+import medievalCrudeWoodTowerPlatform from "../../../../assets/battle/gunParts/medieval/medieval_base_crude-wood.png";
+import {superstructures} from "../../../../data/identificators/index.ts";
 
 const HEX_RADIUS_PX = 32;
 const HEX_STROKE_WIDTH = 2;
@@ -31,6 +33,10 @@ const backgroundWorldHeight = imagePixelHeight * backgroundScale;
 // Center it on world origin so it aligns with your grid centered at (0,0)
 const backgroundX = -backgroundWorldWidth  / 2;
 const backgroundY = -backgroundWorldHeight / 2;
+
+const wallTopSpriteAtlas: Record<string, string> = {
+    [superstructures.medieval.scaffoldTowerBase]: medievalCrudeWoodTowerPlatform,
+};
 
 
 export default function CityHex({
@@ -280,6 +286,7 @@ export default function CityHex({
                     const spriteUrl = kind === "city" && buildingKey
                         ? buildingsSpriteAtlas[developmentVector]?.[buildingKey]
                         : undefined;
+                    const wallTopSpriteUrl = kind === "wall" && wallTopKey ? wallTopSpriteAtlas[wallTopKey] : undefined;
                     const wallName = wallKey ? ALL_WALL_BUILDINGS[wallKey]?.name ?? wallKey : undefined;
                     const wallTopName = wallTopKey ? ALL_WALL_BUILDINGS[wallTopKey]?.name ?? wallTopKey : undefined;
                     const fallbackName = kind === "wall"
@@ -324,7 +331,19 @@ export default function CityHex({
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}
                                 />
                             )}
-                            {fallbackKey && !spriteUrl && (
+                            {wallTopSpriteUrl && (
+                                <image
+                                    href={wallTopSpriteUrl}
+                                    x={-SPRITE_WIDTH / 2}
+                                    y={-SPRITE_HEIGHT / 2}
+                                    width={SPRITE_WIDTH}
+                                    height={SPRITE_HEIGHT}
+                                    preserveAspectRatio="xMidYMid meet"
+                                    clipPath={`url(#${clipId})`}
+                                    style={{ imageRendering: "pixelated", pointerEvents: "none" }}
+                                />
+                            )}
+                            {fallbackKey && !spriteUrl && !wallTopSpriteUrl && (
                                 <>
                                     <use
                                         href="#hexagonPath"

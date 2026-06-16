@@ -6,7 +6,7 @@ import {superstructures} from "../../identificators/index.ts";
 export const medievalWallSuperstructures: Record<string, WallBuilding> = {
     [superstructures.medieval.scaffoldTowerBase]: {
         id: superstructures.medieval.scaffoldTowerBase,
-        name: "Scaffold tower base",
+        name: "Scaffold tower platform",
         type: BUILDING_TYPES.towerBase,
         requiredUpkeep: {[UPKEEP_TYPES.highTechComponents]: 2, [UPKEEP_TYPES.people]: 1},
         requiredUpkeepDescription: {
@@ -17,13 +17,13 @@ export const medievalWallSuperstructures: Record<string, WallBuilding> = {
         camoLevel: 0,
         ignoredThreat: 0,
         specialEffects: [
-            {keyword: "harm", value: 4, description: "Adds a small damage-over-time field around the base"},
+            {keyword: "harm", value: 4, description: "Adds a small damage-over-time field around the platform"},
         ],
-        description: "A light tower foundation that lets fragile weapons sit directly on the wall.",
+        description: "A light scaffold platform using the crude wood turret frame, giving one tower room to rotate on the wall.",
     },
     [superstructures.medieval.repulsorTowerBase]: {
         id: superstructures.medieval.repulsorTowerBase,
-        name: "Repulsor tower base",
+        name: "Repulsor tower platform",
         type: BUILDING_TYPES.towerBase,
         requiredUpkeep: {[UPKEEP_TYPES.electricity]: 4, [UPKEEP_TYPES.highTechComponents]: 3},
         requiredUpkeepDescription: {
@@ -37,6 +37,6 @@ export const medievalWallSuperstructures: Record<string, WallBuilding> = {
             {keyword: "push", value: 14, description: "Pushes clustered enemies away from the wall"},
             {keyword: "slow", value: 6, description: "Briefly destabilizes enemy movement"},
         ],
-        description: "A reinforced tower base with a crude repulsion engine built into the footing.",
+        description: "A reinforced tower platform with a crude repulsion engine built into the footing.",
     },
 };

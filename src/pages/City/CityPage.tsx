@@ -8,7 +8,7 @@ import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {selectCityBuildings, selectCityHexes, selectCityStructureCandidates} from "../../store/city/selectors.ts";
 import {buildHex, buildWall, buildWallTop, demolishHex} from "../../store/city/slice.ts";
 import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
-import {ALL_WALL_BUILDINGS, TOWER_BASE_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
+import {ALL_WALL_BUILDINGS, TOWER_PLATFORM_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
 import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
@@ -368,7 +368,7 @@ function WallBuildingSelector({
     return (
         <div className={s.wallSelector}>
             <WallBuildingList title="Wall" buildings={Object.values(WALL_SEGMENT_BUILDINGS)} onBuild={onBuildWall} blocked={blocked} blockedReason={blockedReason} />
-            <WallBuildingList title="On top of wall" buildings={Object.values(TOWER_BASE_BUILDINGS)} onBuild={onBuildWallTop} blocked={blocked} blockedReason={blockedReason} />
+            <WallBuildingList title="On top of wall" buildings={Object.values(TOWER_PLATFORM_BUILDINGS)} onBuild={onBuildWallTop} blocked={blocked} blockedReason={blockedReason} />
         </div>
     );
 }

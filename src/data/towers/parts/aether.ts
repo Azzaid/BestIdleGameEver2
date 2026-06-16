@@ -14,6 +14,7 @@ export const aetherTowerParts: GunPart[] = [
       keywords: new Set(['targeting', 'omen', 'arcane']),
       aimKeywords: ['mostMaxHP'],
       modifiers: { retargetCooldownSeconds: 0.18, targetingDistanceLimit: 80 },
+      weight: 1,
       supportCost: { [UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.arcaneSupplies]: 1 },
     },
   {
@@ -26,11 +27,12 @@ export const aetherTowerParts: GunPart[] = [
       attachmentOffset: { x: 24, y: 0 },
       keywords: new Set(['arcane', 'amplifier']),
       modifiers: { projectileDamage: 8, reloadSpeed: -0.2, rotationSpeed: -0.3 },
+      weight: 2,
       supportCost: { [UPKEEP_TYPES.mana]: 2 },
     },
   {
       id: gunparts.bases.aether.levitationGimbal,
-      slot: 'base',
+      slot: 'platform',
       name: 'Levitation Gimbal',
       description: 'A hovering ring that ignores much of the wall vibration beneath it.',
       vector: 'aether',
@@ -38,11 +40,12 @@ export const aetherTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['arcane', 'mobile', 'precise']),
       modifiers: { rotationSpeed: 0.8, retargetCooldownSeconds: -0.05 },
+      weight: 1,
       supportCost: { [UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.arcaneSupplies]: 1 },
     },
   {
       id: gunparts.bases.aether.floatingPlatform,
-      slot: 'base',
+      slot: 'platform',
       name: 'Floating Platform',
       description: 'A rough tower platform held just above the wall by magic stones. It turns faster because it has less wall under it.',
       vector: 'aether',
@@ -50,6 +53,7 @@ export const aetherTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['arcane', 'mobile', 'stone']),
       modifiers: { rotationSpeed: 0.55, retargetCooldownSeconds: -0.03 },
+      weight: 1,
       supportCost: { [UPKEEP_TYPES.mana]: 2, [UPKEEP_TYPES.gold]: 1 },
     },
   {
@@ -62,6 +66,7 @@ export const aetherTowerParts: GunPart[] = [
       attachmentOffset: { x: 20, y: 0 },
       keywords: new Set(['projectile', 'arcane', 'piercing']),
       modifiers: { projectileDamage: 5, projectileSpeed: 80, targetingDistanceLimit: 70 },
+      weight: 2,
       supportCost: { [UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.arcaneSupplies]: 1 },
     },
   {
@@ -74,6 +79,7 @@ export const aetherTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['arcane', 'resonant']),
       modifiers: { projectileDamage: 7, reloadSpeed: -0.12 },
+      weight: 1,
       supportCost: { [UPKEEP_TYPES.mana]: 3 },
     },
   {
@@ -86,6 +92,7 @@ export const aetherTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: -8 },
       keywords: new Set(['arcane', 'cycling']),
       modifiers: { reloadSpeed: 0.35, burstCount: 1, rotationSpeed: -0.1 },
+      weight: 2,
       supportCost: { [UPKEEP_TYPES.mana]: 2, [UPKEEP_TYPES.arcaneSupplies]: 2 },
     },
   {
@@ -98,6 +105,7 @@ export const aetherTowerParts: GunPart[] = [
       attachmentOffset: { x: 0, y: 0 },
       keywords: new Set(['arcane', 'powered']),
       modifiers: { projectileSpeed: 170, projectileDamage: 3, reloadSpeed: -0.05 },
+      weight: 2,
       supportCost: { [UPKEEP_TYPES.mana]: 4, [UPKEEP_TYPES.arcaneSupplies]: 1 },
     },
 ];

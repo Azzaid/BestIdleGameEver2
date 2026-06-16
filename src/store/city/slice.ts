@@ -8,7 +8,7 @@ import {coordKey} from "../../pages/City/Components/CityHex/hexUtils.ts";
 import type {CityState} from "../../models/store/city.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
 import {STRUCTURES} from "../../data/structures/index.ts";
-import {walls} from "../../data/identificators/index.ts";
+import {superstructures, walls} from "../../data/identificators/index.ts";
 
 const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
     const generatedCells: HexCell[] = [];
@@ -25,7 +25,7 @@ const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
                 developmentVector: DEVELOPMENT_VECTORS.medieval,
                 wallKey: row === -cityRadius ? walls.medieval.timberBulwark : null,
                 wallDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
-                wallTopKey: null,
+                wallTopKey: column === 0 && row === -cityRadius ? superstructures.medieval.scaffoldTowerBase : null,
                 wallTopDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
             });
         }

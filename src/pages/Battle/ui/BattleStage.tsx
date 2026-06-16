@@ -25,7 +25,7 @@ export function BattleStage(props: {
     battlefieldHeight: number;  // TODO: logical height in world units
     wallY: number;
     backgroundId: BattleBackgroundId;
-    resolvedTower: TowerAssemblyResolved;
+    resolvedTowers: TowerAssemblyResolved[];
     initialThreat: number;
     targetThreat: number;
     threatGrowthPerSecond: number;
@@ -170,42 +170,44 @@ export function BattleStage(props: {
             wallPlaceholder.zIndex = 15;
             world.worldLayer.addChild(wallPlaceholder);
 
-            // Tower with target hold
-            const baseId = createEntityId(world);
-            const gunId = createEntityId(world);
-            world.transforms.set(baseId, { position: { x: props.battlefieldWidth / 2, y: wallY }, rotationRadians: INITIAL_TOWER_AIM_RADIANS });
-            world.transforms.set(gunId,  { position: { x: props.battlefieldWidth / 2, y: wallY }, rotationRadians: INITIAL_TOWER_AIM_RADIANS });
-            const towerVisualDefinition = createTowerVisualDefinitionFromAssembly(props.resolvedTower);
-            const towerVisual = buildTowerVisualContainer(towerVisualDefinition, { warn: () => {} });
-            towerVisual.container.zIndex = 30;
-            world.worldLayer.addChild(towerVisual.container);
-            world.sprites.set(baseId, towerVisual.container);
+            props.resolvedTowers.forEach((resolvedTower, index) => {
+                const baseId = createEntityId(world);
+                const gunId = createEntityId(world);
+                const x = props.battlefieldWidth * (index + 1) / (props.resolvedTowers.length + 1);
+                world.transforms.set(baseId, { position: { x, y: wallY }, rotationRadians: INITIAL_TOWER_AIM_RADIANS });
+                world.transforms.set(gunId,  { position: { x, y: wallY }, rotationRadians: INITIAL_TOWER_AIM_RADIANS });
+                const towerVisualDefinition = createTowerVisualDefinitionFromAssembly(resolvedTower);
+                const towerVisual = buildTowerVisualContainer(towerVisualDefinition, { warn: () => {} });
+                towerVisual.container.zIndex = 30;
+                world.worldLayer.addChild(towerVisual.container);
+                world.sprites.set(baseId, towerVisual.container);
 
-            const gunAimPivot = new Container();
-            world.worldLayer.addChild(gunAimPivot);
-            world.sprites.set(gunId, gunAimPivot);
+                const gunAimPivot = new Container();
+                world.worldLayer.addChild(gunAimPivot);
+                world.sprites.set(gunId, gunAimPivot);
 
-            const launchSystemId = props.resolvedTower.selectedParts.launchSystem?.id;
-            const projectileSpawnOffset = launchSystemId
-                ? findTowerVisualSocketOffset(towerVisualDefinition, launchSystemId, 'muzzle') ?? { x: 0, y: 0 }
-                : { x: 0, y: 0 };
+                const launchSystemId = resolvedTower.selectedParts.launchSystem?.id;
+                const projectileSpawnOffset = launchSystemId
+                    ? findTowerVisualSocketOffset(towerVisualDefinition, launchSystemId, 'muzzle') ?? { x: 0, y: 0 }
+                    : { x: 0, y: 0 };
 
-            world.towersData.set(baseId, {
-                rotationSpeed: props.resolvedTower.stats.rotationSpeed,
-                reloadSpeed: props.resolvedTower.stats.reloadSpeed,
-                burstCount: props.resolvedTower.stats.burstCount,
-                projectileDamage: props.resolvedTower.stats.projectileDamage,
-                projectileSpeed: props.resolvedTower.stats.projectileSpeed,
-                aoeRadius: props.resolvedTower.stats.aoeRadius,
-                keywords: new Set(props.resolvedTower.keywords),
-                targetingDistanceLimit: props.resolvedTower.stats.targetingDistanceLimit,
-                rangePixels: props.resolvedTower.stats.targetingDistanceLimit,
-                currentTarget: undefined,
-                gunEntity: gunId,
-                projectileSpawnOffset,
-                retargetCooldownSeconds: props.resolvedTower.stats.retargetCooldownSeconds,
-                retargetRemainingSeconds: 0,
-                aimKeywords: props.resolvedTower.aimKeywords,
+                world.towersData.set(baseId, {
+                    rotationSpeed: resolvedTower.stats.rotationSpeed,
+                    reloadSpeed: resolvedTower.stats.reloadSpeed,
+                    burstCount: resolvedTower.stats.burstCount,
+                    projectileDamage: resolvedTower.stats.projectileDamage,
+                    projectileSpeed: resolvedTower.stats.projectileSpeed,
+                    aoeRadius: resolvedTower.stats.aoeRadius,
+                    keywords: new Set(resolvedTower.keywords),
+                    targetingDistanceLimit: resolvedTower.stats.targetingDistanceLimit,
+                    rangePixels: resolvedTower.stats.targetingDistanceLimit,
+                    currentTarget: undefined,
+                    gunEntity: gunId,
+                    projectileSpawnOffset,
+                    retargetCooldownSeconds: resolvedTower.stats.retargetCooldownSeconds,
+                    retargetRemainingSeconds: 0,
+                    aimKeywords: resolvedTower.aimKeywords,
+                });
             });
 
             // Ticker stays the same in v8 (TickerPlugin is built-in)
@@ -296,7 +298,7 @@ export function BattleStage(props: {
         props.battlefieldHeight,
         props.wallY,
         props.backgroundId,
-        props.resolvedTower,
+        props.resolvedTowers,
         props.initialThreat,
         props.targetThreat,
         props.threatGrowthPerSecond,

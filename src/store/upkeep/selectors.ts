@@ -3,7 +3,7 @@ import {selectCityBuildings, selectCityHexes, selectCityScarTrace} from "../city
 import type {RootState} from "../../models/store/appStore.ts";
 import {resolveCityUpkeepAndTrace} from "../../pages/City/Components/CityHex/adjacencyUtils.ts";
 import type {CityResolution} from "../../models/city/Adjancency.ts";
-import {selectResolvedActiveTower} from "../towers/selectors.ts";
+import {selectResolvedAvailableTowers} from "../towers/selectors.ts";
 import {deductUpkeep} from "../../pages/City/Components/CityHex/upkeepUtils.ts";
 import type {CityTraceStatus} from "../../models/store/upkeep.ts";
 
@@ -13,11 +13,18 @@ export const selectCityResolution = createSelector(
 );
 
 export const selectTowerAwareCityResolution = createSelector(
-    [selectCityResolution, selectResolvedActiveTower],
-    (cityResolution, resolvedTower): CityResolution => ({
-        ...cityResolution,
-        effectiveUpkeep: deductUpkeep(cityResolution.effectiveUpkeep, resolvedTower.supportCost),
-    })
+    [selectCityResolution, selectResolvedAvailableTowers],
+    (cityResolution, resolvedTowers): CityResolution => {
+        const towerSupportCost = resolvedTowers.reduce(
+            (total, {resolved}) => deductUpkeep(total, resolved.supportCost),
+            cityResolution.effectiveUpkeep
+        );
+
+        return {
+            ...cityResolution,
+            effectiveUpkeep: towerSupportCost,
+        };
+    }
 );
 
 export const selectBaseResilience = (state: RootState): number => state.upkeep.resilience;

@@ -9,7 +9,7 @@ import type {
 import { TOWER_PART_VISUAL_METADATA } from './partVisualMetadata.ts';
 
 const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
-  base: {
+  platform: {
     rootSocket: { x: 0, y: 18 },
     outputSockets: {
       barrel: { x: 0, y: -34 },
@@ -94,19 +94,19 @@ function createNodeForInstalledSlot(
 }
 
 function createRootNode(resolvedTower: TowerAssemblyResolved): TowerVisualNodeDefinition {
-  if (resolvedTower.selectedParts.base) {
+  if (resolvedTower.selectedParts.platform) {
     return {
-      part: createVisualPartForSlot('base', resolvedTower),
+      part: createVisualPartForSlot('platform', resolvedTower),
     };
   }
 
-  const baseLayout = slotVisualLayouts.base;
+  const platformLayout = slotVisualLayouts.platform;
 
   return {
     part: {
       id: 'tower_visual_anchor',
       visible: false,
-      ...baseLayout,
+      ...platformLayout,
     },
   };
 }

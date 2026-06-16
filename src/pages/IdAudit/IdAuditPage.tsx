@@ -13,7 +13,7 @@ import {
 } from "../../data/identificators/index.ts";
 import {researchTree} from "../../data/research/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/towers/index.ts";
-import {WALL_SEGMENT_BUILDINGS, TOWER_BASE_BUILDINGS} from "../../data/wall/index.ts";
+import {WALL_SEGMENT_BUILDINGS, TOWER_PLATFORM_BUILDINGS} from "../../data/wall/index.ts";
 import type {ProgressionNodeKind} from "../../data/content/types.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {Building} from "../../models/city/Building.ts";
@@ -146,7 +146,7 @@ function createRows(): AuditRow[] {
   }
 
   for (const item of flattenGroupedIds(superstructures, "superstructures")) {
-    const data = TOWER_BASE_BUILDINGS[item.id];
+    const data = TOWER_PLATFORM_BUILDINGS[item.id];
     rows.push({
       category: "Superstructure",
       path: item.path,
@@ -206,7 +206,7 @@ function getUnregisteredRows(rows: readonly AuditRow[]): AuditRow[] {
     unregisteredRows.push(createUnregisteredRow("Wall", wall.id, wall.name));
   }
 
-  for (const structure of Object.values(TOWER_BASE_BUILDINGS)) {
+  for (const structure of Object.values(TOWER_PLATFORM_BUILDINGS)) {
     if (registeredIds.has(structure.id)) continue;
     unregisteredRows.push(createUnregisteredRow("Superstructure", structure.id, structure.name));
   }

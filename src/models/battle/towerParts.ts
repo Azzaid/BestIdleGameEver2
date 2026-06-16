@@ -12,10 +12,11 @@ export interface TowerModifiers {
   aoeRadius: number;
   targetingDistanceLimit: number;
   retargetCooldownSeconds: number;
+  weight: number;
 }
 
 export type TowerPartSlot =
-  | 'base'
+  | 'platform'
   | 'barrel'
   | 'ammo'
   | 'aimSystem'
@@ -39,6 +40,7 @@ export interface GunPart {
   keywords: Set<string>;
   aimKeywords?: string[];
   modifiers?: Partial<TowerModifiers>;
+  weight?: number;
   supportCost?: UpkeepAmount;
   unlockRequirements?: TowerPartUnlockRequirement[];
   conflictsWithKeywords?: string[];
@@ -88,6 +90,7 @@ export interface TowerStatsResolved {
   aoeRadius: number;
   targetingDistanceLimit: number;
   retargetCooldownSeconds: number;
+  weight: number;
   keywords: Set<string>;
 }
 
@@ -100,15 +103,3 @@ export interface TowerAssemblyResolved {
   synergies: ResolvedTowerSynergy[];
   warnings: TowerBuildWarning[];
 }
-
-export const BASE_TOWER: TowerStatsResolved = {
-  rotationSpeed: 2.5,
-  reloadSpeed: 1.0,
-  burstCount: 1,
-  projectileDamage: 10,
-  projectileSpeed: 500,
-  aoeRadius: 0,
-  targetingDistanceLimit: 360,
-  retargetCooldownSeconds: 0.25,
-  keywords: new Set(),
-};

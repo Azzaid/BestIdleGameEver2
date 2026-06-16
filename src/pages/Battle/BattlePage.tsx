@@ -1,7 +1,7 @@
 import {BattleStage} from "./ui/BattleStage.tsx";
 import {useCallback, useMemo, useState} from "react";
 import { useTypedDispatch, useTypedSelector } from "../../store/hooks.ts";
-import { selectHasActiveTowerBuild, selectResolvedActiveTower } from "../../store/towers/selectors.ts";
+import { selectHasAnyTowerBuild, selectResolvedAvailableTowers } from "../../store/towers/selectors.ts";
 import * as styles from './BattlePage.css.ts';
 import { selectCityBattlefield, selectCitySideHexes } from "../../store/city/selectors.ts";
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from "../../data/constants.ts";
@@ -26,8 +26,14 @@ type BattleMode = "siege" | "pressure";
 
 const BattlePage = () => {
     const dispatch = useTypedDispatch();
-    const resolvedTower = useTypedSelector(selectResolvedActiveTower);
-    const hasActiveTowerBuild = useTypedSelector(selectHasActiveTowerBuild);
+    const resolvedAvailableTowers = useTypedSelector(selectResolvedAvailableTowers);
+    const resolvedBattleTowers = useMemo(
+        () => resolvedAvailableTowers
+            .map(({resolved}) => resolved)
+            .filter((resolved) => resolved.warnings.length === 0),
+        [resolvedAvailableTowers]
+    );
+    const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
     const citySideHexes = useTypedSelector(selectCitySideHexes);
     const cityBattlefield = useTypedSelector(selectCityBattlefield);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
@@ -54,7 +60,8 @@ const BattlePage = () => {
     }));
     const [battleMessage, setBattleMessage] = useState<string | null>(null);
     const wallLogicalWidth = citySideHexes * BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX;
-    const battlefieldLength = resolvedTower.stats.targetingDistanceLimit * BATTLEFIELD_RANGE_MULTIPLIER;
+    const longestTowerRange = Math.max(360, ...resolvedBattleTowers.map((tower) => tower.stats.targetingDistanceLimit));
+    const battlefieldLength = longestTowerRange * BATTLEFIELD_RANGE_MULTIPLIER;
     const battlefieldHeight = battlefieldLength + BATTLE_WALL_APRON_HEIGHT;
     const battleKey = useMemo(() => [
         targetThreat,
@@ -100,7 +107,7 @@ const BattlePage = () => {
 
     return (
         <div className={styles.battlePage}>
-            {hasActiveTowerBuild ? (
+            {hasAnyTowerBuild ? (
                 <div className={`${styles.battleShell} ${isSiege ? styles.battleShellSiege : ''}`}>
                     <div className={styles.battleHud} aria-live="polite">
                         <div className={styles.battleMetric}>
@@ -134,7 +141,7 @@ const BattlePage = () => {
                         battlefieldHeight={battlefieldHeight}
                         wallY={battlefieldLength}
                         backgroundId={cityBattlefield.backgroundId}
-                        resolvedTower={resolvedTower}
+                        resolvedTowers={resolvedBattleTowers}
                         initialThreat={initialThreat}
                         targetThreat={targetThreat}
                         threatGrowthPerSecond={threatGrowthPerSecond}
