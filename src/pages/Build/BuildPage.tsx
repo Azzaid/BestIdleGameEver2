@@ -185,18 +185,24 @@ const BuildPage = () => {
       cell: (info) => {
         const part = info.row.original;
         const selected = selectedPartId === part.id;
+        const blockedTitle = !canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined;
 
         return (
           <button
-            className={s.installButton}
+            className={selected ? s.removeButton : s.installButton}
             disabled={!canModifyTower}
-            title={!canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined}
+            title={blockedTitle ?? (selected ? 'Remove this part from the draft tower.' : undefined)}
             onClick={() => {
               if (!canModifyTower) return;
+              if (selected) {
+                dispatch(clearTowerDraftPart({ slot: activeTab }));
+                return;
+              }
+
               dispatch(selectTowerDraftPart({ slot: activeTab, partId: part.id }));
             }}
           >
-            {selected ? 'Installed' : 'Install'}
+            {selected ? 'Remove' : 'Install'}
           </button>
         );
       },

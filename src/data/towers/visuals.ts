@@ -11,20 +11,15 @@ import { TOWER_PART_VISUAL_METADATA } from './partVisualMetadata.ts';
 const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
   platform: {
     rootSocket: { x: 0, y: 18 },
-    outputSockets: {
-      barrel: { x: 0, y: -34 },
-      aimSystem: { x: 0, y: -52 },
-      loadingSystem: { x: -38, y: -20 },
-      launchSystem: { x: 38, y: -20 },
-    },
+    outputSockets: {},
     fallbackSize: { width: 120, height: 38 },
     renderLayer: 0,
   },
   barrel: {
     rootSocket: { x: -42, y: 0 },
     outputSockets: {
-      ammo: { x: -8, y: 0 },
       barrelAttachment: { x: 48, y: 0 },
+      muzzle: { x: 56, y: 0 },
     },
     fallbackSize: { width: 104, height: 22 },
     renderLayer: 4,
@@ -54,9 +49,13 @@ const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
     renderLayer: 2,
   },
   launchSystem: {
-    rootSocket: { x: -18, y: 0 },
+    rootSocket: { x: 0, y: 0 },
     outputSockets: {
-      muzzle: { x: 0, y: 0 },
+      platform: { x: -38, y: 20 },
+      ammo: { x: -52, y: -20 },
+      barrel: { x: 38, y: -18 },
+      aimSystem: { x: 0, y: -52 },
+      loadingSystem: { x: -38, y: -8 },
     },
     fallbackSize: { width: 48, height: 34 },
     renderLayer: 2,
@@ -94,19 +93,19 @@ function createNodeForInstalledSlot(
 }
 
 function createRootNode(resolvedTower: TowerAssemblyResolved): TowerVisualNodeDefinition {
-  if (resolvedTower.selectedParts.platform) {
+  if (resolvedTower.selectedParts.launchSystem) {
     return {
-      part: createVisualPartForSlot('platform', resolvedTower),
+      part: createVisualPartForSlot('launchSystem', resolvedTower),
     };
   }
 
-  const platformLayout = slotVisualLayouts.platform;
+  const launchSystemLayout = slotVisualLayouts.launchSystem;
 
   return {
     part: {
       id: 'tower_visual_anchor',
       visible: false,
-      ...platformLayout,
+      ...launchSystemLayout,
     },
   };
 }
@@ -137,17 +136,17 @@ export function createTowerVisualDefinitionFromAssembly(
 
   if (barrelNode) {
     barrelNode.attachments = compactAttachments([
-      createAttachment('ammo', createNodeForInstalledSlot('ammo', resolvedTower)),
       createAttachment('barrelAttachment', createNodeForInstalledSlot('barrelAttachment', resolvedTower)),
     ]);
   }
 
   const rootNode = createRootNode(resolvedTower);
   rootNode.attachments = compactAttachments([
+    createAttachment('platform', createNodeForInstalledSlot('platform', resolvedTower)),
+    createAttachment('ammo', createNodeForInstalledSlot('ammo', resolvedTower)),
     createAttachment('barrel', barrelNode),
     createAttachment('aimSystem', createNodeForInstalledSlot('aimSystem', resolvedTower)),
     createAttachment('loadingSystem', createNodeForInstalledSlot('loadingSystem', resolvedTower)),
-    createAttachment('launchSystem', createNodeForInstalledSlot('launchSystem', resolvedTower)),
   ]);
 
   return {

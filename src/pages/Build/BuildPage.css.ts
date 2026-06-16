@@ -414,6 +414,23 @@ export const installButton = style({
   },
 });
 
+export const removeButton = style({
+  minWidth: '78px',
+  padding: '7px 10px',
+  border: `1px solid ${vars.color.state.error}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.background.surface,
+  color: vars.color.state.error,
+  cursor: 'pointer',
+  fontWeight: 700,
+  selectors: {
+    '&:disabled': {
+      cursor: 'not-allowed',
+      opacity: 0.55,
+    },
+  },
+});
+
 export const rebuildButton = style({
   flex: 1,
   minHeight: '40px',

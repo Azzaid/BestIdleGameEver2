@@ -6,17 +6,17 @@
     "height": 1024
   },
   "targetSpriteSize": {
-    "width": 70,
-    "height": 70
+    "width": 50,
+    "height": 50
   },
   "rotationDegrees": 0,
   "inputSocket": {
-    "x": 154,
-    "y": 497
+    "x": 820,
+    "y": 493
   },
   "outputSockets": {
     "feed": {
-      "x": 914,
+      "x": 146,
       "y": 497
     }
   }

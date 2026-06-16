@@ -11,13 +11,29 @@
   },
   "rotationDegrees": 270,
   "inputSocket": {
-    "x": 778,
-    "y": 804
+    "x": 773,
+    "y": 631
   },
   "outputSockets": {
-    "charge": {
-      "x": 768,
-      "y": 282
+    "platform": {
+      "x": 773,
+      "y": 631
+    },
+    "ammo": {
+      "x": 780,
+      "y": 274
+    },
+    "barrel": {
+      "x": 776,
+      "y": 799
+    },
+    "aimSystem": {
+      "x": 1167,
+      "y": 531
+    },
+    "loadingSystem": {
+      "x": 1115,
+      "y": 0
     }
   }
 }

@@ -232,6 +232,127 @@ export const socketsPanel = style({
   background: vars.color.background.surface,
 });
 
+export const socketMapPanel = style({
+  display: 'grid',
+  gap: '8px',
+  padding: '10px',
+  borderTop: `1px solid ${vars.color.border.default}`,
+  background: vars.color.background.surface,
+});
+
+export const socketMapHeader = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '12px',
+  flexWrap: 'wrap',
+});
+
+export const socketLegend = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  flexWrap: 'wrap',
+});
+
+export const socketLegendItem = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '5px',
+  color: vars.color.text.muted,
+  fontSize: '0.72rem',
+  fontWeight: 700,
+});
+
+const legendDotBase = style({
+  display: 'inline-block',
+  width: '9px',
+  height: '9px',
+  border: '1px solid #111827',
+  borderRadius: '999px',
+});
+
+export const legendDotRed = style([
+  legendDotBase,
+  { background: '#ef4444' },
+]);
+
+export const legendDotYellow = style([
+  legendDotBase,
+  { background: '#facc15' },
+]);
+
+export const legendDotGreen = style([
+  legendDotBase,
+  { background: '#22c55e' },
+]);
+
+export const socketMapSvg = style({
+  display: 'block',
+  width: '100%',
+  maxWidth: '620px',
+  minHeight: '210px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  background: '#f8fafc',
+});
+
+export const socketConnection = style({
+  stroke: '#111827',
+  strokeWidth: 1,
+});
+
+export const socketMapNode = style({
+  fill: '#ffffff',
+  stroke: '#64748b',
+  strokeWidth: 1.5,
+});
+
+export const socketMapNodeActive = style([
+  socketMapNode,
+  {
+    fill: '#e0f2fe',
+    stroke: '#0284c7',
+    strokeWidth: 2.5,
+  },
+]);
+
+export const socketMapNodeTitle = style({
+  fill: '#0f172a',
+  fontSize: '9px',
+  fontWeight: 800,
+});
+
+export const socketMapDotLabel = style({
+  fill: '#0f172a',
+  fontSize: '7px',
+  fontWeight: 800,
+  paintOrder: 'stroke',
+  pointerEvents: 'none',
+  stroke: '#f8fafc',
+  strokeWidth: 2,
+});
+
+const socketMapDotBase = style({
+  stroke: '#111827',
+  strokeWidth: 1.5,
+});
+
+export const socketMapDotRed = style([
+  socketMapDotBase,
+  { fill: '#ef4444' },
+]);
+
+export const socketMapDotYellow = style([
+  socketMapDotBase,
+  { fill: '#facc15' },
+]);
+
+export const socketMapDotGreen = style([
+  socketMapDotBase,
+  { fill: '#22c55e' },
+]);
+
 export const socketCard = style({
   display: 'grid',
   gap: '3px',

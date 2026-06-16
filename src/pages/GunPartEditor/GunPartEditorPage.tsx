@@ -5,6 +5,7 @@ import { gunpartIdRows } from '../../data/identificators/index.ts';
 import type { TowerPartVisualMetadata } from '../../models/battle/towerPartVisualMetadata.ts';
 import type { TowerPartSlot } from '../../models/battle/towerParts.ts';
 import type { TowerVisualPoint, TowerVisualSize } from '../../models/battle/towerVisual.ts';
+import { INITIAL_TOWER_AIM_RADIANS } from '../../models/battle/tower.ts';
 import * as s from './GunPartEditorPage.css.ts';
 
 type SocketKind = 'input' | 'output';
@@ -31,17 +32,113 @@ const imageModules = import.meta.glob('../../assets/battle/gunParts/**/*.png', {
 }) as Record<string, string>;
 
 const SLOT_SOCKET_TEMPLATES: Record<TowerPartSlot, string[]> = {
-  base: ['gunMount', 'aimMount'],
-  barrel: ['muzzle', 'attachmentMount'],
+  platform: [],
+  barrel: ['attachmentMount', 'muzzle'],
   ammo: ['feed'],
   aimSystem: ['sensor'],
   barrelAttachment: ['muzzle'],
   loadingSystem: ['feed'],
-  launchSystem: ['charge'],
+  launchSystem: ['platform', 'ammo', 'barrel', 'aimSystem', 'loadingSystem'],
 };
 
 const DEFAULT_SOURCE_SIZE: TowerVisualSize = { width: 1024, height: 1024 };
 const DEFAULT_TARGET_SIZE: TowerVisualSize = { width: 96, height: 64 };
+const SOCKET_MAP_NODE_SIZE = 76;
+const INITIAL_TOWER_AIM_DEGREES = INITIAL_TOWER_AIM_RADIANS * 180 / Math.PI;
+
+type SocketMapNode = {
+  slot: TowerPartSlot;
+  title: string;
+  x: number;
+  y: number;
+  root: TowerVisualPoint;
+  outputs: Record<string, TowerVisualPoint>;
+};
+
+type SocketMapConnection = {
+  fromSlot: TowerPartSlot;
+  fromSocket: string;
+  toSlot: TowerPartSlot;
+};
+
+const SOCKET_MAP_NODES: SocketMapNode[] = [
+  {
+    slot: 'launchSystem',
+    title: 'Launch',
+    x: 190,
+    y: 108,
+    root: { x: 38, y: 38 },
+    outputs: {
+      platform: { x: 6, y: 56 },
+      ammo: { x: 72, y: 20 },
+      barrel: { x: 72, y: 38 },
+      aimSystem: { x: 72, y: 56 },
+      loadingSystem: { x: 6, y: 20 },
+    },
+  },
+  {
+    slot: 'platform',
+    title: 'Platform / Turret',
+    x: 28,
+    y: 108,
+    root: { x: 72, y: 56 },
+    outputs: {},
+  },
+  {
+    slot: 'loadingSystem',
+    title: 'Loading',
+    x: 28,
+    y: 12,
+    root: { x: 72, y: 56 },
+    outputs: {},
+  },
+  {
+    slot: 'barrel',
+    title: 'Barrel',
+    x: 352,
+    y: 60,
+    root: { x: 6, y: 38 },
+    outputs: {
+      muzzle: { x: 72, y: 26 },
+      barrelAttachment: { x: 72, y: 50 },
+    },
+  },
+  {
+    slot: 'aimSystem',
+    title: 'Aim System',
+    x: 352,
+    y: 204,
+    root: { x: 6, y: 38 },
+    outputs: {},
+  },
+  {
+    slot: 'ammo',
+    title: 'Ammunition',
+    x: 352,
+    y: 156,
+    root: { x: 6, y: 38 },
+    outputs: {
+      feed: { x: 72, y: 38 },
+    },
+  },
+  {
+    slot: 'barrelAttachment',
+    title: 'Barrel Attachment',
+    x: 352,
+    y: 12,
+    root: { x: 6, y: 38 },
+    outputs: {},
+  },
+];
+
+const SOCKET_MAP_CONNECTIONS: SocketMapConnection[] = [
+  { fromSlot: 'launchSystem', fromSocket: 'platform', toSlot: 'platform' },
+  { fromSlot: 'launchSystem', fromSocket: 'loadingSystem', toSlot: 'loadingSystem' },
+  { fromSlot: 'launchSystem', fromSocket: 'barrel', toSlot: 'barrel' },
+  { fromSlot: 'launchSystem', fromSocket: 'ammo', toSlot: 'ammo' },
+  { fromSlot: 'launchSystem', fromSocket: 'aimSystem', toSlot: 'aimSystem' },
+  { fromSlot: 'barrel', fromSocket: 'barrelAttachment', toSlot: 'barrelAttachment' },
+];
 
 function getFileStem(path: string) {
   return path.split('/').at(-1)?.replace(/\.(json|png)$/i, '') ?? path;
@@ -201,6 +298,114 @@ function getJson(
   }, null, 2);
 }
 
+function getSocketMapNode(slot: TowerPartSlot) {
+  const node = SOCKET_MAP_NODES.find((item) => item.slot === slot);
+  if (!node) throw new Error(`Missing socket map node for ${slot}`);
+  return node;
+}
+
+function getSocketMapPoint(node: SocketMapNode, point: TowerVisualPoint): TowerVisualPoint {
+  return {
+    x: node.x + point.x,
+    y: node.y + point.y,
+  };
+}
+
+function SocketMapCanvas({ activeSlot }: { activeSlot: TowerPartSlot }) {
+  return (
+    <section className={s.socketMapPanel}>
+      <div className={s.socketMapHeader}>
+        <h2 className={s.title}>Socket Map</h2>
+        <div className={s.socketLegend}>
+          <span className={s.socketLegendItem}><span className={s.legendDotRed} /> Tower pivot</span>
+          <span className={s.socketLegendItem}><span className={s.legendDotYellow} /> Root</span>
+          <span className={s.socketLegendItem}><span className={s.legendDotGreen} /> Attachment</span>
+        </div>
+      </div>
+      <svg className={s.socketMapSvg} viewBox="0 0 460 292" role="img" aria-label="Tower part socket map">
+        <g>
+          {SOCKET_MAP_CONNECTIONS.map((connection) => {
+            const fromNode = getSocketMapNode(connection.fromSlot);
+            const toNode = getSocketMapNode(connection.toSlot);
+            const fromSocket = fromNode.outputs[connection.fromSocket];
+            const from = getSocketMapPoint(fromNode, fromSocket);
+            const to = getSocketMapPoint(toNode, toNode.root);
+
+            return (
+              <line
+                key={`${connection.fromSlot}-${connection.fromSocket}-${connection.toSlot}`}
+                className={s.socketConnection}
+                vectorEffect="non-scaling-stroke"
+                x1={from.x}
+                y1={from.y}
+                x2={to.x}
+                y2={to.y}
+              />
+            );
+          })}
+        </g>
+        <g>
+          {SOCKET_MAP_NODES.map((node) => {
+            const towerPivot = getSocketMapPoint(node, { x: SOCKET_MAP_NODE_SIZE / 2, y: SOCKET_MAP_NODE_SIZE / 2 });
+            const root = getSocketMapPoint(node, node.root);
+            const selected = node.slot === activeSlot;
+
+            return (
+              <g key={node.slot}>
+                <text className={s.socketMapNodeTitle} textAnchor="middle" x={node.x + SOCKET_MAP_NODE_SIZE / 2} y={node.y - 8}>
+                  {node.title}
+                </text>
+                <rect
+                  className={selected ? s.socketMapNodeActive : s.socketMapNode}
+                  x={node.x}
+                  y={node.y}
+                  width={SOCKET_MAP_NODE_SIZE}
+                  height={SOCKET_MAP_NODE_SIZE}
+                  vectorEffect="non-scaling-stroke"
+                  rx="4"
+                />
+                {node.slot === 'launchSystem' && <SocketMapDot color="red" label="pivot" point={towerPivot} />}
+                <SocketMapDot color="yellow" label="root" point={root} />
+                {Object.entries(node.outputs).map(([socketName, point]) => (
+                  <SocketMapDot
+                    key={socketName}
+                    color="green"
+                    label={socketName}
+                    point={getSocketMapPoint(node, point)}
+                  />
+                ))}
+              </g>
+            );
+          })}
+        </g>
+      </svg>
+    </section>
+  );
+}
+
+function SocketMapDot({
+  color,
+  label,
+  point,
+}: {
+  color: 'red' | 'yellow' | 'green';
+  label: string;
+  point: TowerVisualPoint;
+}) {
+  const className = color === 'red'
+    ? s.socketMapDotRed
+    : color === 'yellow'
+      ? s.socketMapDotYellow
+      : s.socketMapDotGreen;
+
+  return (
+    <g>
+      <text className={s.socketMapDotLabel} textAnchor="middle" x={point.x} y={point.y - 7}>{label}</text>
+      <circle className={className} cx={point.x} cy={point.y} r="4" vectorEffect="non-scaling-stroke" />
+    </g>
+  );
+}
+
 export default function GunPartEditorPage() {
   const sortedParts = useMemo(
     () => gunpartIdRows
@@ -282,11 +487,12 @@ export default function GunPartEditorPage() {
     if (!activeSocketKey || !svgRef.current) return;
 
     const rawPoint = getSvgPoint(svgRef.current, event.clientX, event.clientY);
-    const unrotatedTargetPoint = rotatePoint(rawPoint, { x: 0, y: 0 }, -rotationDegrees);
+    const unrotatedTargetPoint = rotatePoint(rawPoint, { x: 0, y: 0 }, -displayRotationDegrees);
     updateSocketPoint(activeSocketKey, targetPointToSourcePoint(unrotatedTargetPoint, sourceSpriteSize, targetSpriteSize));
   }
 
-  const rotatedBounds = getRotatedBounds(targetSpriteSize, rotationDegrees);
+  const displayRotationDegrees = rotationDegrees + INITIAL_TOWER_AIM_DEGREES;
+  const rotatedBounds = getRotatedBounds(targetSpriteSize, displayRotationDegrees);
   const previewPadding = Math.max(48 / zoom, 16);
   const viewBox = {
     x: -rotatedBounds.width / 2 - previewPadding,
@@ -415,7 +621,7 @@ export default function GunPartEditorPage() {
                 onPointerUp={() => setActiveSocketKey(null)}
                 onPointerLeave={() => setActiveSocketKey(null)}
               >
-                <g transform={`rotate(${rotationDegrees})`}>
+                <g transform={`rotate(${displayRotationDegrees})`}>
                   <image
                     href={selectedAsset.src}
                     x={-targetSpriteSize.width / 2}
@@ -492,6 +698,7 @@ export default function GunPartEditorPage() {
               </div>
             ))}
           </div>
+          <SocketMapCanvas activeSlot={slot} />
         </div>
 
         <div className={s.jsonPanel}>
