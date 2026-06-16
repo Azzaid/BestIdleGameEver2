@@ -1,10 +1,11 @@
 import {UPKEEP_TYPES} from "../../../models/Upkeep.ts";
 import {BUILDING_TYPES} from "../../../models/city/BuildingTypes.ts";
 import type {WallBuilding} from "../../../models/city/Wall.ts";
+import {walls} from "../../identificators/index.ts";
 
 export const medievalWallSegments: Record<string, WallBuilding> = {
-    timberBulwark: {
-        id: "timberBulwark",
+    [walls.medieval.timberBulwark]: {
+        id: walls.medieval.timberBulwark,
         name: "Timber bulwark",
         type: BUILDING_TYPES.wallSegment,
         requiredUpkeep: {[UPKEEP_TYPES.people]: 2},
@@ -17,8 +18,8 @@ export const medievalWallSegments: Record<string, WallBuilding> = {
         ],
         description: "A fast-built wooden wall line that buys the city its first real safety margin.",
     },
-    veiledStoneRampart: {
-        id: "veiledStoneRampart",
+    [walls.medieval.veiledStoneRampart]: {
+        id: walls.medieval.veiledStoneRampart,
         name: "Veiled stone rampart",
         type: BUILDING_TYPES.wallSegment,
         requiredUpkeep: {[UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.people]: 1},

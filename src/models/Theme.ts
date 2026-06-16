@@ -5,7 +5,7 @@ import {
 type HSLColor = `hsl(${number} ${number}% ${number}%)`;
 type HSLAColor = `hsl(${number} ${number}% ${number}% / ${number})`;
 
-export type ThemeName = DevelopmentVectorKey;
+export type ThemeName = DevelopmentVectorKey | "default";
 
 // Object with both property access *and* array access
 export const THEME_NAMES = {

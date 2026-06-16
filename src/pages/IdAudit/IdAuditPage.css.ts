@@ -1,0 +1,129 @@
+import {style} from "@vanilla-extract/css";
+import {vars} from "../../theme/theme.css.ts";
+
+export const page = style({
+  display: "grid",
+  gap: "16px",
+  padding: "20px",
+  color: vars.color.text.primary,
+});
+
+export const header = style({
+  display: "flex",
+  alignItems: "end",
+  justifyContent: "space-between",
+  gap: "16px",
+});
+
+export const title = style({
+  margin: 0,
+  color: vars.color.text.heading,
+  fontSize: "1.6rem",
+});
+
+export const subtitle = style({
+  margin: "4px 0 0",
+  color: vars.color.text.muted,
+});
+
+export const summary = style({
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+  gap: "10px",
+});
+
+export const summaryItem = style({
+  display: "grid",
+  gap: "4px",
+  padding: "12px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "8px",
+  background: vars.color.background.surface,
+});
+
+export const summaryLabel = style({
+  color: vars.color.text.muted,
+  fontSize: "0.78rem",
+  fontWeight: 700,
+  textTransform: "uppercase",
+});
+
+export const summaryValue = style({
+  color: vars.color.text.heading,
+  fontSize: "1.4rem",
+  fontWeight: 800,
+});
+
+export const tableWrap = style({
+  overflow: "auto",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "8px",
+  background: vars.color.background.surface,
+});
+
+export const table = style({
+  width: "100%",
+  borderCollapse: "collapse",
+  minWidth: "980px",
+});
+
+export const headCell = style({
+  padding: "10px 12px",
+  borderBottom: `1px solid ${vars.color.border.default}`,
+  background: vars.color.background.app,
+  color: vars.color.text.heading,
+  fontSize: "0.78rem",
+  textAlign: "left",
+  textTransform: "uppercase",
+});
+
+export const cell = style({
+  padding: "10px 12px",
+  borderBottom: `1px solid ${vars.color.border.default}`,
+  verticalAlign: "top",
+});
+
+export const mono = style({
+  fontFamily: "ui-monospace, SFMono-Regular, Consolas, Liberation Mono, monospace",
+  fontSize: "0.84rem",
+});
+
+export const muted = style({
+  color: vars.color.text.muted,
+});
+
+export const okBadge = style({
+  display: "inline-flex",
+  alignItems: "center",
+  minHeight: "24px",
+  padding: "2px 8px",
+  borderRadius: "999px",
+  background: vars.color.state.success,
+  color: vars.color.text.inverse,
+  fontSize: "0.78rem",
+  fontWeight: 700,
+});
+
+export const missingBadge = style({
+  display: "inline-flex",
+  alignItems: "center",
+  minHeight: "24px",
+  padding: "2px 8px",
+  borderRadius: "999px",
+  background: vars.color.state.error,
+  color: vars.color.text.inverse,
+  fontSize: "0.78rem",
+  fontWeight: 700,
+});
+
+export const neutralBadge = style({
+  display: "inline-flex",
+  alignItems: "center",
+  minHeight: "24px",
+  padding: "2px 8px",
+  borderRadius: "999px",
+  border: `1px solid ${vars.color.border.default}`,
+  color: vars.color.text.muted,
+  fontSize: "0.78rem",
+  fontWeight: 700,
+});

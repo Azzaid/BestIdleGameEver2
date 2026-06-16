@@ -89,6 +89,8 @@ Content data layout:
 - `src/data/towers` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research` exposes a vector-keyed research atlas and flattened helpers for the research tree.
 - `src/data/enemies` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
+- `src/data/identificators` is the single source of truth for content ids. Category folders collect ids by vector or biome and expose structured paths such as `buildings.aether.leylineWell` and `gunparts.barrels.medieval.crudeWood`.
+- `/ids` renders an audit table that compares registered ids against data definitions, progression rules, and available assets.
 
 Future architecture direction:
 
@@ -558,6 +560,8 @@ Current content layout:
 - `src/data/enemies/` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
 - `src/data/towers/` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research/` exposes a vector-keyed research atlas and flattened helpers for the research tree.
+- `src/data/identificators/` owns content ids for buildings, technologies, tower parts, enemies, wall segments, and wall superstructures. Add ids there first, then consume those constants from data, progression, state defaults, and asset registries.
+- `/ids` is the content audit screen for checking missing definitions, progression rules, and assets by id.
 
 Future content definitions should be data-driven and tag-heavy.
 

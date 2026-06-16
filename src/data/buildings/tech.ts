@@ -4,10 +4,11 @@ import {
 } from "../../models/DevlopmentVector.ts";
 import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
+import {buildings} from "../identificators/index.ts";
 
 export const techBuildings: {[key: string]: Building} = {
-    techProduce1: {
-        id: "techProduce1",
+    [buildings.tech.fossilFuelPowerPlant]: {
+        id: buildings.tech.fossilFuelPowerPlant,
         name: "Fossil fuel power plant",
         type: BUILDING_TYPES.produce,
         level:1,
@@ -25,8 +26,8 @@ export const techBuildings: {[key: string]: Building} = {
         description: "A power plant that produces electricity from fossil fuels.",
         keywords: ["production", "electricity", "tech", "generator"]
     },
-    techComponents1: {
-        id: "techComponents1",
+    [buildings.tech.machineShop]: {
+        id: buildings.tech.machineShop,
         name: "Machine shop",
         type: BUILDING_TYPES.produce,
         level:1,

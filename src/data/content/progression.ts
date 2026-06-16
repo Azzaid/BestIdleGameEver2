@@ -76,6 +76,22 @@ export function buildProgressionGraph(
     });
   }
 
+  for (const id of Object.keys(registry.research)) {
+    addNode(contentRef("research", id));
+  }
+
+  for (const id of Object.keys(registry.buildings)) {
+    addNode(contentRef("building", id));
+  }
+
+  for (const id of Object.keys(registry.towerParts)) {
+    addNode(contentRef("towerPart", id));
+  }
+
+  for (const id of Object.keys(registry.structures)) {
+    addNode(contentRef("structure", id));
+  }
+
   for (const rule of rules) {
     addNode(rule.target);
 

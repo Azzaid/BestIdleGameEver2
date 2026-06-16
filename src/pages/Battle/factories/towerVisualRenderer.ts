@@ -80,6 +80,11 @@ function createPartDisplay(
       const frames = part.sprite.animationFrames.map((key) => PIXI.Texture.from(key));
       const animatedSprite = new PIXI.AnimatedSprite(frames);
       animatedSprite.anchor.set(0.5);
+      animatedSprite.rotation = (part.rotationDegrees ?? 0) * Math.PI / 180;
+      if (part.targetSpriteSize) {
+        animatedSprite.width = part.targetSpriteSize.width;
+        animatedSprite.height = part.targetSpriteSize.height;
+      }
       animatedSprite.animationSpeed = (part.sprite.fps ?? 8) / 60;
       animatedSprite.play();
       display.addChild(animatedSprite);
@@ -88,6 +93,7 @@ function createPartDisplay(
 
     const sprite = new PIXI.Sprite(PIXI.Texture.from(part.sprite.textureKey));
     sprite.anchor.set(0.5);
+    sprite.rotation = (part.rotationDegrees ?? 0) * Math.PI / 180;
     if (part.targetSpriteSize) {
       sprite.width = part.targetSpriteSize.width;
       sprite.height = part.targetSpriteSize.height;

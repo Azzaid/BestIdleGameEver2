@@ -2,10 +2,11 @@ import type {Building} from "../../models/city/Building.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
+import {buildings} from "../identificators/index.ts";
 
 export const aetherBuildings: {[key: string]: Building} = {
-    aetherMana1: {
-        id: "aetherMana1",
+    [buildings.aether.leylineWell]: {
+        id: buildings.aether.leylineWell,
         name: "Leyline well",
         type: BUILDING_TYPES.produce,
         level:1,
@@ -23,8 +24,8 @@ export const aetherBuildings: {[key: string]: Building} = {
         description: "A quiet anchor sunk into the city grid to draw stable mana from buried currents.",
         keywords: ["production", "mana", "aether", "shrine"]
     },
-    aetherSupplies1: {
-        id: "aetherSupplies1",
+    [buildings.aether.runeScriptorium]: {
+        id: buildings.aether.runeScriptorium,
         name: "Rune scriptorium",
         type: BUILDING_TYPES.produce,
         level:1,

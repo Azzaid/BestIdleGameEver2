@@ -7,4 +7,5 @@ export interface TowerPartVisualMetadata {
   outputSockets: Record<string, TowerVisualPoint>;
   sourceSpriteSize?: TowerVisualSize;
   targetSpriteSize?: TowerVisualSize;
+  rotationDegrees?: number;
 }

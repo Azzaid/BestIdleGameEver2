@@ -11,6 +11,8 @@ import ResearchPage from './pages/Research/ResearchPage'
 import CityPage from './pages/City/CityPage'
 import StatisticsPage from './pages/Statistics/StatisticsPage'
 import ProgressionPage from './pages/Progression/ProgressionPage.tsx'
+import GunPartEditorPage from './pages/GunPartEditor/GunPartEditorPage.tsx'
+import IdAuditPage from './pages/IdAudit/IdAuditPage.tsx'
 import {THEME_NAMES} from "./models/Theme.ts";
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedSelector} from "./store/hooks.ts";
@@ -61,6 +63,12 @@ function App() {
                           <li>
                               <Link className={appTheme.navBarLink} to="/progression">Progression</Link>
                           </li>
+                          <li>
+                              <Link className={appTheme.navBarLink} to="/gun-part-editor">Part Editor</Link>
+                          </li>
+                          <li>
+                              <Link className={appTheme.navBarLink} to="/ids">IDs</Link>
+                          </li>
                       </ul>
                       <ThemeSwitcher />
                   </nav>
@@ -74,6 +82,8 @@ function App() {
                           <Route path="/city" element={<CityPage />} />
                           <Route path="/statistics" element={<StatisticsPage />} />
                           <Route path="/progression" element={<ProgressionPage />} />
+                          <Route path="/gun-part-editor" element={<GunPartEditorPage />} />
+                          <Route path="/ids" element={<IdAuditPage />} />
                       </Routes>
                   </main>
               </div>

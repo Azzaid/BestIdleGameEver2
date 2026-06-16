@@ -1,40 +1,41 @@
 import type {ResearchDB} from "../../models/research/researchDB.ts";
+import {technologies} from "../identificators/index.ts";
 
 export const techResearch: ResearchDB = {
-  tech: {
-    id: "tech",
-    parentId: "root",
+  [technologies.tech.branch]: {
+    id: technologies.tech.branch,
+    parentId: technologies.medieval.root,
     name: "Tech Branch",
     vector: "tech",
     summary: "Start of technology.",
   },
-  "copper-tools": {
-    id: "copper-tools",
-    parentId: "tech",
+  [technologies.tech.copperTools]: {
+    id: technologies.tech.copperTools,
+    parentId: technologies.tech.branch,
     name: "Copper Tools",
     vector: "tech",
     summary: "Basic tools.",
   },
-  "basic-circuits": {
-    id: "basic-circuits",
-    parentId: "tech",
+  [technologies.tech.basicCircuits]: {
+    id: technologies.tech.basicCircuits,
+    parentId: technologies.tech.branch,
     name: "Basic Circuits",
     vector: "tech",
     summary: "Tiny brains.",
   },
-  "precision-fabrication": {
-    id: "precision-fabrication",
-    parentId: "basic-circuits",
+  [technologies.tech.precisionFabrication]: {
+    id: technologies.tech.precisionFabrication,
+    parentId: technologies.tech.basicCircuits,
     name: "Precision Fabrication",
     vector: "tech",
     summary: "Unlock high-tech component production and refined machine parts.",
   },
-  "automation-i": {
-    id: "automation-i",
-    parentId: "tech",
+  [technologies.tech.automationI]: {
+    id: technologies.tech.automationI,
+    parentId: technologies.tech.branch,
     name: "Automation I",
     vector: "tech",
     summary: "First tier automation.",
-    alsoRequires: ["copper-tools", "basic-circuits"],
+    alsoRequires: [technologies.tech.copperTools, technologies.tech.basicCircuits],
   },
 };

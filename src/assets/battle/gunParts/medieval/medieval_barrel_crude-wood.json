@@ -1,0 +1,27 @@
+{
+  "id": "medieval_barrel_crude-wood",
+  "spriteId": "medieval_barrel_crude-wood",
+  "sourceSpriteSize": {
+    "width": 1024,
+    "height": 1024
+  },
+  "targetSpriteSize": {
+    "width": 160,
+    "height": 200
+  },
+  "rotationDegrees": 90,
+  "inputSocket": {
+    "x": 517,
+    "y": 835
+  },
+  "outputSockets": {
+    "muzzle": {
+      "x": 518,
+      "y": 207
+    },
+    "attachmentMount": {
+      "x": 391,
+      "y": 540
+    }
+  }
+}

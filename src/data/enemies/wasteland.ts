@@ -1,4 +1,5 @@
 import type {EnemyBlueprint} from "../../models/battle/enemyBlueprints.ts";
+import {enemies} from "../identificators/index.ts";
 
 function createWallboundMovement(speedPixelsPerSecond: number, wobbleAmplitudePixels = 0): EnemyBlueprint['createMovement'] {
   return (spawnX, _spawnY, world) => ({
@@ -13,8 +14,8 @@ function createWallboundMovement(speedPixelsPerSecond: number, wobbleAmplitudePi
 }
 
 export const wastelandEnemies: Record<string, EnemyBlueprint> = {
-  scrapling: {
-    id: 'scrapling',
+  [enemies.wasteland.scrapling]: {
+    id: enemies.wasteland.scrapling,
     displayName: 'Scrapling',
     strengthCost: 8,
     selectionWeight: 5,
@@ -29,8 +30,8 @@ export const wastelandEnemies: Record<string, EnemyBlueprint> = {
     swarmSize: 3,
     swarmSizeMax: 5,
   },
-  platedCrawler: {
-    id: 'platedCrawler',
+  [enemies.wasteland.platedCrawler]: {
+    id: enemies.wasteland.platedCrawler,
     displayName: 'Plated Crawler',
     strengthCost: 22,
     selectionWeight: 2,
@@ -43,8 +44,8 @@ export const wastelandEnemies: Record<string, EnemyBlueprint> = {
     sprite: { textureKey: 'enemy_plated_crawler' },
     createMovement: createWallboundMovement(34, 6),
   },
-  ridgeSpitter: {
-    id: 'ridgeSpitter',
+  [enemies.wasteland.ridgeSpitter]: {
+    id: enemies.wasteland.ridgeSpitter,
     displayName: 'Ridge Spitter',
     strengthCost: 18,
     selectionWeight: 2.5,

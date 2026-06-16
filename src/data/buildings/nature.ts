@@ -2,10 +2,11 @@ import type {Building} from "../../models/city/Building.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
+import {buildings} from "../identificators/index.ts";
 
 export const natureBuildings: {[key: string]: Building} = {
-    natureBiomass1: {
-        id: "natureBiomass1",
+    [buildings.nature.compostGrove]: {
+        id: buildings.nature.compostGrove,
         name: "Compost grove",
         type: BUILDING_TYPES.produce,
         level:1,
@@ -23,8 +24,8 @@ export const natureBuildings: {[key: string]: Building} = {
         description: "Layered fungi, roots, and soil cultures that turn ruins into usable living mass.",
         keywords: ["production", "biomass", "nature", "farm"]
     },
-    natureMutagen1: {
-        id: "natureMutagen1",
+    [buildings.nature.mutationVat]: {
+        id: buildings.nature.mutationVat,
         name: "Mutation vat",
         type: BUILDING_TYPES.produce,
         level:1,

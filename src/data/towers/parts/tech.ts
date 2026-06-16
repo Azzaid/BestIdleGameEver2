@@ -1,9 +1,10 @@
 import type {GunPart} from '../../../models/battle/towerParts.ts';
 import {UPKEEP_TYPES} from '../../../models/Upkeep.ts';
+import {gunparts} from '../../identificators/index.ts';
 
 export const techTowerParts: GunPart[] = [
   {
-      id: 'base_servo_ring',
+      id: gunparts.bases.tech.servoRing,
       slot: 'base',
       name: 'Servo Ring',
       description: 'Powered rotation for fast target changes and wide tracking arcs.',
@@ -15,7 +16,7 @@ export const techTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.electricity]: 3, [UPKEEP_TYPES.highTechComponents]: 1 },
     },
   {
-      id: 'barrel_long_rail',
+      id: gunparts.barrels.tech.longRail,
       slot: 'barrel',
       name: 'Long Rail Barrel',
       description: 'A precision rail barrel that pushes range and impact velocity higher.',
@@ -27,7 +28,7 @@ export const techTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.electricity]: 3, [UPKEEP_TYPES.highTechComponents]: 2 },
     },
   {
-      id: 'ammo_explosive',
+      id: gunparts.ammo.tech.explosive,
       slot: 'ammo',
       name: 'Explosive Ammo',
       description: 'Area damage for packed enemies, with a small hit to projectile speed.',
@@ -39,7 +40,7 @@ export const techTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.electricity]: 2, [UPKEEP_TYPES.highTechComponents]: 1 },
     },
   {
-      id: 'attachment_muzzle_brake',
+      id: gunparts.barrelAttachments.tech.muzzleBrake,
       slot: 'barrelAttachment',
       name: 'Muzzle Brake',
       description: 'Stabilizes repeated fire and slightly improves projectile speed.',
@@ -51,7 +52,7 @@ export const techTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.highTechComponents]: 1 },
     },
   {
-      id: 'loader_fast',
+      id: gunparts.loadingSystems.tech.fastLoader,
       slot: 'loadingSystem',
       name: 'Fast Loader',
       description: 'Mechanical loading for a higher sustained fire rate.',
@@ -63,7 +64,7 @@ export const techTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.electricity]: 3 },
     },
   {
-      id: 'launch_electromagnetic',
+      id: gunparts.launchSystems.tech.electromagneticDriver,
       slot: 'launchSystem',
       name: 'Electromagnetic Driver',
       description: 'A high-energy launch system that favors piercing precision weapons.',

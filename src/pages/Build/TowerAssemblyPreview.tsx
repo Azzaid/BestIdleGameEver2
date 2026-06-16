@@ -4,6 +4,7 @@ import type { TowerAssemblyPreviewProps } from '../../models/build/towerAssembly
 import { createTowerVisualDefinitionFromAssembly } from '../../data/towers/visuals.ts';
 import { loadBattleAssets } from '../Battle/assets/assetLoader.ts';
 import { buildTowerVisualContainer } from '../Battle/factories/towerVisualRenderer.ts';
+import { INITIAL_TOWER_AIM_RADIANS } from '../../models/battle/tower.ts';
 
 export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProps) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -39,6 +40,7 @@ export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProp
 
       const { container } = buildTowerVisualContainer(towerVisualDefinition);
       container.position.set(app.renderer.width / 2, app.renderer.height * 0.66);
+      container.rotation = INITIAL_TOWER_AIM_RADIANS;
       container.scale.set(1.15);
       app.stage.addChild(container);
 

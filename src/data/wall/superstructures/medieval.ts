@@ -1,10 +1,11 @@
 import {UPKEEP_TYPES} from "../../../models/Upkeep.ts";
 import {BUILDING_TYPES} from "../../../models/city/BuildingTypes.ts";
 import type {WallBuilding} from "../../../models/city/Wall.ts";
+import {superstructures} from "../../identificators/index.ts";
 
 export const medievalWallSuperstructures: Record<string, WallBuilding> = {
-    scaffoldTowerBase: {
-        id: "scaffoldTowerBase",
+    [superstructures.medieval.scaffoldTowerBase]: {
+        id: superstructures.medieval.scaffoldTowerBase,
         name: "Scaffold tower base",
         type: BUILDING_TYPES.towerBase,
         requiredUpkeep: {[UPKEEP_TYPES.highTechComponents]: 2, [UPKEEP_TYPES.people]: 1},
@@ -20,8 +21,8 @@ export const medievalWallSuperstructures: Record<string, WallBuilding> = {
         ],
         description: "A light tower foundation that lets fragile weapons sit directly on the wall.",
     },
-    repulsorTowerBase: {
-        id: "repulsorTowerBase",
+    [superstructures.medieval.repulsorTowerBase]: {
+        id: superstructures.medieval.repulsorTowerBase,
         name: "Repulsor tower base",
         type: BUILDING_TYPES.towerBase,
         requiredUpkeep: {[UPKEEP_TYPES.electricity]: 4, [UPKEEP_TYPES.highTechComponents]: 3},

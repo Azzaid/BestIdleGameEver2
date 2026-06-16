@@ -2,10 +2,11 @@ import type {Building} from "../../models/city/Building.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
+import {buildings} from "../identificators/index.ts";
 
 export const medievalBuildings: {[key: string]: Building} = {
-    medievalPeople1: {
-        id: "medievalPeople1",
+    [buildings.medieval.homesteadRow]: {
+        id: buildings.medieval.homesteadRow,
         name: "Homestead row",
         type: BUILDING_TYPES.produce,
         level:1,
@@ -23,8 +24,8 @@ export const medievalBuildings: {[key: string]: Building} = {
         description: "Sheltered homes and shared kitchens that keep workers close to the city core.",
         keywords: ["production", "people", "medieval"]
     },
-    medievalGold1: {
-        id: "medievalGold1",
+    [buildings.medieval.marketSquare]: {
+        id: buildings.medieval.marketSquare,
         name: "Market square",
         type: BUILDING_TYPES.produce,
         level:1,

@@ -18,6 +18,7 @@ export interface TowerVisualPartDefinition {
   rootSocket: TowerVisualPoint;
   outputSockets: Record<string, TowerVisualPoint>;
   targetSpriteSize?: TowerVisualSize;
+  rotationDegrees?: number;
   fallbackSize?: TowerVisualSize;
   renderLayer?: number;
 }

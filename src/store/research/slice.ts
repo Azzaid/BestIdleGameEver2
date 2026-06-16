@@ -1,8 +1,9 @@
 import {createSlice, type PayloadAction} from '@reduxjs/toolkit'
 import type {ResearchState} from "../../models/store/research.ts";
+import {technologies} from "../../data/identificators/index.ts";
 
 const initialState: ResearchState = {
-    purchasedTechsIds: ['root', 'aether'],
+    purchasedTechsIds: [technologies.medieval.root, technologies.aether.branch],
 }
 
 export const researchSlice = createSlice({

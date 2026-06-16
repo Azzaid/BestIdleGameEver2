@@ -78,6 +78,7 @@ function createVisualPartForSlot(slot: TowerPartSlot, resolvedTower: TowerAssemb
       ...visualMetadata?.outputSockets,
     },
     targetSpriteSize: visualMetadata?.targetSpriteSize ?? layout.targetSpriteSize,
+    rotationDegrees: visualMetadata?.rotationDegrees,
   };
 }
 

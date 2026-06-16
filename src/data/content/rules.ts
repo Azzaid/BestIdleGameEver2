@@ -1,163 +1,164 @@
 import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
+import {buildings, gunparts, technologies} from "../identificators/index.ts";
 import {defineProgression, unlocks} from "./progression.ts";
 
 export const PROGRESSION_RULES = defineProgression([
-  unlocks("research", "root").fromStart(),
+  unlocks("research", technologies.medieval.root).fromStart(),
 
-  unlocks("building", "techProduce1").fromStart(),
-  unlocks("building", "natureBiomass1").fromStart(),
-  unlocks("building", "medievalPeople1").fromStart(),
-  unlocks("building", "medievalGold1").fromStart(),
-  unlocks("building", "aetherMana1").fromStart(),
+  unlocks("building", buildings.tech.fossilFuelPowerPlant).fromStart(),
+  unlocks("building", buildings.nature.compostGrove).fromStart(),
+  unlocks("building", buildings.medieval.homesteadRow).fromStart(),
+  unlocks("building", buildings.medieval.marketSquare).fromStart(),
+  unlocks("building", buildings.aether.leylineWell).fromStart(),
 
-  unlocks("towerPart", "base_fixed_mount").fromStart(),
-  unlocks("towerPart", "medieval_barrel_sling-crude-base").fromStart(),
-  unlocks("towerPart", "ammo_standard").fromStart(),
-  unlocks("towerPart", "aim_wall_watch").fromStart(),
-  unlocks("towerPart", "aim_splash_spotter").fromStart(),
-  unlocks("towerPart", "attachment_muzzle_brake").fromStart(),
-  unlocks("towerPart", "loader_manual_crew").fromStart(),
-  unlocks("towerPart", "launch_gunpowder").fromStart(),
+  unlocks("towerPart", gunparts.bases.medieval.fixedMount).fromStart(),
+  unlocks("towerPart", gunparts.barrels.medieval.crudeWood).fromStart(),
+  unlocks("towerPart", gunparts.ammo.medieval.standardShells).fromStart(),
+  unlocks("towerPart", gunparts.aimSystems.medieval.wallWatch).fromStart(),
+  unlocks("towerPart", gunparts.aimSystems.medieval.splashSpotter).fromStart(),
+  unlocks("towerPart", gunparts.barrelAttachments.tech.muzzleBrake).fromStart(),
+  unlocks("towerPart", gunparts.loadingSystems.medieval.manualCrew).fromStart(),
+  unlocks("towerPart", gunparts.launchSystems.medieval.gunpowderCharge).fromStart(),
 
-  unlocks("research", "aether").requires({research: ["root"]}),
-  unlocks("research", "tech").requires({research: ["root"]}),
-  unlocks("research", "nature").requires({research: ["root"]}),
-  unlocks("research", "medieval").requires({research: ["root"]}),
+  unlocks("research", technologies.aether.branch).requires({research: [technologies.medieval.root]}),
+  unlocks("research", technologies.tech.branch).requires({research: [technologies.medieval.root]}),
+  unlocks("research", technologies.nature.branch).requires({research: [technologies.medieval.root]}),
+  unlocks("research", technologies.medieval.branch).requires({research: [technologies.medieval.root]}),
 
-  unlocks("research", "copper-tools").requires({
-    research: ["tech"],
-    buildings: ["techProduce1"],
+  unlocks("research", technologies.tech.copperTools).requires({
+    research: [technologies.tech.branch],
+    buildings: [buildings.tech.fossilFuelPowerPlant],
     freeUpkeep: {[UPKEEP_TYPES.electricity]: 2},
   }),
-  unlocks("research", "basic-circuits").requires({
-    research: ["tech"],
-    buildings: ["techProduce1"],
+  unlocks("research", technologies.tech.basicCircuits).requires({
+    research: [technologies.tech.branch],
+    buildings: [buildings.tech.fossilFuelPowerPlant],
     freeUpkeep: {[UPKEEP_TYPES.electricity]: 3},
   }),
-  unlocks("building", "techComponents1").requires({research: ["basic-circuits"]}),
+  unlocks("building", buildings.tech.machineShop).requires({research: [technologies.tech.basicCircuits]}),
   unlocks("structure", "tech-research-campus").requires({
-    research: ["basic-circuits"],
-    buildings: ["techProduce1", "techComponents1"],
+    research: [technologies.tech.basicCircuits],
+    buildings: [buildings.tech.fossilFuelPowerPlant, buildings.tech.machineShop],
   }),
-  unlocks("research", "precision-fabrication").requires({
-    research: ["basic-circuits"],
-    buildings: ["techProduce1", "techComponents1"],
+  unlocks("research", technologies.tech.precisionFabrication).requires({
+    research: [technologies.tech.basicCircuits],
+    buildings: [buildings.tech.fossilFuelPowerPlant, buildings.tech.machineShop],
     structures: ["tech-research-campus"],
     freeUpkeep: {
       [UPKEEP_TYPES.electricity]: 4,
       [UPKEEP_TYPES.highTechComponents]: 1,
     },
   }),
-  unlocks("research", "automation-i").requires({
-    research: ["tech", "copper-tools", "basic-circuits"],
-    buildings: ["techProduce1"],
+  unlocks("research", technologies.tech.automationI).requires({
+    research: [technologies.tech.branch, technologies.tech.copperTools, technologies.tech.basicCircuits],
+    buildings: [buildings.tech.fossilFuelPowerPlant],
     freeUpkeep: {[UPKEEP_TYPES.electricity]: 6},
   }),
-  unlocks("towerPart", "base_servo_ring").requires({research: ["precision-fabrication"]}),
-  unlocks("towerPart", "barrel_long_rail").requires({research: ["precision-fabrication"]}),
-  unlocks("towerPart", "ammo_explosive").requires({research: ["precision-fabrication"]}),
-  unlocks("towerPart", "loader_fast").requires({research: ["precision-fabrication"]}),
-  unlocks("towerPart", "launch_electromagnetic").requires({research: ["precision-fabrication"]}),
+  unlocks("towerPart", gunparts.bases.tech.servoRing).requires({research: [technologies.tech.precisionFabrication]}),
+  unlocks("towerPart", gunparts.barrels.tech.longRail).requires({research: [technologies.tech.precisionFabrication]}),
+  unlocks("towerPart", gunparts.ammo.tech.explosive).requires({research: [technologies.tech.precisionFabrication]}),
+  unlocks("towerPart", gunparts.loadingSystems.tech.fastLoader).requires({research: [technologies.tech.precisionFabrication]}),
+  unlocks("towerPart", gunparts.launchSystems.tech.electromagneticDriver).requires({research: [technologies.tech.precisionFabrication]}),
 
-  unlocks("research", "seed-cult").requires({
-    research: ["nature"],
-    buildings: ["natureBiomass1"],
+  unlocks("research", technologies.nature.seedCult).requires({
+    research: [technologies.nature.branch],
+    buildings: [buildings.nature.compostGrove],
     freeUpkeep: {[UPKEEP_TYPES.biomass]: 2},
   }),
-  unlocks("building", "natureMutagen1").requires({research: ["seed-cult"]}),
+  unlocks("building", buildings.nature.mutationVat).requires({research: [technologies.nature.seedCult]}),
   unlocks("structure", "nature-cultivation-complex").requires({
-    research: ["selection"],
-    buildings: ["natureBiomass1", "natureMutagen1"],
+    research: [technologies.nature.selection],
+    buildings: [buildings.nature.compostGrove, buildings.nature.mutationVat],
   }),
-  unlocks("research", "selection").requires({
-    research: ["seed-cult"],
-    buildings: ["natureBiomass1", "natureMutagen1"],
+  unlocks("research", technologies.nature.selection).requires({
+    research: [technologies.nature.seedCult],
+    buildings: [buildings.nature.compostGrove, buildings.nature.mutationVat],
     freeUpkeep: {[UPKEEP_TYPES.biomass]: 4},
   }),
-  unlocks("research", "nature-weaponcraft").requires({
-    research: ["selection"],
-    buildings: ["natureMutagen1"],
+  unlocks("research", technologies.nature.weaponcraft).requires({
+    research: [technologies.nature.selection],
+    buildings: [buildings.nature.mutationVat],
     structures: ["nature-cultivation-complex"],
     freeUpkeep: {
       [UPKEEP_TYPES.biomass]: 4,
       [UPKEEP_TYPES.mutagen]: 2,
     },
   }),
-  unlocks("research", "herbal-lore").requires({research: ["nature"]}),
-  unlocks("towerPart", "ammo_spore_capsules").requires({research: ["nature-weaponcraft"]}),
-  unlocks("towerPart", "base_root_cluster").requires({research: ["nature-weaponcraft"]}),
-  unlocks("towerPart", "barrel_thorn_bore").requires({research: ["nature-weaponcraft"]}),
-  unlocks("towerPart", "aim_predator_sense").requires({research: ["nature-weaponcraft"]}),
-  unlocks("towerPart", "attachment_spore_nozzle").requires({research: ["nature-weaponcraft"]}),
-  unlocks("towerPart", "loader_peristaltic_sac").requires({research: ["nature-weaponcraft"]}),
-  unlocks("towerPart", "launch_muscle_sling").requires({research: ["nature-weaponcraft"]}),
+  unlocks("research", technologies.nature.herbalLore).requires({research: [technologies.nature.branch]}),
+  unlocks("towerPart", gunparts.ammo.nature.sporeCapsules).requires({research: [technologies.nature.weaponcraft]}),
+  unlocks("towerPart", gunparts.bases.nature.rootCluster).requires({research: [technologies.nature.weaponcraft]}),
+  unlocks("towerPart", gunparts.barrels.nature.thornBore).requires({research: [technologies.nature.weaponcraft]}),
+  unlocks("towerPart", gunparts.aimSystems.nature.predatorSense).requires({research: [technologies.nature.weaponcraft]}),
+  unlocks("towerPart", gunparts.barrelAttachments.nature.sporeNozzle).requires({research: [technologies.nature.weaponcraft]}),
+  unlocks("towerPart", gunparts.loadingSystems.nature.peristalticSac).requires({research: [technologies.nature.weaponcraft]}),
+  unlocks("towerPart", gunparts.launchSystems.nature.muscleSling).requires({research: [technologies.nature.weaponcraft]}),
 
   unlocks("structure", "medieval-guild-district").requires({
-    research: ["guild-charter"],
-    buildings: ["medievalPeople1", "medievalGold1"],
+    research: [technologies.medieval.guildCharter],
+    buildings: [buildings.medieval.homesteadRow, buildings.medieval.marketSquare],
   }),
-  unlocks("research", "guild-charter").requires({
-    research: ["medieval"],
-    buildings: ["medievalPeople1", "medievalGold1"],
+  unlocks("research", technologies.medieval.guildCharter).requires({
+    research: [technologies.medieval.branch],
+    buildings: [buildings.medieval.homesteadRow, buildings.medieval.marketSquare],
     freeUpkeep: {[UPKEEP_TYPES.people]: 2},
   }),
-  unlocks("research", "fortifications").requires({
-    research: ["medieval"],
+  unlocks("research", technologies.medieval.fortifications).requires({
+    research: [technologies.medieval.branch],
     freeUpkeep: {
       [UPKEEP_TYPES.people]: 3,
       [UPKEEP_TYPES.gold]: 2,
     },
   }),
-  unlocks("research", "medieval-artillery").requires({
-    research: ["fortifications"],
-    buildings: ["medievalPeople1", "medievalGold1"],
+  unlocks("research", technologies.medieval.artillery).requires({
+    research: [technologies.medieval.fortifications],
+    buildings: [buildings.medieval.homesteadRow, buildings.medieval.marketSquare],
     structures: ["medieval-guild-district"],
     freeUpkeep: {
       [UPKEEP_TYPES.people]: 4,
       [UPKEEP_TYPES.gold]: 3,
     },
   }),
-  unlocks("research", "livingWood").requires({
-    research: ["fortifications", "selection"],
+  unlocks("research", technologies.medieval.livingWood).requires({
+    research: [technologies.medieval.fortifications, technologies.nature.selection],
     freeUpkeep: {
       [UPKEEP_TYPES.people]: 4,
       [UPKEEP_TYPES.gold]: 3,
     },
   }),
-  unlocks("towerPart", "attachment_iron_sight_collar").requires({research: ["medieval-artillery"]}),
+  unlocks("towerPart", gunparts.barrelAttachments.medieval.ironSightCollar).requires({research: [technologies.medieval.artillery]}),
 
-  unlocks("research", "leyline-tapping").requires({
-    research: ["aether"],
-    buildings: ["aetherMana1"],
+  unlocks("research", technologies.aether.leylineTapping).requires({
+    research: [technologies.aether.branch],
+    buildings: [buildings.aether.leylineWell],
     freeUpkeep: {[UPKEEP_TYPES.mana]: 2},
   }),
-  unlocks("building", "aetherSupplies1").requires({research: ["leyline-tapping"]}),
+  unlocks("building", buildings.aether.runeScriptorium).requires({research: [technologies.aether.leylineTapping]}),
   unlocks("structure", "aether-rune-complex").requires({
-    research: ["rune-supplies"],
-    buildings: ["aetherMana1", "aetherSupplies1"],
+    research: [technologies.aether.runeSupplies],
+    buildings: [buildings.aether.leylineWell, buildings.aether.runeScriptorium],
   }),
-  unlocks("research", "rune-supplies").requires({
-    research: ["leyline-tapping"],
-    buildings: ["aetherMana1", "aetherSupplies1"],
+  unlocks("research", technologies.aether.runeSupplies).requires({
+    research: [technologies.aether.leylineTapping],
+    buildings: [buildings.aether.leylineWell, buildings.aether.runeScriptorium],
     freeUpkeep: {
       [UPKEEP_TYPES.mana]: 4,
       [UPKEEP_TYPES.arcaneSupplies]: 1,
     },
   }),
-  unlocks("research", "aether-artillery").requires({
-    research: ["rune-supplies"],
-    buildings: ["aetherSupplies1"],
+  unlocks("research", technologies.aether.artillery).requires({
+    research: [technologies.aether.runeSupplies],
+    buildings: [buildings.aether.runeScriptorium],
     structures: ["aether-rune-complex"],
     freeUpkeep: {
       [UPKEEP_TYPES.mana]: 5,
       [UPKEEP_TYPES.arcaneSupplies]: 2,
     },
   }),
-  unlocks("towerPart", "aim_arcane_omen").requires({research: ["aether-artillery"]}),
-  unlocks("towerPart", "attachment_prismatic_focus").requires({research: ["aether-artillery"]}),
-  unlocks("towerPart", "base_levitation_gimbal").requires({research: ["aether-artillery"]}),
-  unlocks("towerPart", "barrel_phase_channel").requires({research: ["aether-artillery"]}),
-  unlocks("towerPart", "ammo_mana_bolt").requires({research: ["aether-artillery"]}),
-  unlocks("towerPart", "loader_rune_carousel").requires({research: ["aether-artillery"]}),
-  unlocks("towerPart", "launch_gravity_pulse").requires({research: ["aether-artillery"]}),
+  unlocks("towerPart", gunparts.aimSystems.aether.arcaneOmen).requires({research: [technologies.aether.artillery]}),
+  unlocks("towerPart", gunparts.barrelAttachments.aether.prismaticFocus).requires({research: [technologies.aether.artillery]}),
+  unlocks("towerPart", gunparts.bases.aether.levitationGimbal).requires({research: [technologies.aether.artillery]}),
+  unlocks("towerPart", gunparts.barrels.aether.phaseChannel).requires({research: [technologies.aether.artillery]}),
+  unlocks("towerPart", gunparts.ammo.aether.manaBolts).requires({research: [technologies.aether.artillery]}),
+  unlocks("towerPart", gunparts.loadingSystems.aether.runeCarousel).requires({research: [technologies.aether.artillery]}),
+  unlocks("towerPart", gunparts.launchSystems.aether.gravityPulse).requires({research: [technologies.aether.artillery]}),
 ]);

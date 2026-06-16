@@ -1,9 +1,10 @@
 import type {GunPart} from '../../../models/battle/towerParts.ts';
 import {UPKEEP_TYPES} from '../../../models/Upkeep.ts';
+import {gunparts} from '../../identificators/index.ts';
 
 export const aetherTowerParts: GunPart[] = [
   {
-      id: 'aim_arcane_omen',
+      id: gunparts.aimSystems.aether.arcaneOmen,
       slot: 'aimSystem',
       name: 'Arcane Omen Lens',
       description: 'Seeks significant targets with high health, even when simpler targets are closer.',
@@ -16,7 +17,7 @@ export const aetherTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.arcaneSupplies]: 1 },
     },
   {
-      id: 'attachment_prismatic_focus',
+      id: gunparts.barrelAttachments.aether.prismaticFocus,
       slot: 'barrelAttachment',
       name: 'Prismatic Focus',
       description: 'Amplifies rare payloads at the cost of practical handling.',
@@ -28,7 +29,7 @@ export const aetherTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.mana]: 2 },
     },
   {
-      id: 'base_levitation_gimbal',
+      id: gunparts.bases.aether.levitationGimbal,
       slot: 'base',
       name: 'Levitation Gimbal',
       description: 'A hovering ring that ignores much of the wall vibration beneath it.',
@@ -40,7 +41,7 @@ export const aetherTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.arcaneSupplies]: 1 },
     },
   {
-      id: 'barrel_phase_channel',
+      id: gunparts.barrels.aether.phaseChannel,
       slot: 'barrel',
       name: 'Phase Channel',
       description: 'A runed channel that keeps shots partly out of phase until impact.',
@@ -52,7 +53,7 @@ export const aetherTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.arcaneSupplies]: 1 },
     },
   {
-      id: 'ammo_mana_bolt',
+      id: gunparts.ammo.aether.manaBolts,
       slot: 'ammo',
       name: 'Mana Bolts',
       description: 'Condensed aether charges that hit hard but strain the firing cadence.',
@@ -64,7 +65,7 @@ export const aetherTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.mana]: 3 },
     },
   {
-      id: 'loader_rune_carousel',
+      id: gunparts.loadingSystems.aether.runeCarousel,
       slot: 'loadingSystem',
       name: 'Rune Carousel',
       description: 'A rotating spellwheel preloads charged firing patterns.',
@@ -76,7 +77,7 @@ export const aetherTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.mana]: 2, [UPKEEP_TYPES.arcaneSupplies]: 2 },
     },
   {
-      id: 'launch_gravity_pulse',
+      id: gunparts.launchSystems.aether.gravityPulse,
       slot: 'launchSystem',
       name: 'Gravity Pulse',
       description: 'A compressed shove of directionless force that sends projectiles screaming forward.',

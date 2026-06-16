@@ -32,7 +32,9 @@ export const ThemeProvider: React.FC<
         applyHtmlDataTheme(theme);
         try {
             localStorage.setItem(STORAGE_KEY, theme);
-        } catch {}
+        } catch {
+            // localStorage can be unavailable in private or restricted browser contexts.
+        }
     }, [theme]);
 
     const setTheme = (t: ThemeName) => {

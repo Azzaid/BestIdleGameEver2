@@ -16,10 +16,7 @@ export const TOWER_PART_SLOT_ORDER: { key: TowerPartSlot; label: string }[] = [
 
 export const REQUIRED_TOWER_PART_SLOTS: TowerPartSlot[] = [
   'base',
-  'barrel',
   'ammo',
-  'aimSystem',
-  'loadingSystem',
   'launchSystem',
 ];
 

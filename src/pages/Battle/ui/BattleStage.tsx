@@ -16,6 +16,7 @@ import type { TowerAssemblyResolved } from '../../../models/battle/towerParts.ts
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
 import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/towers/visuals.ts';
 import type { BattleMetrics, BattleResult } from '../../../models/battle/world.ts';
+import { INITIAL_TOWER_AIM_RADIANS } from '../../../models/battle/tower.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
 export function BattleStage(props: {
@@ -172,8 +173,8 @@ export function BattleStage(props: {
             // Tower with target hold
             const baseId = createEntityId(world);
             const gunId = createEntityId(world);
-            world.transforms.set(baseId, { position: { x: props.battlefieldWidth / 2, y: wallY }, rotationRadians: 0 });
-            world.transforms.set(gunId,  { position: { x: props.battlefieldWidth / 2, y: wallY }, rotationRadians: -Math.PI / 2 });
+            world.transforms.set(baseId, { position: { x: props.battlefieldWidth / 2, y: wallY }, rotationRadians: INITIAL_TOWER_AIM_RADIANS });
+            world.transforms.set(gunId,  { position: { x: props.battlefieldWidth / 2, y: wallY }, rotationRadians: INITIAL_TOWER_AIM_RADIANS });
             const towerVisualDefinition = createTowerVisualDefinitionFromAssembly(props.resolvedTower);
             const towerVisual = buildTowerVisualContainer(towerVisualDefinition, { warn: () => {} });
             towerVisual.container.zIndex = 30;

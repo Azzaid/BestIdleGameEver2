@@ -1,9 +1,10 @@
 import type {GunPart} from '../../../models/battle/towerParts.ts';
 import {UPKEEP_TYPES} from '../../../models/Upkeep.ts';
+import {gunparts} from '../../identificators/index.ts';
 
 export const natureTowerParts: GunPart[] = [
   {
-      id: 'ammo_spore_capsules',
+      id: gunparts.ammo.nature.sporeCapsules,
       slot: 'ammo',
       name: 'Spore Capsules',
       description: 'Biological payloads that trade burst impact for attrition keywords.',
@@ -15,7 +16,7 @@ export const natureTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.biomass]: 3, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
-      id: 'base_root_cluster',
+      id: gunparts.bases.nature.rootCluster,
       slot: 'base',
       name: 'Root Cluster',
       description: 'Living anchors burrow into the wall and flex with recoil instead of resisting it.',
@@ -27,7 +28,7 @@ export const natureTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.biomass]: 3 },
     },
   {
-      id: 'barrel_thorn_bore',
+      id: gunparts.barrels.nature.thornBore,
       slot: 'barrel',
       name: 'Thorn Bore',
       description: 'A grown barrel lined with hard thorns that tear softer targets apart.',
@@ -39,7 +40,7 @@ export const natureTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
-      id: 'aim_predator_sense',
+      id: gunparts.aimSystems.nature.predatorSense,
       slot: 'aimSystem',
       name: 'Predator Sense',
       description: 'A twitching sensor cluster that snaps toward weakened prey.',
@@ -52,7 +53,7 @@ export const natureTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
-      id: 'attachment_spore_nozzle',
+      id: gunparts.barrelAttachments.nature.sporeNozzle,
       slot: 'barrelAttachment',
       name: 'Spore Nozzle',
       description: 'A wet muzzle growth that widens biological payload spread.',
@@ -64,7 +65,7 @@ export const natureTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.biomass]: 2, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
-      id: 'loader_peristaltic_sac',
+      id: gunparts.loadingSystems.nature.peristalticSac,
       slot: 'loadingSystem',
       name: 'Peristaltic Sac',
       description: 'A pulsing organic loader that steadily feeds grown munitions into the chamber.',
@@ -76,7 +77,7 @@ export const natureTowerParts: GunPart[] = [
       supportCost: { [UPKEEP_TYPES.biomass]: 3, [UPKEEP_TYPES.mutagen]: 1 },
     },
   {
-      id: 'launch_muscle_sling',
+      id: gunparts.launchSystems.nature.muscleSling,
       slot: 'launchSystem',
       name: 'Muscle Sling',
       description: 'Braided living fibers snap forward with repeatable force.',

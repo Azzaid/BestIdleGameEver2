@@ -1,44 +1,45 @@
 import type {ResearchDB} from "../../models/research/researchDB.ts";
+import {technologies} from "../identificators/index.ts";
 
 export const medievalResearch: ResearchDB = {
-  root: {
-    id: "root",
+  [technologies.medieval.root]: {
+    id: technologies.medieval.root,
     parentId: null,
     name: "Curiosity",
     vector: "medieval",
     summary: "First you need to ask. What if? Then stuff starts exploding.",
   },
-  medieval: {
-    id: "medieval",
-    parentId: "root",
+  [technologies.medieval.branch]: {
+    id: technologies.medieval.branch,
+    parentId: technologies.medieval.root,
     name: "Medieval",
     vector: "medieval",
     summary: "Steel, guilds, taxes.",
   },
-  "guild-charter": {
-    id: "guild-charter",
-    parentId: "medieval",
+  [technologies.medieval.guildCharter]: {
+    id: technologies.medieval.guildCharter,
+    parentId: technologies.medieval.branch,
     name: "Guild Charter",
     vector: "medieval",
     summary: "Trade & crafting bonuses.",
   },
-  fortifications: {
-    id: "fortifications",
-    parentId: "medieval",
+  [technologies.medieval.fortifications]: {
+    id: technologies.medieval.fortifications,
+    parentId: technologies.medieval.branch,
     name: "Fortifications",
     vector: "medieval",
     summary: "City walls & towers.",
   },
-  "medieval-artillery": {
-    id: "medieval-artillery",
-    parentId: "fortifications",
+  [technologies.medieval.artillery]: {
+    id: technologies.medieval.artillery,
+    parentId: technologies.medieval.fortifications,
     name: "Siege Artillery",
     vector: "medieval",
     summary: "Standardize crews, fittings, and rugged tower attachments.",
   },
-  livingWood: {
-    id: "livingWood",
-    parentId: "fortifications",
+  [technologies.medieval.livingWood]: {
+    id: technologies.medieval.livingWood,
+    parentId: technologies.medieval.fortifications,
     name: "Living Wood",
     vector: "medieval",
     summary: "City walls & towers.",
