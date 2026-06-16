@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as s from "./BuildingSelector.css.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../../../models/DevlopmentVector.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
@@ -11,21 +11,36 @@ export function BuildingSelector({
                                      onBuild,
                                      unlockedBuildingIds,
                                      blocked = false,
-                                     blockedReason,
+                                 blockedReason,
                                  }: BuildingSelectorProps) {
     const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.medieval);
-    const activeBuildings = Object.values(BUILDINGS_ATLAS[activeVector])
-        .filter(building => unlockedBuildingIds.has(building.id));
+    const availableVectors = useMemo(() => (
+        Object.values(DEVELOPMENT_VECTORS)
+            .map(vector => ({
+                vector,
+                buildings: Object.values(BUILDINGS_ATLAS[vector])
+                    .filter(building => !building.isMultistructure)
+                    .filter(building => unlockedBuildingIds.has(building.id)),
+            }))
+            .filter(vectorOption => vectorOption.buildings.length > 0)
+    ), [unlockedBuildingIds]);
+    const activeBuildings = availableVectors.find(vectorOption => vectorOption.vector === activeVector)?.buildings ?? [];
+
+    useEffect(() => {
+        if (availableVectors.some(vectorOption => vectorOption.vector === activeVector)) return;
+
+        const fallbackVector = availableVectors[0]?.vector;
+        if (fallbackVector) {
+            setActiveVector(fallbackVector);
+        }
+    }, [activeVector, availableVectors]);
 
     return (
         <div className={s.wrapper} data-theme={activeVector.description}>
             {/* Tabs */}
             <div className={s.tabs} role="tablist" aria-label="Development vectors">
-                {Object.values(DEVELOPMENT_VECTORS).map(vector => {
-                    const count = Object.values(BUILDINGS_ATLAS[vector])
-                        .filter(building => unlockedBuildingIds.has(building.id))
-                        .length;
-                    const disabled = count === 0;
+                {availableVectors.map(({vector, buildings}) => {
+                    const count = buildings.length;
                     return (
                         <button
                             key={vector.description}
@@ -35,9 +50,7 @@ export function BuildingSelector({
                             role="tab"
                             aria-selected={activeVector === vector}
                             className={s.tabButton[activeVector === vector ? 'active' : 'regular']}
-                            onClick={() => !disabled && setActiveVector(vector)}
-                            disabled={disabled}
-                            title={disabled ? "No unlocked buildings yet" : undefined}
+                            onClick={() => setActiveVector(vector)}
                             data-vector={vector}
                         >
                             <span className={s.tabDot} aria-hidden />

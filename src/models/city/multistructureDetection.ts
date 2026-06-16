@@ -14,15 +14,53 @@ export type StructureDetectionResult = {
     isComplete: boolean;
 };
 
+type StructureComponentCandidate = {
+    buildingId: string;
+    hexes: HexCell[];
+    representativeHex: HexCell;
+};
+
 export function detectMultistructures(
     hexes: readonly HexCell[],
     structures: readonly StructureDefinition[],
 ): StructureDetectionResult[] {
-    return structures.flatMap(structure => {
-        return hexes
-            .filter(hex => isCityBuilding(hex, structure.coreBuildingId))
-            .map(coreHex => detectStructureAtCore(hexes, structure, coreHex));
-    });
+    const resultsByKey = new Map<string, StructureDetectionResult>();
+
+    for (let pass = 0; pass < structures.length; pass++) {
+        const completedComponents = [...resultsByKey.values()]
+            .filter(result => result.isComplete)
+            .map(resultToComponent);
+        const components = [
+            ...getBaseBuildingComponents(hexes),
+            ...completedComponents,
+        ];
+        let addedCompleteStructure = false;
+
+        for (const structure of structures) {
+            const coreCandidates = components.filter(component => component.buildingId === structure.coreBuildingId);
+
+            for (const coreCandidate of coreCandidates) {
+                const result = detectStructureAtCore(components, structure, coreCandidate);
+                const key = getResultKey(result);
+                const existing = resultsByKey.get(key);
+
+                if (!existing) {
+                    resultsByKey.set(key, result);
+                    addedCompleteStructure ||= result.isComplete;
+                    continue;
+                }
+
+                if (!existing.isComplete && result.isComplete) {
+                    resultsByKey.set(key, result);
+                    addedCompleteStructure = true;
+                }
+            }
+        }
+
+        if (!addedCompleteStructure) break;
+    }
+
+    return [...resultsByKey.values()];
 }
 
 export function getCompleteStructureIds(
@@ -36,55 +74,84 @@ export function getCompleteStructureIds(
     );
 }
 
+function getBaseBuildingComponents(hexes: readonly HexCell[]): StructureComponentCandidate[] {
+    return hexes.flatMap(hex => {
+        if (hex.kind !== "city" || !hex.buildingKey) return [];
+
+        return [{
+            buildingId: hex.buildingKey,
+            hexes: [hex],
+            representativeHex: hex,
+        }];
+    });
+}
+
+function resultToComponent(result: StructureDetectionResult): StructureComponentCandidate {
+    const hexesByKey = new Map<string, HexCell>();
+    hexesByKey.set(result.coreHex.cellKey, result.coreHex);
+
+    for (const match of result.matchedSatellites) {
+        hexesByKey.set(match.hex.cellKey, match.hex);
+    }
+
+    return {
+        buildingId: result.structure.id,
+        hexes: [...hexesByKey.values()],
+        representativeHex: result.coreHex,
+    };
+}
+
 function detectStructureAtCore(
-    hexes: readonly HexCell[],
+    components: readonly StructureComponentCandidate[],
     structure: StructureDefinition,
-    coreHex: HexCell,
+    coreCandidate: StructureComponentCandidate,
 ): StructureDetectionResult {
-    const adjacentHexes = hexes.filter(hex => {
-        return hex.kind === "city"
-            && hex.cellKey !== coreHex.cellKey
-            && getAxialDistance(coreHex, hex) === 1;
-    });
-
-    const availableByBuildingId = new Map<string, HexCell[]>();
-    adjacentHexes.forEach(hex => {
-        if (!hex.buildingKey) return;
-
-        const matches = availableByBuildingId.get(hex.buildingKey) ?? [];
-        matches.push(hex);
-        availableByBuildingId.set(hex.buildingKey, matches);
-    });
-
-    const usedHexKeys = new Set<string>();
-    const matchedSatellites: StructureRequirementMatch[] = [];
+    const usedHexKeys = new Set(coreCandidate.hexes.map(hex => hex.cellKey));
+    const matchedSatellites: StructureRequirementMatch[] = coreCandidate.hexes
+        .filter(hex => hex.cellKey !== coreCandidate.representativeHex.cellKey)
+        .map(hex => ({buildingId: structure.coreBuildingId, hex}));
     const missingBuildingIds: string[] = [];
 
-    structure.requiredAdjacentBuildingIds.forEach(buildingId => {
-        const match = availableByBuildingId
-            .get(buildingId)
-            ?.find(hex => !usedHexKeys.has(hex.cellKey));
+    for (const buildingId of structure.requiredAdjacentBuildingIds) {
+        const match = components.find(component => {
+            return component.buildingId === buildingId
+                && !component.hexes.some(hex => usedHexKeys.has(hex.cellKey))
+                && areComponentsAdjacent(coreCandidate, component);
+        });
 
         if (!match) {
             missingBuildingIds.push(buildingId);
-            return;
+            continue;
         }
 
-        usedHexKeys.add(match.cellKey);
-        matchedSatellites.push({buildingId, hex: match});
-    });
+        for (const hex of match.hexes) {
+            usedHexKeys.add(hex.cellKey);
+            matchedSatellites.push({buildingId, hex});
+        }
+    }
 
     return {
         structure,
-        coreHex,
+        coreHex: coreCandidate.representativeHex,
         matchedSatellites,
         missingBuildingIds,
         isComplete: missingBuildingIds.length === 0,
     };
 }
 
-function isCityBuilding(hex: HexCell, buildingId: string): boolean {
-    return hex.kind === "city" && hex.buildingKey === buildingId;
+function areComponentsAdjacent(a: StructureComponentCandidate, b: StructureComponentCandidate): boolean {
+    return a.hexes.some(aHex => (
+        b.hexes.some(bHex => getAxialDistance(aHex, bHex) === 1)
+    ));
+}
+
+function getResultKey(result: StructureDetectionResult): string {
+    const hexKeys = [
+        result.coreHex.cellKey,
+        ...result.matchedSatellites.map(match => match.hex.cellKey),
+    ].sort();
+
+    return `${result.structure.id}:${hexKeys.join("|")}`;
 }
 
 function getAxialDistance(a: HexCell, b: HexCell): number {

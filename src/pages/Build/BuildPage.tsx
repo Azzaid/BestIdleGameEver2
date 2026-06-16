@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ColumnDef, ColumnFiltersState, PaginationState, VisibilityState } from '@tanstack/react-table';
 import {
   flexRender,
@@ -89,12 +89,32 @@ const BuildPage = () => {
   };
 
   const selectedPartId = towerDraftAssembly.selectedPartIds[activeTab];
+  const availableSlotOptions = useMemo(() => (
+    TOWER_PART_SLOT_ORDER
+      .map((slotOption) => ({
+        ...slotOption,
+        partsCount: TOWER_PARTS.filter((part) => (
+          part.slot === slotOption.key && isPartUnlocked(part, purchasedTechIds)
+        )).length,
+      }))
+      .filter((slotOption) => slotOption.partsCount > 0)
+  ), [purchasedTechIds]);
   const activeSlotParts = useMemo(
     () => TOWER_PARTS.filter((part) => (
       part.slot === activeTab && isPartUnlocked(part, purchasedTechIds)
     )),
     [activeTab, purchasedTechIds]
   );
+
+  useEffect(() => {
+    if (availableSlotOptions.some((slotOption) => slotOption.key === activeTab)) return;
+
+    const fallbackSlot = availableSlotOptions[0]?.key;
+    if (!fallbackSlot) return;
+
+    setActiveTab(fallbackSlot);
+    setPagination((current) => ({ ...current, pageIndex: 0 }));
+  }, [activeTab, availableSlotOptions]);
 
   const columns: ColumnDef<GunPart, unknown>[] = useMemo(() => [
     {
@@ -364,7 +384,7 @@ const BuildPage = () => {
       </section>
 
       <section className={s.slotStrip} aria-label="Tower part slots">
-        {TOWER_PART_SLOT_ORDER.map(({ key, label }) => {
+        {availableSlotOptions.map(({ key, label }) => {
           const part = resolvedTower.selectedParts[key];
           const active = activeTab === key;
           return (

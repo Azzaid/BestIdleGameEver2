@@ -2,46 +2,53 @@ import type {ResearchDB} from "../../models/research/researchDB.ts";
 import {technologies} from "../identificators/index.ts";
 
 export const aetherResearch: ResearchDB = {
-  [technologies.aether.branch]: {
-    id: technologies.aether.branch,
-    parentId: technologies.medieval.root,
-    name: "Aether Practice",
-    vector: "aether",
-    summary: "Early ritual practice, omen work, mana handling, and eventually reliable arcane tower parts.",
-  },
   [technologies.aether.mysticism]: {
     id: technologies.aether.mysticism,
-    parentId: technologies.medieval.money,
+    parentId: technologies.medieval.naturalPhilosophy,
     name: "Mysticism",
     vector: "aether",
-    summary: "Market gossip, fortune telling, and the first civic permission to take omens seriously.",
+    summary: "Ritual practice around dolmens, shrines, and the first stable mana flows.",
   },
-  [technologies.aether.magicStones]: {
-    id: technologies.aether.magicStones,
+  [technologies.aether.mysticalCommand]: {
+    id: technologies.aether.mysticalCommand,
     parentId: technologies.aether.mysticism,
-    name: "Magic Stones",
+    name: "Mystical Command",
     vector: "aether",
-    summary: "Shamanic stone practice becomes stable enough to lift a tower platform.",
+    summary: "Guiding stones and obelisks turn mana into more deliberate control.",
   },
-  [technologies.aether.leylineTapping]: {
-    id: technologies.aether.leylineTapping,
-    parentId: technologies.aether.branch,
-    name: "Leyline Tapping",
+  [technologies.aether.mysticalFriendship]: {
+    id: technologies.aether.mysticalFriendship,
+    parentId: technologies.aether.mysticism,
+    name: "Mystical Friendship",
     vector: "aether",
-    summary: "Draw stable mana into city infrastructure.",
+    summary: "Spirit huts and whispering spirits make spirits useful instead of merely alarming.",
   },
-  [technologies.aether.runeSupplies]: {
-    id: technologies.aether.runeSupplies,
-    parentId: technologies.aether.leylineTapping,
-    name: "Rune Supplies",
+  [technologies.aether.ancestorSpirits]: {
+    id: technologies.aether.ancestorSpirits,
+    parentId: technologies.aether.mysticalFriendship,
+    name: "Ancestor Spirits",
     vector: "aether",
-    summary: "Prepare charged materials for repeatable arcane engineering.",
+    summary: "Poltergeists and veil thinning deepen the spirit economy.",
   },
-  [technologies.aether.artillery]: {
-    id: technologies.aether.artillery,
-    parentId: technologies.aether.runeSupplies,
-    name: "Aether Artillery",
+  [technologies.aether.livingClay]: {
+    id: technologies.aether.livingClay,
+    parentId: technologies.aether.ancestorSpirits,
+    name: "Living Clay",
     vector: "aether",
-    summary: "Bind omen, focus, and phase effects into tower components.",
+    summary: "Predatory clay, living platforms, and golem workshops animate magical matter.",
+  },
+  [technologies.aether.mysticalHostility]: {
+    id: technologies.aether.mysticalHostility,
+    parentId: technologies.aether.mysticism,
+    name: "Mystical Hostility",
+    vector: "aether",
+    summary: "Totems suppress the city or punish monsters near the walls.",
+  },
+  [technologies.aether.deathEnergy]: {
+    id: technologies.aether.deathEnergy,
+    parentId: technologies.aether.mysticalHostility,
+    name: "Death Energy",
+    vector: "aether",
+    summary: "Hostile spirit work culminates in death-triggered explosions.",
   },
 };

@@ -22,6 +22,7 @@ const researchDefinitions: ResearchDB = {
 const buildingNames = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string, string>>(
   (names, vector) => {
     for (const building of Object.values(BUILDINGS_ATLAS[vector])) {
+      if (building.isMultistructure) continue;
       names[building.id] = building.name;
     }
     return names;

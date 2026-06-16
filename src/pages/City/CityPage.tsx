@@ -55,6 +55,7 @@ const CityPage = () => {
 
         return new Set(Object.values(DEVELOPMENT_VECTORS).flatMap(vector => {
             return Object.values(BUILDINGS_ATLAS[vector])
+                .filter(building => !building.isMultistructure)
                 .filter(building => isProgressionRuleUnlocked(
                     getRuleForTarget(PROGRESSION_RULES, "building", building.id),
                     context,

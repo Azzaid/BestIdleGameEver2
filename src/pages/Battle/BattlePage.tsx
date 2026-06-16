@@ -49,6 +49,8 @@ const BattlePage = () => {
                 cellKey: hex.cellKey,
                 wallKey: hex.wallKey ?? null,
                 wallDevelopmentVector: hex.wallDevelopmentVector ?? null,
+                wallTopKey: hex.wallTopKey ?? null,
+                wallTopDevelopmentVector: hex.wallTopDevelopmentVector ?? null,
             }));
     }, [cityHexes]);
     const [battleMode, setBattleMode] = useState<BattleMode>(() => traceStatus.isBesieged ? "siege" : "pressure");
@@ -85,7 +87,15 @@ const BattlePage = () => {
         wallResolution.ignoredThreat,
         wallLogicalWidth,
         battlefieldHeight,
-        battleWallSegments.map(segment => `${segment.cellKey}:${segment.wallKey ?? ""}:${segment.wallDevelopmentVector?.description ?? ""}`).join("|"),
+        battleWallSegments
+            .map(segment => [
+                segment.cellKey,
+                segment.wallKey ?? "",
+                segment.wallDevelopmentVector?.description ?? "",
+                segment.wallTopKey ?? "",
+                segment.wallTopDevelopmentVector?.description ?? "",
+            ].join(":"))
+            .join("|"),
     ].join(":"), [
         targetThreat,
         initialThreat,

@@ -1,8 +1,9 @@
 export const aetherTechnologies = {
-  branch: "aether",
   mysticism: "mysticism",
-  magicStones: "magic-stones",
-  leylineTapping: "leyline-tapping",
-  runeSupplies: "rune-supplies",
-  artillery: "aether-artillery",
+  mysticalCommand: "mystical-command",
+  mysticalFriendship: "mystical-friendship",
+  ancestorSpirits: "ancestor-spirits",
+  livingClay: "living-clay",
+  mysticalHostility: "mystical-hostility",
+  deathEnergy: "death-energy",
 } as const;

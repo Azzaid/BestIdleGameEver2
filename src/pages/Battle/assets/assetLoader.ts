@@ -5,6 +5,7 @@ import { TOWER_PARTS } from '../../../data/towers/index.ts';
 import { TOWER_PART_VISUAL_ASSETS } from '../../../data/towers/partVisualMetadata.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import { wallSpriteMetadataAtlas, wallSpritesAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
+import { wallTopSpriteMetadataAtlas, wallTopSpritesAtlas } from '../../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
 
 export async function loadBattleBackground(backgroundId: BattleBackgroundId): Promise<void> {
     const background = BATTLE_BACKGROUNDS[backgroundId];
@@ -34,7 +35,7 @@ export async function loadTowerPartAssets(): Promise<void> {
 
 export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): Promise<void> {
     const queuedAliases = new Set<string>();
-    const assetsToLoad = wallSegments.flatMap((segment) => {
+    const wallAssetsToLoad = wallSegments.flatMap((segment) => {
         if (!segment.wallKey || !segment.wallDevelopmentVector) return [];
 
         const metadata = wallSpriteMetadataAtlas[segment.wallDevelopmentVector][segment.wallKey];
@@ -47,6 +48,20 @@ export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): P
             src,
         }];
     });
+    const wallTopAssetsToLoad = wallSegments.flatMap((segment) => {
+        if (!segment.wallTopKey || !segment.wallTopDevelopmentVector) return [];
+
+        const metadata = wallTopSpriteMetadataAtlas[segment.wallTopDevelopmentVector][segment.wallTopKey];
+        const src = wallTopSpritesAtlas[segment.wallTopDevelopmentVector][segment.wallTopKey];
+        if (!metadata || !src || Assets.cache.has(metadata.spriteId) || queuedAliases.has(metadata.spriteId)) return [];
+        queuedAliases.add(metadata.spriteId);
+
+        return [{
+            alias: metadata.spriteId,
+            src,
+        }];
+    });
+    const assetsToLoad = [...wallAssetsToLoad, ...wallTopAssetsToLoad];
 
     if (assetsToLoad.length === 0) return;
 
