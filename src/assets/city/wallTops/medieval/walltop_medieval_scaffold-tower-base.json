@@ -1,0 +1,13 @@
+{
+  "id": "walltop_medieval_scaffold-tower-base",
+  "spriteId": "walltop_medieval_scaffold-tower-base",
+  "superstructureId": "scaffoldTowerBase",
+  "sourceSpriteSize": {
+    "width": 1024,
+    "height": 1024
+  },
+  "targetSpriteSize": {
+    "width": 40,
+    "height": 40
+  }
+}

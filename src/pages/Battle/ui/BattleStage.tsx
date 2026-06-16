@@ -18,7 +18,7 @@ import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } 
 import type { BattleMetrics, BattleResult } from '../../../models/battle/world.ts';
 import { INITIAL_TOWER_AIM_RADIANS } from '../../../models/battle/tower.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
-import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from '../../../data/constants.ts';
+import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX, CITY_HEX_SIZE } from '../../../data/constants.ts';
 import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
@@ -338,6 +338,7 @@ function createBattleWallLayer({
     battlefieldWidth: number;
 }) {
     const wallLayer = new Container();
+    const cityToBattleScale = segmentSize / CITY_HEX_SIZE;
 
     if (wallSegments.length === 0) {
         const fallbackWall = new Graphics();
@@ -350,24 +351,27 @@ function createBattleWallLayer({
     }
 
     wallSegments.forEach((segment, index) => {
-        const x = index * segmentSize;
-        const textureAlias = segment.wallKey && segment.wallDevelopmentVector
-            ? wallSpriteMetadataAtlas[segment.wallDevelopmentVector][segment.wallKey]?.spriteId
+        const segmentCenterX = index * segmentSize + segmentSize / 2;
+        const wallSpriteMetadata = segment.wallKey && segment.wallDevelopmentVector
+            ? wallSpriteMetadataAtlas[segment.wallDevelopmentVector][segment.wallKey]
             : undefined;
+        const textureAlias = wallSpriteMetadata?.spriteId;
 
         if (textureAlias && Assets.cache.has(textureAlias)) {
             const sprite = new Sprite(Texture.from(textureAlias));
-            sprite.x = x;
-            sprite.y = wallY - segmentSize / 2;
-            sprite.width = segmentSize;
-            sprite.height = segmentSize;
+            const spriteWidth = wallSpriteMetadata.targetSpriteSize.width * cityToBattleScale;
+            const spriteHeight = wallSpriteMetadata.targetSpriteSize.height * cityToBattleScale;
+            sprite.x = segmentCenterX - spriteWidth / 2;
+            sprite.y = wallY - spriteHeight / 2;
+            sprite.width = spriteWidth;
+            sprite.height = spriteHeight;
             wallLayer.addChild(sprite);
             return;
         }
 
         const fallbackSegment = new Graphics();
         fallbackSegment
-            .rect(x, wallY - segmentSize / 2, segmentSize, segmentSize)
+            .rect(index * segmentSize, wallY - segmentSize / 2, segmentSize, segmentSize)
             .fill(0x6f7787)
             .stroke({ color: 0xd9e2ff, width: 2 });
         wallLayer.addChild(fallbackSegment);

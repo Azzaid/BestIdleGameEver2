@@ -6,7 +6,9 @@ export const TRACE_PER_SURVIVED_SIEGE = 1;
 
 export const INITIAL_CITY_CELL_RADIUS = 1;
 
-export const BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX = 100;
+export const CITY_HEX_SIZE = Math.sqrt(3) * 32;
+
+export const BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX = 150;
 
 export const BATTLEFIELD_RANGE_MULTIPLIER = 1.35;
 

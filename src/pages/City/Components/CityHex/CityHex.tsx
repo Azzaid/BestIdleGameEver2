@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
-import {wallSpritesAtlas} from "../../../../models/sprites/walls/wallsSpriteAtlas.ts";
-import {wallTopSpritesAtlas} from "../../../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
+import {wallSpriteMetadataAtlas, wallSpritesAtlas} from "../../../../models/sprites/walls/wallsSpriteAtlas.ts";
+import {wallTopSpriteMetadataAtlas, wallTopSpritesAtlas} from "../../../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
 import type {HexCell} from "../../../../models/city/HexGrid.ts";
 import {
     axialCoordinateToPixelPosition, clampPan,
@@ -12,8 +12,9 @@ import {
 } from "./hexUtils.ts";
 import cityBackground from '../../../../assets/city/background/Top-down_map_view_circular_lan.jpeg'
 import {ALL_WALL_BUILDINGS} from "../../../../data/wall/index.ts";
+import {CITY_HEX_SIZE} from "../../../../data/constants.ts";
 
-const HEX_RADIUS_PX = 32;
+const HEX_RADIUS_PX = CITY_HEX_SIZE / Math.sqrt(3);
 const HEX_STROKE_WIDTH = 2;
 const hexWidth = Math.sqrt(3) * HEX_RADIUS_PX; // flat-to-flat
 const SPRITE_PADDING = 0.98; // tweak to taste (0.9–0.98)
@@ -295,9 +296,19 @@ export default function CityHex({
                     const wallSpriteUrl = kind === "wall" && wallKey && wallDevelopmentVector
                         ? wallSpritesAtlas[wallDevelopmentVector]?.[wallKey]
                         : undefined;
+                    const wallSpriteMetadata = kind === "wall" && wallKey && wallDevelopmentVector
+                        ? wallSpriteMetadataAtlas[wallDevelopmentVector]?.[wallKey]
+                        : undefined;
+                    const wallSpriteWidth = wallSpriteMetadata?.targetSpriteSize.width ?? SPRITE_WIDTH;
+                    const wallSpriteHeight = wallSpriteMetadata?.targetSpriteSize.height ?? SPRITE_HEIGHT;
                     const wallTopSpriteUrl = kind === "wall" && wallTopKey && wallDevelopmentVector
                         ? wallTopSpritesAtlas[wallDevelopmentVector]?.[wallTopKey]
                         : undefined;
+                    const wallTopSpriteMetadata = kind === "wall" && wallTopKey && wallDevelopmentVector
+                        ? wallTopSpriteMetadataAtlas[wallDevelopmentVector]?.[wallTopKey]
+                        : undefined;
+                    const wallTopSpriteWidth = wallTopSpriteMetadata?.targetSpriteSize.width ?? SPRITE_WIDTH;
+                    const wallTopSpriteHeight = wallTopSpriteMetadata?.targetSpriteSize.height ?? SPRITE_HEIGHT;
                     const hasTexture = Boolean(spriteUrl || wallSpriteUrl || wallTopSpriteUrl);
                     const wallName = wallKey ? ALL_WALL_BUILDINGS[wallKey]?.name ?? wallKey : undefined;
                     const wallTopName = wallTopKey ? ALL_WALL_BUILDINGS[wallTopKey]?.name ?? wallTopKey : undefined;
@@ -346,10 +357,10 @@ export default function CityHex({
                             {wallSpriteUrl && (
                                 <image
                                     href={wallSpriteUrl}
-                                    x={-SPRITE_WIDTH / 2}
-                                    y={-SPRITE_HEIGHT / 2}
-                                    width={SPRITE_WIDTH}
-                                    height={SPRITE_HEIGHT}
+                                    x={-wallSpriteWidth / 2}
+                                    y={-wallSpriteHeight / 2}
+                                    width={wallSpriteWidth}
+                                    height={wallSpriteHeight}
                                     preserveAspectRatio="xMidYMid meet"
                                     clipPath={`url(#${clipId})`}
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}
@@ -358,10 +369,10 @@ export default function CityHex({
                             {wallTopSpriteUrl && (
                                 <image
                                     href={wallTopSpriteUrl}
-                                    x={-SPRITE_WIDTH / 2}
-                                    y={-SPRITE_HEIGHT / 2}
-                                    width={SPRITE_WIDTH}
-                                    height={SPRITE_HEIGHT}
+                                    x={-wallTopSpriteWidth / 2}
+                                    y={-wallTopSpriteHeight / 2}
+                                    width={wallTopSpriteWidth}
+                                    height={wallTopSpriteHeight}
                                     preserveAspectRatio="xMidYMid meet"
                                     clipPath={`url(#${clipId})`}
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}

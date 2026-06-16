@@ -8,6 +8,7 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - City wall segment textures: `src/assets/city/walls/<vector>/wall_<vector>_<id>.png`
 - City wall segment metadata: `src/assets/city/walls/<vector>/wall_<vector>_<id>.json`
 - City wall-top/superstructure textures: `src/assets/city/wallTops/<vector>/walltop_<vector>_<id>.png`
+- City wall-top/superstructure metadata: `src/assets/city/wallTops/<vector>/walltop_<vector>_<id>.json`
 - Battle tower component textures: `src/assets/battle/towerParts/<vector>/<vector>_<slot>_<id>.png`
 - Battle tower component metadata: `src/assets/battle/towerParts/<vector>/<vector>_<slot>_<id>.json`
 - Battle backgrounds: `src/assets/battle/backgrounds/<id>.png`
@@ -31,14 +32,16 @@ Use the development vector folder names from `src/models/DevlopmentVector.ts`: `
 3. Put the PNG and JSON metadata in `src/assets/city/walls/<vector>/`.
 4. Import and map both files in `src/models/sprites/walls/<vector>.ts`.
 5. City rendering uses `wallSpritesAtlas`; battle loading uses `wallSpriteMetadataAtlas` and `wallSpritesAtlas`.
+6. Set `targetSpriteSize` to the intended city SVG size at zoom 1. City hex rendering centers that size on the hex and clips anything outside the hex border. Battle wall rendering scales that size by `BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX / CITY_HEX_SIZE`.
 
 ## Add A Wall-Top/Superstructure Texture
 
 1. Add the id in `src/data/identificators/superstructures/<vector>.ts` if it does not exist.
 2. Add or confirm the superstructure definition in `src/data/wall/superstructures/<vector>.ts`.
-3. Put the image in `src/assets/city/wallTops/<vector>/`.
-4. Import and map it in `src/models/sprites/wallTops/<vector>.ts`.
+3. Put the PNG and JSON metadata in `src/assets/city/wallTops/<vector>/`.
+4. Import and map both files in `src/models/sprites/wallTops/<vector>.ts`.
 5. The City page reads through `wallTopSpritesAtlas`; do not import wall-top textures directly in page components.
+6. Set `targetSpriteSize` to the intended city SVG size at zoom 1. City hex rendering centers that size on the hex and clips anything outside the hex border.
 
 ## Add A Tower Component Texture
 
