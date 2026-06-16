@@ -11,13 +11,13 @@
   },
   "rotationDegrees": 270,
   "inputSocket": {
-    "x": 777,
-    "y": 285
+    "x": 778,
+    "y": 804
   },
   "outputSockets": {
     "charge": {
-      "x": 770,
-      "y": 793
+      "x": 768,
+      "y": 282
     }
   }
 }
