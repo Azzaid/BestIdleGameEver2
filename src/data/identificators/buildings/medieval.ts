@@ -7,6 +7,7 @@ export const medievalBuildings = {
   farm: "medieval_farm",
   woodenHouse: "medieval_wooden_house",
   craftsmansHouse: "medieval_craftsmans_house",
+  market: "medieval_market",
   stoneHouse: "medieval_stone_house",
   university: "medieval_university",
   workshop: "medieval_workshop",
@@ -16,7 +17,7 @@ export const medievalBuildings = {
   stable: "medieval_stable",
   tradeStation: "medieval_trade_station",
   shop: "medieval_shop",
-  tradingPost: "medieval_trading_post",
+  tradingStation: "medieval_trading_station",
   chemicalStorage: "medieval_chemical_storage",
   alchemicalLaboratory: "medieval_alchemical_laboratory",
 } as const;

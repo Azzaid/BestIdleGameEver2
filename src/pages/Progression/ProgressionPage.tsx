@@ -4,11 +4,21 @@ import {
   PROGRESSION_GRAPH,
   PROGRESSION_VALIDATION_ERRORS,
 } from "../../data/content/catalog.ts";
-import type {ProgressionEdge, ProgressionGraphNode, ProgressionNodeKind} from "../../data/content/types.ts";
+import type {
+  ProgressionEdge,
+  ProgressionGraphNode,
+  ProgressionNodeKind,
+} from "../../data/content/types.ts";
+import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
+import {AETHER_ATMOSPHERE_LABELS, type AetherAtmosphere, type AetherAtmosphereLevel} from "../../models/city/AetherAtmosphere.ts";
 import * as s from "./ProgressionPage.css.ts";
 
-const NODE_WIDTH = 180;
-const NODE_HEIGHT = 72;
+const NODE_DIMENSIONS: Record<ProgressionNodeKind, {width: number; height: number}> = {
+  research: {width: 190, height: 104},
+  building: {width: 118, height: 118},
+  towerPart: {width: 118, height: 118},
+  structure: {width: 206, height: 82},
+};
 const MIN_ZOOM_FALLBACK = -0.9;
 const MAX_ZOOM_FACTOR = 10;
 const WHEEL_ZOOM_SENSITIVITY = 0.00056;
@@ -16,17 +26,24 @@ const MIN_CANVAS_SIZE = 8000;
 const CANVAS_VIEWPORT_PADDING = 2;
 const GRAPH_PADDING = 96;
 const NODE_KIND_LABELS: Record<ProgressionNodeKind, string> = {
-  research: "Research",
+  research: "Technology",
   building: "Building",
   towerPart: "Tower Part",
-  structure: "Structure",
+  structure: "Superstructure",
 };
 
-const NODE_KIND_COLORS: Record<ProgressionNodeKind, string> = {
-  research: "#4f78c4",
-  building: "#4f9f6b",
-  towerPart: "#a56dc2",
-  structure: "#b7833c",
+const VECTOR_COLORS: Record<DevelopmentVectorKey, string> = {
+  tech: "#3f7fd9",
+  nature: "#419a5a",
+  medieval: "#b98135",
+  aether: "#7c6ff0",
+};
+
+const KIND_ICONS: Record<ProgressionNodeKind, string> = {
+  research: "T",
+  building: "B",
+  towerPart: "P",
+  structure: "S",
 };
 
 type ProgressionCanvasNode = {
@@ -110,8 +127,7 @@ export default function ProgressionPage() {
       .filter(node => filteredNodeKeys.has(getGraphNodeKey(node)))
       .map(node => ({
         id: getGraphNodeKey(node),
-        width: NODE_WIDTH,
-        height: NODE_HEIGHT,
+        ...NODE_DIMENSIONS[node.kind],
         data: node,
       }))
   ), [filteredNodeKeys]);
@@ -324,7 +340,9 @@ export default function ProgressionPage() {
             if (!node) return <g />;
 
             const isSelected = node.id === selectedNode?.id && node.kind === selectedNode.kind;
-            const color = NODE_KIND_COLORS[node.kind];
+            const color = getNodeColor(node);
+            const requirements = getRequirementLines(node);
+            const {width, height} = NODE_DIMENSIONS[node.kind];
 
             return (
               <g
@@ -332,22 +350,37 @@ export default function ProgressionPage() {
                 onClick={() => setSelectedNodeId(node.id)}
                 style={{cursor: "pointer"}}
               >
-                <rect
-                  width={NODE_WIDTH}
-                  height={NODE_HEIGHT}
-                  rx={6}
-                  ry={6}
-                  fill="white"
-                  stroke={isSelected ? "#111827" : color}
-                  strokeWidth={isSelected ? 3 : 2}
-                />
-                <rect width={6} height={NODE_HEIGHT} rx={3} ry={3} fill={color} />
-                <text x={16} y={24} fontSize={12} fill="#4b5563">
+                <NodeShape kind={node.kind} width={width} height={height} color={color} isSelected={isSelected} />
+                <circle cx={18} cy={18} r={11} fill={color} />
+                <text x={18} y={22} fontSize={10} fontWeight={800} fill="white" textAnchor="middle">
+                  {KIND_ICONS[node.kind]}
+                </text>
+                <text x={34} y={19} fontSize={11} fontWeight={700} fill="#4b5563">
                   {NODE_KIND_LABELS[node.kind]}
                 </text>
-                <text x={16} y={47} fontSize={14} fontWeight={700} fill="#111827">
-                  {node.name}
+                <text
+                  x={width / 2}
+                  y={node.kind === "structure" ? 48 : 51}
+                  fontSize={13}
+                  fontWeight={800}
+                  fill="#111827"
+                  textAnchor="middle"
+                >
+                  {truncateLabel(node.name, node.kind === "structure" ? 23 : 16)}
                 </text>
+                {requirements.slice(0, 2).map((requirement, index) => (
+                  <text
+                    key={requirement}
+                    x={width / 2}
+                    y={(node.kind === "structure" ? 67 : 72) + index * 15}
+                    fontSize={10}
+                    fontWeight={700}
+                    fill="#374151"
+                    textAnchor="middle"
+                  >
+                    {truncateLabel(requirement, node.kind === "structure" ? 29 : 18)}
+                  </text>
+                ))}
               </g>
             );
           }}
@@ -362,7 +395,8 @@ export default function ProgressionPage() {
         <h2 className={s.heading}>{selectedNode?.name ?? "No node"}</h2>
         {selectedNode ? (
           <>
-            <p className={s.muted}>{NODE_KIND_LABELS[selectedNode.kind]} · {selectedNode.id}</p>
+            <p className={s.muted}>{NODE_KIND_LABELS[selectedNode.kind]} - {selectedNode.id}</p>
+            <RequirementList node={selectedNode} />
             <DetailList title="Requires" edges={incoming} emptyText="No graph requirements." />
             <DetailList title="Unlocks / Enables" edges={outgoing} emptyText="No outgoing unlocks." useTarget />
           </>
@@ -408,6 +442,107 @@ function DetailList({
   );
 }
 
+function NodeShape({
+  kind,
+  width,
+  height,
+  color,
+  isSelected,
+}: {
+  kind: ProgressionNodeKind;
+  width: number;
+  height: number;
+  color: string;
+  isSelected: boolean;
+}) {
+  const stroke = isSelected ? "#111827" : color;
+  const strokeWidth = isSelected ? 3 : 2;
+
+  if (kind === "research") {
+    return (
+      <rect
+        width={width}
+        height={height}
+        rx={28}
+        ry={28}
+        fill="white"
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+      />
+    );
+  }
+
+  if (kind === "towerPart") {
+    return (
+      <circle
+        cx={width / 2}
+        cy={height / 2}
+        r={Math.min(width, height) / 2 - 5}
+        fill="white"
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+      />
+    );
+  }
+
+  return (
+    <rect
+      width={width}
+      height={height}
+      rx={kind === "building" ? 0 : 6}
+      ry={kind === "building" ? 0 : 6}
+      fill="white"
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+    />
+  );
+}
+
+function RequirementList({node}: {node: ProgressionGraphNode}) {
+  const requirements = getRequirementLines(node);
+
+  if (!requirements.length) return null;
+
+  return (
+    <div className={s.field}>
+      <span className={s.label}>Branch Requirements</span>
+      <ul className={s.list}>
+        {requirements.map(requirement => <li key={requirement}>{requirement}</li>)}
+      </ul>
+    </div>
+  );
+}
+
 function getGraphNodeKey(node: {kind: ProgressionNodeKind; id: string}) {
   return `${node.kind}:${node.id}`;
+}
+
+function getNodeColor(node: ProgressionGraphNode) {
+  return node.vector ? VECTOR_COLORS[node.vector] : "#6b7280";
+}
+
+function getRequirementLines(node: ProgressionGraphNode): string[] {
+  const requirements = node.requirements;
+  if (!requirements) return [];
+
+  const lines: string[] = [];
+
+  if (node.vector === "aether" && requirements.aetherAtmosphere) {
+    const entries = Object.entries(requirements.aetherAtmosphere) as [AetherAtmosphere, AetherAtmosphereLevel][];
+    for (const [atmosphere, level] of entries) {
+      const label = AETHER_ATMOSPHERE_LABELS[atmosphere];
+      lines.push(`${label.name}: ${label.levels[level]}`);
+    }
+  }
+
+  if (node.vector === "nature" && typeof requirements.biodiversity === "number") {
+    lines.push(`Biodiversity: ${requirements.biodiversity.toFixed(2)}`);
+  }
+
+  return lines;
+}
+
+function truncateLabel(label: string, maxLength: number) {
+  if (label.length <= maxLength) return label;
+  return `${label.slice(0, Math.max(0, maxLength - 3))}...`;
 }

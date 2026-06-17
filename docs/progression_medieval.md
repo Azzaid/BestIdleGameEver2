@@ -128,6 +128,7 @@ Components:
 Unlocks:
 - Seed Gathering (bio, technology)
 - Scrap Tools (medieval, technology)
+- Wicked Items (magic, technology)
 
 Description:
 A home and preparation place for a scavenger who goes into the ruins, forests and dangerous places outside the settlement.
@@ -372,11 +373,8 @@ Unlocked By:
 Produces:
 - Gold
 
-Unlocks:
-- Mysticism (magic, technology)
-
 Description:
-A trading and social center where merchants, fortune tellers and strange wandering people appear.
+A trading and social center where merchants, labor, favors, salvage and coin become one economy.
 
 Notes:
 Market is fixed as a building term for now.
@@ -401,26 +399,23 @@ This may later be represented as a loader component or loader upgrade.
 
 # Mysticism Gateway
 
-## Mysticism (magic, technology)
+## Wicked Items (magic, technology)
 
 Unlocked By:
-- Market (medieval, building)
+- Stalker Hut (medieval, superstructure)
 
 Unlocks:
 - Dolmen (magic, building)
 
 Description:
-Early mystical practices, fortune tellers, omens and ritual specialists emerge around the market economy.
-
-Notes:
-This is the bridge from medieval economy into the magic branch.
+Strange scavenged objects make early ritual stonework possible.
 
 ---
 
 ## Dolmen (magic, building)
 
 Unlocked By:
-- Mysticism (magic, technology)
+- Wicked Items (magic, technology)
 
 Description:
 Early ritual stone structure.
@@ -432,10 +427,10 @@ Forms:
 - Shaman Hut (magic, superstructure)
 
 Can Also Combine With:
-- Stone House (medieval, building)
+- Warded Home (magic, building)
 
 Forms Also:
-- Shrine (magic, superstructure)
+- Runed House (magic, superstructure)
 
 ---
 
@@ -446,20 +441,58 @@ Components:
 - Stalker Hut (medieval, superstructure)
 
 Unlocks:
-- Magic Stones (magic, technology)
+- Mysticism (magic, technology)
 
 Description:
 An early magical specialist dwelling.
 
 ---
 
-## Magic Stones (magic, technology)
+## Mysticism (magic, technology)
 
 Unlocked By:
 - Shaman Hut (magic, superstructure)
 
 Unlocks:
+- Magic Stones (magic, technology)
+
+Description:
+Early mystical practices, omens and ritual specialists emerge from the first Shaman Hut.
+
+---
+
+## Magic Stones (magic, technology)
+
+Unlocked By:
+- Mysticism (magic, technology)
+
+Unlocks:
+- Warded Home (magic, building)
 - Floating Platform (magic, tower_base)
+
+---
+
+## Warded Home (magic, building)
+
+Unlocked By:
+- Magic Stones (magic, technology)
+
+Produces:
+- People
+- Small amount of Mana
+
+Effects:
+- Lower City Signature than Wooden House
+
+Description:
+A dwelling protected by charms, talismans and simple magical rituals.
+The inhabitants often cannot explain why it feels safer and more comfortable, only that it does.
+
+Can Combine With:
+- Dolmen (magic, building)
+
+Forms:
+- Runed House (magic, superstructure)
 
 ---
 
@@ -586,15 +619,9 @@ Effects:
 - Adds less City Signature than Wooden House because it blocks sound, smells and heat better.
 
 Can Combine With:
-- Dolmen (magic, building)
-
-Forms:
-- Shrine (magic, superstructure)
-
-Can Also Combine With:
 - Chemical Storage (medieval, building)
 
-Forms Also:
+Forms:
 - Alchemical Laboratory (medieval, superstructure)
 
 Can Also Combine With:

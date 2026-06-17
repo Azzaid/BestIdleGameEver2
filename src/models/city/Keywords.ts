@@ -14,7 +14,6 @@ export const SYNERGY_KEYWORDS = [
     "farm",
     "mill",
     "generator",
-    "shrine",
     "laboratory",
     "shelter",
     "salvage",

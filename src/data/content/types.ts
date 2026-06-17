@@ -1,4 +1,6 @@
 import type {UpkeepAmount} from "../../models/Upkeep.ts";
+import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
+import type {AetherAtmosphere, AetherAtmosphereLevel} from "../../models/city/AetherAtmosphere.ts";
 
 export type ProgressionNodeKind = "research" | "building" | "towerPart" | "structure";
 
@@ -12,6 +14,8 @@ export type ProgressionRequirements = {
   buildings?: string[];
   structures?: string[];
   freeUpkeep?: UpkeepAmount;
+  aetherAtmosphere?: Partial<Record<AetherAtmosphere, AetherAtmosphereLevel>>;
+  biodiversity?: number;
 };
 
 export type ProgressionRule = {
@@ -31,6 +35,8 @@ export type ProgressionEdge = {
 
 export type ProgressionGraphNode = ProgressionNodeRef & {
   name: string;
+  vector?: DevelopmentVectorKey;
+  requirements?: ProgressionRequirements;
 };
 
 export type ProgressionGraph = {
@@ -39,8 +45,13 @@ export type ProgressionGraph = {
 };
 
 export type ProgressionRegistry = {
-  research: Record<string, string>;
-  buildings: Record<string, string>;
-  towerParts: Record<string, string>;
-  structures: Record<string, string>;
+  research: Record<string, ProgressionRegistryEntry>;
+  buildings: Record<string, ProgressionRegistryEntry>;
+  towerParts: Record<string, ProgressionRegistryEntry>;
+  structures: Record<string, ProgressionRegistryEntry>;
+};
+
+export type ProgressionRegistryEntry = {
+  name: string;
+  vector?: DevelopmentVectorKey;
 };

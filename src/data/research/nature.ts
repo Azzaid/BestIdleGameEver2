@@ -9,4 +9,11 @@ export const natureResearch: ResearchDB = {
     vector: "nature",
     summary: "Stalker hut routes begin preserving useful wild seeds for the future bio branch.",
   },
+  [technologies.nature.plantCultivation]: {
+    id: technologies.nature.plantCultivation,
+    parentId: technologies.nature.seedGathering,
+    name: "Plant Cultivation",
+    vector: "nature",
+    summary: "The settlement learns to deliberately grow and use useful plants.",
+  },
 };

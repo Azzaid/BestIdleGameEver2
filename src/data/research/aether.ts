@@ -2,26 +2,40 @@ import type {ResearchDB} from "../../models/research/researchDB.ts";
 import {technologies} from "../identificators/index.ts";
 
 export const aetherResearch: ResearchDB = {
+  [technologies.aether.wickedItems]: {
+    id: technologies.aether.wickedItems,
+    parentId: technologies.medieval.foraging,
+    name: "Wicked Items",
+    vector: "aether",
+    summary: "Strange scavenged objects make early ritual stonework possible.",
+  },
   [technologies.aether.mysticism]: {
     id: technologies.aether.mysticism,
-    parentId: technologies.medieval.naturalPhilosophy,
+    parentId: null,
     name: "Mysticism",
     vector: "aether",
-    summary: "Ritual practice around dolmens, shrines, and the first stable mana flows.",
+    summary: "Early omens and ritual specialists emerge from the first shaman hut.",
+  },
+  [technologies.aether.magicStones]: {
+    id: technologies.aether.magicStones,
+    parentId: technologies.aether.mysticism,
+    name: "Magic Stones",
+    vector: "aether",
+    summary: "A shaman hut turns early ritual stones into useful floating tower platforms.",
   },
   [technologies.aether.mysticalCommand]: {
     id: technologies.aether.mysticalCommand,
     parentId: technologies.aether.mysticism,
-    name: "Mystical Command",
+    name: "Mana Flow Command",
     vector: "aether",
-    summary: "Guiding stones and obelisks turn mana into more deliberate control.",
+    summary: "Guiding stones and obelisks shape mana flows into deliberate magical direction.",
   },
   [technologies.aether.mysticalFriendship]: {
     id: technologies.aether.mysticalFriendship,
     parentId: technologies.aether.mysticism,
-    name: "Mystical Friendship",
+    name: "Veil Communion",
     vector: "aether",
-    summary: "Spirit huts and whispering spirits make spirits useful instead of merely alarming.",
+    summary: "Spirit huts and whispering spirits turn a thinning veil into cooperation with nearby spirits.",
   },
   [technologies.aether.ancestorSpirits]: {
     id: technologies.aether.ancestorSpirits,

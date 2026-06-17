@@ -31,8 +31,8 @@ export const medievalTowerParts: GunPart[] = [
   {
     id: gunparts.launchSystems.medieval.crudeSling,
     slot: 'launchSystem',
-    name: 'Crude Hollow Trunk',
-    description: 'A hollowed trunk and rope launcher unlocked by early foraging.',
+    name: 'Primitive Launcher',
+    description: 'The starting launcher component for the first tower.',
     vector: 'medieval',
     sprite: {textureKey: 'medieval_launcher_crude-sling'},
     attachmentOffset: {x: 0, y: 0},

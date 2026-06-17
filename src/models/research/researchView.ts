@@ -4,6 +4,8 @@ export type RequirementStatus = {
     requiredBuildings: {id: string; name: string; met: boolean}[];
     requiredStructures: {id: string; name: string; met: boolean}[];
     requiredFreeUpkeep: {name: string; required: number; available: number; met: boolean}[];
+    requiredAetherAtmosphere: {name: string; required: string; available: string; met: boolean}[];
+    requiredBiodiversity: {required: number} | null;
 };
 
 export type StubData = {

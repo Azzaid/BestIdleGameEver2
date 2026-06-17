@@ -139,23 +139,15 @@ export const medievalBuildings: {[key: string]: Building} = {
     {},
     ["production", "people", "gold", "wood"],
   ),
-  [buildings.medieval.farm]: {
-    ...building(
-      buildings.medieval.farm,
-      "Farm",
-      "A dependable food source that supports barns, stables, and later trade.",
-      18,
-      {[UPKEEP_TYPES.people]: 6, [UPKEEP_TYPES.gold]: 2},
-      {[UPKEEP_TYPES.people]: 4},
-      ["production", "people", "gold", "farm"],
-    ),
-    multiHexStructure: [
-      structureRule(buildings.medieval.stable, [
-        buildings.medieval.barn,
-        buildings.medieval.farm,
-      ]),
-    ],
-  },
+  [buildings.medieval.farm]: superstructure(
+    buildings.medieval.farm,
+    "Farm",
+    "A field and wooden house combined into the first major economic apex of the early game.",
+    2,
+    {[UPKEEP_TYPES.people]: 6, [UPKEEP_TYPES.biomass]: 9, [UPKEEP_TYPES.gold]: 2},
+    {},
+    ["production", "people", "biomass", "gold", "farm"],
+  ),
   [buildings.medieval.woodenHouse]: {
     ...building(
       buildings.medieval.woodenHouse,
@@ -167,6 +159,10 @@ export const medievalBuildings: {[key: string]: Building} = {
       ["production", "people", "wood", "housing"],
     ),
     multiHexStructure: [
+      structureRule(buildings.medieval.farm, [
+        buildings.nature.field,
+        buildings.medieval.woodenHouse,
+      ]),
       structureRule(buildings.medieval.craftsmansHouse, [
         buildings.medieval.woodenHouse,
         buildings.medieval.toolShed,
@@ -181,6 +177,15 @@ export const medievalBuildings: {[key: string]: Building} = {
     {[UPKEEP_TYPES.people]: 8, [UPKEEP_TYPES.gold]: 5},
     {},
     ["production", "people", "gold", "craft"],
+  ),
+  [buildings.medieval.market]: building(
+    buildings.medieval.market,
+    "Market",
+    "A trading and social center where merchants, labor, favors, salvage, and coin become one economy.",
+    16,
+    {[UPKEEP_TYPES.gold]: 6},
+    {[UPKEEP_TYPES.people]: 3},
+    ["production", "gold", "market"],
   ),
   [buildings.medieval.stoneHouse]: {
     ...building(
@@ -278,7 +283,7 @@ export const medievalBuildings: {[key: string]: Building} = {
     ),
     adjacencyDescription: "Adjacency bonuses affect buildings at +1 range.",
     multiHexStructure: [
-      structureRule(buildings.medieval.tradingPost, [
+      structureRule(buildings.medieval.tradingStation, [
         buildings.medieval.shop,
         buildings.medieval.tradeStation,
       ]),
@@ -304,15 +309,15 @@ export const medievalBuildings: {[key: string]: Building} = {
       ["production", "gold", "market"],
     ),
     multiHexStructure: [
-      structureRule(buildings.medieval.tradingPost, [
+      structureRule(buildings.medieval.tradingStation, [
         buildings.medieval.shop,
         buildings.medieval.tradeStation,
       ]),
     ],
   },
-  [buildings.medieval.tradingPost]: superstructure(
-    buildings.medieval.tradingPost,
-    "Trading Post",
+  [buildings.medieval.tradingStation]: superstructure(
+    buildings.medieval.tradingStation,
+    "Trading Station",
     "A shop and trade station combined into caravan infrastructure.",
     2,
     {[UPKEEP_TYPES.gold]: 8},

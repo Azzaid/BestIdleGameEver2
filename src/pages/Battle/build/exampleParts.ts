@@ -20,7 +20,7 @@ export const PARTS: Record<string, GunPart> = {
   },
   [gunparts.launchSystems.medieval.crudeSling]: {
     id: gunparts.launchSystems.medieval.crudeSling,
-    name: 'Crude Hollow Trunk',
+    name: 'Primitive Launcher',
     sprite: { textureKey: 'medieval_launcher_crude-sling' },
     attachmentOffset: { x: 0, y: 0 },
     keywords: new Set(['mechanical', 'rough']),

@@ -4,6 +4,7 @@ import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {BUILDINGS_ATLAS} from "../buildings/index.ts";
 import {PROGRESSION_RULES} from "../content/rules.ts";
 import {getProgressionUnlockLabels, getRuleForTarget} from "../content/progression.ts";
+import type {ProgressionRegistry, ProgressionRegistryEntry} from "../content/types.ts";
 import {STRUCTURES} from "../structures/index.ts";
 import {TOWER_PART_DEFINITIONS} from "../towers/parts/index.ts";
 import {validateResearchGraph} from "../../models/research/researchGraph.ts";
@@ -19,24 +20,33 @@ const researchDefinitions: ResearchDB = {
   ...aetherResearch,
 };
 
-const buildingNames = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string, string>>(
-  (names, vector) => {
+const buildingEntries = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string, ProgressionRegistryEntry>>(
+  (entries, vector) => {
     for (const building of Object.values(BUILDINGS_ATLAS[vector])) {
       if (building.isMultistructure) continue;
-      names[building.id] = building.name;
+      entries[building.id] = {name: building.name};
     }
-    return names;
+    return entries;
   },
   {},
 );
 
-const progressionRegistry = {
+const progressionRegistry: ProgressionRegistry = {
   research: Object.fromEntries(
-    Object.values(researchDefinitions).map(research => [research.id, research.name]),
+    Object.values(researchDefinitions).map(research => [
+      research.id,
+      {name: research.name, vector: research.vector},
+    ]),
   ),
-  buildings: buildingNames,
-  towerParts: Object.fromEntries(TOWER_PART_DEFINITIONS.map(part => [part.id, part.name])),
-  structures: Object.fromEntries(STRUCTURES.map(structure => [structure.id, structure.name])),
+  buildings: buildingEntries,
+  towerParts: Object.fromEntries(TOWER_PART_DEFINITIONS.map(part => [
+    part.id,
+    {name: part.name, vector: part.vector},
+  ])),
+  structures: Object.fromEntries(STRUCTURES.map(structure => [
+    structure.id,
+    {name: structure.name, vector: structure.vector},
+  ])),
 };
 
 export const researchTree: ResearchDB = Object.fromEntries(
@@ -45,6 +55,8 @@ export const researchTree: ResearchDB = Object.fromEntries(
     const requiredBuildings = rule?.requires?.buildings;
     const requiredStructures = rule?.requires?.structures;
     const requiredFreeUpkeep = rule?.requires?.freeUpkeep;
+    const requiredAetherAtmosphere = rule?.requires?.aetherAtmosphere;
+    const requiredBiodiversity = rule?.requires?.biodiversity;
     const unlockLabels = getProgressionUnlockLabels(PROGRESSION_RULES, progressionRegistry, research.id);
 
     return [
@@ -54,6 +66,8 @@ export const researchTree: ResearchDB = Object.fromEntries(
         ...(requiredBuildings?.length ? {requiredBuildings} : {}),
         ...(requiredStructures?.length ? {requiredStructures} : {}),
         ...(requiredFreeUpkeep ? {requiredFreeUpkeep} : {}),
+        ...(requiredAetherAtmosphere ? {requiredAetherAtmosphere} : {}),
+        ...(typeof requiredBiodiversity === "number" ? {requiredBiodiversity} : {}),
         ...(unlockLabels.length ? {unlocks: unlockLabels} : {}),
       } satisfies ResearchNodeData,
     ];

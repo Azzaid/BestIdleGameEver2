@@ -4,16 +4,20 @@ import type {
   ProgressionNodeKind,
   ProgressionNodeRef,
   ProgressionRegistry,
+  ProgressionRegistryEntry,
   ProgressionRequirements,
   ProgressionRule,
 } from "./types.ts";
 import type {UpkeepAmount, UpkeepTypesValue} from "../../models/Upkeep.ts";
+import type {AetherAtmosphereLevels} from "../../models/city/AetherAtmosphere.ts";
 
 export type ProgressionUnlockContext = {
   researchIds: ReadonlySet<string>;
   buildingIds: ReadonlySet<string>;
   structureIds: ReadonlySet<string>;
   freeUpkeep: UpkeepAmount;
+  aetherAtmosphereLevels?: AetherAtmosphereLevels;
+  biodiversity?: number;
 };
 
 export function contentRef(kind: ProgressionNodeKind, id: string): ProgressionNodeRef {
@@ -60,7 +64,9 @@ export function areProgressionRequirementsMet(
   return requirementsAreInSet(requirements.research, context.researchIds)
     && requirementsAreInSet(requirements.buildings, context.buildingIds)
     && requirementsAreInSet(requirements.structures, context.structureIds)
-    && hasEnoughFreeUpkeep(requirements.freeUpkeep, context.freeUpkeep);
+    && hasEnoughFreeUpkeep(requirements.freeUpkeep, context.freeUpkeep)
+    && hasRequiredAetherAtmosphere(requirements.aetherAtmosphere, context.aetherAtmosphereLevels)
+    && hasRequiredBiodiversity(requirements.biodiversity, context.biodiversity);
 }
 
 export function isProgressionRuleUnlocked(
@@ -138,10 +144,17 @@ export function buildProgressionGraph(
   }
 
   return {
-    nodes: [...nodesByKey.values()].map(node => ({
-      ...node,
-      name: getRegistryName(registry, node) ?? node.id,
-    })),
+    nodes: [...nodesByKey.values()].map(node => {
+      const entry = getRegistryEntry(registry, node);
+      const rule = getRuleForTarget(rules, node.kind, node.id);
+
+      return {
+        ...node,
+        name: entry?.name ?? node.id,
+        vector: entry?.vector,
+        requirements: rule?.requires,
+      };
+    }),
     edges,
   };
 }
@@ -203,7 +216,31 @@ function hasEnoughFreeUpkeep(required: UpkeepAmount | undefined, available: Upke
   });
 }
 
+function hasRequiredAetherAtmosphere(
+  required: ProgressionRequirements["aetherAtmosphere"],
+  available: AetherAtmosphereLevels | undefined,
+): boolean {
+  if (!required) return true;
+  if (!available) return false;
+
+  return Object.entries(required).every(([atmosphere, level]) => {
+    if (typeof level !== "number") return true;
+    return available[atmosphere as keyof AetherAtmosphereLevels] >= level;
+  });
+}
+
+function hasRequiredBiodiversity(required: number | undefined, available: number | undefined): boolean {
+  if (typeof required !== "number") return true;
+  if (typeof available !== "number") return true;
+
+  return available >= required;
+}
+
 function getRegistryName(registry: ProgressionRegistry, ref: ProgressionNodeRef): string | undefined {
+  return getRegistryEntry(registry, ref)?.name;
+}
+
+function getRegistryEntry(registry: ProgressionRegistry, ref: ProgressionNodeRef): ProgressionRegistryEntry | undefined {
   if (ref.kind === "research") return registry.research[ref.id];
   if (ref.kind === "building") return registry.buildings[ref.id];
   if (ref.kind === "towerPart") return registry.towerParts[ref.id];

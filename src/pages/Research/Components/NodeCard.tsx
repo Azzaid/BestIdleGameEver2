@@ -55,7 +55,9 @@ export function NodeCard({
                         <div style={{opacity: 0.8, fontWeight: 600, color: vectorTheme.color.text.primary}}>Requires</div>
                         {requirements.requiredBuildings.length
                         || requirements.requiredStructures.length
-                        || requirements.requiredFreeUpkeep.length ? (
+                        || requirements.requiredFreeUpkeep.length
+                        || requirements.requiredAetherAtmosphere.length
+                        || requirements.requiredBiodiversity ? (
                             <ul style={{margin: 2, paddingLeft: 16}}>
                                 {requirements.requiredBuildings.map(building => (
                                     <li key={building.id} style={{opacity: building.met ? 1 : 0.55}}>
@@ -72,6 +74,16 @@ export function NodeCard({
                                         {upkeep.name}: {upkeep.available}/{upkeep.required} free
                                     </li>
                                 ))}
+                                {requirements.requiredAetherAtmosphere.map(atmosphere => (
+                                    <li key={atmosphere.name} style={{opacity: atmosphere.met ? 1 : 0.55}}>
+                                        {atmosphere.name}: {atmosphere.available} / {atmosphere.required}
+                                    </li>
+                                ))}
+                                {requirements.requiredBiodiversity ? (
+                                    <li>
+                                        Biodiversity: {requirements.requiredBiodiversity.required.toFixed(2)}
+                                    </li>
+                                ) : null}
                             </ul>
                         ) : (
                             <div style={{marginTop: 2, opacity: 0.8}}>None</div>

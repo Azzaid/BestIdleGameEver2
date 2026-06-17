@@ -1,5 +1,6 @@
 import type {DevelopmentVectorKey} from "../DevlopmentVector.ts";
 import type {UpkeepAmount} from "../Upkeep.ts";
+import type {AetherAtmosphere, AetherAtmosphereLevel} from "../city/AetherAtmosphere.ts";
 
 export type ResearchNodeData = {
     id: string;
@@ -11,6 +12,8 @@ export type ResearchNodeData = {
     requiredBuildings?: string[];
     requiredStructures?: string[];
     requiredFreeUpkeep?: UpkeepAmount;
+    requiredAetherAtmosphere?: Partial<Record<AetherAtmosphere, AetherAtmosphereLevel>>;
+    requiredBiodiversity?: number;
     notes?: string;
     /** Additional prerequisites (multi-parent DAG edges) */
     alsoRequires?: string[];             // other node IDs required

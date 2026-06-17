@@ -410,6 +410,8 @@ Current implementation:
 - Nodes are collapsible and colored by research vector.
 - Node content is structured with summary, unlocks, costs, and notes.
 - Node internals render through custom SVG/HTML foreignObject content.
+- The Progression page renders a content dependency graph. Every node is colored by development vector. Shape communicates content type: buildings are square, superstructures are rectangular, technologies are heavily rounded rectangles, and tower parts are circular.
+- Aether progression requirements use atmospheric states instead of raw numbers: Veil, Mana Flows, and Death. Each level is derived from building influence totals divided by city hex count, rounded down and clamped to levels 1 through 5. Biology progression requirements expose Biodiversity as a decimal value with two digits.
 - The early progression spine follows `docs/progression_drafts.md`: Shelter unlocks Foraging; Foraging unlocks scrap gathering and the crude barrel; Stalker House opens seed gathering and scrap tools; those split into herbalist/botany, forester/workable timber, farm/money/market, mysticism, and magic-stone tower parts.
 - The first tower can be assembled without a barrel: the initial required parts are the crude wood frame, stone basket, and crude sling launcher. The crude barrel is an early Foraging unlock.
 

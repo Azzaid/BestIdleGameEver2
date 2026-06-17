@@ -30,6 +30,13 @@ export const medievalResearch: ResearchDB = {
     vector: "medieval",
     summary: "Shape reliable wood for houses and early wooden launchers.",
   },
+  [technologies.medieval.money]: {
+    id: technologies.medieval.money,
+    parentId: null,
+    name: "Money",
+    vector: "medieval",
+    summary: "Exchange value, payment, and early economic specialization grow from the first farm economy.",
+  },
   [technologies.medieval.woodworking]: {
     id: technologies.medieval.woodworking,
     parentId: technologies.medieval.timberProcessing,

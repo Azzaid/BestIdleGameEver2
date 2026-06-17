@@ -8,7 +8,7 @@ import * as s from "./ResearchPage.css.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {purchaseTech} from "../../store/research/slice.ts";
-import {selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
+import {selectCityAetherAtmosphereLevels, selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
 import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
 import {STRUCTURES_BY_ID} from "../../data/structures/index.ts";
@@ -16,6 +16,12 @@ import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
 import type {FlatEdgeData, FlatNode, RequirementStatus, StubData} from "../../models/research/researchView.ts";
 import {buildResearchPreviewGraph, isResearchUnlocked} from "../../models/research/researchGraph.ts";
+import {
+    AETHER_ATMOSPHERE_LABELS,
+    type AetherAtmosphere,
+    type AetherAtmosphereLevel,
+    type AetherAtmosphereLevels,
+} from "../../models/city/AetherAtmosphere.ts";
 
 const NODE_W = 220;
 const NODE_H = 190;
@@ -93,6 +99,7 @@ function getRequirementStatus(
     builtBuildingIds: Set<string>,
     completeStructureIds: Set<string>,
     effectiveUpkeep: UpkeepAmount,
+    aetherAtmosphereLevels: AetherAtmosphereLevels,
 ): RequirementStatus {
     return {
         requiredBuildings: (data.requiredBuildings ?? []).map(buildingId => ({
@@ -106,7 +113,30 @@ function getRequirementStatus(
             met: completeStructureIds.has(structureId),
         })),
         requiredFreeUpkeep: describeFreeUpkeepRequirement(data.requiredFreeUpkeep, effectiveUpkeep),
+        requiredAetherAtmosphere: describeAetherAtmosphereRequirement(data.requiredAetherAtmosphere, aetherAtmosphereLevels),
+        requiredBiodiversity: typeof data.requiredBiodiversity === "number"
+            ? {required: data.requiredBiodiversity}
+            : null,
     };
+}
+
+function describeAetherAtmosphereRequirement(
+    required: ResearchNodeData["requiredAetherAtmosphere"],
+    available: AetherAtmosphereLevels,
+): RequirementStatus["requiredAetherAtmosphere"] {
+    if (!required) return [];
+
+    return (Object.entries(required) as [AetherAtmosphere, AetherAtmosphereLevel][]).map(([atmosphere, requiredLevel]) => {
+        const availableLevel = available[atmosphere];
+        const label = AETHER_ATMOSPHERE_LABELS[atmosphere];
+
+        return {
+            name: label.name,
+            required: label.levels[requiredLevel],
+            available: label.levels[availableLevel],
+            met: availableLevel >= requiredLevel,
+        };
+    });
 }
 
 export default function ResearchPage() {
@@ -115,6 +145,7 @@ export default function ResearchPage() {
     const cityHexes = useTypedSelector(selectCityHexes);
     const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
     const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
+    const aetherAtmosphereLevels = useTypedSelector(selectCityAetherAtmosphereLevels);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const viewportRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<CanvasRef>(null);
@@ -238,12 +269,19 @@ export default function ResearchPage() {
                     }
 
                     const data = payload.data as ResearchNodeData;
-                    const requirements = getRequirementStatus(data, builtBuildingIds, completeStructureIds, effectiveUpkeep);
+                    const requirements = getRequirementStatus(
+                        data,
+                        builtBuildingIds,
+                        completeStructureIds,
+                        effectiveUpkeep,
+                        aetherAtmosphereLevels,
+                    );
                     const isResearched = purchased.has(data.id);
                     const canResearch = !isResearched
                         && isResearchUnlocked(data, purchased)
                         && requirements.requiredBuildings.every(requirement => requirement.met)
                         && requirements.requiredStructures.every(requirement => requirement.met)
+                        && requirements.requiredAetherAtmosphere.every(requirement => requirement.met)
                         && hasEnoughFreeUpkeep(data.requiredFreeUpkeep, effectiveUpkeep)
                         && !traceStatus.isBesieged;
 

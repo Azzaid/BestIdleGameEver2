@@ -1,8 +1,8 @@
 # Magic Progression Branch
 
-Черновик магической ветки прогрессии.
+Draft of the magic progression branch.
 
-Формат записи:
+Entry format:
 
 ```text
 Name (branch, type)
@@ -32,23 +32,36 @@ Types:
 
 # Entry From Medieval Branch
 
-## Mysticism (magic, technology)
+## Wicked Items (magic, technology)
 
 Unlocked By:
-- Market (medieval, building)
+- Stalker Hut (medieval, superstructure)
 
 Unlocks:
 - Dolmen (magic, building)
 
 Description:
-Early mystical practices, fortune tellers, omens and ritual specialists emerge around the market economy.
+Strange scavenged objects make early ritual stonework possible.
+
+---
+
+## Mysticism (magic, technology)
+
+Unlocked By:
+- Shaman Hut (magic, superstructure)
+
+Unlocks:
+- Magic Stones (magic, technology)
+
+Description:
+Early mystical practices, omens and ritual specialists emerge from the first Shaman Hut.
 
 ---
 
 ## Dolmen (magic, building)
 
 Unlocked By:
-- Mysticism (magic, technology)
+- Wicked Items (magic, technology)
 
 Description:
 Early ritual stone structure.
@@ -60,10 +73,10 @@ Forms:
 - Shaman Hut (magic, superstructure)
 
 Can Also Combine With:
-- Stone House (medieval, building)
+- Warded Home (magic, building)
 
 Forms Also:
-- Shrine (magic, superstructure)
+- Runed House (magic, superstructure)
 
 ---
 
@@ -74,7 +87,8 @@ Components:
 - Stalker Hut (medieval, superstructure)
 
 Unlocks:
-- Magic Stones (magic, technology)
+- Mysticism (magic, technology)
+- Veil: Thinned
 
 Description:
 An early magical specialist dwelling.
@@ -84,10 +98,37 @@ An early magical specialist dwelling.
 ## Magic Stones (magic, technology)
 
 Unlocked By:
-- Shaman Hut (magic, superstructure)
+- Mysticism (magic, technology)
+- Veil: Impermeable
 
 Unlocks:
+- Warded Home (magic, building)
 - Floating Platform (magic, tower_base)
+
+---
+
+## Warded Home (magic, building)
+
+Unlocked By:
+- Magic Stones (magic, technology)
+- Veil: Thinned
+
+Produces:
+- People
+- Small amount of Mana
+
+Effects:
+- Lower City Signature than Wooden House
+
+Description:
+A dwelling protected by charms, talismans and simple magical rituals.
+The inhabitants often cannot explain why it feels safer and more comfortable, only that it does.
+
+Can Combine With:
+- Dolmen (magic, building)
+
+Forms:
+- Runed House (magic, superstructure)
 
 ---
 
@@ -104,72 +145,72 @@ A magical tower platform using floating stones.
 
 ---
 
-# Shrine and Monastery
+# Runed House and Coven
 
-## Shrine (magic, superstructure)
+## Runed House (magic, superstructure)
 
 Components:
-- Stone House (medieval, building)
+- Warded Home (magic, building)
 - Dolmen (magic, building)
+
+Produces:
+- People
+- Mana
+
+Effects:
+- Lower City Signature than an ordinary magical dwelling.
+
+Description:
+A house protected and empowered by carved or painted runes.
+
+Can Combine With:
+- Runed House (magic, superstructure)
+
+Forms:
+- Coven (magic, superstructure)
+
+---
+
+## Coven (magic, superstructure)
+
+Components:
+- Runed House (magic, superstructure)
+- Runed House (magic, superstructure)
 
 Produces:
 - Mana
 
-Effects:
-- High City Signature.
-
-Description:
-The first building capable of gathering Mana, but it is noisy and visible in a mystical sense.
-
-Can Combine With:
-- Stone House (medieval, building)
-- Stone House (medieval, building)
-
-Forms:
-- Monastery (magic, superstructure)
-
----
-
-## Monastery (magic, superstructure)
-
-Components:
-- Shrine (magic, superstructure)
-- Stone House (medieval, building)
-- Stone House (medieval, building)
-
-Produces:
-- More Mana than Shrine.
-
 Unlocks:
-- Mystical Command (magic, technology)
-- Mystical Friendship (magic, technology)
+- Mana Flow Command (magic, technology)
+- Veil Communion (magic, technology)
 - Mystical Hostility (magic, technology)
 
 Description:
-The first organized magical institution. Rituals, spiritual knowledge and magical disciplines become formalized.
+The first organized magical household circle. Rituals, spiritual knowledge and magical disciplines become shared practice.
 
 ---
 
-# Mystical Command
+# Mana Flow Command
 
-## Mystical Command (magic, technology)
+## Mana Flow Command (magic, technology)
 
 Unlocked By:
-- Monastery (magic, superstructure)
+- Coven (magic, superstructure)
+- Mana Flows: Springs
 
 Unlocks:
 - Guiding Stone (magic, launcher)
 - Obelisk (magic, building)
 
 Theme:
-Control, direction and formalized magical authority.
+Mana flow shaping, direction and formalized magical authority.
 
 ---
 
 ## Guiding Stone (magic, launcher)
 
 Unlocked By:
-- Mystical Command (magic, technology)
+- Mana Flow Command (magic, technology)
 
 Effects:
 - Low direct damage.
@@ -183,14 +224,15 @@ A magical launcher/focus that commands the projectile and pushes it toward the t
 ## Obelisk (magic, building)
 
 Unlocked By:
-- Mystical Command (magic, technology)
+- Mana Flow Command (magic, technology)
+- Mana Flows: Springs
 
 Produces:
 - Mana
 
 Effects:
-- Produces more Mana than Shrine.
-- Produces Mana with lower City Signature than Shrine or Dolmen.
+- Produces more Mana than a Runed House.
+- Produces Mana with lower City Signature than early ritual structures.
 
 Description:
 A more refined and efficient magical structure.
@@ -203,26 +245,27 @@ Forms:
 
 ---
 
-# Mystical Friendship
+# Veil Communion
 
-## Mystical Friendship (magic, technology)
+## Veil Communion (magic, technology)
 
 Unlocked By:
-- Monastery (magic, superstructure)
+- Coven (magic, superstructure)
+- Veil: Damaged
 
 Unlocks:
 - Whispering Spirit (magic, targeting)
 - Spirit Hut (magic, building)
 
 Theme:
-Cooperation with spirits.
+Cooperation with spirits through a thinning and damaged veil.
 
 ---
 
 ## Whispering Spirit (magic, targeting)
 
 Unlocked By:
-- Mystical Friendship (magic, technology)
+- Veil Communion (magic, technology)
 
 Effects:
 - Increases targeting range.
@@ -236,7 +279,8 @@ A spirit that helps tower crews recognize the real danger.
 ## Spirit Hut (magic, building)
 
 Unlocked By:
-- Mystical Friendship (magic, technology)
+- Veil Communion (magic, technology)
+- Veil: Damaged
 
 Effects:
 - Converts 25% of People requirements in nearby buildings into Mana requirements.
@@ -279,7 +323,7 @@ Unlocks:
 - Ancestor Spirits (magic, technology)
 
 Description:
-A place densely inhabited by friendly spirits.
+A place densely inhabited by cooperative spirits near a torn veil.
 
 ---
 
@@ -287,6 +331,8 @@ A place densely inhabited by friendly spirits.
 
 Unlocked By:
 - House of Spirits (magic, superstructure)
+- Veil: Torn
+- Death: Presence
 
 Unlocks:
 - Poltergeist (magic, loader)
@@ -331,7 +377,7 @@ A small weak point where the spirit world leaks into reality. It is not a stable
 ## Mystical Hostility (magic, technology)
 
 Unlocked By:
-- Monastery (magic, superstructure)
+- Coven (magic, superstructure)
 
 Unlocks:
 - Malevolent Totem (magic, wall_upgrade)
@@ -515,15 +561,15 @@ Current identity:
 
 ## Main Magic Subthemes
 
-Mystical Command:
+Mana Flow Command:
 - Guiding projectiles.
 - Efficient Mana structures.
-- Formal magical control.
+- Formal shaping of mana flows.
 
-Mystical Friendship:
+Veil Communion:
 - Helpful spirits.
 - Ancestors.
-- Replacement of human labor by cooperative spirits.
+- Replacement of human labor by cooperative spirits near a damaged veil.
 
 Mystical Hostility:
 - Suppression.

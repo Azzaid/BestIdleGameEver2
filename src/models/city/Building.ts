@@ -5,6 +5,7 @@ import type {BuildingKeyword} from "./Keywords.ts";
 import type {AdjacencyRule, HexResolvedStats} from "./Adjancency.ts";
 import type {AxialCoordinate} from "./HexGrid.ts";
 import type {MultiHexStructureRule} from "./MultiHexStructure.ts";
+import type {AetherAtmosphereInfluence} from "./AetherAtmosphere.ts";
 
 /** Building data model (extend later with structured effects if needed) */
 export interface Building {
@@ -19,6 +20,7 @@ export interface Building {
     requiredUpkeep: UpkeepAmount
     requiredUpkeepDescription: UpkeepDescription;
     trace: number;
+    aetherAtmosphereInfluence?: AetherAtmosphereInfluence;
     providedUpkeep: UpkeepAmount;
     providedUpkeepDescription: UpkeepDescription;
     adjacency: AdjacencyRule[];
