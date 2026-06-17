@@ -40,56 +40,69 @@ export function NodeCard({
                          color: vectorTheme.color.text.primary,
                          fontSize: 12,
                          lineHeight: 1.25,
-                         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif'
+                         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+                         height: '100%',
+                         display: 'flex',
+                         flexDirection: 'column',
+                         minHeight: 0,
                      }}>
-                    {data.summary && <p style={{margin: 0}}>{data.summary}</p>}
-                    {data.unlocks?.length ? (
+                    <div
+                        data-research-card-scroll="true"
+                        style={{
+                            overflowY: 'auto',
+                            minHeight: 0,
+                            paddingRight: 4,
+                        }}
+                    >
+                        {data.summary && <p style={{margin: 0}}>{data.summary}</p>}
+                        {data.unlocks?.length ? (
+                            <div style={{marginTop: 6}}>
+                                <div style={{opacity: 0.8, fontWeight: 600, color: vectorTheme.color.text.primary}}>Unlocks</div>
+                                <ul style={{margin: 2, paddingLeft: 16}}>
+                                    {data.unlocks.map((u, i) => <li key={i}>{u}</li>)}
+                                </ul>
+                            </div>
+                        ) : null}
                         <div style={{marginTop: 6}}>
-                            <div style={{opacity: 0.8, fontWeight: 600, color: vectorTheme.color.text.primary}}>Unlocks</div>
-                            <ul style={{margin: 2, paddingLeft: 16}}>
-                                {data.unlocks.map((u, i) => <li key={i}>{u}</li>)}
-                            </ul>
+                            <div style={{opacity: 0.8, fontWeight: 600, color: vectorTheme.color.text.primary}}>Requires</div>
+                            {requirements.requiredBuildings.length
+                            || requirements.requiredStructures.length
+                            || requirements.requiredFreeUpkeep.length
+                            || requirements.requiredAetherAtmosphere.length
+                            || requirements.requiredBiodiversity ? (
+                                <ul style={{margin: 2, paddingLeft: 16}}>
+                                    {requirements.requiredBuildings.map(building => (
+                                        <li key={building.id} style={{opacity: building.met ? 1 : 0.55}}>
+                                            {building.met ? 'OK' : 'Missing'} {building.name}
+                                        </li>
+                                    ))}
+                                    {requirements.requiredStructures.map(structure => (
+                                        <li key={structure.id} style={{opacity: structure.met ? 1 : 0.55}}>
+                                            {structure.met ? 'OK' : 'Missing'} {structure.name}
+                                        </li>
+                                    ))}
+                                    {requirements.requiredFreeUpkeep.map(upkeep => (
+                                        <li key={upkeep.name} style={{opacity: upkeep.met ? 1 : 0.55}}>
+                                            {upkeep.name}: {upkeep.available}/{upkeep.required} free
+                                        </li>
+                                    ))}
+                                    {requirements.requiredAetherAtmosphere.map(atmosphere => (
+                                        <li key={atmosphere.name} style={{opacity: atmosphere.met ? 1 : 0.55}}>
+                                            {atmosphere.name}: {atmosphere.available} / {atmosphere.required}
+                                        </li>
+                                    ))}
+                                    {requirements.requiredBiodiversity ? (
+                                        <li>
+                                            Biodiversity: {requirements.requiredBiodiversity.required.toFixed(2)}
+                                        </li>
+                                    ) : null}
+                                </ul>
+                            ) : (
+                                <div style={{marginTop: 2, opacity: 0.8}}>None</div>
+                            )}
                         </div>
-                    ) : null}
-                    <div style={{marginTop: 6}}>
-                        <div style={{opacity: 0.8, fontWeight: 600, color: vectorTheme.color.text.primary}}>Requires</div>
-                        {requirements.requiredBuildings.length
-                        || requirements.requiredStructures.length
-                        || requirements.requiredFreeUpkeep.length
-                        || requirements.requiredAetherAtmosphere.length
-                        || requirements.requiredBiodiversity ? (
-                            <ul style={{margin: 2, paddingLeft: 16}}>
-                                {requirements.requiredBuildings.map(building => (
-                                    <li key={building.id} style={{opacity: building.met ? 1 : 0.55}}>
-                                        {building.met ? 'OK' : 'Missing'} {building.name}
-                                    </li>
-                                ))}
-                                {requirements.requiredStructures.map(structure => (
-                                    <li key={structure.id} style={{opacity: structure.met ? 1 : 0.55}}>
-                                        {structure.met ? 'OK' : 'Missing'} {structure.name}
-                                    </li>
-                                ))}
-                                {requirements.requiredFreeUpkeep.map(upkeep => (
-                                    <li key={upkeep.name} style={{opacity: upkeep.met ? 1 : 0.55}}>
-                                        {upkeep.name}: {upkeep.available}/{upkeep.required} free
-                                    </li>
-                                ))}
-                                {requirements.requiredAetherAtmosphere.map(atmosphere => (
-                                    <li key={atmosphere.name} style={{opacity: atmosphere.met ? 1 : 0.55}}>
-                                        {atmosphere.name}: {atmosphere.available} / {atmosphere.required}
-                                    </li>
-                                ))}
-                                {requirements.requiredBiodiversity ? (
-                                    <li>
-                                        Biodiversity: {requirements.requiredBiodiversity.required.toFixed(2)}
-                                    </li>
-                                ) : null}
-                            </ul>
-                        ) : (
-                            <div style={{marginTop: 2, opacity: 0.8}}>None</div>
-                        )}
+                        {data.notes ? <p style={{marginTop: 6, opacity: 0.9}}>{data.notes}</p> : null}
                     </div>
-                    {data.notes ? <p style={{marginTop: 6, opacity: 0.9}}>{data.notes}</p> : null}
                     <button
                         type="button"
                         disabled={!buttonEnabled}
@@ -100,6 +113,7 @@ export function NodeCard({
                         style={{
                             marginTop: 6,
                             width: '100%',
+                            flexShrink: 0,
                             border: `1px solid ${vectorTheme.color.border.default}`,
                             borderRadius: 6,
                             padding: '4px 6px',

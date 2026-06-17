@@ -48,7 +48,6 @@ export const PROGRESSION_RULES = defineProgression([
   unlocks("research", technologies.aether.wickedItems).requires({
     research: [technologies.medieval.foraging],
     structures: [buildings.medieval.stalkerHut],
-    aetherAtmosphere: {veil: 1},
   }),
   unlocks("building", buildings.medieval.toolShed).requires({
     research: [technologies.medieval.scrapTools],

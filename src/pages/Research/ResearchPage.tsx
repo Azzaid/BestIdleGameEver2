@@ -24,7 +24,7 @@ import {
 } from "../../models/city/AetherAtmosphere.ts";
 
 const NODE_W = 220;
-const NODE_H = 190;
+const NODE_H = 280;
 const CANVAS_PADDING = 480;
 const MIN_ZOOM_FALLBACK = -0.9;
 const MAX_ZOOM_FACTOR = 10;
@@ -192,6 +192,9 @@ export default function ResearchPage() {
     }, [minZoom]);
 
     const handleWheelZoom = useCallback((event: WheelEvent<HTMLDivElement>) => {
+        const target = event.target;
+        if (target instanceof Element && target.closest('[data-research-card-scroll="true"]')) return;
+
         event.preventDefault();
         event.stopPropagation();
 
