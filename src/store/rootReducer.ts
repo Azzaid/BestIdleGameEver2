@@ -5,11 +5,13 @@ import upkeepSlice from "./upkeep/slice.ts";
 import researchSlice from "./research/slice.ts";
 import towersSlice from "./towers/slice.ts";
 import wallSlice from "./wall/slice.ts";
+import debugSlice from "./debug/slice.ts";
 
 export const rootReducer = combineSlices(
     cityReducer,
     upkeepSlice,
     researchSlice,
     towersSlice,
-    wallSlice
+    wallSlice,
+    debugSlice
 );

@@ -178,6 +178,22 @@ Color channels:
 * Blue = Veil
 * Darkness/Saturation = Death
 
+The resource bar should show this as a gradient ball rather than as raw numbers.
+
+Spatial layout:
+
+* left side = red / Mana Flows
+* right side = blue / Veil
+* bottom = black / Death
+
+Each channel starts at white and becomes more saturated as its continuous component value increases. The visual color should be based on the raw component concentration, not only on the rounded named level, so the orb changes smoothly as buildings are added or removed.
+
+The center of the orb has a mixed-color spot with a radius of roughly one quarter of the ball.
+
+On hover, the orb may show a tooltip with the three direction names and their current level names.
+
+The orb replaces numeric Mana and Arcane Supplies in the main resource bar. It is visible when at least one of the three aether atmosphere components has a nonzero total influence.
+
 Examples:
 
 Pure Veil:

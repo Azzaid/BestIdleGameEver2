@@ -23,6 +23,27 @@ export const appTitle = style({
   padding: '15px 0',
 });
 
+export const navLeft = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '14px',
+});
+
+export const debugToggle = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+  minHeight: '32px',
+  padding: '4px 8px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  color: vars.color.text.primary,
+  fontSize: '0.85rem',
+  fontWeight: 700,
+  cursor: 'pointer',
+  userSelect: 'none',
+});
+
 export const navLinks = style({
   display: 'flex',
   listStyle: 'none',

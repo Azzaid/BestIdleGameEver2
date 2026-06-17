@@ -6,6 +6,7 @@ import type {CityResolution} from "../../models/city/Adjancency.ts";
 import {selectResolvedAvailableTowers} from "../towers/selectors.ts";
 import {deductUpkeep} from "../../pages/City/Components/CityHex/upkeepUtils.ts";
 import type {CityTraceStatus} from "../../models/store/upkeep.ts";
+import {selectIsDebugModeEnabled} from "../debug/selectors.ts";
 
 export const selectCityResolution = createSelector(
     [selectCityHexes, selectCityBuildings, selectCityScarTrace],
@@ -32,8 +33,8 @@ export const selectBaseResilience = (state: RootState): number => state.upkeep.r
 export const selectResilience = selectBaseResilience;
 
 export const selectCityTraceStatus = createSelector(
-    [selectTowerAwareCityResolution, selectResilience],
-    (cityResolution, resilience): CityTraceStatus => {
+    [selectTowerAwareCityResolution, selectResilience, selectIsDebugModeEnabled],
+    (cityResolution, resilience, isDebugModeEnabled): CityTraceStatus => {
         const displayedTrace = Math.min(cityResolution.effectiveTrace, Math.max(0, resilience));
         const fillRatio = resilience > 0
             ? displayedTrace / resilience
@@ -43,7 +44,7 @@ export const selectCityTraceStatus = createSelector(
             ? displayedScarTrace / resilience
             : cityResolution.scarTrace > 0 ? 1 : 0;
         const activeFillRatio = Math.max(0, fillRatio - scarFillRatio);
-        const isBesieged = cityResolution.effectiveTrace > resilience;
+        const isBesieged = !isDebugModeEnabled && cityResolution.effectiveTrace > resilience;
 
         return {
             effectiveTrace: cityResolution.effectiveTrace,

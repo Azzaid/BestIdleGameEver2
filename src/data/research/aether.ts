@@ -11,7 +11,7 @@ export const aetherResearch: ResearchDB = {
   },
   [technologies.aether.mysticism]: {
     id: technologies.aether.mysticism,
-    parentId: null,
+    parentId: technologies.aether.wickedItems,
     name: "Mysticism",
     vector: "aether",
     summary: "Early omens and ritual specialists emerge from the first shaman hut.",

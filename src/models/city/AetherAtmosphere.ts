@@ -11,6 +11,7 @@ export type AetherAtmosphereLevels = Record<AetherAtmosphere, AetherAtmosphereLe
 export type AetherAtmosphereResolution = {
     cityHexCount: number;
     totals: AetherAtmosphereTotals;
+    concentrations: AetherAtmosphereTotals;
     rawLevels: AetherAtmosphereTotals;
     levels: AetherAtmosphereLevels;
 };

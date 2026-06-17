@@ -25,7 +25,6 @@ import {BUILDINGS_ATLAS} from "../../data/buildings";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {PROGRESSION_RULES} from "../../data/content/rules.ts";
 import {getRuleForTarget, isProgressionRuleUnlocked} from "../../data/content/progression.ts";
-import {AETHER_ATMOSPHERES, AETHER_ATMOSPHERE_LABELS} from "../../models/city/AetherAtmosphere.ts";
 
 const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise resilience in battle before building.";
 
@@ -182,7 +181,6 @@ function SelectedHexPanel({
                             <dd>{selectedBuilding.effectiveTrace}</dd>
                         </div>
                     </dl>
-                    <AetherAtmosphereInfluenceSummary building={selectedBuilding} />
                     <AdjacencyEffectSummary building={selectedBuilding} />
                     <MultistructureStatus structureCandidates={structureCandidates} />
                     <p className={s.panelDescription}>{selectedBuilding.adjacencyDescription}</p>
@@ -315,30 +313,6 @@ function MetricGroup({title, values}: {title: string; values: UpkeepAmount}) {
             ) : (
                 <p className={s.emptyStats}>None</p>
             )}
-        </div>
-    );
-}
-
-function AetherAtmosphereInfluenceSummary({building}: {building: PlacedBuilding}) {
-    const influence = building.aetherAtmosphereInfluence;
-    const entries = AETHER_ATMOSPHERES.flatMap((atmosphere) => {
-        const amount = influence?.[atmosphere] ?? 0;
-        return amount ? [{atmosphere, amount}] : [];
-    });
-
-    if (!entries.length) return null;
-
-    return (
-        <div>
-            <h4 className={s.metricTitle}>Aether influence</h4>
-            <dl className={s.metricList}>
-                {entries.map(({atmosphere, amount}) => (
-                    <div key={atmosphere} className={s.metricRow}>
-                        <dt>{AETHER_ATMOSPHERE_LABELS[atmosphere].name}</dt>
-                        <dd>{amount}</dd>
-                    </div>
-                ))}
-            </dl>
         </div>
     );
 }

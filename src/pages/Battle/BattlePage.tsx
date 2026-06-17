@@ -10,6 +10,7 @@ import { recordThreatReached } from "../../store/upkeep/slice.ts";
 import { selectCityTraceStatus, selectTowerAwareCityResolution } from "../../store/upkeep/selectors.ts";
 import { selectWallResolution } from "../../store/wall/selectors.ts";
 import { recordSurvivedSiege, retreatCityRadius } from "../../store/city/slice.ts";
+import { selectIsDebugModeEnabled } from "../../store/debug/selectors.ts";
 import type { BattleMetrics, BattleResult } from "../../models/battle/world.ts";
 import type { BattleWallSegment } from "../../models/battle/wallSegment.ts";
 import {
@@ -40,6 +41,7 @@ const BattlePage = () => {
     const cityBattlefield = useTypedSelector(selectCityBattlefield);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
+    const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const wallResolution = useTypedSelector(selectWallResolution);
     const battleWallSegments = useMemo<BattleWallSegment[]>(() => {
         return cityHexes
@@ -119,6 +121,12 @@ const BattlePage = () => {
         }
 
         if (result.threat < result.targetThreat) {
+            if (isDebugModeEnabled) {
+                setBattleMessage("The wall was overwhelmed. Debug mode ignored the city retreat.");
+                setBattleMode("pressure");
+                return;
+            }
+
             dispatch(retreatCityRadius());
             setBattleMessage("The wall was overwhelmed. The city retreated and pressure watch resumed.");
             setBattleMode("pressure");
@@ -127,7 +135,7 @@ const BattlePage = () => {
 
         setBattleMessage("Pressure exceeded wall resilience. Improve the wall or tower build.");
         setBattleMode("pressure");
-    }, [dispatch]);
+    }, [dispatch, isDebugModeEnabled]);
 
     return (
         <div className={styles.battlePage}>

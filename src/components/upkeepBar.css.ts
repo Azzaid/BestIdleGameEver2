@@ -15,6 +15,7 @@ export const upkeepBar = style({
 });
 
 export const vectorCard = style({
+    position: 'relative',
     display: 'grid',
     gap: '2px',
     flex: '0 0 auto',
@@ -36,6 +37,79 @@ export const resourceIcon = style({
 });
 
 export const resourceText = style({});
+
+export const aetherOrbWrap = style({
+    position: 'relative',
+    width: '44px',
+    height: '44px',
+    border: 0,
+    borderRadius: '50%',
+    outline: 'none',
+    selectors: {
+        '&:focus-visible': {
+            boxShadow: `0 0 0 3px ${vars.color.border.selected}`,
+        },
+    },
+});
+
+export const aetherOrb = style({
+    width: '44px',
+    height: '44px',
+    borderRadius: '50%',
+    border: `1px solid ${vars.color.border.default}`,
+    boxShadow: `inset -7px -8px 12px rgba(0, 0, 0, 0.2), inset 5px 6px 12px rgba(255, 255, 255, 0.42), 0 5px 14px rgba(0, 0, 0, 0.22)`,
+});
+
+export const aetherTooltip = style({
+    position: 'fixed',
+    top: '72px',
+    left: '12px',
+    minWidth: '190px',
+    display: 'grid',
+    gap: '6px',
+    padding: '10px',
+    border: `1px solid ${vars.color.border.default}`,
+    borderRadius: 8,
+    background: vars.color.background.surface,
+    color: vars.color.text.primary,
+    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.24)',
+    opacity: 0,
+    transform: 'translateY(-4px)',
+    pointerEvents: 'none',
+    transition: 'opacity 140ms ease, transform 140ms ease',
+    zIndex: 10,
+    selectors: {
+        [`${aetherOrbWrap}:hover &`]: {
+            opacity: 1,
+            transform: 'translateY(0)',
+            pointerEvents: 'auto',
+        },
+        [`${aetherOrbWrap}:focus &`]: {
+            opacity: 1,
+            transform: 'translateY(0)',
+            pointerEvents: 'auto',
+        },
+        [`${aetherOrbWrap}:focus-within &`]: {
+            opacity: 1,
+            transform: 'translateY(0)',
+            pointerEvents: 'auto',
+        },
+    },
+});
+
+export const aetherTooltipTitle = style({
+    fontSize: '0.78rem',
+    fontWeight: 800,
+    color: vars.color.text.heading,
+    textTransform: 'uppercase',
+});
+
+export const aetherTooltipRow = style({
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '14px',
+    fontSize: '0.85rem',
+});
 
 export const traceMeter = style({
     display: 'grid',

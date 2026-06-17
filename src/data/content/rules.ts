@@ -69,6 +69,7 @@ export const PROGRESSION_RULES = defineProgression([
     buildings: [buildings.nature.field, buildings.medieval.woodenHouse],
   }),
   unlocks("research", technologies.medieval.money).requires({
+    research: [technologies.nature.plantCultivation, technologies.medieval.timberProcessing],
     structures: [buildings.medieval.farm],
   }),
   unlocks("building", buildings.medieval.market).requires({
@@ -165,6 +166,7 @@ export const PROGRESSION_RULES = defineProgression([
   }),
 
   unlocks("research", technologies.aether.mysticism).requires({
+    research: [technologies.aether.wickedItems],
     structures: [buildings.aether.shamanHut],
     aetherAtmosphere: {veil: 2},
   }),

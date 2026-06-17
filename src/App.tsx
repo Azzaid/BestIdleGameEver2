@@ -18,6 +18,9 @@ import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedSelector} from "./store/hooks.ts";
 import {selectCityTraceStatus} from "./store/upkeep/selectors.ts";
 import {selectHasAnyTowerBuild} from "./store/towers/selectors.ts";
+import {useTypedDispatch} from "./store/hooks.ts";
+import {selectIsDebugModeEnabled} from "./store/debug/selectors.ts";
+import {toggleDebugMode} from "./store/debug/slice.ts";
 
 //this is temporary theme switcher
 function ThemeSwitcher() {
@@ -34,8 +37,10 @@ function ThemeSwitcher() {
 }
 
 function App() {
+  const dispatch = useTypedDispatch();
   const traceStatus = useTypedSelector(selectCityTraceStatus);
   const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
+  const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
   const isBuildBlocked = traceStatus.isBesieged && hasAnyTowerBuild;
 
   return (
@@ -43,7 +48,17 @@ function App() {
           <Router>
               <div className={appTheme.appContainer}>
                   <nav className={appTheme.appNav}>
-                      <div className={appTheme.appTitle}>Tower Defense Idle</div>
+                      <div className={appTheme.navLeft}>
+                          <label className={appTheme.debugToggle}>
+                              <input
+                                  type="checkbox"
+                                  checked={isDebugModeEnabled}
+                                  onChange={() => dispatch(toggleDebugMode())}
+                              />
+                              Debug
+                          </label>
+                          <div className={appTheme.appTitle}>Tower Defense Idle</div>
+                      </div>
                       <ul className={appTheme.navLinks}>
                           <li className={appTheme.navBarItem}>
                               <Link className={appTheme.navBarLink} to="/battle">Battle</Link>
@@ -60,15 +75,19 @@ function App() {
                           <li>
                               <Link className={appTheme.navBarLink} to="/statistics">Statistics</Link>
                           </li>
-                          <li>
-                              <Link className={appTheme.navBarLink} to="/progression">Progression</Link>
-                          </li>
-                          <li>
-                              <Link className={appTheme.navBarLink} to="/gun-part-editor">Part Editor</Link>
-                          </li>
-                          <li>
-                              <Link className={appTheme.navBarLink} to="/ids">IDs</Link>
-                          </li>
+                          {isDebugModeEnabled && (
+                              <>
+                                  <li>
+                                      <Link className={appTheme.navBarLink} to="/progression">Progression</Link>
+                                  </li>
+                                  <li>
+                                      <Link className={appTheme.navBarLink} to="/gun-part-editor">Part Editor</Link>
+                                  </li>
+                                  <li>
+                                      <Link className={appTheme.navBarLink} to="/ids">IDs</Link>
+                                  </li>
+                              </>
+                          )}
                       </ul>
                       <ThemeSwitcher />
                   </nav>

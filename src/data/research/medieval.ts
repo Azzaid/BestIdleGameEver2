@@ -32,7 +32,8 @@ export const medievalResearch: ResearchDB = {
   },
   [technologies.medieval.money]: {
     id: technologies.medieval.money,
-    parentId: null,
+    parentId: technologies.nature.plantCultivation,
+    alsoRequires: [technologies.medieval.timberProcessing],
     name: "Money",
     vector: "medieval",
     summary: "Exchange value, payment, and early economic specialization grow from the first farm economy.",

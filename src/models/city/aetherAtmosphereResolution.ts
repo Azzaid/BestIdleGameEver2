@@ -27,6 +27,7 @@ export function resolveAetherAtmosphere(
         }
     });
 
+    const concentrations = createEmptyAetherAtmosphereTotals();
     const rawLevels = createEmptyAetherAtmosphereTotals();
     const levels: AetherAtmosphereLevels = {
         veil: MIN_AETHER_ATMOSPHERE_LEVEL,
@@ -35,13 +36,15 @@ export function resolveAetherAtmosphere(
     };
 
     for (const atmosphere of AETHER_ATMOSPHERES) {
-        rawLevels[atmosphere] = Math.floor(totals[atmosphere] / cityHexCount);
+        concentrations[atmosphere] = totals[atmosphere] / cityHexCount;
+        rawLevels[atmosphere] = Math.floor(concentrations[atmosphere]);
         levels[atmosphere] = clampAetherAtmosphereLevel(rawLevels[atmosphere]);
     }
 
     return {
         cityHexCount,
         totals,
+        concentrations,
         rawLevels,
         levels,
     };
