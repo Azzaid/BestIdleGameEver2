@@ -144,9 +144,9 @@ export const medievalBuildings: {[key: string]: Building} = {
     "Farm",
     "A field and wooden house combined into the first major economic apex of the early game.",
     2,
-    {[UPKEEP_TYPES.people]: 6, [UPKEEP_TYPES.biomass]: 9, [UPKEEP_TYPES.gold]: 2},
+    {[UPKEEP_TYPES.people]: 6, [UPKEEP_TYPES.plants]: 9, [UPKEEP_TYPES.gold]: 2},
     {},
-    ["production", "people", "biomass", "gold", "farm"],
+    ["production", "people", "plants", "gold", "farm"],
   ),
   [buildings.medieval.woodenHouse]: {
     ...building(
@@ -220,14 +220,14 @@ export const medievalBuildings: {[key: string]: Building} = {
   [buildings.medieval.workshop]: {
     ...building(
       buildings.medieval.workshop,
-      "Workshop",
-      "A focused craft building that improves nearby production but disrupts mana work.",
+    "Workshop",
+    "A focused craft building that improves nearby production but disrupts Aether work.",
       22,
       {[UPKEEP_TYPES.gold]: 7},
       {[UPKEEP_TYPES.people]: 3, [UPKEEP_TYPES.gold]: 3},
       ["production", "gold", "craft"],
     ),
-    adjacencyDescription: "+25% production in adjacent buildings; -25% Mana production in adjacent buildings.",
+    adjacencyDescription: "+25% production in adjacent buildings; -25% Aether production in adjacent buildings.",
     multiHexStructure: [
       structureRule(buildings.medieval.engineersHouse, [
         buildings.medieval.workshop,

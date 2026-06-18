@@ -51,49 +51,24 @@ const getRetreatedHexes = (existingHexes: HexCell[], cityRadius: number) => {
     });
 }
 
+const getStructurePartHexKeys = (hexes: HexCell[], targetHex: HexCell): string[] => {
+    if (targetHex.kind !== "city" || !targetHex.partOfStructureId) return [];
+
+    const coreCellKey = targetHex.structureCoreCellKey ?? targetHex.cellKey;
+
+    return hexes.flatMap(hex => (
+        hex.kind === "city" && hex.partOfStructureId && (hex.structureCoreCellKey ?? hex.cellKey) === coreCellKey
+            ? [hex.cellKey]
+            : []
+    ));
+};
+
 const getDemolishedHexKeys = (hexes: HexCell[], targetHex: HexCell): string[] => {
-    if (targetHex.kind !== "city" || !targetHex.buildingKey) return [];
+    if (targetHex.kind !== "city" || (!targetHex.buildingKey && !targetHex.partOfStructureId)) return [];
 
-    // If this is a built multistructure tile, remove the connected component of the same structure id
-    if ((STRUCTURES_BY_ID as Record<string, unknown>)[targetHex.buildingKey]) {
-        const structureId = targetHex.buildingKey;
-        const byKey = new Map(hexes.map(h => [h.cellKey, h]));
-        const result: string[] = [];
-        const visited = new Set<string>();
-        const queue: string[] = [targetHex.cellKey];
+    const structurePartKeys = getStructurePartHexKeys(hexes, targetHex);
+    if (structurePartKeys.length) return structurePartKeys;
 
-        const neighborOffsets = [
-            { column: +1, row:  0 },
-            { column: +1, row: -1 },
-            { column:  0, row: -1 },
-            { column: -1, row:  0 },
-            { column: -1, row: +1 },
-            { column:  0, row: +1 },
-        ] as const;
-
-        while (queue.length) {
-            const key = queue.shift()!;
-            if (visited.has(key)) continue;
-            visited.add(key);
-            const hex = byKey.get(key);
-            if (!hex || hex.kind !== "city" || hex.buildingKey !== structureId) continue;
-
-            result.push(key);
-
-            for (const off of neighborOffsets) {
-                const nCol = hex.column + off.column;
-                const nRow = hex.row + off.row;
-                const nKey = `${nCol},${nRow}`;
-                if (!visited.has(nKey)) {
-                    queue.push(nKey);
-                }
-            }
-        }
-
-        return result.length ? result : [targetHex.cellKey];
-    }
-
-    // Otherwise, this is a base building — demolish only this tile
     return [targetHex.cellKey];
 };
 
@@ -116,11 +91,14 @@ export const citySlice = createSlice({
             const hexToBuildIndex = state.hexes.findIndex(hex => hex.column === action.payload.column && hex.row === action.payload.row);
             if (hexToBuildIndex === -1) return;
             const currentHex = state.hexes[hexToBuildIndex];
-            if (currentHex.kind !== "city" || currentHex.buildingKey) return;
+            if (currentHex.kind !== "city" || currentHex.buildingKey || currentHex.partOfStructureId) return;
 
             state.hexes[hexToBuildIndex] = {
                 ...action.payload,
                 kind: currentHex.kind,
+                spriteKey: null,
+                partOfStructureId: null,
+                structureCoreCellKey: null,
             };
         },
         buildWall: (state, action: PayloadAction<{cellKey: string; wallKey: string}>) => {
@@ -156,13 +134,18 @@ export const citySlice = createSlice({
                 ...candidate.matchedSatellites.map(m => m.hex.cellKey),
             ]);
 
-            // Replace core and satellites with multistructure parts
+            const partKeys = [...involvedKeys];
+
+            // Replace core and satellites with linked multistructure parts
             state.hexes.forEach(hex => {
                 if (hex.kind !== "city") return;
                 if (!involvedKeys.has(hex.cellKey)) return;
 
                 hex.buildingKey = structureId;
                 hex.developmentVector = DEVELOPMENT_VECTORS[structureDef.vector];
+                hex.partOfStructureId = structureId;
+                hex.structureCoreCellKey = coreCellKey;
+                hex.spriteKey = `${structureId}:${partKeys.indexOf(hex.cellKey)}`;
             });
         },
         retreatCityRadius: (state) => {
@@ -172,7 +155,7 @@ export const citySlice = createSlice({
         },
         demolishHex: (state, action: PayloadAction<{cellKey: string}>) => {
             const targetHex = state.hexes.find(hex => hex.cellKey === action.payload.cellKey);
-            if (!targetHex || targetHex.kind !== "city" || !targetHex.buildingKey) return;
+            if (!targetHex || targetHex.kind !== "city" || (!targetHex.buildingKey && !targetHex.partOfStructureId)) return;
 
             const demolishedHexKeys = new Set(getDemolishedHexKeys(state.hexes, targetHex));
             state.scarTrace += demolishedHexKeys.size * TRACE_PER_DEMOLISHED_HEX;
@@ -180,6 +163,9 @@ export const citySlice = createSlice({
                 if (!demolishedHexKeys.has(hex.cellKey)) return;
 
                 hex.buildingKey = null;
+                hex.spriteKey = null;
+                hex.partOfStructureId = null;
+                hex.structureCoreCellKey = null;
             });
         },
         recordSurvivedSiege: (state) => {

@@ -31,6 +31,7 @@ export interface WorldConfig {
 export interface BattleMetrics {
   threat: number;
   targetThreat: number;
+  siegeElapsedSeconds: number;
   siegePressure: number;
   wallResilience: number;
 }
@@ -63,6 +64,7 @@ export interface World {
 
   toRemove: Set<EntityId>;
   siegePressure: number;
+  siegeElapsedSeconds: number;
   defeatedEnemies: number;
   currentThreat: number;
   battleEnded: boolean;

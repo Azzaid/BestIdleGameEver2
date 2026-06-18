@@ -24,7 +24,7 @@ function applyModifiers(stats: TowerAssemblyResolved['stats'], modifiers?: Parti
 function addSupportCost(target: UpkeepAmount, source?: UpkeepAmount) {
   if (!source) return;
 
-  for (const symbol of Object.getOwnPropertySymbols(source) as UpkeepTypesValue[]) {
+  for (const symbol of Object.keys(source) as UpkeepTypesValue[]) {
     target[symbol] = (target[symbol] ?? 0) + (source[symbol] ?? 0);
   }
 }

@@ -5,11 +5,12 @@ import type {
     CityResolution,
     EffectDelta,
     PlacedCityMap,
+    ResourceOutputModifier,
     TargetFilter
 } from "../../../../models/city/Adjancency.ts";
 import type {HexCell} from "../../../../models/city/HexGrid.ts";
 import type {Building, PlacedBuilding} from "../../../../models/city/Building.ts";
-import {addUpkeep, deductUpkeep, multiplyUpkeep} from "./upkeepUtils.ts";
+import {addUpkeep, applyResourceModifier, deductUpkeep, multiplyUpkeep} from "./upkeepUtils.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
 import {hexesWithinRadius} from "./hexUtils.ts";
 import {TRACE_PER_HEX} from "../../../../data/constants.ts";
@@ -71,9 +72,23 @@ function accumulateEffect(
         );
     }
 
+    if (effect.outputMul) {
+        initial.outputMul = [
+            ...toOutputModifiers(initial.outputMul),
+            ...toOutputModifiers(effect.outputMul),
+        ];
+    }
+
     if (typeof effect.traceMul === "number") {
         initial.traceMul = (initial.traceMul ?? 1) * effect.traceMul;
     }
+}
+
+function toOutputModifiers(
+    modifier: ResourceOutputModifier | ResourceOutputModifier[] | undefined,
+): ResourceOutputModifier[] {
+    if (!modifier) return [];
+    return Array.isArray(modifier) ? modifier : [modifier];
 }
 
 /**
@@ -87,9 +102,14 @@ export const placeCityBuildings = (
 ): PlacedCityMap => {
     // 1) Base pass
     const placedCity = new Map<string, PlacedBuilding>();
+    const getResolvedCellKey = (hexCell: HexCell) => hexCell.partOfStructureId
+        ? hexCell.structureCoreCellKey ?? hexCell.cellKey
+        : hexCell.cellKey;
 
     hexes.forEach((hexCell: HexCell) => {
         const { column, row, cellKey, buildingKey, developmentVector } = hexCell;
+        if (hexCell.partOfStructureId && (hexCell.structureCoreCellKey ?? cellKey) !== cellKey) return;
+
         const building:Building | undefined = buildingKey ? BUILDINGS_ATLAS[developmentVector][buildingKey] : undefined;
         const placed: PlacedBuilding | undefined = building ? {
             ...deepClone(building),
@@ -111,13 +131,16 @@ export const placeCityBuildings = (
     //2) Emit & aggregate effects
     hexes.forEach((hexCell: HexCell) => {
         const { cellKey, buildingKey } = hexCell;
-        const affectorBuilding:PlacedBuilding | undefined = buildingKey ? placedCity.get(cellKey) : undefined;
+        if (hexCell.partOfStructureId && (hexCell.structureCoreCellKey ?? cellKey) !== cellKey) return;
+
+        const affectorBuilding:PlacedBuilding | undefined = buildingKey ? placedCity.get(getResolvedCellKey(hexCell)) : undefined;
 
         //for each hex with building and adjacency rules
         if (affectorBuilding && affectorBuilding.adjacency.length) {
 
             //for each rule
             affectorBuilding.adjacency.forEach((adjacencyRule: AdjacencyRule) => {
+                const affectedKeys = new Set<string>();
 
                 //for each hex within a rule radius
                 hexesWithinRadius(
@@ -126,7 +149,10 @@ export const placeCityBuildings = (
                     hexes,
                     {excludeCenter: true, onlyNonEmpty: true}
                 ).forEach((affectedHex: HexCell) => {
-                    const affectedBuilding: PlacedBuilding | undefined = placedCity.get(affectedHex.cellKey);
+                    const affectedKey = getResolvedCellKey(affectedHex);
+                    const affectedBuilding: PlacedBuilding | undefined = placedCity.get(affectedKey);
+                    if (affectedKeys.has(affectedKey)) return;
+                    affectedKeys.add(affectedKey);
 
                     //if the hex has a building and matches the filter
                     if (affectedBuilding && matchesFilter(affectedBuilding, adjacencyRule.targetFilter)) {
@@ -138,16 +164,15 @@ export const placeCityBuildings = (
     })
 
     //3) Apply aggregated effects
-    hexes.forEach((hexCell: HexCell) => {
-        const { cellKey, buildingKey} = hexCell;
-        const building:PlacedBuilding | undefined = buildingKey ? placedCity.get(cellKey) : undefined;
-
-        if (building) {
-            const { requiredUpkeep, requiredUpkeepAdd, requiredUpkeepMul, providedUpkeep, providedUpkeepAdd, providedUpkeepMul, trace, traceAdd, traceMul } = building;
-            building.effectiveProvidedUpkeep = multiplyUpkeep(addUpkeep(providedUpkeep, providedUpkeepAdd!), providedUpkeepMul!);
-            building.effectiveRequiredUpkeep = multiplyUpkeep(addUpkeep(requiredUpkeep, requiredUpkeepAdd!), requiredUpkeepMul!);
-            building.effectiveTrace = trace + traceAdd! * traceMul!;
-        }
+    placedCity.forEach((building) => {
+        const { requiredUpkeep, requiredUpkeepAdd, requiredUpkeepMul, providedUpkeep, providedUpkeepAdd, providedUpkeepMul, outputMul, trace, traceAdd, traceMul } = building;
+        const exactProvidedUpkeep = multiplyUpkeep(addUpkeep(providedUpkeep, providedUpkeepAdd!), providedUpkeepMul!);
+        building.effectiveProvidedUpkeep = toOutputModifiers(outputMul).reduce(
+            (current, modifier) => applyResourceModifier(current, modifier),
+            exactProvidedUpkeep,
+        );
+        building.effectiveRequiredUpkeep = multiplyUpkeep(addUpkeep(requiredUpkeep, requiredUpkeepAdd!), requiredUpkeepMul!);
+        building.effectiveTrace = trace + traceAdd! * traceMul!;
     })
 
     return placedCity

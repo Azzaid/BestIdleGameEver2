@@ -106,9 +106,12 @@ export default function CityHex({
         const cellKey = coordKey({column, row});
         const selectedCell = cells.find((cell) => cell.cellKey === cellKey);
         if (!selectedCell) return;
+        const selectedCoreCell = selectedCell.partOfStructureId
+            ? cells.find((cell) => cell.cellKey === (selectedCell.structureCoreCellKey ?? selectedCell.cellKey)) ?? selectedCell
+            : selectedCell;
 
-        onSelect(selectedCell)
-        setSelectedCellKey(cellKey);
+        onSelect(selectedCoreCell)
+        setSelectedCellKey(selectedCoreCell.cellKey);
     };
 
     const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -282,6 +285,7 @@ export default function CityHex({
                         cellKey,
                         developmentVector,
                         buildingKey,
+                        spriteKey,
                         kind,
                         wallKey,
                         wallDevelopmentVector,
@@ -290,8 +294,12 @@ export default function CityHex({
                     const isSelected = cellKey === selectedCellKey;
                     const isHovered = cellKey === hoveredCellKey;
                     const clipId = `clip-${cellKey}`;
-                    const spriteUrl = kind === "city" && buildingKey
-                        ? buildingsSpriteAtlas[developmentVector]?.[buildingKey]
+                    const citySpriteAtlas = kind === "city" ? buildingsSpriteAtlas[developmentVector] : undefined;
+                    const spriteLookupKey = spriteKey && citySpriteAtlas?.[spriteKey]
+                        ? spriteKey
+                        : buildingKey;
+                    const spriteUrl = kind === "city" && spriteLookupKey
+                        ? citySpriteAtlas?.[spriteLookupKey]
                         : undefined;
                     const wallSpriteUrl = kind === "wall" && wallKey && wallDevelopmentVector
                         ? wallSpritesAtlas[wallDevelopmentVector]?.[wallKey]

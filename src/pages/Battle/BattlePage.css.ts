@@ -23,7 +23,7 @@ export const battleShellSiege = style({
     '&::before': {
       content: '""',
       position: 'absolute',
-      inset: '10px',
+      inset: '0px',
       zIndex: 1,
       pointerEvents: 'none',
       border: `2px solid ${vars.color.state.warning}`,
@@ -36,7 +36,7 @@ export const battleShellSiege = style({
 
 export const battleHud = style({
   position: 'absolute',
-  top: '12px',
+  top: '52px',
   left: '12px',
   zIndex: 2,
   display: 'flex',
@@ -44,6 +44,62 @@ export const battleHud = style({
   gap: '8px',
   color: vars.color.text.primary,
 });
+
+export const battleProgress = style({
+  position: 'absolute',
+  left: '50%',
+  zIndex: 2,
+  width: 'min(720px, calc(100% - 32px))',
+  transform: 'translateX(-50%)',
+  display: 'grid',
+  gap: '6px',
+  pointerEvents: 'none',
+});
+
+export const siegeProgress = style({
+  top: '12px',
+});
+
+export const pressureProgress = style({
+  bottom: '12px',
+});
+
+export const progressLabel = style({
+  color: vars.color.text.primary,
+  fontSize: '0.78rem',
+  fontWeight: 800,
+  textTransform: 'uppercase',
+  textShadow: '0 1px 2px rgb(0 0 0 / 0.55)',
+});
+
+export const progressTrack = style({
+  height: '12px',
+  overflow: 'hidden',
+  border: `1px solid ${vars.color.border.strong}`,
+  borderRadius: '6px',
+  backgroundColor: 'color-mix(in srgb, black 34%, transparent)',
+  boxShadow: vars.color.shadow.card,
+});
+
+export const progressFill = style({
+  height: '100%',
+  borderRadius: 'inherit',
+  transition: 'width 180ms ease-out',
+});
+
+export const siegeProgressFill = style([
+  progressFill,
+  {
+    background: `linear-gradient(90deg, ${vars.color.state.warning}, ${vars.color.state.error})`,
+  },
+]);
+
+export const pressureProgressFill = style([
+  progressFill,
+  {
+    background: `linear-gradient(90deg, ${vars.color.brand.primary}, ${vars.color.state.warning})`,
+  },
+]);
 
 export const battleMetric = style({
   display: 'grid',
@@ -72,7 +128,7 @@ export const battleMetricValue = style({
 export const battleNotice = style({
   position: 'absolute',
   left: '50%',
-  bottom: '18px',
+  bottom: '42px',
   zIndex: 2,
   width: 'min(680px, calc(100% - 32px))',
   transform: 'translateX(-50%)',

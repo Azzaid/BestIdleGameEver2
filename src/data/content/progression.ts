@@ -211,7 +211,7 @@ function requirementsAreInSet(required: readonly string[] | undefined, available
 function hasEnoughFreeUpkeep(required: UpkeepAmount | undefined, available: UpkeepAmount): boolean {
   if (!required) return true;
 
-  return (Object.getOwnPropertySymbols(required) as UpkeepTypesValue[]).every(resource => {
+  return (Object.keys(required) as UpkeepTypesValue[]).every(resource => {
     return (available[resource] ?? 0) >= (required[resource] ?? 0);
   });
 }

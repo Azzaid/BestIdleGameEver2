@@ -20,6 +20,7 @@ export function createWorld(config: WorldConfig): World {
       healthBars: new Map(),
       toRemove: new Set(),
       siegePressure: 0,
+      siegeElapsedSeconds: 0,
       defeatedEnemies: 0,
       currentThreat: config.initialThreat,
       battleEnded: false,

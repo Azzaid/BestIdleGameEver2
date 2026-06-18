@@ -1,7 +1,7 @@
 import {useTypedSelector} from "../store/hooks.ts";
 import {selectCityTraceStatus, selectTowerAwareCityResolution} from "../store/upkeep/selectors.ts";
 import {DEVELOPMENT_VECTORS} from "../models/DevlopmentVector.ts";
-import {UPKEEP_TYPES_BY_VECTOR, type UpkeepTypesValue} from "../models/Upkeep.ts";
+import {UPKEEP_SPRITES, UPKEEP_TYPES_BY_VECTOR, type UpkeepTypesValue} from "../models/Upkeep.ts";
 import * as s from './upkeepBar.css.ts';
 import {selectCityAetherAtmosphere} from "../store/city/selectors.ts";
 import {
@@ -59,10 +59,10 @@ export const UpkeepBar = () => {
                     <div key={vector.description} className={s.vectorCard}>
                         {visibleResources.map(resource => {
                             return (
-                                <div key={resource.description} className={s.resourceEntry}>
+                                <div key={resource} className={s.resourceEntry}>
                                     <img  className={s.resourceIcon}/>
                                     <div className={s.resourceText}>
-                                        {resource.description}: {effectiveUpkeep[resource] || 0}
+                                        {UPKEEP_SPRITES[resource]}: {effectiveUpkeep[resource] || 0}
                                     </div>
                                 </div>
                             )

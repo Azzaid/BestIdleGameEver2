@@ -1,9 +1,10 @@
 import type {RootState} from "../../models/store/appStore.ts";
 import {createSelector} from "@reduxjs/toolkit";
-import {placeCityBuildings} from "../../pages/City/Components/CityHex/adjacencyUtils.ts";
-import {STRUCTURES, STRUCTURES_BY_ID} from "../../data/structures/index.ts";
+import {placeCityBuildings, resolveCityUpkeepAndTrace} from "../../pages/City/Components/CityHex/adjacencyUtils.ts";
+import {STRUCTURES} from "../../data/structures/index.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
 import {resolveAetherAtmosphere} from "../../models/city/aetherAtmosphereResolution.ts";
+import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
 
 export const selectCityHexes = (state: RootState) => state.city.hexes;
 
@@ -33,9 +34,9 @@ export const selectCompleteCityStructureIds = createSelector(
     (hexes) => {
         const builtIds = new Set<string>();
         hexes.forEach(h => {
-            if (h.kind !== "city" || !h.buildingKey) return;
-            if ((STRUCTURES_BY_ID as Record<string, unknown>)[h.buildingKey]) {
-                builtIds.add(h.buildingKey);
+            if (h.kind !== "city") return;
+            if (h.partOfStructureId) {
+                builtIds.add(h.partOfStructureId);
             }
         });
         return builtIds;
@@ -44,10 +45,53 @@ export const selectCompleteCityStructureIds = createSelector(
 
 export const selectCityAetherAtmosphere = createSelector(
     [selectCityHexes, selectCityBuildings],
-    (hexes, buildings) => resolveAetherAtmosphere(hexes, buildings)
+    (hexes, buildings) => {
+        const cityResolution = resolveCityUpkeepAndTrace(hexes, buildings);
+        const cityHexCount = hexes.filter(hex => hex.kind === "city").length;
+        return resolveAetherAtmosphere(cityResolution.providedUpkeep, cityHexCount);
+    }
 );
 
 export const selectCityAetherAtmosphereLevels = createSelector(
     [selectCityAetherAtmosphere],
     (atmosphere) => atmosphere.levels
+);
+
+export const selectCurrentVeilValue = createSelector(
+    [selectCityAetherAtmosphere],
+    (atmosphere) => atmosphere.totals.veil
+);
+
+export const selectCurrentManaFlowsValue = createSelector(
+    [selectCityAetherAtmosphere],
+    (atmosphere) => atmosphere.totals.manaFlows
+);
+
+export const selectCurrentDeathValue = createSelector(
+    [selectCityAetherAtmosphere],
+    (atmosphere) => atmosphere.totals.death
+);
+
+export const selectCurrentVeilLevel = createSelector(
+    [selectCityAetherAtmosphere],
+    (atmosphere) => atmosphere.levels.veil
+);
+
+export const selectCurrentManaFlowsLevel = createSelector(
+    [selectCityAetherAtmosphere],
+    (atmosphere) => atmosphere.levels.manaFlows
+);
+
+export const selectCurrentDeathLevel = createSelector(
+    [selectCityAetherAtmosphere],
+    (atmosphere) => atmosphere.levels.death
+);
+
+export const selectCurrentAetherResourceValues = createSelector(
+    [selectCityAetherAtmosphere],
+    (atmosphere) => ({
+        [UPKEEP_TYPES.veil]: atmosphere.totals.veil,
+        [UPKEEP_TYPES.manaFlows]: atmosphere.totals.manaFlows,
+        [UPKEEP_TYPES.death]: atmosphere.totals.death,
+    })
 );

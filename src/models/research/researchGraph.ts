@@ -78,6 +78,7 @@ export function buildResearchPreviewGraph(
     db: ResearchDB,
     purchased: ReadonlySet<string>,
     nodeSize: {width: number; height: number},
+    options: {getNodeSize?: (node: ResearchNodeData) => {width: number; height: number}} = {},
 ): {nodes: FlatNode[]; edges: FlatEdge[]} {
     const nodes: FlatNode[] = [];
     const edges: FlatEdge[] = [];
@@ -106,11 +107,12 @@ export function buildResearchPreviewGraph(
     for (const id of visibleIds) {
         const node = db[id];
         if (!node) continue;
+        const size = options.getNodeSize?.(node) ?? nodeSize;
 
         nodes.push({
             id,
-            width: nodeSize.width,
-            height: nodeSize.height,
+            width: size.width,
+            height: size.height,
             data: {kind: 'normal', data: node},
         });
     }

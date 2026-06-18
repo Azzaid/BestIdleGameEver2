@@ -24,6 +24,8 @@ import {
 
 const NODE_W = 220;
 const NODE_H = 280;
+const LOCKED_NODE_W = 160;
+const LOCKED_NODE_H = 64;
 const CANVAS_PADDING = 480;
 const MIN_ZOOM_FALLBACK = -0.9;
 const MAX_ZOOM_FACTOR = 10;
@@ -72,7 +74,7 @@ function describeFreeUpkeepRequirement(
 ): RequirementStatus["requiredFreeUpkeep"] {
     if (!required) return [];
 
-    return (Object.getOwnPropertySymbols(required) as UpkeepTypesValue[]).map(resource => {
+    return (Object.keys(required) as UpkeepTypesValue[]).map(resource => {
         const requiredAmount = required[resource] ?? 0;
         const availableAmount = available[resource] ?? 0;
 
@@ -144,15 +146,35 @@ export default function ResearchPage() {
     const purchased = useMemo(() => new Set(purchasedTechsIds), [purchasedTechsIds]);
     const builtBuildingIds = useMemo(() => {
         return new Set(cityHexes.flatMap(hex => [
-            hex.buildingKey,
+            !hex.partOfStructureId || (hex.structureCoreCellKey ?? hex.cellKey) === hex.cellKey ? hex.buildingKey : null,
             hex.wallKey,
             hex.wallTopKey,
         ].filter((buildingId): buildingId is string => Boolean(buildingId))));
     }, [cityHexes]);
 
     const {nodes, edges} = useMemo(
-        () => buildResearchPreviewGraph(researchTree, purchased, {width: NODE_W, height: NODE_H}),
-        [purchased],
+        () => buildResearchPreviewGraph(
+            researchTree,
+            purchased,
+            {width: NODE_W, height: NODE_H},
+            {
+                getNodeSize: node => {
+                    const showDetails = purchased.has(node.id) || canPurchaseResearch(node, {
+                        purchased,
+                        builtBuildingIds,
+                        completeStructureIds,
+                        effectiveUpkeep,
+                        aetherAtmosphereLevels,
+                        isBesieged: traceStatus.isBesieged,
+                    });
+
+                    return showDetails
+                        ? {width: NODE_W, height: NODE_H}
+                        : {width: LOCKED_NODE_W, height: LOCKED_NODE_H};
+                },
+            },
+        ),
+        [aetherAtmosphereLevels, builtBuildingIds, completeStructureIds, effectiveUpkeep, purchased, traceStatus.isBesieged],
     );
 
     const layoutOptions = useMemo(() => ({
@@ -279,12 +301,15 @@ export default function ResearchPage() {
                         isBesieged: traceStatus.isBesieged,
                     });
 
+                    const nodeWidth = isResearched || canResearch ? NODE_W : LOCKED_NODE_W;
+                    const nodeHeight = isResearched || canResearch ? NODE_H : LOCKED_NODE_H;
+
                     return (
-                        <g transform={`translate(${props.x + NODE_W / 2}, ${props.y + NODE_H / 2})`}>
+                        <g transform={`translate(${props.x + nodeWidth / 2}, ${props.y + nodeHeight / 2})`}>
                             <NodeCard
                                 data={data}
-                                nodeHeight={NODE_H}
-                                nodeWidth={NODE_W}
+                                nodeHeight={nodeHeight}
+                                nodeWidth={nodeWidth}
                                 requirements={requirements}
                                 isResearched={isResearched}
                                 canResearch={canResearch}

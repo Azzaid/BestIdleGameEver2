@@ -40,6 +40,8 @@ export function BattleStage(props: {
     completesWhenThreatTargetReached: boolean;
     wallResilience: number;
     wallIgnoredThreat: number;
+    showDebugOutlines: boolean;
+    showSiegeOutline: boolean;
     onBattleMetrics?: (metrics: BattleMetrics) => void;
     onBattleEnded?: (result: BattleResult) => void;
 }) {
@@ -154,19 +156,23 @@ export function BattleStage(props: {
             battlefieldBackground.zIndex = -100;
             world.worldLayer.addChild(battlefieldBackground);
 
-            const fullBoundsPlaceholder = new Graphics();
-            fullBoundsPlaceholder
-                .rect(0, 0, props.battlefieldWidth, props.battlefieldHeight)
-                .stroke({ color: 0x45d0ff, width: 3 });
-            fullBoundsPlaceholder.zIndex = 200;
-            world.worldLayer.addChild(fullBoundsPlaceholder);
+            if (props.showDebugOutlines) {
+                const fullBoundsPlaceholder = new Graphics();
+                fullBoundsPlaceholder
+                    .rect(0, 0, props.battlefieldWidth, props.battlefieldHeight)
+                    .stroke({ color: 0x45d0ff, width: 3 });
+                fullBoundsPlaceholder.zIndex = 200;
+                world.worldLayer.addChild(fullBoundsPlaceholder);
 
-            const activeBattlefieldPlaceholder = new Graphics();
-            activeBattlefieldPlaceholder
-                .rect(0, 0, props.battlefieldWidth, wallY)
-                .stroke({ color: 0xffd166, width: 2 });
-            activeBattlefieldPlaceholder.zIndex = 201;
-            world.worldLayer.addChild(activeBattlefieldPlaceholder);
+                if (props.showSiegeOutline) {
+                    const activeBattlefieldPlaceholder = new Graphics();
+                    activeBattlefieldPlaceholder
+                        .rect(0, 0, props.battlefieldWidth, wallY)
+                        .stroke({ color: 0xffd166, width: 2 });
+                    activeBattlefieldPlaceholder.zIndex = 201;
+                    world.worldLayer.addChild(activeBattlefieldPlaceholder);
+                }
+            }
 
             const wallLayer = createBattleWallLayer({
                 wallSegments: props.wallSegments,
@@ -323,6 +329,8 @@ export function BattleStage(props: {
         props.completesWhenThreatTargetReached,
         props.wallResilience,
         props.wallIgnoredThreat,
+        props.showDebugOutlines,
+        props.showSiegeOutline,
         props.onBattleMetrics,
         props.onBattleEnded,
     ]);

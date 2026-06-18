@@ -1,7 +1,18 @@
 export const ROLE_KEYWORDS = ["production","support","defense","infrastructure"] as const;
 export type RoleKeyword = typeof ROLE_KEYWORDS[number];
 
-export const RESOURCE_KEYWORDS = ["people","gold","electricity","mana","biomass","mutagen","arcane","highTechComponents"] as const;
+export const RESOURCE_KEYWORDS = [
+    "people",
+    "gold",
+    "power",
+    "compute",
+    "veil",
+    "manaFlows",
+    "death",
+    "fungi",
+    "plants",
+    "animals",
+] as const;
 export type ResourceKeyword = typeof RESOURCE_KEYWORDS[number];
 
 export const MECHANIC_KEYWORDS = ["aura","chain","area","singleTarget","scalesWithLevel","slow","harm","push","visibility"] as const;
@@ -25,6 +36,7 @@ export const SYNERGY_KEYWORDS = [
     "garden",
     "herbs",
     "ritual",
+    "arcane",
 ] as const;
 export type SynergyKeyword = typeof SYNERGY_KEYWORDS[number];
 

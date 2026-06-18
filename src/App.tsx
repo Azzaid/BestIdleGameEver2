@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
 import {Provider} from "react-redux";
 import {store} from "./store";
 import { ThemeProvider } from './theme/ThemeProvider'
@@ -41,18 +41,18 @@ function ThemeSwitcher() {
   );
 }
 
-function App() {
+function AppFrame() {
   const dispatch = useTypedDispatch();
+  const location = useLocation();
   const traceStatus = useTypedSelector(selectCityTraceStatus);
   const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
   const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
   const isBuildBlocked = traceStatus.isBesieged && hasAnyTowerBuild;
+  const shouldShowUpkeepBar = location.pathname !== "/" && location.pathname !== "/battle";
 
   useResearchAutoUnlock();
 
   return (
-      <ThemeProvider initialTheme={'tech'}>
-          <Router>
               <div className={appTheme.appContainer}>
                   <nav className={appTheme.appNav}>
                       <div className={appTheme.navLeft}>
@@ -97,7 +97,7 @@ function App() {
                           )}
                       </ul>
                       <div className={appTheme.themeSwitcher}>
-                        <ThemeSwitcher />
+                        {/*<ThemeSwitcher />*/}
                         <button
                           type="button"
                           onClick={() => {
@@ -124,7 +124,7 @@ function App() {
                       </div>
                   </nav>
                   <NotificationCenter />
-                  <UpkeepBar/>
+                  {shouldShowUpkeepBar && <UpkeepBar/>}
                   <main className={appTheme.appContent}>
                       <Routes>
                           <Route path="/" element={<BattlePage />} />
@@ -139,6 +139,14 @@ function App() {
                       </Routes>
                   </main>
               </div>
+  )
+}
+
+function App() {
+  return (
+      <ThemeProvider initialTheme={'tech'}>
+          <Router>
+              <AppFrame />
           </Router>
       </ThemeProvider>
   )

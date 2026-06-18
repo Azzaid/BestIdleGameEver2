@@ -2,8 +2,6 @@ export type AetherAtmosphere = "veil" | "manaFlows" | "death";
 
 export type AetherAtmosphereLevel = 1 | 2 | 3 | 4 | 5;
 
-export type AetherAtmosphereInfluence = Partial<Record<AetherAtmosphere, number>>;
-
 export type AetherAtmosphereTotals = Record<AetherAtmosphere, number>;
 
 export type AetherAtmosphereLevels = Record<AetherAtmosphere, AetherAtmosphereLevel>;

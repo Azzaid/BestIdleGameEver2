@@ -206,12 +206,16 @@ Support is produced by city infrastructure and consumed by:
 - megaprojects;
 - special systems.
 
-Each vector has operational support and research support:
+Resources are stored through one keyworded resource map under the hood. UI and derived selectors decide whether a resource is shown as ordinary support, an Aether orb component, or another specialized display.
 
-- Technology: Electricity and Computing Power.
+Current resources by vector:
+
+- Technology: Power and Compute.
 - Medieval/Human: People and Gold.
-- Nature/Biology: Biomass and Mutagens.
-- Aether/Magic: Mana and Ancient Knowledge.
+- Nature/Biology: Fungi, Plants, and Animals.
+- Aether/Magic: Veil, Mana Flows, and Death.
+
+Resource definitions include keywords such as `output`, `production`, `support`, `atmosphere`, `aether`, and `display_orb`. Adjacency rules can target resources by keywords, so a production bonus can affect ordinary support and magical outputs through the same resolver.
 
 Important rules:
 
@@ -414,9 +418,9 @@ Current implementation:
 - Newly unlocked technologies emit app notifications through the shared notification center.
 - Node internals render through custom SVG/HTML foreignObject content.
 - The Progression page renders a content dependency graph. Every node is colored by development vector. Shape communicates content type: buildings are square, superstructures are rectangular, technologies are heavily rounded rectangles, and tower parts are circular.
-- Aether progression requirements use atmospheric states instead of raw numbers: Veil, Mana Flows, and Death. Each level is derived from building influence totals divided by city hex count, rounded down and clamped to levels 1 through 5. Biology progression requirements expose Biodiversity as a decimal value with two digits.
+- Aether progression requirements use atmospheric states instead of raw numbers: Veil, Mana Flows, and Death. Each level is derived from the unified resource output total divided by city hex count, rounded down and clamped to levels 1 through 5. Biology progression requirements expose Biodiversity as a decimal value with two digits.
 - The resource bar hides ordinary resources with zero production. It still shows a resource at net zero when production and consumption cancel out.
-- The resource bar represents current Aether atmosphere as a smooth gradient orb instead of numeric Mana and Arcane Supplies: Mana Flows tint the left side red, Veil tints the right side blue, and Death darkens the bottom. Hovering the orb reveals the named level for each direction.
+- The resource bar represents current Aether atmosphere as a smooth gradient orb instead of numeric rows: Mana Flows tint the left side red, Veil tints the right side blue, and Death darkens the bottom. Hovering the orb reveals the named level for each direction.
 - The early progression spine follows `docs/progression_drafts.md`: Shelter unlocks Foraging; Foraging unlocks scrap gathering and the crude barrel; Stalker House opens seed gathering and scrap tools; those split into herbalist/botany, forester/workable timber, farm/money/market, mysticism, and magic-stone tower parts.
 - The first tower can be assembled without a barrel: the initial required parts are the crude wood frame, stone basket, and crude sling launcher. The crude barrel is an early Foraging unlock.
 
@@ -431,7 +435,8 @@ Core rules:
 - Multistructures never appear automatically.
 - The player selects the core and explicitly confirms the upgrade.
 - The City page lists ready and incomplete multistructure candidates for the selected core. Ready candidates expose a Transform action unless the city is besieged.
-- Confirming a transform replaces the core and matched satellites with the multistructure id, so research requirements check built multistructures instead of merely possible layouts.
+- Confirming a transform links the core and matched satellites into one multistructure. Each part stores the multistructure id and the core hex key, while the core owns the gameplay identity used by selection, adjacency, economy, trace, and research checks.
+- Structure parts may store their own sprite id, allowing future multistructure art to vary by hex without changing gameplay calculations.
 - Required satellites must be adjacent to the core, not arranged in fixed shapes.
 - Blob-shaped layouts are allowed.
 - Normal buildings remain mechanically understandable, while the district may visually integrate into one larger structure.
@@ -615,6 +620,8 @@ Tags should drive future systems wherever possible. Prefer "has tag industrial" 
 ## 22. Persistence
 
 Persistence is not implemented yet.
+
+While the game is pre-alpha and has no real saves, internal Redux state shape may change without backward compatibility. Once saves exist, state compatibility should be handled through explicit store migrations rather than preserving legacy runtime fallbacks in gameplay logic.
 
 Future save state should store:
 

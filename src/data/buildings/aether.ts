@@ -5,7 +5,6 @@ import type {MultiHexStructureRule} from "../../models/city/MultiHexStructure.ts
 import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import {buildings} from "../identificators/index.ts";
-import type {AetherAtmosphereInfluence} from "../../models/city/AetherAtmosphere.ts";
 
 function magicBuilding(
   id: string,
@@ -15,7 +14,6 @@ function magicBuilding(
   providedUpkeep: UpkeepAmount = {},
   requiredUpkeep: UpkeepAmount = {},
   keywords: BuildingKeyword[] = [],
-  aetherAtmosphereInfluence?: AetherAtmosphereInfluence,
 ): Building {
   return {
     id,
@@ -29,7 +27,6 @@ function magicBuilding(
     requiredUpkeep,
     requiredUpkeepDescription: {},
     trace,
-    aetherAtmosphereInfluence,
     providedUpkeep,
     providedUpkeepDescription: {},
     adjacency: [],
@@ -47,10 +44,9 @@ function magicSuperstructure(
   providedUpkeep: UpkeepAmount = {},
   requiredUpkeep: UpkeepAmount = {},
   keywords: BuildingKeyword[] = [],
-  aetherAtmosphereInfluence?: AetherAtmosphereInfluence,
 ): Building {
   return {
-    ...magicBuilding(id, name, description, 0, providedUpkeep, requiredUpkeep, keywords, aetherAtmosphereInfluence),
+    ...magicBuilding(id, name, description, 0, providedUpkeep, requiredUpkeep, keywords),
     size,
     isMultiHex: true,
     isMultistructure: true,
@@ -76,10 +72,9 @@ export const aetherBuildings: {[key: string]: Building} = {
       "Dolmen",
       "A raised stone place where early mysticism becomes a city practice.",
       20,
-      {},
+      {[UPKEEP_TYPES.veil]: 8},
       {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 2},
       ["ritual"],
-      {veil: 8},
     ),
     multiHexStructure: [
       structureRule(buildings.aether.shamanHut, [
@@ -97,10 +92,9 @@ export const aetherBuildings: {[key: string]: Building} = {
     "Shaman Hut",
     "A dolmen and stalker hut combined into an early magical specialist dwelling.",
     2,
-    {[UPKEEP_TYPES.mana]: 4},
+    {[UPKEEP_TYPES.veil]: 18, [UPKEEP_TYPES.manaFlows]: 10},
     {},
-    ["production", "mana", "ritual"],
-    {veil: 18, manaFlows: 6},
+    ["production", "manaFlows", "ritual"],
   ),
   [buildings.aether.wardedHome]: {
     ...magicBuilding(
@@ -108,10 +102,9 @@ export const aetherBuildings: {[key: string]: Building} = {
       "Warded Home",
       "A dwelling protected by charms, talismans, and simple magical rituals. The inhabitants often cannot explain why it feels safer and more comfortable, only that it does.",
       8,
-      {[UPKEEP_TYPES.people]: 12, [UPKEEP_TYPES.mana]: 2},
+      {[UPKEEP_TYPES.people]: 12, [UPKEEP_TYPES.manaFlows]: 2, [UPKEEP_TYPES.veil]: 10},
       {[UPKEEP_TYPES.gold]: 2},
-      ["production", "people", "mana", "housing", "ritual"],
-      {veil: 10},
+      ["production", "people", "manaFlows", "housing", "ritual"],
     ),
     multiHexStructure: [
       structureRule(buildings.aether.runedHouse, [
@@ -126,10 +119,9 @@ export const aetherBuildings: {[key: string]: Building} = {
       "Runed House",
       "A warded home and dolmen combined into a house marked with protective runes.",
       2,
-      {[UPKEEP_TYPES.people]: 14, [UPKEEP_TYPES.mana]: 4},
+      {[UPKEEP_TYPES.people]: 14, [UPKEEP_TYPES.manaFlows]: 12, [UPKEEP_TYPES.veil]: 18},
       {[UPKEEP_TYPES.gold]: 2},
-      ["production", "people", "mana", "housing", "ritual"],
-      {veil: 18, manaFlows: 8},
+      ["production", "people", "manaFlows", "housing", "ritual"],
     ),
     multiHexStructure: [
       structureRule(buildings.aether.coven, [
@@ -143,10 +135,9 @@ export const aetherBuildings: {[key: string]: Building} = {
     "Coven",
     "Two runed houses joined into a small organized magical community.",
     2,
-    {[UPKEEP_TYPES.mana]: 10},
+    {[UPKEEP_TYPES.manaFlows]: 28, [UPKEEP_TYPES.veil]: 24, [UPKEEP_TYPES.death]: 4},
     {},
-    ["production", "mana", "ritual"],
-    {veil: 24, manaFlows: 18, death: 4},
+    ["production", "manaFlows", "ritual"],
   ),
   [buildings.aether.obelisk]: {
     ...magicBuilding(
@@ -154,10 +145,9 @@ export const aetherBuildings: {[key: string]: Building} = {
       "Obelisk",
       "A focused mana producer with lower signature than early ritual houses.",
       18,
-      {[UPKEEP_TYPES.mana]: 8},
+      {[UPKEEP_TYPES.manaFlows]: 18},
       {[UPKEEP_TYPES.gold]: 3},
-      ["production", "mana"],
-      {manaFlows: 18},
+      ["production", "manaFlows"],
     ),
     multiHexStructure: [
       structureRule(buildings.aether.embodimentStone, [
@@ -172,10 +162,9 @@ export const aetherBuildings: {[key: string]: Building} = {
       "Spirit Hut",
       "Converts part of nearby people requirements into mana requirements.",
       24,
-      {},
-      {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.mana]: 2},
+      {[UPKEEP_TYPES.veil]: 16},
+      {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.manaFlows]: 2},
       ["support", "ritual"],
-      {veil: 16},
     ),
     multiHexStructure: [
       structureRule(buildings.aether.houseOfSpirits, [
@@ -198,40 +187,36 @@ export const aetherBuildings: {[key: string]: Building} = {
     "House of Spirits",
     "Three spirit huts combined into a stronger mana-for-people conversion center.",
     3,
-    {},
-    {[UPKEEP_TYPES.mana]: 4},
+    {[UPKEEP_TYPES.veil]: 42, [UPKEEP_TYPES.death]: 8},
+    {[UPKEEP_TYPES.manaFlows]: 4},
     ["support", "ritual"],
-    {veil: 42, death: 8},
   ),
   [buildings.aether.veilThinning]: magicBuilding(
     buildings.aether.veilThinning,
     "Veil Thinning",
     "A weak point where the spirit world leaks into reality, producing large mana and a large signature.",
     42,
-    {[UPKEEP_TYPES.mana]: 16},
+    {[UPKEEP_TYPES.manaFlows]: 28, [UPKEEP_TYPES.veil]: 48, [UPKEEP_TYPES.death]: 6},
     {},
-    ["production", "mana", "visibility"],
-    {veil: 48, manaFlows: 12, death: 6},
+    ["production", "manaFlows", "visibility"],
   ),
   [buildings.aether.embodimentStone]: magicSuperstructure(
     buildings.aether.embodimentStone,
     "Embodiment Stone",
     "An obelisk and spirit hut combined to bind spirits into matter.",
     2,
-    {},
+    {[UPKEEP_TYPES.veil]: 18, [UPKEEP_TYPES.manaFlows]: 24, [UPKEEP_TYPES.death]: 8},
     {},
     ["support", "arcane"],
-    {veil: 18, manaFlows: 24, death: 8},
   ),
   [buildings.aether.golemBuilder]: magicBuilding(
     buildings.aether.golemBuilder,
     "Golem Builder",
     "Replaces all people requirements in radius with mana requirements.",
     32,
-    {},
-    {[UPKEEP_TYPES.mana]: 5, [UPKEEP_TYPES.gold]: 3},
+    {[UPKEEP_TYPES.manaFlows]: 26},
+    {[UPKEEP_TYPES.manaFlows]: 5, [UPKEEP_TYPES.gold]: 3},
     ["support", "arcane"],
-    {manaFlows: 26},
   ),
   [buildings.aether.suppressionTotem]: {
     ...magicBuilding(
@@ -239,10 +224,9 @@ export const aetherBuildings: {[key: string]: Building} = {
       "Suppression Totem",
       "Consumes mana to strongly reduce city signature while suppressing nearby production.",
       10,
-      {},
-      {[UPKEEP_TYPES.mana]: 5},
+      {[UPKEEP_TYPES.manaFlows]: 8, [UPKEEP_TYPES.death]: 22},
+      {[UPKEEP_TYPES.manaFlows]: 5},
       ["visibility", "ritual"],
-      {manaFlows: 8, death: 22},
     ),
     multiHexStructure: [
       structureRule(buildings.aether.spiritTrap, [
@@ -256,9 +240,8 @@ export const aetherBuildings: {[key: string]: Building} = {
     "Spirit Trap",
     "A spirit hut and suppression totem combined into a dangerous mana trap.",
     2,
-    {[UPKEEP_TYPES.mana]: 14},
+    {[UPKEEP_TYPES.manaFlows]: 30, [UPKEEP_TYPES.death]: 36},
     {},
-    ["production", "mana", "ritual"],
-    {manaFlows: 16, death: 36},
+    ["production", "manaFlows", "ritual"],
   ),
 };

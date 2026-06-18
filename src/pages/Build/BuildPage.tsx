@@ -187,7 +187,7 @@ const BuildPage = () => {
           <div className={s.inlineList}>
             {supportStatus.map((item) => (
               <span
-                key={item.resource.description}
+                key={item.resource}
                 className={item.missingAmount > 0 ? s.missingCostPill : s.costPill}
               >
                 {item.label} {item.requiredAmount}
@@ -317,7 +317,7 @@ const BuildPage = () => {
               {supportCost.length > 0
                 ? supportCost.map((item) => (
                   <span
-                    key={item.resource.description}
+                    key={item.resource}
                     className={item.missingAmount > 0 ? s.missingCostPill : s.costPill}
                   >
                     {item.label} {item.requiredAmount}

@@ -1,6 +1,6 @@
 import type {BuildingTypesValue} from "./BuildingTypes.ts";
 import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
-import type {UpkeepAmount} from "../Upkeep.ts";
+import type {ResourceKeyword, UpkeepAmount} from "../Upkeep.ts";
 import type {BuildingKeyword} from "./Keywords.ts";
 import type {PlacedBuilding} from "./Building.ts";
 
@@ -21,8 +21,15 @@ export interface EffectDelta {
     traceAdd?: number;
     requiredUpkeepMul?: UpkeepAmount;
     providedUpkeepMul?: UpkeepAmount;
+    outputMul?: ResourceOutputModifier | ResourceOutputModifier[];
     traceMul?: number;
 }
+
+export type ResourceOutputModifier = {
+    requiredKeywords: ResourceKeyword[];
+    multiplier?: number;
+    additive?: number;
+};
 
 // Simple data-driven filter (extend as needed)
 export interface TargetFilter {

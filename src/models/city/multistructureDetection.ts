@@ -75,8 +75,17 @@ export function getCompleteStructureIds(
 }
 
 function getBaseBuildingComponents(hexes: readonly HexCell[]): StructureComponentCandidate[] {
-    return hexes.flatMap(hex => {
+    const structureComponents = new Map<string, HexCell[]>();
+    const normalComponents = hexes.flatMap(hex => {
         if (hex.kind !== "city" || !hex.buildingKey) return [];
+        if (hex.partOfStructureId) {
+            const coreCellKey = hex.structureCoreCellKey ?? hex.cellKey;
+            structureComponents.set(coreCellKey, [
+                ...(structureComponents.get(coreCellKey) ?? []),
+                hex,
+            ]);
+            return [];
+        }
 
         return [{
             buildingId: hex.buildingKey,
@@ -84,6 +93,20 @@ function getBaseBuildingComponents(hexes: readonly HexCell[]): StructureComponen
             representativeHex: hex,
         }];
     });
+
+    return [
+        ...normalComponents,
+        ...[...structureComponents.entries()].flatMap(([coreCellKey, componentHexes]) => {
+            const representativeHex = componentHexes.find(hex => hex.cellKey === coreCellKey) ?? componentHexes[0];
+            if (!representativeHex?.partOfStructureId) return [];
+
+            return [{
+                buildingId: representativeHex.partOfStructureId,
+                hexes: componentHexes,
+                representativeHex,
+            }];
+        }),
+    ];
 }
 
 function resultToComponent(result: StructureDetectionResult): StructureComponentCandidate {

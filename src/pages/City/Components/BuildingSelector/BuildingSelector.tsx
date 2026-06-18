@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import * as s from "./BuildingSelector.css.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../../../models/DevlopmentVector.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
-import {UPKEEP_TYPES} from "../../../../models/Upkeep.ts";
+import {UPKEEP_SPRITES, UPKEEP_TYPES} from "../../../../models/Upkeep.ts";
 import {HexTilePreview} from "./HexTilePreview.tsx";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
 import type {BuildingSelectorProps} from "../../../../models/city/buildingSelector.ts";
@@ -76,9 +76,9 @@ export function BuildingSelector({
                                         {Object.values(UPKEEP_TYPES).map((resource) => {
                                             if (!building.requiredUpkeep[resource]) return null
                                             return (
-                                                <li key={resource.description} className={s.costItem}>
+                                                <li key={resource} className={s.costItem}>
                                                     <span className={s.costValue}>{building.requiredUpkeep[resource]}</span>
-                                                    <span className={s.costLabel}>{resource.description}</span>
+                                                    <span className={s.costLabel}>{UPKEEP_SPRITES[resource]}</span>
                                                 </li>
                                             )
                                         })}
@@ -109,9 +109,9 @@ export function BuildingSelector({
                                         {Object.values(UPKEEP_TYPES).map((resource) => {
                                             if (!building.providedUpkeep[resource]) return null
                                             return (
-                                                <li key={resource.description} className={s.bulletItem}>
+                                                <li key={resource} className={s.bulletItem}>
                                                     <span className={s.costValue}>{building.providedUpkeep[resource]}</span>
-                                                    <span className={s.costLabel}>{resource.description}</span>
+                                                    <span className={s.costLabel}>{UPKEEP_SPRITES[resource]}</span>
                                                 </li>
                                             )
                                         })}

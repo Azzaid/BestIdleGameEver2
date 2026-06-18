@@ -223,9 +223,16 @@ Advantages:
 
 # Visual Integration
 
-Although mechanically separate buildings remain underneath,
+Although the original buildings are consumed by the upgrade,
 
 visually they become one structure.
+
+Implementation direction:
+
+- the core hex owns the multistructure gameplay identity;
+- every part stores the multistructure id and a pointer to the core hex;
+- selection, adjacency, economy, trace, and research checks resolve structure parts through the core;
+- each part may store its own sprite id so the structure can become visually integrated without duplicating gameplay effects.
 
 The player sees:
 
@@ -289,7 +296,8 @@ Current prototype behavior:
 - complete candidates show a Transform action;
 - incomplete candidates show connected and missing adjacent buildings;
 - transformation is blocked during sieges;
-- after transformation, the core and matched satellites store the multistructure id, and research checks that built id.
+- after transformation, the core and matched satellites store the multistructure id and the core hex key;
+- research checks the built multistructure id from the linked structure rather than merely possible layouts.
 
 ---
 

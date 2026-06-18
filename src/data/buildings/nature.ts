@@ -72,9 +72,9 @@ export const natureBuildings: {[key: string]: Building} = {
       "Wild Garden",
       "A small garden with wild edible, medicinal, and strange plants.",
       8,
-      {[UPKEEP_TYPES.biomass]: 5},
+      {[UPKEEP_TYPES.plants]: 5},
       {[UPKEEP_TYPES.people]: 1},
-      ["production", "biomass", "garden", "herbs"],
+      ["production", "plants", "garden", "herbs"],
     ),
     multiHexStructure: [
       structureRule(buildings.nature.herbalistHut, [
@@ -88,9 +88,9 @@ export const natureBuildings: {[key: string]: Building} = {
     "Herbalist Hut",
     "A stalker hut and wild garden combined into a place for cultivating and preparing gathered plants.",
     2,
-    {[UPKEEP_TYPES.biomass]: 7},
+    {[UPKEEP_TYPES.plants]: 7},
     {},
-    ["production", "biomass", "herbs"],
+    ["production", "plants", "herbs"],
   ),
   [buildings.nature.field]: {
     ...bioBuilding(
@@ -98,19 +98,19 @@ export const natureBuildings: {[key: string]: Building} = {
       "Field",
       "A planned growing field for deliberate plant cultivation.",
       14,
-      {[UPKEEP_TYPES.biomass]: 4},
+      {[UPKEEP_TYPES.plants]: 4},
       {[UPKEEP_TYPES.people]: 2},
-      ["production", "biomass", "farm"],
+      ["production", "plants", "farm"],
     ),
     adjacency: [
       {
         scope: "neighbors",
         radiusInHexes: 1,
-        targetFilter: {keywords: ["people", "biomass"]},
-        effect: {providedUpkeepMul: {[UPKEEP_TYPES.people]: 1.25, [UPKEEP_TYPES.biomass]: 1.25}},
+        targetFilter: {keywords: ["production"]},
+        effect: {outputMul: {requiredKeywords: ["output", "production"], multiplier: 1.25}},
       },
     ],
-    adjacencyDescription: "Neighboring People and Biomass producers gain 25% output.",
+    adjacencyDescription: "Neighboring producers gain 25% output.",
     multiHexStructure: [
       structureRule(buildings.medieval.farm, [
         buildings.nature.field,

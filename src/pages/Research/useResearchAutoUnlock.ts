@@ -46,7 +46,7 @@ export function useResearchAutoUnlock(): void {
 
     const builtBuildingIds = useMemo(() => {
         return new Set(cityHexes.flatMap(hex => [
-            hex.buildingKey,
+            !hex.partOfStructureId || (hex.structureCoreCellKey ?? hex.cellKey) === hex.cellKey ? hex.buildingKey : null,
             hex.wallKey,
             hex.wallTopKey,
         ].filter((buildingId): buildingId is string => Boolean(buildingId))));

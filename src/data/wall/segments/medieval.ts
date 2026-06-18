@@ -22,9 +22,9 @@ export const medievalWallSegments: Record<string, WallBuilding> = {
         id: walls.medieval.veiledStoneRampart,
         name: "Veiled stone rampart",
         type: BUILDING_TYPES.wallSegment,
-        requiredUpkeep: {[UPKEEP_TYPES.mana]: 3, [UPKEEP_TYPES.people]: 1},
+        requiredUpkeep: {[UPKEEP_TYPES.manaFlows]: 3, [UPKEEP_TYPES.people]: 1},
         requiredUpkeepDescription: {
-            [UPKEEP_TYPES.mana]: "Maintains the low-visibility ward",
+            [UPKEEP_TYPES.manaFlows]: "Maintains the low-visibility ward",
             [UPKEEP_TYPES.people]: "Needs 1 keeper crew",
         },
         resilience: 160,

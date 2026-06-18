@@ -70,20 +70,24 @@ Support represents ongoing maintenance.
 Examples:
 
 Technology:
-- electricity
-- computing
+- power
+- compute
 
 Medieval:
 - people
-- administration
+- gold
 
 Nature:
-- biomass
-- ecosystems
+- fungi
+- plants
+- animals
 
 Aether:
-- mana
-- magical infrastructure
+- veil
+- mana flows
+- death
+
+All resources are represented by the same keyworded resource map in implementation. The UI decides whether a resource is displayed as support rows, an atmosphere orb, or another specialized presentation. Adjacency and other modifiers should prefer resource keywords over hardcoded resource ids when a broad rule is intended.
 
 ---
 
@@ -111,13 +115,13 @@ Example:
 Technology:
 
 Production:
-+500 Electricity
++500 Power
 
 Consumption:
--350 Electricity
+-350 Power
 
 Free:
-150 Electricity
+150 Power
 
 The free amount may be allocated elsewhere.
 
@@ -156,10 +160,10 @@ The game contains four partially independent economies.
 ## Technology
 
 Operational Support:
-Electricity
+Power
 
 Research Support:
-Computing Power
+Compute
 
 Strengths:
 
@@ -198,10 +202,10 @@ Weaknesses:
 ## Nature
 
 Operational Support:
-Biomass
+Fungi, Plants, Animals
 
 Research Support:
-Mutagens
+Derived biology states
 
 Strengths:
 
@@ -218,10 +222,10 @@ Weaknesses:
 ## Aether
 
 Operational Support:
-Mana
+Veil, Mana Flows, Death
 
 Research Support:
-Ancient Knowledge
+Derived Aether atmosphere levels
 
 Strengths:
 
@@ -243,19 +247,19 @@ Examples:
 
 Food Synthesizer:
 
-Biomass → Electricity
+Plants -> Power
 
 Automation:
 
-People → Electricity
+People -> Power
 
 Necromancy:
 
-Mana → People
+Death -> People
 
 Bio-reactors:
 
-Biomass → Mana
+Fungi -> Mana Flows
 
 The goal is not replacement.
 
@@ -278,18 +282,18 @@ Example:
 
 Power Plant
 
-+ Electricity
++ Power
 + Threat
 
 Farm
 
-+ Biomass
++ Plants
 + Low Threat
 
 Library
 
-+ Ancient Knowledge
-- Mana
++ Compute
+- Mana Flows
 
 ---
 
@@ -394,7 +398,7 @@ This is intentional.
 
 Example:
 
-Electricity Production:
+Power Production:
 400
 
 Consumption:
@@ -483,7 +487,7 @@ A colony transfers part of its Free Support.
 
 Example:
 
-Free Electricity:
+Free Power:
 100
 
 Transfer Rate:
@@ -565,15 +569,15 @@ Examples:
 
 Temporal Shield
 
-Requires huge electrical infrastructure.
+Requires huge power infrastructure.
 
 World Tree
 
-Requires enormous biomass.
+Requires enormous plant infrastructure.
 
 Ascension
 
-Requires sustained mana.
+Requires sustained Mana Flows.
 
 Empire
 

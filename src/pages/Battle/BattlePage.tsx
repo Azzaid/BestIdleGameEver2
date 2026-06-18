@@ -1,5 +1,5 @@
 import {BattleStage} from "./ui/BattleStage.tsx";
-import {useCallback, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import { useTypedDispatch, useTypedSelector } from "../../store/hooks.ts";
 import { selectHasAnyTowerBuild, selectResolvedAvailableTowers } from "../../store/towers/selectors.ts";
 import * as styles from './BattlePage.css.ts';
@@ -25,6 +25,11 @@ import {
 } from "../../data/constants.ts";
 
 type BattleMode = "siege" | "pressure";
+
+function toPercent(value: number, max: number) {
+    if (max <= 0) return 0;
+    return Math.floor(Math.max(0, Math.min(100, (value / max) * 100)));
+}
 
 const BattlePage = () => {
     const dispatch = useTypedDispatch();
@@ -71,10 +76,16 @@ const BattlePage = () => {
     const [metrics, setMetrics] = useState<BattleMetrics>(() => ({
         threat: initialThreat,
         targetThreat,
+        siegeElapsedSeconds: 0,
         siegePressure: 0,
         wallResilience: wallResolution.resilience,
     }));
+    const lastRenderedMetricsSecondRef = useRef(-1);
     const [battleMessage, setBattleMessage] = useState<string | null>(null);
+    const siegeProgressPercent = isSiege
+        ? toPercent(metrics.siegeElapsedSeconds, SIEGE_DURATION_SECONDS)
+        : 0;
+    const pressureProgressPercent = toPercent(metrics.siegePressure, metrics.wallResilience);
     const wallLogicalWidth = citySideHexes * BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX;
     const longestTowerRange = Math.max(360, ...resolvedBattleTowers.map((tower) => tower.stats.targetingDistanceLimit));
     const battlefieldLength = longestTowerRange * BATTLEFIELD_RANGE_MULTIPLIER;
@@ -110,7 +121,18 @@ const BattlePage = () => {
         battlefieldHeight,
         battleWallSegments,
     ]);
+    useEffect(() => {
+        lastRenderedMetricsSecondRef.current = -1;
+        setMetrics({
+            threat: initialThreat,
+            targetThreat,
+            siegeElapsedSeconds: 0,
+            siegePressure: 0,
+            wallResilience: wallResolution.resilience,
+        });
+    }, [battleKey, initialThreat, targetThreat, wallResolution.resilience]);
     const handleBattleEnded = useCallback((result: BattleResult) => {
+        setMetrics(result);
         dispatch(recordThreatReached(result.threat));
 
         if (result.outcome === "held") {
@@ -136,31 +158,51 @@ const BattlePage = () => {
         setBattleMessage("Pressure exceeded wall resilience. Improve the wall or tower build.");
         setBattleMode("pressure");
     }, [dispatch, isDebugModeEnabled]);
+    const handleBattleMetrics = useCallback((nextMetrics: BattleMetrics) => {
+        const nextSecond = Math.floor(nextMetrics.siegeElapsedSeconds);
+        if (nextSecond === lastRenderedMetricsSecondRef.current) return;
+
+        lastRenderedMetricsSecondRef.current = nextSecond;
+        setMetrics(nextMetrics);
+    }, []);
 
     return (
         <div className={styles.battlePage}>
             {hasAnyTowerBuild ? (
                 <div className={`${styles.battleShell} ${isSiege ? styles.battleShellSiege : ''}`}>
-                    <div className={styles.battleHud} aria-live="polite">
-                        <div className={styles.battleMetric}>
-                            <span className={styles.battleMetricLabel}>Mode</span>
-                            <span className={styles.battleMetricValue}>
-                                {isSiege ? "Siege" : "Pressure"}
-                            </span>
+                    {isSiege && (
+                        <div className={`${styles.battleProgress} ${styles.siegeProgress}`} aria-label="Siege duration">
+                            <span className={styles.progressLabel}>Siege</span>
+                            <div className={styles.progressTrack}>
+                                <div
+                                    className={styles.siegeProgressFill}
+                                    style={{width: `${siegeProgressPercent}%`}}
+                                />
+                            </div>
                         </div>
-                        <div className={styles.battleMetric}>
-                            <span className={styles.battleMetricLabel}>Threat</span>
-                            <span className={styles.battleMetricValue}>
-                                {Math.round(metrics.threat)}/{Math.round(metrics.targetThreat)}
-                            </span>
+                    )}
+                    {isDebugModeEnabled && (
+                        <div className={styles.battleHud} aria-live="polite">
+                            <div className={styles.battleMetric}>
+                                <span className={styles.battleMetricLabel}>Mode</span>
+                                <span className={styles.battleMetricValue}>
+                                    {isSiege ? "Siege" : "Pressure"}
+                                </span>
+                            </div>
+                            <div className={styles.battleMetric}>
+                                <span className={styles.battleMetricLabel}>Threat</span>
+                                <span className={styles.battleMetricValue}>
+                                    {Math.round(metrics.threat)}/{Math.round(metrics.targetThreat)}
+                                </span>
+                            </div>
+                            <div className={styles.battleMetric}>
+                                <span className={styles.battleMetricLabel}>Siege pressure</span>
+                                <span className={styles.battleMetricValue}>
+                                    {Math.round(metrics.siegePressure)}/{Math.round(metrics.wallResilience)}
+                                </span>
+                            </div>
                         </div>
-                        <div className={styles.battleMetric}>
-                            <span className={styles.battleMetricLabel}>Siege pressure</span>
-                            <span className={styles.battleMetricValue}>
-                                {Math.round(metrics.siegePressure)}/{Math.round(metrics.wallResilience)}
-                            </span>
-                        </div>
-                    </div>
+                    )}
                     {battleMessage && (
                         <div className={styles.battleNotice} role="status">
                             {battleMessage}
@@ -184,9 +226,20 @@ const BattlePage = () => {
                         completesWhenThreatTargetReached={isSiege}
                         wallResilience={wallResolution.resilience}
                         wallIgnoredThreat={wallResolution.ignoredThreat}
-                        onBattleMetrics={setMetrics}
+                        showDebugOutlines={isDebugModeEnabled}
+                        showSiegeOutline={isSiege}
+                        onBattleMetrics={handleBattleMetrics}
                         onBattleEnded={handleBattleEnded}
                     />
+                    <div className={`${styles.battleProgress} ${styles.pressureProgress}`} aria-label="Siege pressure">
+                        <span className={styles.progressLabel}>Siege pressure</span>
+                        <div className={styles.progressTrack}>
+                            <div
+                                className={styles.pressureProgressFill}
+                                style={{width: `${pressureProgressPercent}%`}}
+                            />
+                        </div>
+                    </div>
                 </div>
             ) : (
                 <section className={styles.battleLocked}>

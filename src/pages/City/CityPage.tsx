@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as s from './CityPage.css.ts';
 import CityHex from "./Components/CityHex/CityHex.tsx";
 import type {HexCell} from "../../models/city/HexGrid.ts";
@@ -13,7 +13,7 @@ import {
     selectCompleteCityStructureIds,
 } from "../../store/city/selectors.ts";
 import {buildHex, buildWall, buildWallTop, demolishHex, buildMultistructure} from "../../store/city/slice.ts";
-import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
+import {UPKEEP_SPRITES, UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
 import {ALL_WALL_BUILDINGS, TOWER_PLATFORM_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
@@ -22,7 +22,6 @@ import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/se
 import type {PlacedBuilding} from "../../models/city/Building.ts";
 import type {StructureDetectionResult} from "../../models/city/multistructureDetection.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
-import {STRUCTURES_BY_ID} from "../../data/structures/index.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {PROGRESSION_RULES} from "../../data/content/rules.ts";
 import {getRuleForTarget, isProgressionRuleUnlocked} from "../../data/content/progression.ts";
@@ -41,9 +40,32 @@ const CityPage = () => {
     const aetherAtmosphereLevels = useTypedSelector(selectCityAetherAtmosphereLevels);
     const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
     const [selectedHex, setSelectedHex] = useState<HexCell | null>(null);
+    const selectHex = (hex: HexCell) => {
+        const selectedCoreHex = hex.partOfStructureId
+            ? hexes.find(candidate => candidate.cellKey === (hex.structureCoreCellKey ?? hex.cellKey)) ?? hex
+            : hex;
+
+        setSelectedHex(selectedCoreHex);
+    };
+
+    useEffect(() => {
+        if (!selectedHex) return;
+
+        const currentHex = hexes.find(hex => hex.cellKey === selectedHex.cellKey);
+        if (!currentHex) {
+            setSelectedHex(null);
+            return;
+        }
+
+        const currentCoreHex = currentHex.partOfStructureId
+            ? hexes.find(hex => hex.cellKey === (currentHex.structureCoreCellKey ?? currentHex.cellKey)) ?? currentHex
+            : currentHex;
+
+        setSelectedHex(currentCoreHex);
+    }, [hexes, selectedHex]);
     const builtBuildingIds = useMemo(() => {
         return new Set(hexes.flatMap(hex => [
-            hex.buildingKey,
+            !hex.partOfStructureId || (hex.structureCoreCellKey ?? hex.cellKey) === hex.cellKey ? hex.buildingKey : null,
             hex.wallKey,
             hex.wallTopKey,
         ].filter((buildingId): buildingId is string => Boolean(buildingId))));
@@ -106,13 +128,13 @@ const CityPage = () => {
         ? structureCandidates.filter(candidate => candidate.coreHex.cellKey === selectedHex.cellKey)
         : [];
     const selectedHexIsPartOfCompleteStructure = selectedHex
-        ? Boolean(selectedHex.buildingKey && (STRUCTURES_BY_ID as Record<string, unknown>)[selectedHex.buildingKey])
+        ? Boolean(selectedHex.partOfStructureId)
         : false;
 
   return (
     <div className={s.cityPage}>
       <div className={s.cityContainer}>
-        <CityHex cells={hexes} onSelect={setSelectedHex}/>
+        <CityHex cells={hexes} onSelect={selectHex}/>
       </div>
         {selectedHex &&
             <div className={s.buildingSelectorContainer}>
@@ -136,7 +158,7 @@ const CityPage = () => {
                         blocked={traceStatus.isBesieged}
                         blockedReason={BESIEGED_BUILD_BLOCK_REASON}
                     />
-                    : selectedHex.buildingKey
+                    : selectedHex.buildingKey || selectedHex.partOfStructureId
                         ? <p className={s.buildingLockedNote}>
                             Demolish the existing building before using this hex again.
                         </p>
@@ -273,7 +295,7 @@ function MultistructureStatus({
             {structureCandidates.map(candidate => {
                 const isAlreadyTransformed =
                     candidate.coreHex.kind === "city" &&
-                    candidate.coreHex.buildingKey === candidate.structure.id;
+                    candidate.coreHex.partOfStructureId === candidate.structure.id;
 
                 return (
                     <div key={`${candidate.structure.id}-${candidate.coreHex.cellKey}`} className={s.multistructureCandidate}>
@@ -339,8 +361,8 @@ function MetricGroup({title, values}: {title: string; values: UpkeepAmount}) {
             {entries.length ? (
                 <dl className={s.metricList}>
                     {entries.map(({resource, amount}) => (
-                        <div key={resource.description} className={s.metricRow}>
-                            <dt>{resource.description}</dt>
+                        <div key={resource} className={s.metricRow}>
+                            <dt>{UPKEEP_SPRITES[resource]}</dt>
                             <dd>{amount}</dd>
                         </div>
                     ))}
