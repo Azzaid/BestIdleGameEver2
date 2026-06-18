@@ -409,6 +409,9 @@ Current implementation:
 - The Research page renders a radial tree with `react-d3-tree`.
 - Nodes are collapsible and colored by research vector.
 - Node content is structured with summary, unlocks, costs, and notes.
+- Technologies auto-unlock when their prerequisite technologies, city buildings, built multistructures, upkeep, Aether atmosphere, and siege-state requirements are satisfied.
+- Research nodes show whether they are locked, currently unlocking, or researched; the page no longer exposes a manual research purchase button.
+- Newly unlocked technologies emit app notifications through the shared notification center.
 - Node internals render through custom SVG/HTML foreignObject content.
 - The Progression page renders a content dependency graph. Every node is colored by development vector. Shape communicates content type: buildings are square, superstructures are rectangular, technologies are heavily rounded rectangles, and tower parts are circular.
 - Aether progression requirements use atmospheric states instead of raw numbers: Veil, Mana Flows, and Death. Each level is derived from building influence totals divided by city hex count, rounded down and clamped to levels 1 through 5. Biology progression requirements expose Biodiversity as a decimal value with two digits.
@@ -427,6 +430,8 @@ Core rules:
 
 - Multistructures never appear automatically.
 - The player selects the core and explicitly confirms the upgrade.
+- The City page lists ready and incomplete multistructure candidates for the selected core. Ready candidates expose a Transform action unless the city is besieged.
+- Confirming a transform replaces the core and matched satellites with the multistructure id, so research requirements check built multistructures instead of merely possible layouts.
 - Required satellites must be adjacent to the core, not arranged in fixed shapes.
 - Blob-shaped layouts are allowed.
 - Normal buildings remain mechanically understandable, while the district may visually integrate into one larger structure.

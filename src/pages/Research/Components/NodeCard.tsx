@@ -8,10 +8,18 @@ export function NodeCard({
                              requirements,
                              isResearched,
                              canResearch,
-                             onResearch,
                          }: NodeCardProps) {
     const vectorTheme = themeMap[data.vector];
-    const buttonEnabled = canResearch && !isResearched;
+    const statusLabel = isResearched
+        ? "Researched"
+        : canResearch
+            ? "Unlocking"
+            : "Locked";
+    const statusColor = isResearched
+        ? vectorTheme.color.state.success
+        : canResearch
+            ? vectorTheme.color.brand.primary
+            : vectorTheme.color.text.muted;
 
     return (
         <g>
@@ -103,13 +111,7 @@ export function NodeCard({
                         </div>
                         {data.notes ? <p style={{marginTop: 6, opacity: 0.9}}>{data.notes}</p> : null}
                     </div>
-                    <button
-                        type="button"
-                        disabled={!buttonEnabled}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onResearch();
-                        }}
+                    <div
                         style={{
                             marginTop: 6,
                             width: '100%',
@@ -117,18 +119,14 @@ export function NodeCard({
                             border: `1px solid ${vectorTheme.color.border.default}`,
                             borderRadius: 6,
                             padding: '4px 6px',
-                            background: buttonEnabled
-                                ? vectorTheme.color.brand.primary
-                                : vectorTheme.color.background.surfaceHover,
-                            color: buttonEnabled
-                                ? vectorTheme.color.text.inverse
-                                : vectorTheme.color.text.muted,
-                            cursor: buttonEnabled ? 'pointer' : 'not-allowed',
+                            background: vectorTheme.color.background.surfaceHover,
+                            color: statusColor,
                             fontWeight: 700,
+                            textAlign: 'center',
                         }}
                     >
-                        {isResearched ? 'Researched' : 'Research'}
-                    </button>
+                        {statusLabel}
+                    </div>
                 </div>
             </foreignObject>
         </g>

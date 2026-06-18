@@ -283,6 +283,14 @@ Player confirms.
 
 Multistructure created.
 
+Current prototype behavior:
+
+- selecting a core tile shows possible multistructure candidates;
+- complete candidates show a Transform action;
+- incomplete candidates show connected and missing adjacent buildings;
+- transformation is blocked during sieges;
+- after transformation, the core and matched satellites store the multistructure id, and research checks that built id.
+
 ---
 
 # Why Manual Creation Exists

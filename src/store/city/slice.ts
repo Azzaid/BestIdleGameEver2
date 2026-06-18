@@ -7,7 +7,7 @@ import { DEFAULT_BATTLE_BACKGROUND_ID } from "../../data/battle/backgrounds.ts";
 import {coordKey} from "../../pages/City/Components/CityHex/hexUtils.ts";
 import type {CityState} from "../../models/store/city.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
-import {STRUCTURES} from "../../data/structures/index.ts";
+import {STRUCTURES, STRUCTURES_BY_ID} from "../../data/structures/index.ts";
 import {superstructures, walls} from "../../data/identificators/index.ts";
 
 const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
@@ -54,20 +54,47 @@ const getRetreatedHexes = (existingHexes: HexCell[], cityRadius: number) => {
 const getDemolishedHexKeys = (hexes: HexCell[], targetHex: HexCell): string[] => {
     if (targetHex.kind !== "city" || !targetHex.buildingKey) return [];
 
-    const containingStructure = detectMultistructures(hexes, STRUCTURES)
-        .filter(result => result.isComplete)
-        .find(result => {
-            if (result.coreHex.cellKey === targetHex.cellKey) return true;
+    // If this is a built multistructure tile, remove the connected component of the same structure id
+    if ((STRUCTURES_BY_ID as Record<string, unknown>)[targetHex.buildingKey]) {
+        const structureId = targetHex.buildingKey;
+        const byKey = new Map(hexes.map(h => [h.cellKey, h]));
+        const result: string[] = [];
+        const visited = new Set<string>();
+        const queue: string[] = [targetHex.cellKey];
 
-            return result.matchedSatellites.some(match => match.hex.cellKey === targetHex.cellKey);
-        });
+        const neighborOffsets = [
+            { column: +1, row:  0 },
+            { column: +1, row: -1 },
+            { column:  0, row: -1 },
+            { column: -1, row:  0 },
+            { column: -1, row: +1 },
+            { column:  0, row: +1 },
+        ] as const;
 
-    if (!containingStructure) return [targetHex.cellKey];
+        while (queue.length) {
+            const key = queue.shift()!;
+            if (visited.has(key)) continue;
+            visited.add(key);
+            const hex = byKey.get(key);
+            if (!hex || hex.kind !== "city" || hex.buildingKey !== structureId) continue;
 
-    return [
-        containingStructure.coreHex.cellKey,
-        ...containingStructure.matchedSatellites.map(match => match.hex.cellKey),
-    ];
+            result.push(key);
+
+            for (const off of neighborOffsets) {
+                const nCol = hex.column + off.column;
+                const nRow = hex.row + off.row;
+                const nKey = `${nCol},${nRow}`;
+                if (!visited.has(nKey)) {
+                    queue.push(nKey);
+                }
+            }
+        }
+
+        return result.length ? result : [targetHex.cellKey];
+    }
+
+    // Otherwise, this is a base building — demolish only this tile
+    return [targetHex.cellKey];
 };
 
 // Define the initial state using that type
@@ -110,6 +137,34 @@ export const citySlice = createSlice({
             hex.wallTopKey = action.payload.wallTopKey;
             hex.wallTopDevelopmentVector = DEVELOPMENT_VECTORS.medieval;
         },
+        buildMultistructure: (state, action: PayloadAction<{ coreCellKey: string; structureId: string }>) => {
+            const { coreCellKey, structureId } = action.payload;
+            const structureDef = STRUCTURES_BY_ID[structureId];
+            if (!structureDef) return;
+
+            // Find the complete candidate matching the provided core and structure id
+            const candidate = detectMultistructures(state.hexes, STRUCTURES)
+                .find(result =>
+                    result.isComplete &&
+                    result.structure.id === structureId &&
+                    result.coreHex.cellKey === coreCellKey
+                );
+            if (!candidate) return;
+
+            const involvedKeys = new Set<string>([
+                candidate.coreHex.cellKey,
+                ...candidate.matchedSatellites.map(m => m.hex.cellKey),
+            ]);
+
+            // Replace core and satellites with multistructure parts
+            state.hexes.forEach(hex => {
+                if (hex.kind !== "city") return;
+                if (!involvedKeys.has(hex.cellKey)) return;
+
+                hex.buildingKey = structureId;
+                hex.developmentVector = DEVELOPMENT_VECTORS[structureDef.vector];
+            });
+        },
         retreatCityRadius: (state) => {
             const nextRadius = Math.max(1, state.cellRadius - 1);
             state.cellRadius = nextRadius;
@@ -137,6 +192,7 @@ export const {
     buildHex,
     buildWall,
     buildWallTop,
+    buildMultistructure,
     demolishHex,
     retreatCityRadius,
     recordSurvivedSiege,

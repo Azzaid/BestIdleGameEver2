@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import {Provider} from "react-redux";
 import {store} from "./store";
-import { ThemeProvider, useTheme } from './theme/ThemeProvider'
+import { ThemeProvider } from './theme/ThemeProvider'
+import { useTheme } from './theme/useTheme.ts'
 import * as appTheme from './App.css.ts'
 
 // Import page components
@@ -21,6 +22,10 @@ import {selectHasAnyTowerBuild} from "./store/towers/selectors.ts";
 import {useTypedDispatch} from "./store/hooks.ts";
 import {selectIsDebugModeEnabled} from "./store/debug/selectors.ts";
 import {toggleDebugMode} from "./store/debug/slice.ts";
+import { NotificationCenter } from "./components/Notifications/NotificationCenter.tsx";
+import { sendNotification } from "./lib/notifications/eventBus.ts";
+import { vars } from "./theme/theme.css.ts";
+import { useResearchAutoUnlock } from "./pages/Research/useResearchAutoUnlock.ts";
 
 //this is temporary theme switcher
 function ThemeSwitcher() {
@@ -42,6 +47,8 @@ function App() {
   const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
   const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
   const isBuildBlocked = traceStatus.isBesieged && hasAnyTowerBuild;
+
+  useResearchAutoUnlock();
 
   return (
       <ThemeProvider initialTheme={'tech'}>
@@ -89,8 +96,34 @@ function App() {
                               </>
                           )}
                       </ul>
-                      <ThemeSwitcher />
+                      <div className={appTheme.themeSwitcher}>
+                        <ThemeSwitcher />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const schemes = ["tech","nature","medieval","aether","alert","warning","congratulation"] as const;
+                            const pick = schemes[Math.floor(Math.random()*schemes.length)];
+                            sendNotification({
+                              title: "Notification test",
+                              message: `This is a sample ${pick} notification.`,
+                              scheme: pick,
+                            });
+                          }}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: 6,
+                            border: `1px solid ${vars.color.border.default}`,
+                            background: vars.color.background.surfaceHover,
+                            color: vars.color.text.primary,
+                            cursor: 'pointer',
+                          }}
+                          title="Send a sample notification"
+                        >
+                          Test notification
+                        </button>
+                      </div>
                   </nav>
+                  <NotificationCenter />
                   <UpkeepBar/>
                   <main className={appTheme.appContent}>
                       <Routes>

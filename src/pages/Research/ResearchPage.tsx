@@ -5,9 +5,8 @@ import {NodeCard} from "./Components/NodeCard.tsx";
 import {StubNode} from "./Components/StubNode.tsx";
 import {researchTree} from "../../data/research";
 import * as s from "./ResearchPage.css.ts";
-import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
+import {useTypedSelector} from "../../store/hooks.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
-import {purchaseTech} from "../../store/research/slice.ts";
 import {selectCityAetherAtmosphereLevels, selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
 import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
@@ -15,7 +14,7 @@ import {STRUCTURES_BY_ID} from "../../data/structures/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
 import type {FlatEdgeData, FlatNode, RequirementStatus, StubData} from "../../models/research/researchView.ts";
-import {buildResearchPreviewGraph, isResearchUnlocked} from "../../models/research/researchGraph.ts";
+import {buildResearchPreviewGraph, canPurchaseResearch} from "../../models/research/researchGraph.ts";
 import {
     AETHER_ATMOSPHERE_LABELS,
     type AetherAtmosphere,
@@ -65,14 +64,6 @@ function getBuildingName(buildingId: string): string {
 
 function getStructureName(structureId: string): string {
     return STRUCTURES_BY_ID[structureId]?.name ?? structureId;
-}
-
-function hasEnoughFreeUpkeep(required: UpkeepAmount | undefined, available: UpkeepAmount): boolean {
-    if (!required) return true;
-
-    return (Object.getOwnPropertySymbols(required) as UpkeepTypesValue[]).every(resource => {
-        return (available[resource] ?? 0) >= (required[resource] ?? 0);
-    });
 }
 
 function describeFreeUpkeepRequirement(
@@ -140,7 +131,6 @@ function describeAetherAtmosphereRequirement(
 }
 
 export default function ResearchPage() {
-    const dispatch = useTypedDispatch();
     const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
     const cityHexes = useTypedSelector(selectCityHexes);
     const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
@@ -280,13 +270,14 @@ export default function ResearchPage() {
                         aetherAtmosphereLevels,
                     );
                     const isResearched = purchased.has(data.id);
-                    const canResearch = !isResearched
-                        && isResearchUnlocked(data, purchased)
-                        && requirements.requiredBuildings.every(requirement => requirement.met)
-                        && requirements.requiredStructures.every(requirement => requirement.met)
-                        && requirements.requiredAetherAtmosphere.every(requirement => requirement.met)
-                        && hasEnoughFreeUpkeep(data.requiredFreeUpkeep, effectiveUpkeep)
-                        && !traceStatus.isBesieged;
+                    const canResearch = canPurchaseResearch(data, {
+                        purchased,
+                        builtBuildingIds,
+                        completeStructureIds,
+                        effectiveUpkeep,
+                        aetherAtmosphereLevels,
+                        isBesieged: traceStatus.isBesieged,
+                    });
 
                     return (
                         <g transform={`translate(${props.x + NODE_W / 2}, ${props.y + NODE_H / 2})`}>
@@ -297,10 +288,6 @@ export default function ResearchPage() {
                                 requirements={requirements}
                                 isResearched={isResearched}
                                 canResearch={canResearch}
-                                onResearch={() => {
-                                    if (traceStatus.isBesieged) return;
-                                    dispatch(purchaseTech(data.id));
-                                }}
                             />
                         </g>
                     );

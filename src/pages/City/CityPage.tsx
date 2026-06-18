@@ -12,7 +12,7 @@ import {
     selectCityStructureCandidates,
     selectCompleteCityStructureIds,
 } from "../../store/city/selectors.ts";
-import {buildHex, buildWall, buildWallTop, demolishHex} from "../../store/city/slice.ts";
+import {buildHex, buildWall, buildWallTop, demolishHex, buildMultistructure} from "../../store/city/slice.ts";
 import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
 import {ALL_WALL_BUILDINGS, TOWER_PLATFORM_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
@@ -22,6 +22,7 @@ import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/se
 import type {PlacedBuilding} from "../../models/city/Building.ts";
 import type {StructureDetectionResult} from "../../models/city/multistructureDetection.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
+import {STRUCTURES_BY_ID} from "../../data/structures/index.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {PROGRESSION_RULES} from "../../data/content/rules.ts";
 import {getRuleForTarget, isProgressionRuleUnlocked} from "../../data/content/progression.ts";
@@ -93,6 +94,11 @@ const CityPage = () => {
         setSelectedHex(null);
     };
 
+    const handleBuildStructure = (structureId: string) => {
+        if (!selectedHex || traceStatus.isBesieged) return;
+        dispatch(buildMultistructure({ coreCellKey: selectedHex.cellKey, structureId }));
+    };
+
     const selectedBuilding = selectedHex ? cityBuildings.get(selectedHex.cellKey) : undefined;
     const selectedWallBuilding = selectedHex?.wallKey ? ALL_WALL_BUILDINGS[selectedHex.wallKey] : undefined;
     const selectedWallTopBuilding = selectedHex?.wallTopKey ? ALL_WALL_BUILDINGS[selectedHex.wallTopKey] : undefined;
@@ -100,12 +106,7 @@ const CityPage = () => {
         ? structureCandidates.filter(candidate => candidate.coreHex.cellKey === selectedHex.cellKey)
         : [];
     const selectedHexIsPartOfCompleteStructure = selectedHex
-        ? structureCandidates.some(candidate => {
-            if (!candidate.isComplete) return false;
-            if (candidate.coreHex.cellKey === selectedHex.cellKey) return true;
-
-            return candidate.matchedSatellites.some(match => match.hex.cellKey === selectedHex.cellKey);
-        })
+        ? Boolean(selectedHex.buildingKey && (STRUCTURES_BY_ID as Record<string, unknown>)[selectedHex.buildingKey])
         : false;
 
   return (
@@ -125,6 +126,7 @@ const CityPage = () => {
                     wallResolution={wallResolution}
                     blocked={traceStatus.isBesieged}
                     blockedReason={BESIEGED_BUILD_BLOCK_REASON}
+                    onBuildStructure={handleBuildStructure}
                     onDemolish={handleDemolishSelectedHex}
                 />
                 {selectedHex.kind === "wall"
@@ -161,6 +163,7 @@ function SelectedHexPanel({
     wallResolution,
     blocked,
     blockedReason,
+    onBuildStructure,
     onDemolish,
 }: SelectedHexPanelProps) {
     return (
@@ -182,7 +185,12 @@ function SelectedHexPanel({
                         </div>
                     </dl>
                     <AdjacencyEffectSummary building={selectedBuilding} />
-                    <MultistructureStatus structureCandidates={structureCandidates} />
+                    <MultistructureStatus
+                        structureCandidates={structureCandidates}
+                        onBuildStructure={onBuildStructure}
+                        blocked={blocked}
+                        blockedReason={blockedReason}
+                    />
                     <p className={s.panelDescription}>{selectedBuilding.adjacencyDescription}</p>
                     {selectedHex.kind === "city" && (
                         <button
@@ -244,7 +252,17 @@ function SelectedHexPanel({
     );
 }
 
-function MultistructureStatus({structureCandidates}: {structureCandidates: StructureDetectionResult[]}) {
+function MultistructureStatus({
+    structureCandidates,
+    onBuildStructure,
+    blocked,
+    blockedReason,
+}: {
+    structureCandidates: StructureDetectionResult[];
+    onBuildStructure: (structureId: string) => void;
+    blocked: boolean;
+    blockedReason: string;
+}) {
     if (!structureCandidates.length) {
         return <p className={s.emptyStats}>No multistructure transformation from this tile.</p>;
     }
@@ -252,29 +270,46 @@ function MultistructureStatus({structureCandidates}: {structureCandidates: Struc
     return (
         <div className={s.multistructureStatus}>
             <h4 className={s.metricTitle}>Multistructure</h4>
-            {structureCandidates.map(candidate => (
-                <div key={`${candidate.structure.id}-${candidate.coreHex.cellKey}`} className={s.multistructureCandidate}>
-                    <div className={s.metricRow}>
-                        <span>{candidate.structure.name}</span>
-                        <strong>{candidate.isComplete ? "Ready" : "Missing satellites"}</strong>
+            {structureCandidates.map(candidate => {
+                const isAlreadyTransformed =
+                    candidate.coreHex.kind === "city" &&
+                    candidate.coreHex.buildingKey === candidate.structure.id;
+
+                return (
+                    <div key={`${candidate.structure.id}-${candidate.coreHex.cellKey}`} className={s.multistructureCandidate}>
+                        <div className={s.metricRow}>
+                            <span>{candidate.structure.name}</span>
+                            <strong>{candidate.isComplete ? (isAlreadyTransformed ? "Built" : "Ready") : "Missing satellites"}</strong>
+                            {candidate.isComplete && !isAlreadyTransformed && (
+                                <button
+                                    className={s.demolishButton}
+                                    type="button"
+                                    disabled={blocked}
+                                    title={blocked ? blockedReason : undefined}
+                                    onClick={() => onBuildStructure(candidate.structure.id)}
+                                >
+                                    Transform
+                                </button>
+                            )}
+                        </div>
+                        {candidate.structure.description && (
+                            <p className={s.panelDescription}>{candidate.structure.description}</p>
+                        )}
+                        {candidate.matchedSatellites.length > 0 && (
+                            <StructureBuildingList
+                                title="Connected"
+                                buildingIds={candidate.matchedSatellites.map(match => match.buildingId)}
+                            />
+                        )}
+                        {candidate.missingBuildingIds.length > 0 && (
+                            <StructureBuildingList
+                                title="Needed adjacent"
+                                buildingIds={candidate.missingBuildingIds}
+                            />
+                        )}
                     </div>
-                    {candidate.structure.description && (
-                        <p className={s.panelDescription}>{candidate.structure.description}</p>
-                    )}
-                    {candidate.matchedSatellites.length > 0 && (
-                        <StructureBuildingList
-                            title="Connected"
-                            buildingIds={candidate.matchedSatellites.map(match => match.buildingId)}
-                        />
-                    )}
-                    {candidate.missingBuildingIds.length > 0 && (
-                        <StructureBuildingList
-                            title="Needed adjacent"
-                            buildingIds={candidate.missingBuildingIds}
-                        />
-                    )}
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }

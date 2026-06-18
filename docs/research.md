@@ -96,6 +96,23 @@ Research and construction continuously feed each other.
 
 ---
 
+# Current Prototype Behavior
+
+Research unlocks are automatic.
+
+When the city satisfies a technology's prerequisite technologies, required buildings, built multistructures, upkeep, Aether atmosphere, biodiversity, and siege-state checks, the technology is purchased immediately by the app.
+
+The research tree therefore acts as a capability map rather than a purchase screen:
+
+- locked nodes explain missing requirements;
+- ready nodes show that they are unlocking;
+- completed nodes show as researched;
+- newly unlocked technologies create notifications.
+
+While the city is besieged, technologies do not auto-unlock.
+
+---
+
 # Research Requirements
 
 Technologies primarily require:

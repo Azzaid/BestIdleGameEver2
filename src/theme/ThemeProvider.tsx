@@ -1,10 +1,9 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 // Ensures vanilla-extract emits CSS and bundles it.
 import { themeMap } from './theme.css.ts';
 import {THEME_NAME_LIST, type ThemeContextValue, type ThemeName} from "../models/Theme.ts";
-
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+import {ThemeContext} from "./themeContext.ts";
 const STORAGE_KEY = 'app-theme';
 
 /** Apply data-theme attribute for CSS selector–based themes. */
@@ -37,38 +36,17 @@ export const ThemeProvider: React.FC<
         }
     }, [theme]);
 
-    const setTheme = (t: ThemeName) => {
+    const setTheme = useCallback((t: ThemeName) => {
         if (!THEME_NAME_LIST.includes(t)) return;
         setThemeState(t);
-    };
+    }, []);
 
-    const getThemeValues = (t?: ThemeName) => themeMap[t ?? theme];
+    const getThemeValues = useCallback((t?: ThemeName) => themeMap[t ?? theme], [theme]);
 
     const value = useMemo<ThemeContextValue>(
         () => ({ theme, setTheme, getThemeValues }),
-        [theme]
+        [getThemeValues, setTheme, theme]
     );
 
     return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
-};
-
-export function useTheme(): ThemeContextValue {
-    const ctx = useContext(ThemeContext);
-    if (!ctx) throw new Error('useTheme must be used inside <ThemeProvider>');
-    return ctx;
-}
-
-/**
- * Scope a different theme to a subtree (research branches, legends, previews).
- * This uses the same data-attribute approach as the root, so all semantic tokens
- * from `vars` resolve correctly inside the subtree.
- */
-export const ThemeSubtree: React.FC<
-    React.PropsWithChildren<{ theme: ThemeName }>
-> = ({ theme, children }) => {
-    return (
-        <div data-theme={theme}>
-            {children}
-        </div>
-    );
 };

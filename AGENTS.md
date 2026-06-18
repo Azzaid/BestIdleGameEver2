@@ -63,6 +63,12 @@ Use npm. The lockfile is `package-lock.json`, so prefer `npm ci` for clean insta
 - `npm run lint` - run ESLint over the repository.
 - `npm run preview` - preview the production build locally.
 
+Node is pinned by `.node-version` to `v22.22.3`. In the Codex desktop sandbox on this machine, plain `npm` may resolve through an older fnm multishell Node 16 shim and fail before scripts run, sometimes with `EPERM` on `C:\Users\Johanas Azzaid` or ESLint errors such as `structuredClone is not defined`. When that happens, skip retrying plain npm and run the project tools directly through fnm's pinned Node:
+
+- `fnm exec --using v22.22.3 node .\node_modules\eslint\bin\eslint.js .` - equivalent lint check.
+- `fnm exec --using v22.22.3 node .\node_modules\typescript\bin\tsc -b` - TypeScript build check.
+- `fnm exec --using v22.22.3 node .\node_modules\vite\bin\vite.js build` - Vite production build.
+
 There is no formal unit test command or test framework configured yet. For behavior changes, run at least `npm run lint` and `npm run build` when practical. For visual/frontend work, also inspect the affected page in the browser.
 
 ## Coding Conventions

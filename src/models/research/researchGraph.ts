@@ -1,6 +1,41 @@
 import type {ResearchNodeData} from "./ResearchNode.ts";
 import type {ResearchDB} from "./researchDB.ts";
 import type {FlatEdge, FlatNode, StubData} from "./researchView.ts";
+import {areProgressionRequirementsMet, type ProgressionUnlockContext} from "../../data/content/progression.ts";
+import type {UpkeepAmount} from "../Upkeep.ts";
+import type {AetherAtmosphereLevels} from "../city/AetherAtmosphere.ts";
+
+export type ResearchPurchaseContext = {
+    purchased: ReadonlySet<string>;
+    builtBuildingIds: ReadonlySet<string>;
+    completeStructureIds: ReadonlySet<string>;
+    effectiveUpkeep: UpkeepAmount;
+    aetherAtmosphereLevels: AetherAtmosphereLevels;
+    biodiversity?: number;
+    isBesieged: boolean;
+};
+
+export function canPurchaseResearch(node: ResearchNodeData, context: ResearchPurchaseContext): boolean {
+    if (context.isBesieged || context.purchased.has(node.id)) return false;
+    if (!isResearchUnlocked(node, context.purchased)) return false;
+
+    const progressionContext: ProgressionUnlockContext = {
+        researchIds: context.purchased,
+        buildingIds: context.builtBuildingIds,
+        structureIds: context.completeStructureIds,
+        freeUpkeep: context.effectiveUpkeep,
+        aetherAtmosphereLevels: context.aetherAtmosphereLevels,
+        biodiversity: context.biodiversity,
+    };
+
+    return areProgressionRequirementsMet({
+        buildings: node.requiredBuildings,
+        structures: node.requiredStructures,
+        freeUpkeep: node.requiredFreeUpkeep,
+        aetherAtmosphere: node.requiredAetherAtmosphere,
+        biodiversity: node.requiredBiodiversity,
+    }, progressionContext);
+}
 
 const ROOT_CHILD_ORDER = ['aether', 'tech', 'nature', 'medieval'];
 
@@ -11,11 +46,11 @@ export function getResearchPrerequisites(node: ResearchNodeData): string[] {
     return prerequisites;
 }
 
-export function isResearchUnlocked(node: ResearchNodeData, purchased: Set<string>): boolean {
+export function isResearchUnlocked(node: ResearchNodeData, purchased: ReadonlySet<string>): boolean {
     return getResearchPrerequisites(node).every(id => purchased.has(id));
 }
 
-export function hasAnyResearchPrerequisiteMet(node: ResearchNodeData, purchased: Set<string>): boolean {
+export function hasAnyResearchPrerequisiteMet(node: ResearchNodeData, purchased: ReadonlySet<string>): boolean {
     return getResearchPrerequisites(node).some(id => purchased.has(id));
 }
 
@@ -41,7 +76,7 @@ export function getResearchNodeOrder(db: ResearchDB): string[] {
 
 export function buildResearchPreviewGraph(
     db: ResearchDB,
-    purchased: Set<string>,
+    purchased: ReadonlySet<string>,
     nodeSize: {width: number; height: number},
 ): {nodes: FlatNode[]; edges: FlatEdge[]} {
     const nodes: FlatNode[] = [];

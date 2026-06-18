@@ -1,8 +1,8 @@
 import type {RootState} from "../../models/store/appStore.ts";
 import {createSelector} from "@reduxjs/toolkit";
 import {placeCityBuildings} from "../../pages/City/Components/CityHex/adjacencyUtils.ts";
-import {STRUCTURES} from "../../data/structures/index.ts";
-import {detectMultistructures, getCompleteStructureIds} from "../../models/city/multistructureDetection.ts";
+import {STRUCTURES, STRUCTURES_BY_ID} from "../../data/structures/index.ts";
+import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
 import {resolveAetherAtmosphere} from "../../models/city/aetherAtmosphereResolution.ts";
 
 export const selectCityHexes = (state: RootState) => state.city.hexes;
@@ -30,7 +30,16 @@ export const selectCityStructureCandidates = createSelector(
 
 export const selectCompleteCityStructureIds = createSelector(
     [selectCityHexes],
-    (hexes) => getCompleteStructureIds(hexes, STRUCTURES)
+    (hexes) => {
+        const builtIds = new Set<string>();
+        hexes.forEach(h => {
+            if (h.kind !== "city" || !h.buildingKey) return;
+            if ((STRUCTURES_BY_ID as Record<string, unknown>)[h.buildingKey]) {
+                builtIds.add(h.buildingKey);
+            }
+        });
+        return builtIds;
+    }
 );
 
 export const selectCityAetherAtmosphere = createSelector(

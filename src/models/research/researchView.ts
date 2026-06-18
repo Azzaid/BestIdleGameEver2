@@ -33,5 +33,4 @@ export type NodeCardProps = {
     requirements: RequirementStatus,
     isResearched: boolean,
     canResearch: boolean,
-    onResearch: () => void,
 };
