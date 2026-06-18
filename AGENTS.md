@@ -69,7 +69,7 @@ Node is pinned by `.node-version` to `v22.22.3`. In the Codex desktop sandbox on
 - `fnm exec --using v22.22.3 node .\node_modules\typescript\bin\tsc -b` - TypeScript build check.
 - `fnm exec --using v22.22.3 node .\node_modules\vite\bin\vite.js build` - Vite production build.
 
-There is no formal unit test command or test framework configured yet. For behavior changes, run at least `npm run lint` and `npm run build` when practical. For visual/frontend work, also inspect the affected page in the browser.
+There is no formal unit test command or test framework configured yet. By default, leave "if it builds" checks and "if the UI looks and works as expected" checks for the user. Agents may mention the relevant command or page to check, but should not run build/lint verification or browser-based UI inspection unless the user explicitly asks for those checks.
 
 ## Coding Conventions
 

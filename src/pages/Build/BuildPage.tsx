@@ -227,7 +227,7 @@ const BuildPage = () => {
         );
       },
     },
-  ], [activeTab, canModifyTower, cityResolution.effectiveUpkeep, dispatch, purchasedTechIds, resolvedTower.selectedParts, resolvedTower.supportCost, selectedPartId]);
+  ], [activeTab, canModifyTower, cityResolution.effectiveUpkeep, dispatch, resolvedTower.selectedParts, resolvedTower.supportCost, selectedPartId]);
 
   const table = useReactTable({
     data: activeSlotParts,

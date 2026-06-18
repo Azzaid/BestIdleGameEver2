@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
 import {wallSpriteMetadataAtlas, wallSpritesAtlas} from "../../../../models/sprites/walls/wallsSpriteAtlas.ts";
 import {wallTopSpriteMetadataAtlas, wallTopSpritesAtlas} from "../../../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
@@ -132,7 +132,7 @@ export default function CityHex({
         setHoveredCellKey(`${column},${row}`);
     };
 
-    const handleWheelZoom = (event: WheelEvent) => {
+    const handleWheelZoom = useCallback((event: WheelEvent) => {
         event.preventDefault();
         if (!svgRef.current) return;
 
@@ -180,7 +180,7 @@ export default function CityHex({
         setZoomFactor(proposedZoom);
         setCameraOffsetX(clamped.tx);
         setCameraOffsetY(clamped.ty);
-    };
+    }, [cityBounds, viewBoxH, viewBoxW, viewBoxX, viewBoxY, zoomFactor]);
 
     // Drag to pan
     useEffect(() => {
@@ -241,7 +241,7 @@ export default function CityHex({
             window.removeEventListener("mouseup", onMouseUp);
             document.body.style.userSelect = "";
         };
-    }, [zoomFactor]);
+    }, [cityBounds, handleWheelZoom, viewBoxH, viewBoxW, viewBoxX, viewBoxY, zoomFactor]);
 
 
     return (
