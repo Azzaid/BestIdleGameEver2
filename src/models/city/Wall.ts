@@ -2,6 +2,7 @@ import type {UpkeepAmount, UpkeepDescription} from "../Upkeep.ts";
 import type {BuildingTypesValue} from "./BuildingTypes.ts";
 import type {BuildingKeyword} from "./Keywords.ts";
 import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../homogeneousValues.ts";
 
 export type WallEffectKeyword = Extract<BuildingKeyword, "slow" | "harm" | "push" | "visibility">;
 
@@ -20,6 +21,9 @@ export interface WallBuilding {
     resilience: number;
     camoLevel: number;
     ignoredThreat: number;
+    keywords?: BuildingKeyword[];
+    homogeneousValueEffects?: HomogeneousValueEffect[];
+    homogeneousAdjacency?: HomogeneousAdjacencyRule[];
     specialEffects: WallSpecialEffect[];
     description: string;
 }
@@ -31,5 +35,6 @@ export type WallResolution = {
     resilience: number;
     camoLevel: number;
     ignoredThreat: number;
+    homogeneousValues: Record<string, number>;
     specialEffects: WallBuilding["specialEffects"];
 };

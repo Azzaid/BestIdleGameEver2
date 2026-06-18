@@ -2,6 +2,7 @@ import type { GunSlotDirection } from './tower.ts';
 import type { SpriteInfo } from './spriteInfo.ts';
 import type { DevelopmentVectorKey } from '../DevlopmentVector.ts';
 import type { UpkeepAmount } from '../Upkeep.ts';
+import type { HomogeneousValueEffect } from '../homogeneousValues.ts';
 
 export interface TowerModifiers {
   rotationSpeed: number;
@@ -40,6 +41,7 @@ export interface GunPart {
   keywords: Set<string>;
   aimKeywords?: string[];
   modifiers?: Partial<TowerModifiers>;
+  homogeneousValueEffects?: HomogeneousValueEffect[];
   weight?: number;
   supportCost?: UpkeepAmount;
   unlockRequirements?: TowerPartUnlockRequirement[];
@@ -61,6 +63,7 @@ export interface TowerSynergyRule {
   description: string;
   requiredKeywords: string[];
   modifiers?: Partial<TowerModifiers>;
+  homogeneousValueEffects?: HomogeneousValueEffect[];
   addKeywords?: string[];
   addAimKeywords?: string[];
 }

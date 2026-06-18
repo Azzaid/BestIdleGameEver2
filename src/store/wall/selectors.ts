@@ -5,6 +5,9 @@ import {selectCityHexes} from "../city/selectors.ts";
 import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
 import {addUpkeep} from "../../pages/City/Components/CityHex/upkeepUtils.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
+import {resolvePlacedHomogeneousValueSources} from "../../models/homogeneousValueResolution.ts";
+import {wallStatsToHomogeneousValueEffects} from "../../models/homogeneousValueAdapters.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
 
 export const selectUnlockedWallBuildingIds = (state: RootState) => state.wall.unlockedWallBuildingIds;
 
@@ -21,8 +24,17 @@ export const selectWallResolution = createSelector(
             resilience: 0,
             camoLevel: 0,
             ignoredThreat: 0,
+            homogeneousValues: {},
             specialEffects: [],
         };
+        const wallValueSources: Array<{
+            cellKey: string;
+            column: number;
+            row: number;
+            keywords: readonly string[];
+            effects: NonNullable<WallBuilding["homogeneousValueEffects"]>;
+            adjacency: WallBuilding["homogeneousAdjacency"];
+        }> = [];
 
         hexes.forEach((hex) => {
             if (hex.kind !== "wall") return;
@@ -34,15 +46,53 @@ export const selectWallResolution = createSelector(
                 if (!wallBuilding) return;
 
                 resolution.requiredUpkeep = addUpkeep(resolution.requiredUpkeep, wallBuilding.requiredUpkeep);
-                resolution.resilience += wallBuilding.resilience;
                 resolution.camoLevel += wallBuilding.camoLevel;
-                resolution.ignoredThreat += wallBuilding.ignoredThreat;
                 resolution.specialEffects.push(...wallBuilding.specialEffects);
+                wallValueSources.push({
+                    cellKey: `${hex.cellKey}:${wallBuilding.id}`,
+                    column: hex.column,
+                    row: hex.row,
+                    keywords: wallBuilding.keywords ?? [],
+                    effects: [
+                        ...wallStatsToHomogeneousValueEffects({
+                            resilience: wallBuilding.resilience,
+                            threatSuppression: wallBuilding.ignoredThreat,
+                        }),
+                        ...(wallBuilding.homogeneousValueEffects ?? []),
+                    ],
+                    adjacency: wallBuilding.homogeneousAdjacency,
+                });
             });
         });
+        resolution.homogeneousValues = resolvePlacedHomogeneousValueSources(
+            wallValueSources,
+            (source, radius) => wallValueSources.filter((candidate) => {
+                if (candidate.cellKey === source.cellKey) return false;
+
+                const columnDistance = Math.abs(candidate.column - source.column);
+                const rowDistance = Math.abs(candidate.row - source.row);
+                const diagonalDistance = Math.abs(
+                    candidate.column + candidate.row - source.column - source.row,
+                );
+
+                return Math.max(columnDistance, rowDistance, diagonalDistance) <= radius;
+            }),
+        );
+        resolution.resilience = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0;
+        resolution.ignoredThreat = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0;
 
         return resolution;
     }
+);
+
+export const selectWallResilience = createSelector(
+    [selectWallResolution],
+    (resolution): number => resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0,
+);
+
+export const selectWallThreatSuppression = createSelector(
+    [selectWallResolution],
+    (resolution): number => resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0,
 );
 
 export const selectBuiltTowerPlatformCount = createSelector(

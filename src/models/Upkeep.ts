@@ -1,4 +1,5 @@
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "./DevlopmentVector.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../data/homogeneousValues/index.ts";
 
 export type ResourceKeyword =
     | "support"
@@ -32,16 +33,16 @@ export type ResourceDefinition = {
 };
 
 export const UPKEEP_TYPES = {
-    people: "medieval.people",
-    gold: "medieval.gold",
-    power: "tech.power",
-    compute: "tech.compute",
-    veil: "aether.veil",
-    manaFlows: "aether.manaFlows",
-    death: "aether.death",
-    fungi: "nature.fungi",
-    plants: "nature.plants",
-    animals: "nature.animals",
+    people: HOMOGENEOUS_VALUE_IDS.resourcePeople,
+    gold: HOMOGENEOUS_VALUE_IDS.resourceGold,
+    power: HOMOGENEOUS_VALUE_IDS.resourcePower,
+    compute: HOMOGENEOUS_VALUE_IDS.resourceCompute,
+    veil: HOMOGENEOUS_VALUE_IDS.resourceVeil,
+    manaFlows: HOMOGENEOUS_VALUE_IDS.resourceManaFlows,
+    death: HOMOGENEOUS_VALUE_IDS.resourceDeath,
+    fungi: HOMOGENEOUS_VALUE_IDS.resourceFungi,
+    plants: HOMOGENEOUS_VALUE_IDS.resourcePlants,
+    animals: HOMOGENEOUS_VALUE_IDS.resourceAnimals,
 } as const;
 
 export type UpkeepTypesKey = keyof typeof UPKEEP_TYPES;

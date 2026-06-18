@@ -1,7 +1,14 @@
 import { TOWER_PARTS_BY_ID, TOWER_PART_SLOT_ORDER, TOWER_SYNERGY_RULES, REQUIRED_TOWER_PART_SLOTS } from '../../data/towers/index.ts';
-import { BASE_TOWER_STATS, TOWER_WEIGHT_ROTATION_PENALTY } from '../../data/constants.ts';
+import { TOWER_WEIGHT_ROTATION_PENALTY } from '../../data/constants.ts';
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../Upkeep.ts';
 import type { GunPart, TowerAssembly, TowerAssemblyResolved, TowerModifiers, TowerPartSlot } from './towerParts.ts';
+import {
+  homogeneousValueTotalsToTowerStats,
+  towerModifiersToHomogeneousValueEffects,
+  towerWeightToHomogeneousValueEffects
+} from '../homogeneousValueAdapters.ts';
+import type { HomogeneousValueEffect } from '../homogeneousValues.ts';
+import { resolveHomogeneousValueEffects } from '../homogeneousValueResolution.ts';
 
 const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'reloadSpeed' | 'burstCount' | 'projectileDamage' | 'projectileSpeed' | 'targetingDistanceLimit' | 'retargetCooldownSeconds'> = {
   rotationSpeed: 0.25,
@@ -12,14 +19,6 @@ const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'reloadSpeed' 
   targetingDistanceLimit: 80,
   retargetCooldownSeconds: 0,
 };
-
-function applyModifiers(stats: TowerAssemblyResolved['stats'], modifiers?: Partial<TowerModifiers>) {
-  if (!modifiers) return;
-
-  for (const key of Object.keys(modifiers) as Array<keyof TowerModifiers>) {
-    stats[key] += modifiers[key] ?? 0;
-  }
-}
 
 function addSupportCost(target: UpkeepAmount, source?: UpkeepAmount) {
   if (!source) return;
@@ -53,11 +52,12 @@ export function resolveTowerAssembly(
   assembly: TowerAssembly,
   purchasedTechIds: readonly string[] = []
 ): TowerAssemblyResolved {
-  const stats = { ...BASE_TOWER_STATS, keywords: new Set<string>() };
+  const keywords = new Set<string>();
   const selectedParts: TowerAssemblyResolved['selectedParts'] = {};
   const supportCost: UpkeepAmount = {};
   const aimKeywords: string[] = [];
   const warnings: TowerAssemblyResolved['warnings'] = [];
+  const towerValueEffects: HomogeneousValueEffect[] = [];
 
   for (const { key: slot } of TOWER_PART_SLOT_ORDER) {
     const partId = assembly.selectedPartIds[slot];
@@ -74,9 +74,12 @@ export function resolveTowerAssembly(
     }
 
     selectedParts[slot] = part;
-    stats.weight += part.weight ?? 0;
-    part.keywords.forEach((keyword) => stats.keywords.add(keyword));
-    applyModifiers(stats, part.modifiers);
+    part.keywords.forEach((keyword) => keywords.add(keyword));
+    towerValueEffects.push(
+      ...towerWeightToHomogeneousValueEffects(part.weight),
+      ...towerModifiersToHomogeneousValueEffects(part.modifiers),
+      ...(part.homogeneousValueEffects ?? []),
+    );
     addSupportCost(supportCost, part.supportCost);
     addAimKeywords(aimKeywords, part.aimKeywords);
 
@@ -106,7 +109,7 @@ export function resolveTowerAssembly(
   for (const part of Object.values(selectedParts)) {
     if (!part?.conflictsWithKeywords) continue;
 
-    const conflict = part.conflictsWithKeywords.find((keyword) => stats.keywords.has(keyword));
+    const conflict = part.conflictsWithKeywords.find((keyword) => keywords.has(keyword));
     if (conflict) {
       warnings.push({
         id: `conflict-${part.id}-${conflict}`,
@@ -117,11 +120,14 @@ export function resolveTowerAssembly(
   }
 
   const synergies = TOWER_SYNERGY_RULES.flatMap((rule) => {
-    const active = rule.requiredKeywords.every((keyword) => stats.keywords.has(keyword));
+    const active = rule.requiredKeywords.every((keyword) => keywords.has(keyword));
     if (!active) return [];
 
-    applyModifiers(stats, rule.modifiers);
-    rule.addKeywords?.forEach((keyword) => stats.keywords.add(keyword));
+    towerValueEffects.push(
+      ...towerModifiersToHomogeneousValueEffects(rule.modifiers),
+      ...(rule.homogeneousValueEffects ?? []),
+    );
+    rule.addKeywords?.forEach((keyword) => keywords.add(keyword));
     addAimKeywords(aimKeywords, rule.addAimKeywords);
 
     return [{
@@ -135,6 +141,10 @@ export function resolveTowerAssembly(
     aimKeywords.push('closestToWall');
   }
 
+  const stats = homogeneousValueTotalsToTowerStats(
+    resolveHomogeneousValueEffects(towerValueEffects),
+    keywords,
+  );
   stats.rotationSpeed -= stats.weight * TOWER_WEIGHT_ROTATION_PENALTY;
   clampStats(stats);
 
@@ -142,7 +152,7 @@ export function resolveTowerAssembly(
     selectedParts,
     stats,
     supportCost,
-    keywords: stats.keywords,
+    keywords,
     aimKeywords,
     synergies,
     warnings,

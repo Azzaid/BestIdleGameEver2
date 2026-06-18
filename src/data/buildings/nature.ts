@@ -102,12 +102,12 @@ export const natureBuildings: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 2},
       ["production", "plants", "farm"],
     ),
-    adjacency: [
+    homogeneousAdjacency: [
       {
-        scope: "neighbors",
-        radiusInHexes: 1,
-        targetFilter: {keywords: ["production"]},
-        effect: {outputMul: {requiredKeywords: ["output", "production"], multiplier: 1.25}},
+        radius: 1,
+        requiredBuildingKeywords: ["production"],
+        requiredValueKeywords: ["output", "production"],
+        multiplier: 1.25,
       },
     ],
     adjacencyDescription: "Neighboring producers gain 25% output.",

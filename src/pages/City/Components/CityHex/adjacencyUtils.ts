@@ -15,6 +15,13 @@ import {BUILDINGS_ATLAS} from "../../../../data/buildings";
 import {hexesWithinRadius} from "./hexUtils.ts";
 import {TRACE_PER_HEX} from "../../../../data/constants.ts";
 import {deepClone} from "../../../../utils/deepClone.ts";
+import {
+    cityVisibilityToHomogeneousValueEffect,
+    homogeneousValueTotalsToUpkeepAmount,
+    upkeepAmountToHomogeneousValueEffects
+} from "../../../../models/homogeneousValueAdapters.ts";
+import {resolvePlacedHomogeneousValueSources} from "../../../../models/homogeneousValueResolution.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../../../../data/homogeneousValues/index.ts";
 
 function matchesFilter(
     placed?: PlacedBuilding,
@@ -123,7 +130,8 @@ export const placeCityBuildings = (
             traceMul: 1,
             effectiveProvidedUpkeep: {...building.providedUpkeep},
             effectiveRequiredUpkeep: {...building.requiredUpkeep},
-            effectiveTrace: building.trace
+            effectiveTrace: building.trace,
+            effectiveHomogeneousValueEffects: []
         } : undefined;
         if (placed) placedCity.set(cellKey, placed);
     })
@@ -172,7 +180,12 @@ export const placeCityBuildings = (
             exactProvidedUpkeep,
         );
         building.effectiveRequiredUpkeep = multiplyUpkeep(addUpkeep(requiredUpkeep, requiredUpkeepAdd!), requiredUpkeepMul!);
-        building.effectiveTrace = trace + traceAdd! * traceMul!;
+        building.effectiveTrace = (trace + traceAdd!) * traceMul!;
+        building.effectiveHomogeneousValueEffects = [
+            ...upkeepAmountToHomogeneousValueEffects(building.effectiveProvidedUpkeep),
+            ...cityVisibilityToHomogeneousValueEffect(building.effectiveTrace),
+            ...(building.homogeneousValueEffects ?? []),
+        ];
     })
 
     return placedCity
@@ -187,6 +200,7 @@ export function resolveCityUpkeepAndTrace(
         requiredUpkeep: {} as UpkeepAmount,
         providedUpkeep: {} as UpkeepAmount,
         effectiveUpkeep: {} as UpkeepAmount,
+        homogeneousValues: {},
         buildingsTrace: 0,
         territoryTrace: 0,
         scarTrace,
@@ -194,12 +208,42 @@ export function resolveCityUpkeepAndTrace(
     };
 
     city.forEach((building) => {
-        resolvedCity.providedUpkeep = addUpkeep(resolvedCity.providedUpkeep, building.effectiveProvidedUpkeep);
         resolvedCity.requiredUpkeep = addUpkeep(resolvedCity.requiredUpkeep, building.effectiveRequiredUpkeep);
-        resolvedCity.buildingsTrace += building.effectiveTrace;
     })
 
     resolvedCity.territoryTrace = hexes.length * TRACE_PER_HEX;
+    resolvedCity.homogeneousValues = resolvePlacedHomogeneousValueSources(
+        [...city.values()].map((building) => ({
+            cellKey: `${building.column}:${building.row}`,
+            column: building.column,
+            row: building.row,
+            keywords: building.keywords,
+            effects: building.effectiveHomogeneousValueEffects,
+            adjacency: building.homogeneousAdjacency,
+        })),
+        (source, radius) => {
+            const nearbyHexes = hexesWithinRadius(
+                {column: source.column, row: source.row},
+                radius,
+                hexes,
+                {excludeCenter: true, onlyNonEmpty: true},
+            );
+            const nearbyCoordinates = new Set(nearbyHexes.map((hex) => `${hex.column}:${hex.row}`));
+
+            return [...city.values()]
+                .filter((building) => nearbyCoordinates.has(`${building.column}:${building.row}`))
+                .map((building) => ({
+                    cellKey: `${building.column}:${building.row}`,
+                    column: building.column,
+                    row: building.row,
+                    keywords: building.keywords,
+                    effects: building.effectiveHomogeneousValueEffects,
+                    adjacency: building.homogeneousAdjacency,
+                }));
+        },
+    );
+    resolvedCity.providedUpkeep = homogeneousValueTotalsToUpkeepAmount(resolvedCity.homogeneousValues);
+    resolvedCity.buildingsTrace = resolvedCity.homogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0;
 
     resolvedCity.effectiveUpkeep = deductUpkeep(resolvedCity.providedUpkeep, resolvedCity.requiredUpkeep);
     resolvedCity.effectiveTrace = resolvedCity.buildingsTrace + resolvedCity.territoryTrace + resolvedCity.scarTrace;

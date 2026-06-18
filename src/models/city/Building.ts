@@ -5,6 +5,7 @@ import type {BuildingKeyword} from "./Keywords.ts";
 import type {AdjacencyRule, HexResolvedStats} from "./Adjancency.ts";
 import type {AxialCoordinate} from "./HexGrid.ts";
 import type {MultiHexStructureRule} from "./MultiHexStructure.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../homogeneousValues.ts";
 
 /** Building data model (extend later with structured effects if needed) */
 export interface Building {
@@ -21,6 +22,8 @@ export interface Building {
     trace: number;
     providedUpkeep: UpkeepAmount;
     providedUpkeepDescription: UpkeepDescription;
+    homogeneousValueEffects?: HomogeneousValueEffect[];
+    homogeneousAdjacency?: HomogeneousAdjacencyRule[];
     adjacency: AdjacencyRule[];
     adjacencyDescription: string;
     keywords: BuildingKeyword[];

@@ -1,20 +1,24 @@
-import type { TowerBuild, TowerStatsResolved, GunPart, TowerModifiers } from '../../../models/battle/towerParts.ts';
-import { BASE_TOWER_STATS, TOWER_WEIGHT_ROTATION_PENALTY } from '../../../data/constants.ts';
+import type { TowerBuild, TowerStatsResolved, GunPart } from '../../../models/battle/towerParts.ts';
+import { TOWER_WEIGHT_ROTATION_PENALTY } from '../../../data/constants.ts';
+import {
+  homogeneousValueTotalsToTowerStats,
+  towerModifiersToHomogeneousValueEffects,
+  towerWeightToHomogeneousValueEffects
+} from '../../../models/homogeneousValueAdapters.ts';
+import type { HomogeneousValueEffect } from '../../../models/homogeneousValues.ts';
+import { resolveHomogeneousValueEffects } from '../../../models/homogeneousValueResolution.ts';
 
 export function resolveTowerStats(build: TowerBuild): TowerStatsResolved {
-  const stats: TowerStatsResolved = { ...BASE_TOWER_STATS, keywords: new Set<string>() };
+  const keywords = new Set<string>();
+  const towerValueEffects: HomogeneousValueEffect[] = [];
 
   function applyPart(part: GunPart) {
-    stats.weight += part.weight ?? 0;
-    part.keywords.forEach(k => stats.keywords.add(k));
-    if (part.modifiers) {
-      for (const [field, value] of Object.entries(part.modifiers)) {
-        const key = field as keyof TowerModifiers;
-        if (value !== undefined) {
-          stats[key] += value;
-        }
-      }
-    }
+    part.keywords.forEach(k => keywords.add(k));
+    towerValueEffects.push(
+      ...towerWeightToHomogeneousValueEffects(part.weight),
+      ...towerModifiersToHomogeneousValueEffects(part.modifiers),
+      ...(part.homogeneousValueEffects ?? []),
+    );
     part.children?.forEach(applyPart);
   }
 
@@ -23,6 +27,10 @@ export function resolveTowerStats(build: TowerBuild): TowerStatsResolved {
     chain?.forEach(applyPart);
   });
 
+  const stats = homogeneousValueTotalsToTowerStats(
+    resolveHomogeneousValueEffects(towerValueEffects),
+    keywords,
+  );
   stats.rotationSpeed = Math.max(0.25, stats.rotationSpeed - stats.weight * TOWER_WEIGHT_ROTATION_PENALTY);
 
   return stats;

@@ -207,6 +207,7 @@ Support is produced by city infrastructure and consumed by:
 - special systems.
 
 Resources are stored through one keyworded resource map under the hood. UI and derived selectors decide whether a resource is shown as ordinary support, an Aether orb component, or another specialized display.
+The current implementation routes resources, city metrics, monster modifiers, siege modifiers, wall stats, tower stats, and future derived game values through the homogeneous value registry in `src/data/homogeneousValues`. Content contributes `HomogeneousValueEffect` entries to registered values, and gameplay/UI code should read final values through selectors instead of reading those effects directly.
 
 Current resources by vector:
 
@@ -215,7 +216,7 @@ Current resources by vector:
 - Nature/Biology: Fungi, Plants, and Animals.
 - Aether/Magic: Veil, Mana Flows, and Death.
 
-Resource definitions include keywords such as `output`, `production`, `support`, `atmosphere`, `aether`, and `display_orb`. Adjacency rules can target resources by keywords, so a production bonus can affect ordinary support and magical outputs through the same resolver.
+Homogeneous value definitions include keywords such as `resource`, `output`, `production`, `support`, `atmosphere`, `aether`, and `display_orb`. Adjacency rules can target value keywords, so a production bonus can affect ordinary support, magical outputs, wall stats, siege modifiers, monster modifiers, or later value groups through the same resolver.
 
 Important rules:
 

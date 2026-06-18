@@ -20,9 +20,9 @@ import {
     PRESSURE_WAVE_INTERVAL_SECONDS,
     SIEGE_DURATION_SECONDS,
     SIEGE_THREAT_START_RATIO,
-    SIEGE_VICTORY_CITY_THREAT_RATIO,
     SIEGE_WAVE_INTERVAL_SECONDS,
 } from "../../data/constants.ts";
+import {selectControlledTerritoryGrowthStep} from "../../store/homogeneousValues/selectors.ts";
 
 type BattleMode = "siege" | "pressure";
 
@@ -48,6 +48,7 @@ const BattlePage = () => {
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const wallResolution = useTypedSelector(selectWallResolution);
+    const controlledTerritoryGrowthStep = useTypedSelector(selectControlledTerritoryGrowthStep);
     const battleWallSegments = useMemo<BattleWallSegment[]>(() => {
         return cityHexes
             .filter(hex => hex.kind === "wall")
@@ -64,7 +65,7 @@ const BattlePage = () => {
     const isSiege = battleMode === "siege" && traceStatus.isBesieged;
     const cityThreat = Math.max(0, cityResolution.effectiveTrace);
     const targetThreat = isSiege
-        ? cityThreat * SIEGE_VICTORY_CITY_THREAT_RATIO
+        ? cityThreat * controlledTerritoryGrowthStep
         : cityThreat;
     const initialThreat = isSiege ? cityThreat * SIEGE_THREAT_START_RATIO : targetThreat;
     const threatGrowthPerSecond = isSiege && targetThreat > initialThreat

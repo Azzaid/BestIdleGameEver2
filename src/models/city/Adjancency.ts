@@ -3,6 +3,7 @@ import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
 import type {ResourceKeyword, UpkeepAmount} from "../Upkeep.ts";
 import type {BuildingKeyword} from "./Keywords.ts";
 import type {PlacedBuilding} from "./Building.ts";
+import type {HomogeneousValueEffect} from "../homogeneousValues.ts";
 
 export type EffectScope = "self" | "neighbors";
 
@@ -23,6 +24,7 @@ export interface EffectDelta {
     providedUpkeepMul?: UpkeepAmount;
     outputMul?: ResourceOutputModifier | ResourceOutputModifier[];
     traceMul?: number;
+    homogeneousValueEffects?: HomogeneousValueEffect[];
 }
 
 export type ResourceOutputModifier = {
@@ -56,6 +58,7 @@ export interface HexResolvedStats extends EffectDelta {
     effectiveRequiredUpkeep: UpkeepAmount;
     effectiveProvidedUpkeep: UpkeepAmount;
     effectiveTrace: number;
+    effectiveHomogeneousValueEffects: HomogeneousValueEffect[];
 }
 
 export type PlacedCityMap = Map<string, PlacedBuilding>;
@@ -64,6 +67,7 @@ export interface CityResolution {
     requiredUpkeep: UpkeepAmount;
     providedUpkeep: UpkeepAmount;
     effectiveUpkeep: UpkeepAmount,
+    homogeneousValues: Record<string, number>;
     territoryTrace: number;
     buildingsTrace: number;
     scarTrace: number;
