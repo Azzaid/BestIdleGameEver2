@@ -1,3 +1,4 @@
+import type {ReactNode} from "react";
 import {useTypedSelector} from "../store/hooks.ts";
 import {selectCityTraceStatus, selectTowerAwareCityResolution} from "../store/upkeep/selectors.ts";
 import {DEVELOPMENT_VECTORS} from "../models/DevlopmentVector.ts";
@@ -33,7 +34,7 @@ function getTraceColor(ratio: number) {
     return `rgb(${red} ${green} ${blue})`;
 }
 
-export const UpkeepBar = () => {
+export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
     const {providedUpkeep, effectiveUpkeep, effectiveTrace} = useTypedSelector(selectTowerAwareCityResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const aetherAtmosphere = useTypedSelector(selectCityAetherAtmosphere);
@@ -101,6 +102,7 @@ export const UpkeepBar = () => {
                     <span>Trail {traceStatus.scarTrace}</span>
                 </div>
             </div>
+            {rightSlot && <div className={s.rightSlot}>{rightSlot}</div>}
         </div>
     )
 }

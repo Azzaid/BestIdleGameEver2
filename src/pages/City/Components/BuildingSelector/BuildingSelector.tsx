@@ -10,6 +10,7 @@ import type {BuildingSelectorProps} from "../../../../models/city/buildingSelect
 export function BuildingSelector({
                                      onBuild,
                                      unlockedBuildingIds,
+                                     unavailableBuildingReasons = {},
                                      blocked = false,
                                  blockedReason,
                                  }: BuildingSelectorProps) {
@@ -64,6 +65,10 @@ export function BuildingSelector({
             {/* Cards list */}
             <div className={s.list} role="list">
                 {activeBuildings.map(building => {
+                    const unavailableReason = unavailableBuildingReasons[building.id];
+                    const buildBlockedReason = blocked ? blockedReason : unavailableReason;
+                    const buildBlocked = blocked || Boolean(unavailableReason);
+
                     return (
                         <article key={building.id} role="listitem" className={s.card} aria-labelledby={`${building.id}-name`}>
                             {/* Zone 1 — Header (name + cost + build btn) */}
@@ -87,10 +92,10 @@ export function BuildingSelector({
                                 <button
                                     className={s.buildBtn}
                                     type="button"
-                                    disabled={blocked}
+                                    disabled={buildBlocked}
                                     onClick={() => onBuild(building.id, activeVector)}
                                     aria-label={`Build ${building.name}`}
-                                    title={blocked ? blockedReason : undefined}
+                                    title={buildBlockedReason}
                                 >
                                     Build
                                 </button>

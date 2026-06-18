@@ -14,6 +14,14 @@ export const upkeepBar = style({
     overflowX: 'auto',
 });
 
+export const rightSlot = style({
+    marginLeft: 'auto',
+    flex: '0 0 auto',
+    alignSelf: 'flex-start',
+    position: 'sticky',
+    right: 0,
+});
+
 export const vectorCard = style({
     position: 'relative',
     display: 'grid',

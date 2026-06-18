@@ -33,7 +33,7 @@ const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
     return generatedCells;
 })
 
-const getRetreatedHexes = (existingHexes: HexCell[], cityRadius: number) => {
+const getResizedHexes = (existingHexes: HexCell[], cityRadius: number) => {
     const existingByKey = new Map(existingHexes.map(hex => [hex.cellKey, hex]));
 
     return getInitialHexes(cityRadius).map(hex => {
@@ -46,6 +46,8 @@ const getRetreatedHexes = (existingHexes: HexCell[], cityRadius: number) => {
             ? {
                 ...existingHex,
                 kind: "city" as const,
+                wallKey: null,
+                wallTopKey: null,
             }
             : hex;
     });
@@ -151,7 +153,12 @@ export const citySlice = createSlice({
         retreatCityRadius: (state) => {
             const nextRadius = Math.max(1, state.cellRadius - 1);
             state.cellRadius = nextRadius;
-            state.hexes = getRetreatedHexes(state.hexes, nextRadius);
+            state.hexes = getResizedHexes(state.hexes, nextRadius);
+        },
+        expandCityRadius: (state) => {
+            const nextRadius = state.cellRadius + 1;
+            state.cellRadius = nextRadius;
+            state.hexes = getResizedHexes(state.hexes, nextRadius);
         },
         demolishHex: (state, action: PayloadAction<{cellKey: string}>) => {
             const targetHex = state.hexes.find(hex => hex.cellKey === action.payload.cellKey);
@@ -181,6 +188,7 @@ export const {
     buildMultistructure,
     demolishHex,
     retreatCityRadius,
+    expandCityRadius,
     recordSurvivedSiege,
 } = citySlice.actions
 

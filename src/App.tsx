@@ -23,9 +23,8 @@ import {useTypedDispatch} from "./store/hooks.ts";
 import {selectIsDebugModeEnabled} from "./store/debug/selectors.ts";
 import {toggleDebugMode} from "./store/debug/slice.ts";
 import { NotificationCenter } from "./components/Notifications/NotificationCenter.tsx";
-import { sendNotification } from "./lib/notifications/eventBus.ts";
-import { vars } from "./theme/theme.css.ts";
 import { useResearchAutoUnlock } from "./pages/Research/useResearchAutoUnlock.ts";
+import {CityExpansionControl} from "./components/CityExpansionControl.tsx";
 
 //this is temporary theme switcher
 function ThemeSwitcher() {
@@ -49,6 +48,7 @@ function AppFrame() {
   const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
   const isBuildBlocked = traceStatus.isBesieged && hasAnyTowerBuild;
   const shouldShowUpkeepBar = location.pathname !== "/" && location.pathname !== "/battle";
+  const shouldShowCityExpansionControl = location.pathname === "/city";
 
   useResearchAutoUnlock();
 
@@ -98,33 +98,12 @@ function AppFrame() {
                       </ul>
                       <div className={appTheme.themeSwitcher}>
                         {/*<ThemeSwitcher />*/}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const schemes = ["tech","nature","medieval","aether","alert","warning","congratulation"] as const;
-                            const pick = schemes[Math.floor(Math.random()*schemes.length)];
-                            sendNotification({
-                              title: "Notification test",
-                              message: `This is a sample ${pick} notification.`,
-                              scheme: pick,
-                            });
-                          }}
-                          style={{
-                            padding: '6px 10px',
-                            borderRadius: 6,
-                            border: `1px solid ${vars.color.border.default}`,
-                            background: vars.color.background.surfaceHover,
-                            color: vars.color.text.primary,
-                            cursor: 'pointer',
-                          }}
-                          title="Send a sample notification"
-                        >
-                          Test notification
-                        </button>
                       </div>
                   </nav>
                   <NotificationCenter />
-                  {shouldShowUpkeepBar && <UpkeepBar/>}
+                  {shouldShowUpkeepBar && (
+                      <UpkeepBar rightSlot={shouldShowCityExpansionControl ? <CityExpansionControl /> : undefined}/>
+                  )}
                   <main className={appTheme.appContent}>
                       <Routes>
                           <Route path="/" element={<BattlePage />} />

@@ -13,7 +13,7 @@ import {
     selectCompleteCityStructureIds,
 } from "../../store/city/selectors.ts";
 import {buildHex, buildWall, buildWallTop, demolishHex, buildMultistructure} from "../../store/city/slice.ts";
-import {UPKEEP_SPRITES, UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
+import {UPKEEP_SPRITES, UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
 import {ALL_WALL_BUILDINGS, TOWER_PLATFORM_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
@@ -25,6 +25,8 @@ import {BUILDINGS_ATLAS} from "../../data/buildings";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {PROGRESSION_RULES} from "../../data/content/rules.ts";
 import {getRuleForTarget, isProgressionRuleUnlocked} from "../../data/content/progression.ts";
+import {getUpkeepShortfalls, hasEnoughUpkeep} from "./Components/CityHex/upkeepUtils.ts";
+import {placeCityBuildings} from "./Components/CityHex/adjacencyUtils.ts";
 
 const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise resilience in battle before building.";
 
@@ -89,11 +91,37 @@ const CityPage = () => {
                 .map(building => building.id);
         }));
     }, [aetherAtmosphereLevels, builtBuildingIds, completeStructureIds, effectiveUpkeep, purchasedTechsIds]);
+    const unavailableBuildingReasons = useMemo(() => {
+        if (!selectedHex || selectedHex.kind !== "city" || selectedHex.buildingKey || selectedHex.partOfStructureId) {
+            return {};
+        }
+
+        const reasons: Record<string, string> = {};
+
+        for (const vector of Object.values(DEVELOPMENT_VECTORS)) {
+            for (const building of Object.values(BUILDINGS_ATLAS[vector])) {
+                if (building.isMultistructure || !unlockedBuildingIds.has(building.id)) continue;
+
+                const requiredUpkeep = getResolvedRequiredUpkeepForBuild(hexes, selectedHex, building.id, vector);
+                const shortfalls = getUpkeepShortfalls(requiredUpkeep, effectiveUpkeep);
+                const missingResources = formatMissingUpkeep(shortfalls);
+
+                if (missingResources) {
+                    reasons[building.id] = `Missing ${missingResources}`;
+                }
+            }
+        }
+
+        return reasons;
+    }, [effectiveUpkeep, hexes, selectedHex, unlockedBuildingIds]);
 
     const handleBuildingSelect = (buildingKey: string, developmentVector: DevelopmentVectorValue) => {
         if (!selectedHex || traceStatus.isBesieged) return;
-        if (selectedHex.kind !== "city" || selectedHex.buildingKey) return;
+        if (selectedHex.kind !== "city" || selectedHex.buildingKey || selectedHex.partOfStructureId) return;
         if (!unlockedBuildingIds.has(buildingKey)) return;
+
+        const requiredUpkeep = getResolvedRequiredUpkeepForBuild(hexes, selectedHex, buildingKey, developmentVector);
+        if (!hasEnoughUpkeep(requiredUpkeep, effectiveUpkeep)) return;
 
         const builtHex = {...selectedHex, buildingKey, developmentVector};
         dispatch(buildHex(builtHex));
@@ -131,48 +159,49 @@ const CityPage = () => {
         ? Boolean(selectedHex.partOfStructureId)
         : false;
 
-  return (
-    <div className={s.cityPage}>
-      <div className={s.cityContainer}>
-        <CityHex cells={hexes} onSelect={selectHex}/>
-      </div>
-        {selectedHex &&
-            <div className={s.buildingSelectorContainer}>
-                <SelectedHexPanel
-                    selectedHex={selectedHex}
-                    selectedBuilding={selectedBuilding}
-                    selectedWallBuilding={selectedWallBuilding}
-                    selectedWallTopBuilding={selectedWallTopBuilding}
-                    structureCandidates={selectedStructureCandidates}
-                    isPartOfCompleteStructure={selectedHexIsPartOfCompleteStructure}
-                    wallResolution={wallResolution}
-                    blocked={traceStatus.isBesieged}
-                    blockedReason={BESIEGED_BUILD_BLOCK_REASON}
-                    onBuildStructure={handleBuildStructure}
-                    onDemolish={handleDemolishSelectedHex}
-                />
-                {selectedHex.kind === "wall"
-                    ? <WallBuildingSelector
-                        onBuildWall={handleWallBuildingSelect}
-                        onBuildWallTop={handleWallTopBuildingSelect}
-                        blocked={traceStatus.isBesieged}
-                        blockedReason={BESIEGED_BUILD_BLOCK_REASON}
-                    />
-                    : selectedHex.buildingKey || selectedHex.partOfStructureId
-                        ? <p className={s.buildingLockedNote}>
-                            Demolish the existing building before using this hex again.
-                        </p>
-                        : <BuildingSelector
-                        onBuild={handleBuildingSelect}
-                        unlockedBuildingIds={unlockedBuildingIds}
-                        blocked={traceStatus.isBesieged}
-                        blockedReason={BESIEGED_BUILD_BLOCK_REASON}
-                    />
-                }
+    return (
+        <div className={s.cityPage}>
+            <div className={s.cityContainer}>
+                <CityHex cells={hexes} onSelect={selectHex}/>
             </div>
-        }
-    </div>
-  );
+            {selectedHex &&
+                <div className={s.buildingSelectorContainer}>
+                    <SelectedHexPanel
+                        selectedHex={selectedHex}
+                        selectedBuilding={selectedBuilding}
+                        selectedWallBuilding={selectedWallBuilding}
+                        selectedWallTopBuilding={selectedWallTopBuilding}
+                        structureCandidates={selectedStructureCandidates}
+                        isPartOfCompleteStructure={selectedHexIsPartOfCompleteStructure}
+                        wallResolution={wallResolution}
+                        blocked={traceStatus.isBesieged}
+                        blockedReason={BESIEGED_BUILD_BLOCK_REASON}
+                        onBuildStructure={handleBuildStructure}
+                        onDemolish={handleDemolishSelectedHex}
+                    />
+                    {selectedHex.kind === "wall"
+                        ? <WallBuildingSelector
+                            onBuildWall={handleWallBuildingSelect}
+                            onBuildWallTop={handleWallTopBuildingSelect}
+                            blocked={traceStatus.isBesieged}
+                            blockedReason={BESIEGED_BUILD_BLOCK_REASON}
+                        />
+                        : selectedHex.buildingKey || selectedHex.partOfStructureId
+                            ? <p className={s.buildingLockedNote}>
+                                Demolish the existing building before using this hex again.
+                            </p>
+                            : <BuildingSelector
+                            onBuild={handleBuildingSelect}
+                            unlockedBuildingIds={unlockedBuildingIds}
+                            unavailableBuildingReasons={unavailableBuildingReasons}
+                            blocked={traceStatus.isBesieged}
+                            blockedReason={BESIEGED_BUILD_BLOCK_REASON}
+                        />
+                    }
+                </div>
+            }
+        </div>
+    );
 };
 
 function SelectedHexPanel({
@@ -441,6 +470,40 @@ function AdjacencyEffectSummary({building}: {building: PlacedBuilding}) {
 
 function hasUpkeepValues(values?: UpkeepAmount) {
     return Boolean(values && Object.values(values).some((value) => value !== undefined && value !== 0));
+}
+
+function getResolvedRequiredUpkeepForBuild(
+    hexes: HexCell[],
+    targetHex: HexCell,
+    buildingKey: string,
+    developmentVector: DevelopmentVectorValue,
+): UpkeepAmount {
+    const candidateHexes = hexes.map(hex => {
+        if (hex.cellKey !== targetHex.cellKey) return hex;
+
+        return {
+            ...hex,
+            buildingKey,
+            developmentVector,
+        };
+    });
+
+    return placeCityBuildings(candidateHexes).get(targetHex.cellKey)?.effectiveRequiredUpkeep
+        ?? BUILDINGS_ATLAS[developmentVector][buildingKey]?.requiredUpkeep
+        ?? {};
+}
+
+function formatMissingUpkeep(shortfalls: UpkeepAmount): string {
+    return (Object.values(UPKEEP_TYPES) as UpkeepTypesValue[])
+        .flatMap(resource => {
+            const amount = shortfalls[resource];
+            return amount ? [`${UPKEEP_SPRITES[resource]} ${formatResourceAmount(amount)}`] : [];
+        })
+        .join(", ");
+}
+
+function formatResourceAmount(amount: number): string {
+    return Number.isInteger(amount) ? String(amount) : amount.toFixed(2);
 }
 
 function getBuildingName(buildingId: string): string {
