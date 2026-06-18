@@ -17,6 +17,12 @@ import {WALL_SEGMENT_BUILDINGS, TOWER_PLATFORM_BUILDINGS} from "../../data/wall/
 import type {ProgressionNodeKind} from "../../data/content/types.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {Building} from "../../models/city/Building.ts";
+import type {WallBuilding} from "../../models/city/Wall.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
+import {
+  getProducedValues,
+  resolveHomogeneousValueContributions,
+} from "../../models/homogeneousValueResolution.ts";
 import * as s from "./IdAuditPage.css.ts";
 
 type AuditStatus = "ok" | "missing" | "none";
@@ -141,7 +147,7 @@ function createRows(): AuditRow[] {
       dataStatus: data ? "ok" : "missing",
       progressionStatus: "none",
       assetStatus: "none",
-      notes: data ? `resilience ${data.resilience} / ignored threat ${data.ignoredThreat}` : "No wall segment definition",
+      notes: data ? describeWallBuildingStats(data) : "No wall segment definition",
     });
   }
 
@@ -155,11 +161,19 @@ function createRows(): AuditRow[] {
       dataStatus: data ? "ok" : "missing",
       progressionStatus: "none",
       assetStatus: "none",
-      notes: data ? `resilience ${data.resilience} / effects ${data.specialEffects.length}` : "No wall superstructure definition",
+      notes: data ? `${describeWallBuildingStats(data)} / effects ${data.specialEffects.length}` : "No wall superstructure definition",
     });
   }
 
   return rows;
+}
+
+function describeWallBuildingStats(data: WallBuilding): string {
+  const producedValues = getProducedValues(resolveHomogeneousValueContributions(data.homogeneousValueEffects ?? []));
+  const resilience = producedValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0;
+  const ignoredThreat = producedValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0;
+
+  return `resilience ${resilience} / ignored threat ${ignoredThreat}`;
 }
 
 function getUnregisteredRows(rows: readonly AuditRow[]): AuditRow[] {

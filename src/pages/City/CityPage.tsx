@@ -273,7 +273,6 @@ function SelectedHexPanel({
             {selectedWallBuilding && (
                 <div className={s.statSection}>
                     <h3 className={s.statHeading}>Wall: {selectedWallBuilding.name}</h3>
-                    <MetricGroup title="Upkeep" values={selectedWallBuilding.requiredUpkeep} />
                     <WallStats wallBuilding={selectedWallBuilding} />
                     <p className={s.panelDescription}>{selectedWallBuilding.description}</p>
                 </div>
@@ -282,7 +281,6 @@ function SelectedHexPanel({
             {selectedWallTopBuilding && (
                 <div className={s.statSection}>
                     <h3 className={s.statHeading}>On wall: {selectedWallTopBuilding.name}</h3>
-                    <MetricGroup title="Upkeep" values={selectedWallTopBuilding.requiredUpkeep} />
                     <WallStats wallBuilding={selectedWallTopBuilding} />
                     <p className={s.panelDescription}>{selectedWallTopBuilding.description}</p>
                 </div>
@@ -450,20 +448,14 @@ function HomogeneousContributionGroup({title, effects}: {title: string; effects:
 function WallStats({wallBuilding}: {wallBuilding: WallBuilding}) {
     return (
         <>
-            <dl className={s.metricList}>
-                <div className={s.metricRow}>
-                    <dt>Resilience</dt>
-                    <dd>{wallBuilding.resilience}</dd>
-                </div>
-                <div className={s.metricRow}>
-                    <dt>Camo level</dt>
-                    <dd>{wallBuilding.camoLevel}</dd>
-                </div>
-                <div className={s.metricRow}>
-                    <dt>Ignored threat</dt>
-                    <dd>{wallBuilding.ignoredThreat}</dd>
-                </div>
-            </dl>
+            <HomogeneousContributionGroup
+                title="Upkeep"
+                effects={getHomogeneousRequirementContributions(wallBuilding)}
+            />
+            <HomogeneousContributionGroup
+                title="Stats"
+                effects={getHomogeneousProductionContributions(wallBuilding)}
+            />
             {wallBuilding.specialEffects.length > 0 && (
                 <ul className={s.effectList}>
                     {wallBuilding.specialEffects.map((effect) => (

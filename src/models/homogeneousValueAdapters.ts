@@ -56,24 +56,6 @@ export function cityVisibilityToHomogeneousValueEffect(trace: number): Homogeneo
     }];
 }
 
-export function wallStatsToHomogeneousValueEffects(args: {
-    resilience: number;
-    threatSuppression: number;
-}): HomogeneousValueEffect[] {
-    return [
-        {
-            valueId: HOMOGENEOUS_VALUE_IDS.wallResilience,
-            additionalKeywords: ["production"],
-            additive: args.resilience,
-        },
-        {
-            valueId: HOMOGENEOUS_VALUE_IDS.wallThreatSuppression,
-            additionalKeywords: ["production"],
-            additive: args.threatSuppression,
-        },
-    ].filter((effect) => effect.additive !== 0);
-}
-
 const towerValueIdsByModifier: Record<keyof TowerModifiers, HomogeneousValueId> = {
     rotationSpeed: HOMOGENEOUS_VALUE_IDS.towerRotationSpeed,
     reloadSpeed: HOMOGENEOUS_VALUE_IDS.towerReloadSpeed,

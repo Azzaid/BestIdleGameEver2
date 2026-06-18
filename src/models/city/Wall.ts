@@ -1,4 +1,4 @@
-import type {UpkeepAmount, UpkeepDescription} from "../Upkeep.ts";
+import type {UpkeepAmount} from "../Upkeep.ts";
 import type {BuildingTypesValue} from "./BuildingTypes.ts";
 import type {BuildingKeyword} from "./Keywords.ts";
 import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
@@ -17,11 +17,6 @@ export interface WallBuilding {
     id: string;
     name: string;
     type: BuildingTypesValue;
-    requiredUpkeep: UpkeepAmount;
-    requiredUpkeepDescription: UpkeepDescription;
-    resilience: number;
-    camoLevel: number;
-    ignoredThreat: number;
     keywords?: BuildingKeyword[];
     homogeneousValueEffects?: HomogeneousValueEffect[];
     homogeneousAdjacency?: HomogeneousAdjacencyRule[];
