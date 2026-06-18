@@ -24,6 +24,7 @@ import {
     getAvailableValues,
     getProducedValues,
     getUpkeepValues,
+    resolveHomogeneousValueContributions,
     resolvePlacedHomogeneousValueContributions
 } from "../../../../models/homogeneousValueResolution.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../../../data/homogeneousValues/index.ts";
@@ -94,6 +95,13 @@ function accumulateEffect(
     if (typeof effect.traceMul === "number") {
         initial.traceMul = (initial.traceMul ?? 1) * effect.traceMul;
     }
+
+    if (effect.homogeneousValueEffects) {
+        initial.homogeneousValueEffects = [
+            ...(initial.homogeneousValueEffects ?? []),
+            ...effect.homogeneousValueEffects,
+        ];
+    }
 }
 
 function toOutputModifiers(
@@ -133,10 +141,10 @@ export const placeCityBuildings = (
             providedUpkeepMul: {},
             requiredUpkeepMul: {},
             traceMul: 1,
-            effectiveProvidedUpkeep: {...building.providedUpkeep},
-            effectiveRequiredUpkeep: {...building.requiredUpkeep},
-            effectiveTrace: building.trace,
-            effectiveHomogeneousValueEffects: []
+            effectiveProvidedUpkeep: {},
+            effectiveRequiredUpkeep: {},
+            effectiveTrace: 0,
+            effectiveHomogeneousValueEffects: [...(building.homogeneousValueEffects ?? [])]
         } : undefined;
         if (placed) placedCity.set(cellKey, placed);
     })
@@ -178,20 +186,25 @@ export const placeCityBuildings = (
 
     //3) Apply aggregated effects
     placedCity.forEach((building) => {
-        const { requiredUpkeep, requiredUpkeepAdd, requiredUpkeepMul, providedUpkeep, providedUpkeepAdd, providedUpkeepMul, outputMul, trace, traceAdd, traceMul } = building;
-        const exactProvidedUpkeep = multiplyUpkeep(addUpkeep(providedUpkeep, providedUpkeepAdd!), providedUpkeepMul!);
-        building.effectiveProvidedUpkeep = toOutputModifiers(outputMul).reduce(
+        const { requiredUpkeepAdd, requiredUpkeepMul, providedUpkeepAdd, providedUpkeepMul, outputMul, traceAdd, traceMul } = building;
+        const exactProvidedUpkeep = multiplyUpkeep(providedUpkeepAdd ?? {}, providedUpkeepMul!);
+        const legacyProvidedUpkeep = toOutputModifiers(outputMul).reduce(
             (current, modifier) => applyResourceModifier(current, modifier),
             exactProvidedUpkeep,
         );
-        building.effectiveRequiredUpkeep = multiplyUpkeep(addUpkeep(requiredUpkeep, requiredUpkeepAdd!), requiredUpkeepMul!);
-        building.effectiveTrace = (trace + traceAdd!) * traceMul!;
+        const legacyRequiredUpkeep = multiplyUpkeep(requiredUpkeepAdd ?? {}, requiredUpkeepMul!);
+        const legacyTrace = (traceAdd ?? 0) * (traceMul ?? 1);
         building.effectiveHomogeneousValueEffects = [
-            ...upkeepAmountToHomogeneousValueEffects(building.effectiveProvidedUpkeep, "production"),
-            ...upkeepAmountToHomogeneousValueEffects(building.effectiveRequiredUpkeep, "upkeep"),
-            ...cityVisibilityToHomogeneousValueEffect(building.effectiveTrace),
             ...(building.homogeneousValueEffects ?? []),
+            ...upkeepAmountToHomogeneousValueEffects(legacyProvidedUpkeep, "production"),
+            ...upkeepAmountToHomogeneousValueEffects(legacyRequiredUpkeep, "upkeep"),
+            ...cityVisibilityToHomogeneousValueEffect(legacyTrace),
         ];
+
+        const resolvedBuildingValues = resolveHomogeneousValueContributions(building.effectiveHomogeneousValueEffects);
+        building.effectiveProvidedUpkeep = homogeneousValueTotalsToUpkeepAmount(getProducedValues(resolvedBuildingValues));
+        building.effectiveRequiredUpkeep = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedBuildingValues));
+        building.effectiveTrace = getProducedValues(resolvedBuildingValues)[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0;
     })
 
     return placedCity
@@ -215,10 +228,6 @@ export function resolveCityUpkeepAndTrace(
         scarTrace,
         effectiveTrace: 0,
     };
-
-    city.forEach((building) => {
-        resolvedCity.requiredUpkeep = addUpkeep(resolvedCity.requiredUpkeep, building.effectiveRequiredUpkeep);
-    })
 
     resolvedCity.territoryTrace = hexes.length * TRACE_PER_HEX;
     resolvedCity.homogeneousResolvedValues = resolvePlacedHomogeneousValueContributions(

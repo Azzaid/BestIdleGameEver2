@@ -27,6 +27,15 @@ import {PROGRESSION_RULES} from "../../data/content/rules.ts";
 import {getRuleForTarget, isProgressionRuleUnlocked} from "../../data/content/progression.ts";
 import {getUpkeepShortfalls, hasEnoughUpkeep} from "./Components/CityHex/upkeepUtils.ts";
 import {placeCityBuildings} from "./Components/CityHex/adjacencyUtils.ts";
+import {
+    formatHomogeneousValue,
+    getHomogeneousProductionContributions,
+    getHomogeneousRequirementContributions,
+} from "../../models/homogeneousValueHelpers.ts";
+import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
+import type {HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import {getUpkeepValues, normalizeMultiplier, resolveHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
+import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 
 const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise resilience in battle before building.";
 
@@ -227,14 +236,18 @@ function SelectedHexPanel({
             {selectedBuilding && (
                 <div className={s.statSection}>
                     <h3 className={s.statHeading}>{selectedBuilding.name}</h3>
-                    <MetricGroup title="Resolved cost" values={selectedBuilding.effectiveRequiredUpkeep} />
-                    <MetricGroup title="Resolved output" values={selectedBuilding.effectiveProvidedUpkeep} />
-                    <dl className={s.metricList}>
-                        <div className={s.metricRow}>
-                            <dt>Trace</dt>
-                            <dd>{selectedBuilding.effectiveTrace}</dd>
-                        </div>
-                    </dl>
+                    <HomogeneousContributionGroup
+                        title="Resolved cost"
+                        effects={getHomogeneousRequirementContributions({
+                            homogeneousValueEffects: selectedBuilding.effectiveHomogeneousValueEffects,
+                        })}
+                    />
+                    <HomogeneousContributionGroup
+                        title="Resolved production"
+                        effects={getHomogeneousProductionContributions({
+                            homogeneousValueEffects: selectedBuilding.effectiveHomogeneousValueEffects,
+                        })}
+                    />
                     <AdjacencyEffectSummary building={selectedBuilding} />
                     <MultistructureStatus
                         structureCandidates={structureCandidates}
@@ -403,6 +416,37 @@ function MetricGroup({title, values}: {title: string; values: UpkeepAmount}) {
     );
 }
 
+function HomogeneousContributionGroup({title, effects}: {title: string; effects: HomogeneousValueEffect[]}) {
+    const entries = effects.flatMap((effect, index) => {
+        const amount = (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
+        if (!amount) return [];
+
+        return [{effect, amount, key: `${effect.valueId}-${index}`}];
+    });
+
+    return (
+        <div>
+            <h4 className={s.metricTitle}>{title}</h4>
+            {entries.length ? (
+                <dl className={s.metricList}>
+                    {entries.map(({effect, amount, key}) => {
+                        const definition = getHomogeneousValueDefinition(effect.valueId);
+
+                        return (
+                            <div key={key} className={s.metricRow}>
+                                <dt>{definition.label}</dt>
+                                <dd>{formatHomogeneousValue(effect.valueId, amount, effect.additionalKeywords)}</dd>
+                            </div>
+                        );
+                    })}
+                </dl>
+            ) : (
+                <p className={s.emptyStats}>None</p>
+            )}
+        </div>
+    );
+}
+
 function WallStats({wallBuilding}: {wallBuilding: WallBuilding}) {
     return (
         <>
@@ -489,8 +533,16 @@ function getResolvedRequiredUpkeepForBuild(
     });
 
     return placeCityBuildings(candidateHexes).get(targetHex.cellKey)?.effectiveRequiredUpkeep
-        ?? BUILDINGS_ATLAS[developmentVector][buildingKey]?.requiredUpkeep
+        ?? getBuildingRequiredUpkeep(BUILDINGS_ATLAS[developmentVector][buildingKey])
         ?? {};
+}
+
+function getBuildingRequiredUpkeep(building?: {homogeneousValueEffects?: HomogeneousValueEffect[]}): UpkeepAmount {
+    if (!building) return {};
+
+    return homogeneousValueTotalsToUpkeepAmount(
+        getUpkeepValues(resolveHomogeneousValueContributions(building.homogeneousValueEffects ?? [])),
+    );
 }
 
 function formatMissingUpkeep(shortfalls: UpkeepAmount): string {

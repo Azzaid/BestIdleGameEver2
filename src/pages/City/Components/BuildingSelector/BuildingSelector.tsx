@@ -2,10 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import * as s from "./BuildingSelector.css.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../../../models/DevlopmentVector.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
-import {UPKEEP_SPRITES, UPKEEP_TYPES} from "../../../../models/Upkeep.ts";
 import {HexTilePreview} from "./HexTilePreview.tsx";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
 import type {BuildingSelectorProps} from "../../../../models/city/buildingSelector.ts";
+import {
+    formatHomogeneousValue,
+    getHomogeneousProductionContributions,
+    getHomogeneousRequirementContributions,
+} from "../../../../models/homogeneousValueHelpers.ts";
+import {getHomogeneousValueDefinition} from "../../../../data/homogeneousValues/index.ts";
+import type {HomogeneousValueEffect} from "../../../../models/homogeneousValues.ts";
+import {normalizeMultiplier} from "../../../../models/homogeneousValueResolution.ts";
 
 export function BuildingSelector({
                                      onBuild,
@@ -77,17 +84,11 @@ export function BuildingSelector({
                                     <h3 id={`${building.id}-name`} className={s.name}>
                                         {building.name}
                                     </h3>
-                                    <ul className={s.cost}>
-                                        {Object.values(UPKEEP_TYPES).map((resource) => {
-                                            if (!building.requiredUpkeep[resource]) return null
-                                            return (
-                                                <li key={resource} className={s.costItem}>
-                                                    <span className={s.costValue}>{building.requiredUpkeep[resource]}</span>
-                                                    <span className={s.costLabel}>{UPKEEP_SPRITES[resource]}</span>
-                                                </li>
-                                            )
-                                        })}
-                                    </ul>
+                                    <HomogeneousEffectList
+                                        effects={getHomogeneousRequirementContributions(building)}
+                                        className={s.cost}
+                                        itemClassName={s.costItem}
+                                    />
                                 </div>
                                 <button
                                     className={s.buildBtn}
@@ -110,17 +111,11 @@ export function BuildingSelector({
                                 </div>
                                 <div className={s.contentCol}>
                                     <h4 className={s.sectionTitle}>Gives</h4>
-                                    <ul className={s.bullets}>
-                                        {Object.values(UPKEEP_TYPES).map((resource) => {
-                                            if (!building.providedUpkeep[resource]) return null
-                                            return (
-                                                <li key={resource} className={s.bulletItem}>
-                                                    <span className={s.costValue}>{building.providedUpkeep[resource]}</span>
-                                                    <span className={s.costLabel}>{UPKEEP_SPRITES[resource]}</span>
-                                                </li>
-                                            )
-                                        })}
-                                    </ul>
+                                    <HomogeneousEffectList
+                                        effects={getHomogeneousProductionContributions(building)}
+                                        className={s.bullets}
+                                        itemClassName={s.bulletItem}
+                                    />
                                 </div>
                             </section>
 
@@ -154,4 +149,40 @@ export function BuildingSelector({
             </div>
         </div>
     );
+}
+
+function HomogeneousEffectList({
+    effects,
+    className,
+    itemClassName,
+}: {
+    effects: HomogeneousValueEffect[];
+    className: string;
+    itemClassName: string;
+}) {
+    const visibleEffects = effects.filter(effect => resolveEffectValue(effect) !== 0);
+
+    if (!visibleEffects.length) return null;
+
+    return (
+        <ul className={className}>
+            {visibleEffects.map((effect, index) => {
+                const value = resolveEffectValue(effect);
+                const definition = getHomogeneousValueDefinition(effect.valueId);
+
+                return (
+                    <li key={`${effect.valueId}-${index}`} className={itemClassName}>
+                        <span className={s.costValue}>
+                            {formatHomogeneousValue(effect.valueId, value, effect.additionalKeywords)}
+                        </span>
+                        <span className={s.costLabel}>{definition.label}</span>
+                    </li>
+                );
+            })}
+        </ul>
+    );
+}
+
+function resolveEffectValue(effect: HomogeneousValueEffect): number {
+    return (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
 }

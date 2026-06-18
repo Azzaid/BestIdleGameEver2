@@ -5,6 +5,10 @@ import type {MultiHexStructureRule} from "../../models/city/MultiHexStructure.ts
 import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import {buildings} from "../identificators/index.ts";
+import {
+  cityVisibilityToHomogeneousValueEffect,
+  upkeepAmountToHomogeneousValueEffects,
+} from "../../models/homogeneousValueAdapters.ts";
 
 function magicBuilding(
   id: string,
@@ -24,11 +28,11 @@ function magicBuilding(
     isMultiHex: false,
     isMultistructure: false,
     vector: DEVELOPMENT_VECTORS.aether,
-    requiredUpkeep,
-    requiredUpkeepDescription: {},
-    trace,
-    providedUpkeep,
-    providedUpkeepDescription: {},
+    homogeneousValueEffects: [
+      ...upkeepAmountToHomogeneousValueEffects(providedUpkeep, "production"),
+      ...upkeepAmountToHomogeneousValueEffects(requiredUpkeep, "upkeep"),
+      ...cityVisibilityToHomogeneousValueEffect(trace),
+    ],
     adjacency: [],
     adjacencyDescription: "Not affected",
     description,
