@@ -7,11 +7,11 @@ import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/Dev
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {
     selectCityBuildings,
-    selectCityAetherAtmosphereLevels,
     selectCityHexes,
     selectCityStructureCandidates,
     selectCompleteCityStructureIds,
 } from "../../store/city/selectors.ts";
+import {selectAetherAtmosphereLevels} from "../../store/homogeneousValues/selectors.ts";
 import {buildHex, buildWall, buildWallTop, demolishHex, buildMultistructure} from "../../store/city/slice.ts";
 import {UPKEEP_SPRITES, UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
 import {ALL_WALL_BUILDINGS, TOWER_PLATFORM_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
@@ -39,7 +39,7 @@ const CityPage = () => {
     const wallResolution = useTypedSelector(selectWallResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
-    const aetherAtmosphereLevels = useTypedSelector(selectCityAetherAtmosphereLevels);
+    const aetherAtmosphereLevels = useTypedSelector(selectAetherAtmosphereLevels);
     const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
     const [selectedHex, setSelectedHex] = useState<HexCell | null>(null);
     const selectHex = (hex: HexCell) => {

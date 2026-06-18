@@ -1,17 +1,13 @@
 import {createSelector} from "@reduxjs/toolkit";
-import {selectCityBuildings, selectCityHexes, selectCityScarTrace} from "../city/selectors.ts";
+import {selectCityResolution} from "../city/selectors.ts";
 import type {RootState} from "../../models/store/appStore.ts";
-import {resolveCityUpkeepAndTrace} from "../../pages/City/Components/CityHex/adjacencyUtils.ts";
 import type {CityResolution} from "../../models/city/Adjancency.ts";
 import {selectResolvedAvailableTowers} from "../towers/selectors.ts";
 import {deductUpkeep} from "../../pages/City/Components/CityHex/upkeepUtils.ts";
 import type {CityTraceStatus} from "../../models/store/upkeep.ts";
 import {selectIsDebugModeEnabled} from "../debug/selectors.ts";
 
-export const selectCityResolution = createSelector(
-    [selectCityHexes, selectCityBuildings, selectCityScarTrace],
-    (hexes, buildings, scarTrace): CityResolution => resolveCityUpkeepAndTrace(hexes, buildings, scarTrace)
-);
+export {selectCityResolution};
 
 export const selectTowerAwareCityResolution = createSelector(
     [selectCityResolution, selectResolvedAvailableTowers],

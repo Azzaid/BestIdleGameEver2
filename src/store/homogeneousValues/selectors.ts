@@ -1,10 +1,20 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
+import {resolveAetherAtmosphereFromTotals} from "../../models/city/aetherAtmosphereResolution.ts";
 import {createInitialHomogeneousValueTotals} from "../../models/homogeneousValueResolution.ts";
 import type {HomogeneousValueId, HomogeneousValueTotals} from "../../models/homogeneousValues.ts";
 import type {RootState} from "../../models/store/appStore.ts";
+import {selectCityHexes} from "../city/selectors.ts";
 import {selectCityResolution} from "../upkeep/selectors.ts";
 import {selectWallResolution} from "../wall/selectors.ts";
+
+const emptyResolvedValue = {
+    producedValue: 0,
+    upkeepValue: 0,
+    availableValue: 0,
+    unlockRequiredValue: 0,
+    unlockSatisfied: true,
+};
 
 export const selectHomogeneousValueTotals = createSelector(
     [selectCityResolution, selectWallResolution, (state: RootState) => state.upkeep.resilience],
@@ -33,7 +43,75 @@ export const selectHomogeneousValue = createSelector(
 
 export const selectCityVisibility = createSelector(
     [selectCityResolution],
-    (cityResolution): number => cityResolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0,
+    (cityResolution): number => cityResolution.producedHomogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0,
+);
+
+export const selectCityResolvedProducedValue = createSelector(
+    [
+        selectCityResolution,
+        (_state: RootState, valueId: HomogeneousValueId) => valueId,
+    ],
+    (cityResolution, valueId): number => (
+        cityResolution.homogeneousResolvedValues[valueId] ?? emptyResolvedValue
+    ).producedValue,
+);
+
+export const selectCityResolvedUpkeepValue = createSelector(
+    [
+        selectCityResolution,
+        (_state: RootState, valueId: HomogeneousValueId) => valueId,
+    ],
+    (cityResolution, valueId): number => (
+        cityResolution.homogeneousResolvedValues[valueId] ?? emptyResolvedValue
+    ).upkeepValue,
+);
+
+export const selectCityResolvedAvailableValue = createSelector(
+    [
+        selectCityResolution,
+        (_state: RootState, valueId: HomogeneousValueId) => valueId,
+    ],
+    (cityResolution, valueId): number => (
+        cityResolution.homogeneousResolvedValues[valueId] ?? emptyResolvedValue
+    ).availableValue,
+);
+
+export const selectCityResolvedUnlockRequiredValue = createSelector(
+    [
+        selectCityResolution,
+        (_state: RootState, valueId: HomogeneousValueId) => valueId,
+    ],
+    (cityResolution, valueId): number => (
+        cityResolution.homogeneousResolvedValues[valueId] ?? emptyResolvedValue
+    ).unlockRequiredValue,
+);
+
+export const selectCityResolvedIsUnlockSatisfied = createSelector(
+    [
+        selectCityResolution,
+        (_state: RootState, valueId: HomogeneousValueId) => valueId,
+    ],
+    (cityResolution, valueId): boolean => (
+        cityResolution.homogeneousResolvedValues[valueId] ?? emptyResolvedValue
+    ).unlockSatisfied,
+);
+
+export const selectAetherAtmosphere = createSelector(
+    [selectHomogeneousValueTotals, selectCityHexes],
+    (totals, hexes) => {
+        const cityHexCount = hexes.filter(hex => hex.kind === "city").length;
+
+        return resolveAetherAtmosphereFromTotals({
+            veil: totals[HOMOGENEOUS_VALUE_IDS.resourceVeil] ?? 0,
+            manaFlows: totals[HOMOGENEOUS_VALUE_IDS.resourceManaFlows] ?? 0,
+            death: totals[HOMOGENEOUS_VALUE_IDS.resourceDeath] ?? 0,
+        }, cityHexCount);
+    },
+);
+
+export const selectAetherAtmosphereLevels = createSelector(
+    [selectAetherAtmosphere],
+    (atmosphere) => atmosphere.levels,
 );
 
 export const selectControlledTerritory = createSelector(

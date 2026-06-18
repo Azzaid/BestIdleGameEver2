@@ -4,6 +4,7 @@ import type {ResourceKeyword, UpkeepAmount} from "../Upkeep.ts";
 import type {BuildingKeyword} from "./Keywords.ts";
 import type {PlacedBuilding} from "./Building.ts";
 import type {HomogeneousValueEffect} from "../homogeneousValues.ts";
+import type {HomogeneousResolvedValueMap} from "../homogeneousValues.ts";
 
 export type EffectScope = "self" | "neighbors";
 
@@ -68,6 +69,9 @@ export interface CityResolution {
     providedUpkeep: UpkeepAmount;
     effectiveUpkeep: UpkeepAmount,
     homogeneousValues: Record<string, number>;
+    homogeneousResolvedValues: HomogeneousResolvedValueMap;
+    producedHomogeneousValues: Record<string, number>;
+    upkeepHomogeneousValues: Record<string, number>;
     territoryTrace: number;
     buildingsTrace: number;
     scarTrace: number;

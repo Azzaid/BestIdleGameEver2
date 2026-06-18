@@ -1,6 +1,6 @@
 import {HOMOGENEOUS_VALUE_IDS} from "../data/homogeneousValues/index.ts";
 import {UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "./Upkeep.ts";
-import type {HomogeneousValueEffect, HomogeneousValueId} from "./homogeneousValues.ts";
+import type {HomogeneousValueEffect, HomogeneousValueId, HomogeneousValueRoleKeyword} from "./homogeneousValues.ts";
 import type {TowerModifiers, TowerStatsResolved} from "./battle/towerParts.ts";
 
 const resourceValueIdsByUpkeepType: Record<UpkeepTypesValue, HomogeneousValueId> = {
@@ -16,13 +16,17 @@ const resourceValueIdsByUpkeepType: Record<UpkeepTypesValue, HomogeneousValueId>
     [UPKEEP_TYPES.animals]: HOMOGENEOUS_VALUE_IDS.resourceAnimals,
 };
 
-export function upkeepAmountToHomogeneousValueEffects(amount: UpkeepAmount): HomogeneousValueEffect[] {
+export function upkeepAmountToHomogeneousValueEffects(
+    amount: UpkeepAmount,
+    roleKeyword: HomogeneousValueRoleKeyword,
+): HomogeneousValueEffect[] {
     return (Object.keys(amount) as UpkeepTypesValue[]).flatMap((resource) => {
         const additive = amount[resource] ?? 0;
         if (additive === 0) return [];
 
         return [{
             valueId: resourceValueIdsByUpkeepType[resource],
+            additionalKeywords: [roleKeyword],
             additive,
         }];
     });
@@ -47,6 +51,7 @@ export function cityVisibilityToHomogeneousValueEffect(trace: number): Homogeneo
 
     return [{
         valueId: HOMOGENEOUS_VALUE_IDS.cityVisibility,
+        additionalKeywords: ["production"],
         additive: trace,
     }];
 }
@@ -58,10 +63,12 @@ export function wallStatsToHomogeneousValueEffects(args: {
     return [
         {
             valueId: HOMOGENEOUS_VALUE_IDS.wallResilience,
+            additionalKeywords: ["production"],
             additive: args.resilience,
         },
         {
             valueId: HOMOGENEOUS_VALUE_IDS.wallThreatSuppression,
+            additionalKeywords: ["production"],
             additive: args.threatSuppression,
         },
     ].filter((effect) => effect.additive !== 0);
@@ -90,6 +97,7 @@ export function towerModifiersToHomogeneousValueEffects(
 
         return [{
             valueId: towerValueIdsByModifier[modifierKey],
+            additionalKeywords: ["production"],
             additive,
         }];
     });
@@ -100,6 +108,7 @@ export function towerWeightToHomogeneousValueEffects(weight = 0): HomogeneousVal
 
     return [{
         valueId: HOMOGENEOUS_VALUE_IDS.towerWeight,
+        additionalKeywords: ["production"],
         additive: weight,
     }];
 }

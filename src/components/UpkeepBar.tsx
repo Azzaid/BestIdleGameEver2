@@ -4,7 +4,7 @@ import {selectCityTraceStatus, selectTowerAwareCityResolution} from "../store/up
 import {DEVELOPMENT_VECTORS} from "../models/DevlopmentVector.ts";
 import {UPKEEP_SPRITES, UPKEEP_TYPES_BY_VECTOR, type UpkeepTypesValue} from "../models/Upkeep.ts";
 import * as s from './upkeepBar.css.ts';
-import {selectCityAetherAtmosphere} from "../store/city/selectors.ts";
+import {selectAetherAtmosphere} from "../store/homogeneousValues/selectors.ts";
 import {
     AETHER_ATMOSPHERES,
     AETHER_ATMOSPHERE_LABELS,
@@ -37,7 +37,7 @@ function getTraceColor(ratio: number) {
 export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
     const {providedUpkeep, effectiveUpkeep, effectiveTrace} = useTypedSelector(selectTowerAwareCityResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
-    const aetherAtmosphere = useTypedSelector(selectCityAetherAtmosphere);
+    const aetherAtmosphere = useTypedSelector(selectAetherAtmosphere);
     const traceFillColor = getTraceColor(traceStatus.fillRatio);
 
     return (
@@ -108,13 +108,13 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
 }
 
 function AetherAtmosphereOrb({atmosphere}: {atmosphere: AetherAtmosphereResolution}) {
-    const red = getSaturatedColor([255, 38, 38], atmosphere.concentrations.manaFlows);
-    const blue = getSaturatedColor([46, 116, 255], atmosphere.concentrations.veil);
-    const black = getSaturatedColor([0, 0, 0], atmosphere.concentrations.death);
+    const red = getSaturatedColor([255, 38, 38], atmosphere.totals.manaFlows);
+    const blue = getSaturatedColor([46, 116, 255], atmosphere.totals.veil);
+    const black = getSaturatedColor([0, 0, 0], atmosphere.totals.death);
     const center = getMixedAetherColor(
-        atmosphere.concentrations.manaFlows,
-        atmosphere.concentrations.veil,
-        atmosphere.concentrations.death,
+        atmosphere.totals.manaFlows,
+        atmosphere.totals.veil,
+        atmosphere.totals.death,
     );
 
     const background = [

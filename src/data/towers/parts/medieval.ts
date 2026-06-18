@@ -41,4 +41,17 @@ export const medievalTowerParts: GunPart[] = [
     weight: 3,
     supportCost: {},
   },
+    {
+        id: gunparts.barrels.medieval.hollowedTrunk,
+        slot: 'barrel',
+        name: 'Hollowed trunk',
+        description: 'A rough rotating scaffold lashed onto a wall tower platform.',
+        vector: 'medieval',
+        sprite: {textureKey: 'medieval_base_crude-wood'},
+        attachmentOffset: {x: 0, y: 0},
+        keywords: new Set(['rough', 'grounded', 'turret']),
+        modifiers: {rotationSpeed: 0.25, projectileDamage: 1, retargetCooldownSeconds: 0.04},
+        weight: 1,
+        supportCost: {},
+    },
 ];

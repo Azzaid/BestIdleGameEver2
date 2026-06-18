@@ -3,6 +3,7 @@ import type {BuildingTypesValue} from "./BuildingTypes.ts";
 import type {BuildingKeyword} from "./Keywords.ts";
 import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../homogeneousValues.ts";
+import type {HomogeneousResolvedValueMap} from "../homogeneousValues.ts";
 
 export type WallEffectKeyword = Extract<BuildingKeyword, "slow" | "harm" | "push" | "visibility">;
 
@@ -36,5 +37,6 @@ export type WallResolution = {
     camoLevel: number;
     ignoredThreat: number;
     homogeneousValues: Record<string, number>;
+    homogeneousResolvedValues: HomogeneousResolvedValueMap;
     specialEffects: WallBuilding["specialEffects"];
 };

@@ -3,7 +3,8 @@ import {researchTree} from "../../data/research/index.ts";
 import {sendNotification} from "../../lib/notifications/eventBus.ts";
 import {canPurchaseResearch} from "../../models/research/researchGraph.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
-import {selectCityAetherAtmosphereLevels, selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
+import {selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
+import {selectAetherAtmosphereLevels} from "../../store/homogeneousValues/selectors.ts";
 import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {purchaseTech} from "../../store/research/slice.ts";
@@ -40,7 +41,7 @@ export function useResearchAutoUnlock(): void {
     const cityHexes = useTypedSelector(selectCityHexes);
     const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
     const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
-    const aetherAtmosphereLevels = useTypedSelector(selectCityAetherAtmosphereLevels);
+    const aetherAtmosphereLevels = useTypedSelector(selectAetherAtmosphereLevels);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const notifiedTechIdsRef = useRef(new Set<string>());
 

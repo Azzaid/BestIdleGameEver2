@@ -7,7 +7,8 @@ import {researchTree} from "../../data/research";
 import * as s from "./ResearchPage.css.ts";
 import {useTypedSelector} from "../../store/hooks.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
-import {selectCityAetherAtmosphereLevels, selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
+import {selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
+import {selectAetherAtmosphereLevels} from "../../store/homogeneousValues/selectors.ts";
 import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
 import {STRUCTURES_BY_ID} from "../../data/structures/index.ts";
@@ -137,7 +138,7 @@ export default function ResearchPage() {
     const cityHexes = useTypedSelector(selectCityHexes);
     const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
     const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
-    const aetherAtmosphereLevels = useTypedSelector(selectCityAetherAtmosphereLevels);
+    const aetherAtmosphereLevels = useTypedSelector(selectAetherAtmosphereLevels);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const viewportRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<CanvasRef>(null);

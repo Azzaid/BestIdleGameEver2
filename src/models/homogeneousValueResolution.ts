@@ -4,10 +4,14 @@ import {
 } from "../data/homogeneousValues/index.ts";
 import type {
     HomogeneousAdjacencyRule,
+    HomogeneousResolvedValue,
+    HomogeneousResolvedValueMap,
     HomogeneousValueEffect,
     HomogeneousValueId,
+    HomogeneousValueRoleKeyword,
     HomogeneousValueTotals,
 } from "./homogeneousValues.ts";
+import {HOMOGENEOUS_VALUE_ROLE_KEYWORDS} from "./homogeneousValues.ts";
 
 type EffectSource = {
     keywords?: readonly string[];
@@ -37,13 +41,7 @@ export function createInitialHomogeneousValueTotals(): HomogeneousValueTotals {
 export function resolveHomogeneousValueEffects(
     effects: readonly HomogeneousValueEffect[],
 ): HomogeneousValueTotals {
-    const totals = createInitialHomogeneousValueTotals();
-
-    for (const effect of effects) {
-        totals[effect.valueId] = resolveEffectValue(totals[effect.valueId] ?? 0, effect);
-    }
-
-    return totals;
+    return getAvailableValues(resolveHomogeneousValueContributions(effects));
 }
 
 export function resolveHomogeneousValueSources(
@@ -52,10 +50,47 @@ export function resolveHomogeneousValueSources(
     return resolveHomogeneousValueEffects(sources.flatMap((source) => source.effects ?? []));
 }
 
+export function resolveHomogeneousValueContributions(
+    effects: readonly HomogeneousValueEffect[],
+): HomogeneousResolvedValueMap {
+    const resolvedValues = createInitialHomogeneousResolvedValues();
+
+    for (const effect of effects) {
+        const keywords = getEffectKeywords(effect);
+        const roleKeyword = getContributionRoleKeyword(keywords, effect.valueId);
+        const contributionValue = resolveContributionValue(effect);
+        const resolvedValue = resolvedValues[effect.valueId] ?? createEmptyResolvedValue();
+
+        if (roleKeyword === "production") {
+            resolvedValue.producedValue += contributionValue;
+        }
+
+        if (roleKeyword === "upkeep") {
+            resolvedValue.upkeepValue += contributionValue;
+        }
+
+        if (roleKeyword === "unlock") {
+            resolvedValue.unlockRequiredValue += contributionValue;
+        }
+
+        updateDerivedResolvedValue(resolvedValue);
+        resolvedValues[effect.valueId] = resolvedValue;
+    }
+
+    return resolvedValues;
+}
+
 export function resolvePlacedHomogeneousValueSources(
     sources: readonly PlacedEffectSource[],
     getNearbySources: (source: PlacedEffectSource, radius: number) => readonly PlacedEffectSource[],
 ): HomogeneousValueTotals {
+    return getAvailableValues(resolvePlacedHomogeneousValueContributions(sources, getNearbySources));
+}
+
+export function resolvePlacedHomogeneousValueContributions(
+    sources: readonly PlacedEffectSource[],
+    getNearbySources: (source: PlacedEffectSource, radius: number) => readonly PlacedEffectSource[],
+): HomogeneousResolvedValueMap {
     const accumulatorsByCellKey = new Map<string, EffectAccumulator[]>();
 
     for (const source of sources) {
@@ -83,7 +118,7 @@ export function resolvePlacedHomogeneousValueSources(
         }
     }
 
-    return resolveHomogeneousValueEffects(
+    return resolveHomogeneousValueContributions(
         [...accumulatorsByCellKey.values()].flatMap((accumulators) => accumulators.map(toHomogeneousValueEffect)),
     );
 }
@@ -109,8 +144,66 @@ export function normalizeMultiplier(multiplier?: number | null): number {
     return multiplier;
 }
 
-function resolveEffectValue(currentValue: number, effect: HomogeneousValueEffect): number {
-    return (currentValue + (effect.additive ?? 0)) * normalizeMultiplier(effect.multiplier);
+export function getContributionRoleKeyword(
+    keywords: Iterable<string>,
+    valueId = "unknown",
+): HomogeneousValueRoleKeyword {
+    const roleKeywords = [...keywords].filter((keyword): keyword is HomogeneousValueRoleKeyword => (
+        HOMOGENEOUS_VALUE_ROLE_KEYWORDS.includes(keyword as HomogeneousValueRoleKeyword)
+    ));
+
+    if (roleKeywords.length !== 1) {
+        throw new Error(`Homogeneous contribution for ${valueId} must have exactly one role keyword: production, upkeep, or unlock.`);
+    }
+
+    return roleKeywords[0];
+}
+
+export function getAvailableValues(resolvedValues: HomogeneousResolvedValueMap): HomogeneousValueTotals {
+    return mapResolvedValues(resolvedValues, "availableValue");
+}
+
+export function getProducedValues(resolvedValues: HomogeneousResolvedValueMap): HomogeneousValueTotals {
+    return mapResolvedValues(resolvedValues, "producedValue");
+}
+
+export function getUpkeepValues(resolvedValues: HomogeneousResolvedValueMap): HomogeneousValueTotals {
+    return mapResolvedValues(resolvedValues, "upkeepValue");
+}
+
+export function getUnlockRequiredValues(resolvedValues: HomogeneousResolvedValueMap): HomogeneousValueTotals {
+    return mapResolvedValues(resolvedValues, "unlockRequiredValue");
+}
+
+function resolveContributionValue(effect: HomogeneousValueEffect): number {
+    return (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
+}
+
+function createInitialHomogeneousResolvedValues(): HomogeneousResolvedValueMap {
+    return Object.fromEntries(
+        HOMOGENEOUS_VALUE_DEFINITION_LIST.map((definition) => {
+            const resolvedValue = createEmptyResolvedValue();
+            resolvedValue.producedValue = definition.initialValue;
+            updateDerivedResolvedValue(resolvedValue);
+
+            return [definition.id, resolvedValue];
+        }),
+    );
+}
+
+function createEmptyResolvedValue(): HomogeneousResolvedValue {
+    return {
+        producedValue: 0,
+        upkeepValue: 0,
+        availableValue: 0,
+        unlockRequiredValue: 0,
+        unlockSatisfied: true,
+    };
+}
+
+function updateDerivedResolvedValue(resolvedValue: HomogeneousResolvedValue): void {
+    resolvedValue.availableValue = resolvedValue.producedValue - resolvedValue.upkeepValue;
+    resolvedValue.unlockSatisfied = resolvedValue.producedValue >= resolvedValue.unlockRequiredValue;
 }
 
 function createEffectAccumulator(effect: HomogeneousValueEffect): EffectAccumulator {
@@ -125,9 +218,21 @@ function createEffectAccumulator(effect: HomogeneousValueEffect): EffectAccumula
 function toHomogeneousValueEffect(accumulator: EffectAccumulator): HomogeneousValueEffect {
     return {
         valueId: accumulator.valueId,
+        additionalKeywords: [...accumulator.keywords].filter((keyword) => (
+            HOMOGENEOUS_VALUE_ROLE_KEYWORDS.includes(keyword as HomogeneousValueRoleKeyword)
+        )),
         additive: accumulator.additive,
         multiplier: accumulator.multiplier,
     };
+}
+
+function mapResolvedValues(
+    resolvedValues: HomogeneousResolvedValueMap,
+    field: keyof Pick<HomogeneousResolvedValue, "producedValue" | "upkeepValue" | "availableValue" | "unlockRequiredValue">,
+): HomogeneousValueTotals {
+    return Object.fromEntries(
+        Object.entries(resolvedValues).map(([valueId, resolvedValue]) => [valueId, resolvedValue[field]]),
+    );
 }
 
 function matchesBuildingKeywords(

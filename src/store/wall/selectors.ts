@@ -5,7 +5,7 @@ import {selectCityHexes} from "../city/selectors.ts";
 import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
 import {addUpkeep} from "../../pages/City/Components/CityHex/upkeepUtils.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
-import {resolvePlacedHomogeneousValueSources} from "../../models/homogeneousValueResolution.ts";
+import {getAvailableValues, resolvePlacedHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
 import {wallStatsToHomogeneousValueEffects} from "../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
 
@@ -25,6 +25,7 @@ export const selectWallResolution = createSelector(
             camoLevel: 0,
             ignoredThreat: 0,
             homogeneousValues: {},
+            homogeneousResolvedValues: {},
             specialEffects: [],
         };
         const wallValueSources: Array<{
@@ -64,7 +65,7 @@ export const selectWallResolution = createSelector(
                 });
             });
         });
-        resolution.homogeneousValues = resolvePlacedHomogeneousValueSources(
+        resolution.homogeneousResolvedValues = resolvePlacedHomogeneousValueContributions(
             wallValueSources,
             (source, radius) => wallValueSources.filter((candidate) => {
                 if (candidate.cellKey === source.cellKey) return false;
@@ -78,6 +79,7 @@ export const selectWallResolution = createSelector(
                 return Math.max(columnDistance, rowDistance, diagonalDistance) <= radius;
             }),
         );
+        resolution.homogeneousValues = getAvailableValues(resolution.homogeneousResolvedValues);
         resolution.resilience = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0;
         resolution.ignoredThreat = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0;
 

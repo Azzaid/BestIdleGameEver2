@@ -20,7 +20,12 @@ import {
     homogeneousValueTotalsToUpkeepAmount,
     upkeepAmountToHomogeneousValueEffects
 } from "../../../../models/homogeneousValueAdapters.ts";
-import {resolvePlacedHomogeneousValueSources} from "../../../../models/homogeneousValueResolution.ts";
+import {
+    getAvailableValues,
+    getProducedValues,
+    getUpkeepValues,
+    resolvePlacedHomogeneousValueContributions
+} from "../../../../models/homogeneousValueResolution.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../../../data/homogeneousValues/index.ts";
 
 function matchesFilter(
@@ -182,7 +187,8 @@ export const placeCityBuildings = (
         building.effectiveRequiredUpkeep = multiplyUpkeep(addUpkeep(requiredUpkeep, requiredUpkeepAdd!), requiredUpkeepMul!);
         building.effectiveTrace = (trace + traceAdd!) * traceMul!;
         building.effectiveHomogeneousValueEffects = [
-            ...upkeepAmountToHomogeneousValueEffects(building.effectiveProvidedUpkeep),
+            ...upkeepAmountToHomogeneousValueEffects(building.effectiveProvidedUpkeep, "production"),
+            ...upkeepAmountToHomogeneousValueEffects(building.effectiveRequiredUpkeep, "upkeep"),
             ...cityVisibilityToHomogeneousValueEffect(building.effectiveTrace),
             ...(building.homogeneousValueEffects ?? []),
         ];
@@ -201,6 +207,9 @@ export function resolveCityUpkeepAndTrace(
         providedUpkeep: {} as UpkeepAmount,
         effectiveUpkeep: {} as UpkeepAmount,
         homogeneousValues: {},
+        homogeneousResolvedValues: {},
+        producedHomogeneousValues: {},
+        upkeepHomogeneousValues: {},
         buildingsTrace: 0,
         territoryTrace: 0,
         scarTrace,
@@ -212,7 +221,7 @@ export function resolveCityUpkeepAndTrace(
     })
 
     resolvedCity.territoryTrace = hexes.length * TRACE_PER_HEX;
-    resolvedCity.homogeneousValues = resolvePlacedHomogeneousValueSources(
+    resolvedCity.homogeneousResolvedValues = resolvePlacedHomogeneousValueContributions(
         [...city.values()].map((building) => ({
             cellKey: `${building.column}:${building.row}`,
             column: building.column,
@@ -242,8 +251,12 @@ export function resolveCityUpkeepAndTrace(
                 }));
         },
     );
-    resolvedCity.providedUpkeep = homogeneousValueTotalsToUpkeepAmount(resolvedCity.homogeneousValues);
-    resolvedCity.buildingsTrace = resolvedCity.homogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0;
+    resolvedCity.homogeneousValues = getAvailableValues(resolvedCity.homogeneousResolvedValues);
+    resolvedCity.producedHomogeneousValues = getProducedValues(resolvedCity.homogeneousResolvedValues);
+    resolvedCity.upkeepHomogeneousValues = getUpkeepValues(resolvedCity.homogeneousResolvedValues);
+    resolvedCity.providedUpkeep = homogeneousValueTotalsToUpkeepAmount(resolvedCity.producedHomogeneousValues);
+    resolvedCity.requiredUpkeep = homogeneousValueTotalsToUpkeepAmount(resolvedCity.upkeepHomogeneousValues);
+    resolvedCity.buildingsTrace = resolvedCity.producedHomogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0;
 
     resolvedCity.effectiveUpkeep = deductUpkeep(resolvedCity.providedUpkeep, resolvedCity.requiredUpkeep);
     resolvedCity.effectiveTrace = resolvedCity.buildingsTrace + resolvedCity.territoryTrace + resolvedCity.scarTrace;

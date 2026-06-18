@@ -3,8 +3,7 @@ import {createSelector} from "@reduxjs/toolkit";
 import {placeCityBuildings, resolveCityUpkeepAndTrace} from "../../pages/City/Components/CityHex/adjacencyUtils.ts";
 import {STRUCTURES} from "../../data/structures/index.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
-import {resolveAetherAtmosphere} from "../../models/city/aetherAtmosphereResolution.ts";
-import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
+import type {CityResolution} from "../../models/city/Adjancency.ts";
 
 export const selectCityHexes = (state: RootState) => state.city.hexes;
 
@@ -43,55 +42,16 @@ export const selectCompleteCityStructureIds = createSelector(
     }
 );
 
-export const selectCityAetherAtmosphere = createSelector(
+export const selectBaseCityResolution = createSelector(
     [selectCityHexes, selectCityBuildings],
-    (hexes, buildings) => {
-        const cityResolution = resolveCityUpkeepAndTrace(hexes, buildings);
-        const cityHexCount = hexes.filter(hex => hex.kind === "city").length;
-        return resolveAetherAtmosphere(cityResolution.providedUpkeep, cityHexCount);
-    }
+    (hexes, buildings): CityResolution => resolveCityUpkeepAndTrace(hexes, buildings)
 );
 
-export const selectCityAetherAtmosphereLevels = createSelector(
-    [selectCityAetherAtmosphere],
-    (atmosphere) => atmosphere.levels
-);
-
-export const selectCurrentVeilValue = createSelector(
-    [selectCityAetherAtmosphere],
-    (atmosphere) => atmosphere.totals.veil
-);
-
-export const selectCurrentManaFlowsValue = createSelector(
-    [selectCityAetherAtmosphere],
-    (atmosphere) => atmosphere.totals.manaFlows
-);
-
-export const selectCurrentDeathValue = createSelector(
-    [selectCityAetherAtmosphere],
-    (atmosphere) => atmosphere.totals.death
-);
-
-export const selectCurrentVeilLevel = createSelector(
-    [selectCityAetherAtmosphere],
-    (atmosphere) => atmosphere.levels.veil
-);
-
-export const selectCurrentManaFlowsLevel = createSelector(
-    [selectCityAetherAtmosphere],
-    (atmosphere) => atmosphere.levels.manaFlows
-);
-
-export const selectCurrentDeathLevel = createSelector(
-    [selectCityAetherAtmosphere],
-    (atmosphere) => atmosphere.levels.death
-);
-
-export const selectCurrentAetherResourceValues = createSelector(
-    [selectCityAetherAtmosphere],
-    (atmosphere) => ({
-        [UPKEEP_TYPES.veil]: atmosphere.totals.veil,
-        [UPKEEP_TYPES.manaFlows]: atmosphere.totals.manaFlows,
-        [UPKEEP_TYPES.death]: atmosphere.totals.death,
+export const selectCityResolution = createSelector(
+    [selectBaseCityResolution, selectCityScarTrace],
+    (baseResolution, scarTrace): CityResolution => ({
+        ...baseResolution,
+        scarTrace,
+        effectiveTrace: baseResolution.buildingsTrace + baseResolution.territoryTrace + scarTrace,
     })
 );

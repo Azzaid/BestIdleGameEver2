@@ -48,247 +48,258 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
     [HOMOGENEOUS_VALUE_IDS.resourcePeople]: {
         id: HOMOGENEOUS_VALUE_IDS.resourcePeople,
         label: "People",
-        keywords: ["resource", "support", "output", "production", "spendable", "display_bar", "medieval", "people"],
+        keywords: ["resource", "support", "output", "spendable", "display_bar", "medieval", "people", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourceGold]: {
         id: HOMOGENEOUS_VALUE_IDS.resourceGold,
         label: "Gold",
-        keywords: ["resource", "support", "output", "production", "spendable", "display_bar", "medieval", "gold"],
+        keywords: ["resource", "support", "output", "spendable", "display_bar", "medieval", "gold", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourcePower]: {
         id: HOMOGENEOUS_VALUE_IDS.resourcePower,
         label: "Power",
-        keywords: ["resource", "support", "output", "production", "spendable", "display_bar", "tech", "power"],
+        keywords: ["resource", "support", "output", "spendable", "display_bar", "tech", "power", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourceCompute]: {
         id: HOMOGENEOUS_VALUE_IDS.resourceCompute,
         label: "Compute",
-        keywords: ["resource", "support", "output", "production", "spendable", "display_bar", "tech", "compute"],
+        keywords: ["resource", "support", "output", "spendable", "display_bar", "tech", "compute", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourceVeil]: {
         id: HOMOGENEOUS_VALUE_IDS.resourceVeil,
         label: "Veil",
-        keywords: ["resource", "atmosphere", "output", "production", "display_orb", "aether", "veil"],
+        keywords: ["resource", "atmosphere", "output", "display_orb", "aether", "veil", "display.damaged"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourceManaFlows]: {
         id: HOMOGENEOUS_VALUE_IDS.resourceManaFlows,
         label: "Mana Flows",
-        keywords: ["resource", "atmosphere", "output", "production", "display_orb", "aether", "manaFlows"],
+        keywords: ["resource", "atmosphere", "output", "display_orb", "aether", "manaFlows", "display.damaged"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourceDeath]: {
         id: HOMOGENEOUS_VALUE_IDS.resourceDeath,
         label: "Death",
-        keywords: ["resource", "atmosphere", "output", "production", "display_orb", "aether", "death"],
+        keywords: ["resource", "atmosphere", "output", "display_orb", "aether", "death", "display.damaged"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourceFungi]: {
         id: HOMOGENEOUS_VALUE_IDS.resourceFungi,
         label: "Fungi",
-        keywords: ["resource", "support", "output", "production", "spendable", "display_bar", "nature", "fungi"],
+        keywords: ["resource", "support", "output", "spendable", "display_bar", "nature", "fungi", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourcePlants]: {
         id: HOMOGENEOUS_VALUE_IDS.resourcePlants,
         label: "Plants",
-        keywords: ["resource", "support", "output", "production", "spendable", "display_bar", "nature", "plants"],
+        keywords: ["resource", "support", "output", "spendable", "display_bar", "nature", "plants", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourceAnimals]: {
         id: HOMOGENEOUS_VALUE_IDS.resourceAnimals,
         label: "Animals",
-        keywords: ["resource", "support", "output", "production", "spendable", "display_bar", "nature", "animals"],
+        keywords: ["resource", "support", "output", "spendable", "display_bar", "nature", "animals", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.cityVisibility]: {
         id: HOMOGENEOUS_VALUE_IDS.cityVisibility,
         label: "City Visibility",
-        keywords: ["city", "visibility", "trace"],
+        keywords: ["city", "visibility", "trace", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.cityControlledTerritory]: {
         id: HOMOGENEOUS_VALUE_IDS.cityControlledTerritory,
         label: "Controlled Territory",
-        keywords: ["city", "territory", "resilience"],
+        keywords: ["city", "territory", "resilience", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.cityControlledTerritoryGrowthStep]: {
         id: HOMOGENEOUS_VALUE_IDS.cityControlledTerritoryGrowthStep,
         label: "Controlled Territory Growth Step",
-        keywords: ["city", "territory", "growth"],
+        keywords: ["city", "territory", "growth", "display.multiplier"],
         initialValue: 1.2,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterHpFlat]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterHpFlat,
         label: "Monster HP",
-        keywords: ["monster", "hp", "flat"],
+        keywords: ["monster", "hp", "flat", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterHpMultiplier]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterHpMultiplier,
         label: "Monster HP Multiplier",
-        keywords: ["monster", "hp", "multiplier"],
+        keywords: ["monster", "hp", "multiplier", "display.multiplier"],
         initialValue: 1,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterSpeedFlat]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterSpeedFlat,
         label: "Monster Speed",
-        keywords: ["monster", "speed", "flat"],
+        keywords: ["monster", "speed", "flat", "display.default"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterSpeedMultiplier]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterSpeedMultiplier,
         label: "Monster Speed Multiplier",
-        keywords: ["monster", "speed", "multiplier"],
+        keywords: ["monster", "speed", "multiplier", "display.multiplier"],
         initialValue: 1,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterThreatDistanceFlat]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterThreatDistanceFlat,
         label: "Monster Threat Distance",
-        keywords: ["monster", "threatDistance", "flat"],
+        keywords: ["monster", "threatDistance", "flat", "display.distance"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterThreatDistanceMultiplier]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterThreatDistanceMultiplier,
         label: "Monster Threat Distance Multiplier",
-        keywords: ["monster", "threatDistance", "multiplier"],
+        keywords: ["monster", "threatDistance", "multiplier", "display.multiplier"],
         initialValue: 1,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterRegenAmountFlat]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterRegenAmountFlat,
         label: "Monster Regen Amount",
-        keywords: ["monster", "regen", "amount", "flat"],
+        keywords: ["monster", "regen", "amount", "flat", "display.default"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterRegenAmountMultiplier]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterRegenAmountMultiplier,
         label: "Monster Regen Amount Multiplier",
-        keywords: ["monster", "regen", "amount", "multiplier"],
+        keywords: ["monster", "regen", "amount", "multiplier", "display.multiplier"],
         initialValue: 1,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterRegenSpeedFlat]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterRegenSpeedFlat,
         label: "Monster Regen Speed",
-        keywords: ["monster", "regen", "speed", "flat"],
+        keywords: ["monster", "regen", "speed", "flat", "display.seconds"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterRegenSpeedMultiplier]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterRegenSpeedMultiplier,
         label: "Monster Regen Speed Multiplier",
-        keywords: ["monster", "regen", "speed", "multiplier"],
+        keywords: ["monster", "regen", "speed", "multiplier", "display.multiplier"],
         initialValue: 1,
     },
     [HOMOGENEOUS_VALUE_IDS.siegeThreatFlat]: {
         id: HOMOGENEOUS_VALUE_IDS.siegeThreatFlat,
         label: "Siege Threat",
-        keywords: ["siege", "threat", "flat"],
+        keywords: ["siege", "threat", "flat", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.siegeThreatMultiplier]: {
         id: HOMOGENEOUS_VALUE_IDS.siegeThreatMultiplier,
         label: "Siege Threat Multiplier",
-        keywords: ["siege", "threat", "multiplier"],
+        keywords: ["siege", "threat", "multiplier", "display.multiplier"],
         initialValue: 1,
     },
     [HOMOGENEOUS_VALUE_IDS.siegeLengthFlat]: {
         id: HOMOGENEOUS_VALUE_IDS.siegeLengthFlat,
         label: "Siege Length",
-        keywords: ["siege", "length", "flat"],
+        keywords: ["siege", "length", "flat", "display.seconds"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.siegeLengthMultiplier]: {
         id: HOMOGENEOUS_VALUE_IDS.siegeLengthMultiplier,
         label: "Siege Length Multiplier",
-        keywords: ["siege", "length", "multiplier"],
+        keywords: ["siege", "length", "multiplier", "display.multiplier"],
         initialValue: 1,
     },
     [HOMOGENEOUS_VALUE_IDS.siegeSimultaneousMonstersLimitFlat]: {
         id: HOMOGENEOUS_VALUE_IDS.siegeSimultaneousMonstersLimitFlat,
         label: "Simultaneous Monsters",
-        keywords: ["siege", "simultaneousMonsters", "limit", "flat"],
+        keywords: ["siege", "simultaneousMonsters", "limit", "flat", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.siegeSimultaneousMonstersLimitMultiplier]: {
         id: HOMOGENEOUS_VALUE_IDS.siegeSimultaneousMonstersLimitMultiplier,
         label: "Simultaneous Monsters Multiplier",
-        keywords: ["siege", "simultaneousMonsters", "limit", "multiplier"],
+        keywords: ["siege", "simultaneousMonsters", "limit", "multiplier", "display.multiplier"],
         initialValue: 1,
     },
     [HOMOGENEOUS_VALUE_IDS.wallResilience]: {
         id: HOMOGENEOUS_VALUE_IDS.wallResilience,
         label: "Wall Resilience",
-        keywords: ["wall", "resilience"],
+        keywords: ["wall", "resilience", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.wallThreatSuppression]: {
         id: HOMOGENEOUS_VALUE_IDS.wallThreatSuppression,
         label: "Wall Threat Suppression",
-        keywords: ["wall", "threat", "suppression"],
+        keywords: ["wall", "threat", "suppression", "display.default"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.towerRotationSpeed]: {
         id: HOMOGENEOUS_VALUE_IDS.towerRotationSpeed,
         label: "Tower Rotation Speed",
-        keywords: ["tower", "rotationSpeed"],
+        keywords: ["tower", "rotationSpeed", "display.default"],
         initialValue: BASE_TOWER_STATS.rotationSpeed,
     },
     [HOMOGENEOUS_VALUE_IDS.towerReloadSpeed]: {
         id: HOMOGENEOUS_VALUE_IDS.towerReloadSpeed,
         label: "Tower Reload Speed",
-        keywords: ["tower", "reloadSpeed"],
+        keywords: ["tower", "reloadSpeed", "display.default"],
         initialValue: BASE_TOWER_STATS.reloadSpeed,
     },
     [HOMOGENEOUS_VALUE_IDS.towerBurstCount]: {
         id: HOMOGENEOUS_VALUE_IDS.towerBurstCount,
         label: "Tower Burst Count",
-        keywords: ["tower", "burstCount"],
+        keywords: ["tower", "burstCount", "display.integer"],
         initialValue: BASE_TOWER_STATS.burstCount,
     },
     [HOMOGENEOUS_VALUE_IDS.towerProjectileDamage]: {
         id: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage,
         label: "Tower Projectile Damage",
-        keywords: ["tower", "projectileDamage"],
+        keywords: ["tower", "projectileDamage", "display.integer"],
         initialValue: BASE_TOWER_STATS.projectileDamage,
     },
     [HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed]: {
         id: HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed,
         label: "Tower Projectile Speed",
-        keywords: ["tower", "projectileSpeed"],
+        keywords: ["tower", "projectileSpeed", "display.distance"],
         initialValue: BASE_TOWER_STATS.projectileSpeed,
     },
     [HOMOGENEOUS_VALUE_IDS.towerAoeRadius]: {
         id: HOMOGENEOUS_VALUE_IDS.towerAoeRadius,
         label: "Tower AOE Radius",
-        keywords: ["tower", "aoeRadius"],
+        keywords: ["tower", "aoeRadius", "display.distance"],
         initialValue: BASE_TOWER_STATS.aoeRadius,
     },
     [HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit]: {
         id: HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit,
         label: "Tower Targeting Distance Limit",
-        keywords: ["tower", "targetingDistanceLimit"],
+        keywords: ["tower", "targetingDistanceLimit", "display.distance"],
         initialValue: BASE_TOWER_STATS.targetingDistanceLimit,
     },
     [HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds]: {
         id: HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds,
         label: "Tower Retarget Cooldown",
-        keywords: ["tower", "retargetCooldownSeconds"],
+        keywords: ["tower", "retargetCooldownSeconds", "display.seconds"],
         initialValue: BASE_TOWER_STATS.retargetCooldownSeconds,
     },
     [HOMOGENEOUS_VALUE_IDS.towerWeight]: {
         id: HOMOGENEOUS_VALUE_IDS.towerWeight,
         label: "Tower Weight",
-        keywords: ["tower", "weight"],
+        keywords: ["tower", "weight", "display.default"],
         initialValue: BASE_TOWER_STATS.weight,
     },
 } as const satisfies Record<HomogeneousValueId, HomogeneousValueDefinition>;
 
 export const HOMOGENEOUS_VALUE_DEFINITION_LIST = Object.values(HOMOGENEOUS_VALUE_DEFINITIONS);
 
+validateHomogeneousValueDefinitions(HOMOGENEOUS_VALUE_DEFINITION_LIST);
+
 export function getHomogeneousValueDefinition(valueId: HomogeneousValueId): HomogeneousValueDefinition {
     return HOMOGENEOUS_VALUE_DEFINITIONS[valueId];
+}
+
+function validateHomogeneousValueDefinitions(definitions: readonly HomogeneousValueDefinition[]): void {
+    for (const definition of definitions) {
+        const displayKeywords = definition.keywords.filter((keyword) => keyword.startsWith("display."));
+        if (displayKeywords.length > 1) {
+            throw new Error(`Homogeneous value ${definition.id} has multiple display keywords: ${displayKeywords.join(", ")}`);
+        }
+    }
 }

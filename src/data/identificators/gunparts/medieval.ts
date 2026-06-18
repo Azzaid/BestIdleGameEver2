@@ -2,7 +2,9 @@ export const medievalGunparts = {
   bases: {
     crudeWoodFrame: "medieval_base_crude-wood",
   },
-  barrels: {},
+  barrels: {
+      hollowedTrunk: "medieval_barrel_hollowed-trunk",
+  },
   ammo: {
     stoneBasket: "medieval_ammo_crude-stone",
   },
