@@ -226,28 +226,32 @@ function SelectedHexPanel({
     onBuildStructure,
     onDemolish,
 }: SelectedHexPanelProps) {
+    const selectionTitle = getSelectionTitle(selectedHex, selectedBuilding, selectedWallBuilding, selectedWallTopBuilding);
+    const selectionCoordinates = `${selectedHex.column}:${selectedHex.row}`;
+
     return (
         <aside className={s.selectionPanel}>
             <div className={s.selectionHeader}>
-                <span className={s.selectionEyebrow}>{selectedHex.kind === "wall" ? "Wall hex" : "City hex"}</span>
-                <h2 className={s.selectionTitle}>{selectedHex.cellKey}</h2>
+                <h2 className={s.selectionTitle}>{selectionTitle}</h2>
+                <span className={s.selectionCoordinates}>{selectionCoordinates}</span>
             </div>
 
             {selectedBuilding && (
                 <div className={s.statSection}>
-                    <h3 className={s.statHeading}>{selectedBuilding.name}</h3>
-                    <HomogeneousContributionGroup
-                        title="Resolved cost"
-                        effects={getHomogeneousRequirementContributions({
-                            homogeneousValueEffects: selectedBuilding.effectiveHomogeneousValueEffects,
-                        })}
-                    />
-                    <HomogeneousContributionGroup
-                        title="Resolved production"
-                        effects={getHomogeneousProductionContributions({
-                            homogeneousValueEffects: selectedBuilding.effectiveHomogeneousValueEffects,
-                        })}
-                    />
+                    <div className={s.sideBySideStats}>
+                        <HomogeneousContributionGroup
+                            title="Resolved production"
+                            effects={getHomogeneousProductionContributions({
+                                homogeneousValueEffects: selectedBuilding.effectiveHomogeneousValueEffects,
+                            })}
+                        />
+                        <HomogeneousContributionGroup
+                            title="Resolved upkeep"
+                            effects={getHomogeneousRequirementContributions({
+                                homogeneousValueEffects: selectedBuilding.effectiveHomogeneousValueEffects,
+                            })}
+                        />
+                    </div>
                     <AdjacencyEffectSummary building={selectedBuilding} />
                     <MultistructureStatus
                         structureCandidates={structureCandidates}
@@ -272,7 +276,6 @@ function SelectedHexPanel({
 
             {selectedWallBuilding && (
                 <div className={s.statSection}>
-                    <h3 className={s.statHeading}>Wall: {selectedWallBuilding.name}</h3>
                     <WallStats wallBuilding={selectedWallBuilding} />
                     <p className={s.panelDescription}>{selectedWallBuilding.description}</p>
                 </div>
@@ -312,6 +315,19 @@ function SelectedHexPanel({
             )}
         </aside>
     );
+}
+
+function getSelectionTitle(
+    selectedHex: HexCell,
+    selectedBuilding?: PlacedBuilding,
+    selectedWallBuilding?: WallBuilding,
+    selectedWallTopBuilding?: WallBuilding,
+): string {
+    if (selectedBuilding) return `Building: ${selectedBuilding.name}`;
+    if (selectedWallBuilding) return `Wall: ${selectedWallBuilding.name}`;
+    if (selectedWallTopBuilding) return `On wall: ${selectedWallTopBuilding.name}`;
+
+    return selectedHex.kind === "wall" ? "Wall hex" : "City hex";
 }
 
 function MultistructureStatus({

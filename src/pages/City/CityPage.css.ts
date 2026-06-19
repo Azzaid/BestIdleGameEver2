@@ -37,20 +37,22 @@ export const selectionPanel = style({
 });
 
 export const selectionHeader = style({
-    display: 'grid',
-    gap: '4px',
-});
-
-export const selectionEyebrow = style({
-    color: vars.color.text.muted,
-    fontSize: '0.78rem',
-    textTransform: 'uppercase',
+    display: 'flex',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: '12px',
 });
 
 export const selectionTitle = style({
     margin: 0,
     fontSize: '1.2rem',
     color: vars.color.text.heading,
+});
+
+export const selectionCoordinates = style({
+    flexShrink: 0,
+    color: vars.color.text.muted,
+    fontSize: '0.86rem',
 });
 
 export const statSection = style({
@@ -64,6 +66,17 @@ export const statHeading = style({
     margin: 0,
     fontSize: '1rem',
     color: vars.color.text.heading,
+});
+
+export const sideBySideStats = style({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: '12px',
+    '@media': {
+        '(max-width: 520px)': {
+            gridTemplateColumns: '1fr',
+        },
+    },
 });
 
 export const metricTitle = style({

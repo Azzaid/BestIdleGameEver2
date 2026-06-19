@@ -89,40 +89,22 @@ export const zoneHeader = style({
     display: "grid",
     gridTemplateColumns: "1fr auto",
     alignItems: "center",
-    padding: tokens.space.lg,
+    padding: `${tokens.space.sm} ${tokens.space.md}`,
     borderBottom: `1px solid ${vars.color.border.default}`,
-    gap: tokens.space.md,
+    gap: tokens.space.sm,
 });
 
 export const titleLine = style({
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: tokens.space.md,
+    gap: tokens.space.sm,
 });
 
 export const name = style({
     margin: 0,
-    fontSize: tokens.font.xl,
+    fontSize: tokens.font.lg,
     lineHeight: 1.15,
-});
-
-export const cost = style({
-    listStyle: "none",
-    margin: 0,
-    padding: 0,
-    display: "flex",
-    gap: tokens.space.sm,
-});
-
-export const costItem = style({
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    padding: "2px 8px",
-    borderRadius: tokens.radius.pill,
-    background: "color-mix(in oklab, var(--surface) 70%, var(--text) 8%)",
-    border: `1px solid ${vars.color.border.default}`,
 });
 
 export const costValue = style({ fontWeight: 600 });
@@ -145,7 +127,15 @@ export const buildBtn = style({
     },
 });
 
-// Zone rows (2 & 3)
+// Zone rows
+export const effectsRow = style({
+    display: "grid",
+    gridTemplateColumns: "120px minmax(0, 1fr) minmax(0, 1fr)",
+    gap: tokens.space.lg,
+    padding: `${tokens.space.md} ${tokens.space.lg}`,
+    borderBottom: `1px solid ${vars.color.border.default}`,
+});
+
 export const zoneRow = style({
     display: "grid",
     gridTemplateColumns: "120px 1fr",

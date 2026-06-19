@@ -7,14 +7,10 @@ export const buildPage = style({
   gap: '18px',
   maxWidth: '1280px',
   margin: '0 auto',
-  padding: '24px',
 });
 
 export const assemblyPanel = style({
   overflow: 'hidden',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '8px',
-  backgroundColor: vars.color.background.surface,
 });
 
 export const towerSelector = style({
@@ -22,7 +18,6 @@ export const towerSelector = style({
   gap: '2px',
   overflowX: 'auto',
   padding: '6px 8px 0',
-  borderBottom: `1px solid ${vars.color.border.default}`,
 });
 
 export const towerSelectorButton = style({
@@ -63,6 +58,9 @@ export const towerSelectorName = style({
 export const assemblyGrid = style({
   display: 'grid',
   gridTemplateColumns: 'minmax(260px, 1fr) minmax(0, 2fr)',
+    backgroundColor: vars.color.background.surface,
+    border: `1px solid ${vars.color.border.default}`,
+    borderRadius: '8px',
   gap: 0,
   alignItems: 'stretch',
   '@media': {
@@ -127,27 +125,21 @@ export const towerStats = style({
   display: 'flex',
   flexDirection: 'column',
   padding: '16px',
+    borderRadius: '8px',
   backgroundColor: vars.color.background.surface,
 });
 
 export const slotStrip = style({
   display: 'flex',
   gap: '2px',
-  overflowX: 'auto',
+  position: 'relative',
+  overflow: 'visible',
   padding: '6px 8px 0',
-  borderBottom: `1px solid ${vars.color.border.default}`,
-  backgroundColor: vars.color.background.surface,
 });
 
 export const panelTitle = style({
   margin: 0,
   fontSize: '20px',
-});
-
-export const panelSubtitle = style({
-  margin: '4px 0 0',
-  color: vars.color.text.primary,
-  opacity: 0.72,
 });
 
 export const statsGrid = style({
@@ -248,24 +240,60 @@ export const warningItem = style({
 
 export const partsPanel = style({
   overflow: 'hidden',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '8px',
-  backgroundColor: vars.color.background.surface,
 });
 
-export const partsHeader = style({
-  display: 'flex',
-  justifyContent: 'space-between',
-  gap: '16px',
-  padding: '14px 16px 12px',
-  flexWrap: 'wrap',
+export const columnDropdown = style({
+  position: 'relative',
+  marginLeft: 'auto',
+  flex: '0 0 auto',
 });
 
-export const columnChooser = style({
+export const columnDropdownSummary = style({
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
+  width: '34px',
+  minHeight: '30px',
+  padding: '5px 9px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderBottom: 0,
+  borderRadius: '6px 6px 0 0',
+  backgroundColor: vars.color.background.surface,
+  color: vars.color.text.primary,
+  fontSize: '13px',
+  cursor: 'pointer',
+  listStyle: 'none',
+  selectors: {
+    '&::marker': {
+      content: '',
+    },
+    '&::-webkit-details-marker': {
+      display: 'none',
+    },
+    '&:hover': {
+      borderColor: vars.color.brand.primary,
+    },
+  },
+});
+
+export const columnDropdownMenu = style({
+  position: 'absolute',
+  top: 'calc(100% + 1px)',
+  right: 0,
+  zIndex: 10,
+  display: 'grid',
   gap: '8px',
-  flexWrap: 'wrap',
+  minWidth: '180px',
+  padding: '10px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.background.surface,
+  boxShadow: '0 10px 24px rgba(0, 0, 0, 0.18)',
+});
+
+export const gearIcon = style({
+  lineHeight: 1,
+  fontSize: '15px',
 });
 
 export const columnToggle = style({
@@ -273,12 +301,16 @@ export const columnToggle = style({
   alignItems: 'center',
   gap: '6px',
   fontSize: '13px',
+  whiteSpace: 'nowrap',
 });
 
 export const tableContainer = style({
   maxHeight: '360px',
   overflow: 'auto',
   padding: '0 16px',
+    border: `1px solid ${vars.color.border.default}`,
+    borderRadius: '8px',
+    backgroundColor: vars.color.background.surface,
 });
 
 export const partsTable = style({
@@ -295,6 +327,23 @@ export const tableHeaderCell = style({
   textAlign: 'left',
   fontSize: '13px',
   color: vars.color.text.primary,
+});
+
+export const clearHeaderButton = style({
+  minHeight: '28px',
+  padding: '4px 9px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '6px',
+  backgroundColor: vars.color.background.surface,
+  color: vars.color.text.primary,
+  cursor: 'pointer',
+  textTransform: 'lowercase',
+  selectors: {
+    '&:disabled': {
+      cursor: 'not-allowed',
+      opacity: 0.55,
+    },
+  },
 });
 
 export const headerContent = style({

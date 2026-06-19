@@ -15,7 +15,6 @@ import { selectActiveTower, selectActiveTowerDraftAssembly, selectAvailableTower
 import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTower, selectTowerDraftPart } from '../../store/towers/slice.ts';
 import { selectPurchasedTechsIds } from '../../store/research/selectors.ts';
 import { selectCityResolution, selectCityTraceStatus, selectResolvedEffectiveActiveTowerDraft } from '../../store/upkeep/selectors.ts';
-import { formatTowerSlot } from '../../models/battle/resolveTowerAssembly.ts';
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
 import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
 import { TowerAssemblyPreview } from './TowerAssemblyPreview.tsx';
@@ -236,7 +235,17 @@ const BuildPage = () => {
     },
     {
       id: 'select',
-      header: 'Install',
+      header: () => (
+        <button
+          className={s.clearHeaderButton}
+          type="button"
+          disabled={!selectedPartId || !canModifyTower}
+          title={!canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined}
+          onClick={() => dispatch(clearTowerDraftPart({ slot: activeTab }))}
+        >
+          clear
+        </button>
+      ),
       enableColumnFilter: false,
       cell: (info) => {
         const part = info.row.original;
@@ -286,6 +295,16 @@ const BuildPage = () => {
   const filteredRowCount = table.getFilteredRowModel().rows.length;
   const firstVisibleRow = filteredRowCount === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
   const lastVisibleRow = Math.min(filteredRowCount, (pagination.pageIndex + 1) * pagination.pageSize);
+  const columnLabels: Record<string, string> = {
+    name: 'Name',
+    vector: 'Vector',
+    description: 'Description',
+    keywords: 'Keywords',
+    modifiers: 'Modifiers',
+    weight: 'Weight',
+    support: 'Support',
+    select: 'Install',
+  };
   const statRows = [
     ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
     ['Reload', `${resolvedTower.stats.reloadSpeed.toFixed(2)} shots/s`],
@@ -417,34 +436,6 @@ const BuildPage = () => {
       </section>
 
       <section className={s.partsPanel}>
-        <div className={s.partsHeader}>
-          <div>
-            <h2 className={s.panelTitle}>{formatTowerSlot(activeTab)} Parts</h2>
-            <p className={s.panelSubtitle}>Pick one available part for this slot.</p>
-          </div>
-          <button
-            className={s.cancelButton}
-            type="button"
-            disabled={!selectedPartId || !canModifyTower}
-            title={!canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined}
-            onClick={() => dispatch(clearTowerDraftPart({ slot: activeTab }))}
-          >
-            Clear Slot
-          </button>
-          <div className={s.columnChooser}>
-            {table.getAllLeafColumns().map((column) => (
-              <label key={column.id} className={s.columnToggle}>
-                <input
-                  type="checkbox"
-                  checked={column.getIsVisible()}
-                  onChange={column.getToggleVisibilityHandler()}
-                />
-                {column.columnDef.header as string}
-              </label>
-            ))}
-          </div>
-        </div>
-
         <div className={s.slotStrip} aria-label="Tower part slots">
           {availableSlotOptions.map(({ key, label }) => {
             const part = resolvedTower.selectedParts[key];
@@ -460,6 +451,27 @@ const BuildPage = () => {
               </button>
             );
           })}
+          <details className={s.columnDropdown}>
+            <summary
+              className={s.columnDropdownSummary}
+              aria-label="Visible columns"
+              title="Visible columns"
+            >
+              <span className={s.gearIcon} aria-hidden="true">⚙</span>
+            </summary>
+            <div className={s.columnDropdownMenu}>
+              {table.getAllLeafColumns().map((column) => (
+                <label key={column.id} className={s.columnToggle}>
+                  <input
+                    type="checkbox"
+                    checked={column.getIsVisible()}
+                    onChange={column.getToggleVisibilityHandler()}
+                  />
+                  {columnLabels[column.id] ?? column.id}
+                </label>
+              ))}
+            </div>
+          </details>
         </div>
 
         <div className={s.tableContainer}>

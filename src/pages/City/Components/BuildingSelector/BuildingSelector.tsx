@@ -75,6 +75,7 @@ export function BuildingSelector({
                     const unavailableReason = unavailableBuildingReasons[building.id];
                     const buildBlockedReason = blocked ? blockedReason : unavailableReason;
                     const buildBlocked = blocked || Boolean(unavailableReason);
+                    const hasAdjacencyRules = building.adjacency.length > 0 || Boolean(building.homogeneousAdjacency?.length);
 
                     return (
                         <article key={building.id} role="listitem" className={s.card} aria-labelledby={`${building.id}-name`}>
@@ -84,11 +85,6 @@ export function BuildingSelector({
                                     <h3 id={`${building.id}-name`} className={s.name}>
                                         {building.name}
                                     </h3>
-                                    <HomogeneousEffectList
-                                        effects={getHomogeneousRequirementContributions(building)}
-                                        className={s.cost}
-                                        itemClassName={s.costItem}
-                                    />
                                 </div>
                                 <button
                                     className={s.buildBtn}
@@ -102,8 +98,8 @@ export function BuildingSelector({
                                 </button>
                             </header>
 
-                            {/* Zone 2 — Preview + Gives */}
-                            <section className={s.zoneRow}>
+                            {/* Zone 2 — Preview + effects */}
+                            <section className={s.effectsRow}>
                                 <div className={s.previewCol}>
                                     <HexTilePreview
                                         imageUrl={buildingsSpriteAtlas[building.vector][building.id]?.src}
@@ -117,27 +113,25 @@ export function BuildingSelector({
                                         itemClassName={s.bulletItem}
                                     />
                                 </div>
-                            </section>
-
-                            {/* Zone 3 — Adjacency effects */}
-                            <section className={s.zoneRow}>
-                                <div className={s.previewColPlaceholder} aria-hidden />
                                 <div className={s.contentCol}>
-                                    <h4 className={s.sectionTitle}>Adjacency</h4>
-                                    {/*{building.adjacency.length ? (
-                                        <ul className={s.bullets}>
-                                            {building.adjacency.map((a, i) => (
-                                                <li key={i} className={s.bulletItem}>
-                                                    {a.icon}
-                                                    <span>{a.text}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className={s.muted}>No adjacency effects.</p>
-                                    )}*/}
+                                    <h4 className={s.sectionTitle}>Requires</h4>
+                                    <HomogeneousEffectList
+                                        effects={getHomogeneousRequirementContributions(building)}
+                                        className={s.bullets}
+                                        itemClassName={s.bulletItem}
+                                    />
                                 </div>
                             </section>
+
+                            {hasAdjacencyRules && (
+                                <section className={s.zoneRow}>
+                                    <div className={s.previewColPlaceholder} aria-hidden />
+                                    <div className={s.contentCol}>
+                                        <h4 className={s.sectionTitle}>Adjacency</h4>
+                                        <p className={s.description}>{building.adjacencyDescription}</p>
+                                    </div>
+                                </section>
+                            )}
 
                             {/* Zone 4 — Description */}
                             <section className={s.zoneDesc}>
