@@ -6,6 +6,12 @@
     "width": 1024,
     "height": 1024
   },
+  "sourceVisibleBounds": {
+    "x": 24,
+    "y": 275,
+    "width": 982,
+    "height": 354
+  },
   "targetSpriteSize": {
     "width": 80,
     "height": 80

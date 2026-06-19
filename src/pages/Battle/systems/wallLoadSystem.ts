@@ -5,7 +5,7 @@ function enemyContributesSiegePressure(world: World, enemyId: number) {
   const transform = world.transforms.get(enemyId);
   if (!enemy || !transform) return false;
 
-  return transform.position.y + enemy.hitRadius >= world.config.wallY;
+  return transform.position.y + enemy.hitRadius >= world.config.wallContactY;
 }
 
 export function WallLoadSystem(world: World) {

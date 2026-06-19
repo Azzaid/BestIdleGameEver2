@@ -8,7 +8,7 @@ function createWallboundMovement(speedPixelsPerSecond: number, wobbleAmplitudePi
     wobbleAmplitudePixels,
     wobbleFrequencyHz: 0.25,
     timeAliveSeconds: 0,
-    goalY: world.config.wallY,
+    goalY: world.config.wallContactY,
     initialX: spawnX,
   });
 }

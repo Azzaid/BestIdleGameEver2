@@ -33,6 +33,7 @@ Use the development vector folder names from `src/models/DevlopmentVector.ts`: `
 4. Import and map both files in `src/models/sprites/walls/<vector>.ts`.
 5. City rendering uses `wallSpritesAtlas`; battle loading uses `wallSpriteMetadataAtlas` and `wallSpritesAtlas`.
 6. Set `targetSpriteSize` to the intended city SVG size at zoom 1. City hex rendering centers that size on the hex and clips anything outside the hex border. Battle wall rendering scales that size by `BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX / CITY_HEX_SIZE`.
+7. If the source PNG has transparent padding, set `sourceVisibleBounds` to the opaque/content bounds in source pixels. Battle enemy contact uses the top of this visible bounds so enemies stop at the wall face, not the full transparent image box.
 
 ## Add A Wall-Top/Superstructure Texture
 

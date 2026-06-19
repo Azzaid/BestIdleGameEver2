@@ -9,10 +9,18 @@ export type WallSpriteSize = {
     height: number;
 };
 
+export type WallSpriteBounds = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+};
+
 export type WallSpriteMetadata = {
     id: string;
     spriteId: string;
     wallId: string;
     sourceSpriteSize: WallSpriteSize;
     targetSpriteSize: WallSpriteSize;
+    sourceVisibleBounds?: WallSpriteBounds;
 };

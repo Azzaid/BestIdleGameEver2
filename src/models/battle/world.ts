@@ -14,6 +14,7 @@ export interface WorldConfig {
   battlefieldWidth: number;
   battlefieldHeight: number;
   wallY: number;
+  wallContactY: number;
   app: PIXI.Application;
   initialThreat: number;
   targetThreat: number;

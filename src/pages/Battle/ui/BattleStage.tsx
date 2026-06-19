@@ -21,6 +21,7 @@ import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX, CITY_HEX_SIZE } from '../../../data/constants.ts';
 import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 import { wallTopSpriteMetadataAtlas } from '../../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
+import { getWallContactY } from '../core/wallGeometry.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
 export function BattleStage(props: {
@@ -128,10 +129,16 @@ export function BattleStage(props: {
             app.stage.addChild(camera.container);
 
             const wallY = props.wallY;
+            const wallContactY = getWallContactY({
+                wallY,
+                wallSegments: props.wallSegments,
+                segmentSize: BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX,
+            });
             const world = createWorld({
                 battlefieldWidth: props.battlefieldWidth,
                 battlefieldHeight: props.battlefieldHeight,
                 wallY,
+                wallContactY,
                 app,
                 initialThreat: props.initialThreat,
                 targetThreat: props.targetThreat,
@@ -167,7 +174,7 @@ export function BattleStage(props: {
                 if (props.showSiegeOutline) {
                     const activeBattlefieldPlaceholder = new Graphics();
                     activeBattlefieldPlaceholder
-                        .rect(0, 0, props.battlefieldWidth, wallY)
+                        .rect(0, 0, props.battlefieldWidth, wallContactY)
                         .stroke({ color: 0xffd166, width: 2 });
                     activeBattlefieldPlaceholder.zIndex = 201;
                     world.worldLayer.addChild(activeBattlefieldPlaceholder);

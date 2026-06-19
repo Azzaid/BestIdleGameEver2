@@ -10,11 +10,11 @@ function sortBy(_world: World, candidates: EntityId[], score: (id: EntityId) => 
 
 // ───────────────────────── Primitive rules ─────────────────────────
 function byClosestToWall(world: World, _towerId: EntityId, c: EntityId[]) {
-    const wY = world.config.wallY;
+    const wY = world.config.wallContactY;
     return sortBy(world, c, (id) => Math.abs(wY - world.transforms.get(id)!.position.y));
 }
 function byFurthestFromWall(world: World, _towerId: EntityId, c: EntityId[]) {
-    const wY = world.config.wallY;
+    const wY = world.config.wallContactY;
     return sortBy(world, c, (id) => -Math.abs(wY - world.transforms.get(id)!.position.y));
 }
 function byClosestToAim(world: World, towerId: EntityId, c: EntityId[]) {

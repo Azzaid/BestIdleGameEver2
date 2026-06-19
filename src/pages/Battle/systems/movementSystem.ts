@@ -94,7 +94,7 @@ function stopEnemyAtWall(world: World, id: number) {
   const tf = world.transforms.get(id);
   if (!enemy || !tf) return;
 
-  const wallContactY = world.config.wallY - enemy.hitRadius;
+  const wallContactY = world.config.wallContactY - enemy.hitRadius;
   if (tf.position.y < wallContactY) return;
 
   tf.position.y = wallContactY;
