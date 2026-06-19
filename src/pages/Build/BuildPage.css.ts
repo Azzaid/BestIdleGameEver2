@@ -4,65 +4,40 @@ import { vars } from '../../theme/theme.css.ts';
 export const buildPage = style({
   display: 'flex',
   flexDirection: 'column',
-  gap: '24px',
+  gap: '18px',
   maxWidth: '1280px',
   margin: '0 auto',
   padding: '24px',
 });
 
-export const pageHeader = style({
-  display: 'flex',
-  alignItems: 'flex-end',
-  justifyContent: 'space-between',
-  gap: '16px',
-});
-
-export const pageTitle = style({
-  margin: 0,
-  fontSize: '32px',
-});
-
-export const pageSubtitle = style({
-  margin: '6px 0 0',
-  maxWidth: '720px',
-  color: vars.color.text.primary,
-  opacity: 0.78,
-});
-
-export const assemblyGrid = style({
-  display: 'grid',
-  gridTemplateColumns: 'minmax(0, 1.1fr) minmax(320px, 0.9fr)',
-  gap: '20px',
-  alignItems: 'stretch',
-  '@media': {
-    '(max-width: 900px)': {
-      gridTemplateColumns: '1fr',
-    },
-  },
+export const assemblyPanel = style({
+  overflow: 'hidden',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '8px',
+  backgroundColor: vars.color.background.surface,
 });
 
 export const towerSelector = style({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-  gap: '8px',
-  '@media': {
-    '(max-width: 760px)': {
-      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-    },
-  },
+  display: 'flex',
+  gap: '2px',
+  overflowX: 'auto',
+  padding: '6px 8px 0',
+  borderBottom: `1px solid ${vars.color.border.default}`,
 });
 
 export const towerSelectorButton = style({
-  display: 'grid',
-  gap: '4px',
-  minHeight: '54px',
-  padding: '9px 10px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  maxWidth: '180px',
+  minHeight: '32px',
+  padding: '6px 12px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderBottom: 0,
+  borderRadius: '6px 6px 0 0',
   backgroundColor: vars.color.background.surface,
   color: vars.color.text.primary,
-  textAlign: 'left',
   cursor: 'pointer',
+  whiteSpace: 'nowrap',
   selectors: {
     '&:hover': {
       borderColor: vars.color.brand.primary,
@@ -73,6 +48,7 @@ export const towerSelectorButton = style({
 export const towerSelectorButtonActive = style({
   borderColor: vars.color.brand.primary,
   backgroundColor: vars.color.state.selectedBg,
+  color: vars.color.text.heading,
 });
 
 export const towerSelectorName = style({
@@ -80,52 +56,54 @@ export const towerSelectorName = style({
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
-  color: vars.color.text.heading,
-  fontWeight: 800,
+  fontSize: '13px',
+  fontWeight: 700,
 });
 
-export const towerSelectorStatus = style({
-  color: vars.color.text.muted,
-  fontSize: '0.78rem',
-  fontWeight: 700,
-  textTransform: 'uppercase',
+export const assemblyGrid = style({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(260px, 1fr) minmax(0, 2fr)',
+  gap: 0,
+  alignItems: 'stretch',
+  '@media': {
+    '(max-width: 900px)': {
+      gridTemplateColumns: '1fr',
+    },
+  },
 });
 
 export const towerPreview = style({
   display: 'block',
   minHeight: '340px',
-  padding: '16px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '8px',
-  backgroundColor: vars.color.background.surface,
+  borderRight: `1px solid ${vars.color.border.default}`,
+  '@media': {
+    '(max-width: 900px)': {
+      borderRight: 0,
+      borderBottom: `1px solid ${vars.color.border.default}`,
+    },
+  },
 });
 
 export const towerImage = style({
   position: 'relative',
   minHeight: '280px',
   overflow: 'hidden',
-  border: `1px solid ${vars.color.border.default}`,
   borderRadius: '8px',
   background: `linear-gradient(180deg, ${vars.color.background.surface}, ${vars.color.background.surfaceHover})`,
 });
 
-export const slotList = style({
-  display: 'grid',
-  gridTemplateColumns: '1fr',
-  gap: '8px',
-});
-
 export const slotButton = style({
-  display: 'grid',
-  gap: '3px',
-  minHeight: '48px',
-  padding: '8px 10px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: '30px',
+  padding: '5px 10px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderBottom: 0,
+  borderRadius: '6px 6px 0 0',
   backgroundColor: vars.color.background.surface,
   color: vars.color.text.primary,
-  textAlign: 'left',
   cursor: 'pointer',
+  whiteSpace: 'nowrap',
   selectors: {
     '&:hover': {
       borderColor: vars.color.brand.primary,
@@ -136,6 +114,7 @@ export const slotButton = style({
 export const slotButtonActive = style({
   borderColor: vars.color.brand.primary,
   backgroundColor: vars.color.state.selectedBg,
+  color: vars.color.text.heading,
 });
 
 export const slotLabel = style({
@@ -144,38 +123,20 @@ export const slotLabel = style({
   textTransform: 'uppercase',
 });
 
-export const slotPartName = style({
-  minWidth: 0,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-});
-
 export const towerStats = style({
   display: 'flex',
   flexDirection: 'column',
   padding: '16px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '8px',
   backgroundColor: vars.color.background.surface,
 });
 
 export const slotStrip = style({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
-  gap: '8px',
-  padding: '10px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '8px',
+  display: 'flex',
+  gap: '2px',
+  overflowX: 'auto',
+  padding: '6px 8px 0',
+  borderBottom: `1px solid ${vars.color.border.default}`,
   backgroundColor: vars.color.background.surface,
-  '@media': {
-    '(max-width: 1000px)': {
-      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-    },
-    '(max-width: 640px)': {
-      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-    },
-  },
 });
 
 export const panelTitle = style({
@@ -286,7 +247,7 @@ export const warningItem = style({
 });
 
 export const partsPanel = style({
-  padding: '16px',
+  overflow: 'hidden',
   border: `1px solid ${vars.color.border.default}`,
   borderRadius: '8px',
   backgroundColor: vars.color.background.surface,
@@ -296,7 +257,7 @@ export const partsHeader = style({
   display: 'flex',
   justifyContent: 'space-between',
   gap: '16px',
-  marginBottom: '12px',
+  padding: '14px 16px 12px',
   flexWrap: 'wrap',
 });
 
@@ -317,6 +278,7 @@ export const columnToggle = style({
 export const tableContainer = style({
   maxHeight: '360px',
   overflow: 'auto',
+  padding: '0 16px',
 });
 
 export const partsTable = style({
@@ -471,7 +433,7 @@ export const paginationBar = style({
   justifyContent: 'space-between',
   alignItems: 'center',
   gap: '12px',
-  marginTop: '12px',
+  padding: '12px 16px 16px',
   flexWrap: 'wrap',
 });
 

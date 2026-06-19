@@ -302,141 +302,118 @@ const BuildPage = () => {
 
   return (
     <div className={s.buildPage}>
-      <header className={s.pageHeader}>
-        <div>
-          <h1 className={s.pageTitle}>Assemble Your Tower</h1>
-          <p className={s.pageSubtitle}>{activeTower?.name ?? 'Tower'} is assembled from machine parts, support systems, and targeting logic.</p>
-        </div>
-      </header>
+      <section className={s.assemblyPanel}>
+        <div className={s.towerSelector} aria-label="Tower slots">
+          {towers.map((tower) => {
+            const selected = tower.id === activeTower?.id;
+            const committedPartsCount = Object.keys(tower.selectedPartIds).length;
+            const status = committedPartsCount > 0 ? `${committedPartsCount} parts` : 'Empty';
 
-      <section className={s.towerSelector} aria-label="Tower slots">
-        {towers.map((tower) => {
-          const selected = tower.id === activeTower?.id;
-          const committedPartsCount = Object.keys(tower.selectedPartIds).length;
-
-          return (
-            <button
-              key={tower.id}
-              className={`${s.towerSelectorButton} ${selected ? s.towerSelectorButtonActive : ''}`}
-              onClick={() => {
-                dispatch(selectTower({ towerId: tower.id }));
-                setPagination((current) => ({ ...current, pageIndex: 0 }));
-              }}
-            >
-              <span className={s.towerSelectorName}>{tower.name}</span>
-              <span className={s.towerSelectorStatus}>
-                {committedPartsCount > 0 ? `${committedPartsCount} parts` : 'Empty'}
-              </span>
-            </button>
-          );
-        })}
-      </section>
-
-      <section className={s.assemblyGrid}>
-        <div className={s.towerPreview}>
-          <div className={s.towerImage}>
-            <TowerAssemblyPreview resolvedTower={resolvedTower} />
-          </div>
+            return (
+              <button
+                key={tower.id}
+                className={`${s.towerSelectorButton} ${selected ? s.towerSelectorButtonActive : ''}`}
+                title={`${tower.name}: ${status}`}
+                onClick={() => {
+                  dispatch(selectTower({ towerId: tower.id }));
+                  setPagination((current) => ({ ...current, pageIndex: 0 }));
+                }}
+              >
+                <span className={s.towerSelectorName}>{tower.name}</span>
+              </button>
+            );
+          })}
         </div>
 
-        <aside className={s.towerStats}>
-          <h2 className={s.panelTitle}>Resolved Build</h2>
-          <div className={s.statsGrid}>
-            {statRows.map(([label, value]) => (
-              <div key={label} className={s.statItem}>
-                <span className={s.statLabel}>{label}</span>
-                <strong className={s.statValue}>{value}</strong>
-              </div>
-            ))}
-          </div>
-
-          <div className={s.summaryBlock}>
-            <h3 className={s.summaryTitle}>Support</h3>
-            <div className={s.inlineList}>
-              {supportCost.length > 0
-                ? supportCost.map((item) => (
-                  <span
-                    key={item.resource}
-                    className={item.missingAmount > 0 ? s.missingCostPill : s.costPill}
-                  >
-                    {item.label} {item.requiredAmount}
-                    {item.missingAmount > 0 ? ` / missing ${item.missingAmount}` : ''}
-                  </span>
-                ))
-                : <span className={s.emptyText}>No support required</span>}
+        <div className={s.assemblyGrid}>
+          <div className={s.towerPreview}>
+            <div className={s.towerImage}>
+              <TowerAssemblyPreview resolvedTower={resolvedTower} />
             </div>
           </div>
 
-          <div className={s.summaryBlock}>
-            <h3 className={s.summaryTitle}>Active Synergies</h3>
-            {resolvedTower.synergies.length > 0 ? (
-              <div className={s.synergyList}>
-                {resolvedTower.synergies.map((synergy) => (
-                  <div key={synergy.id} className={s.synergyItem}>
-                    <strong>{synergy.name}</strong>
-                    <span>{synergy.description}</span>
-                  </div>
-                ))}
+          <aside className={s.towerStats}>
+            <h2 className={s.panelTitle}>Resolved Build</h2>
+            <div className={s.statsGrid}>
+              {statRows.map(([label, value]) => (
+                <div key={label} className={s.statItem}>
+                  <span className={s.statLabel}>{label}</span>
+                  <strong className={s.statValue}>{value}</strong>
+                </div>
+              ))}
+            </div>
+
+            <div className={s.summaryBlock}>
+              <h3 className={s.summaryTitle}>Support</h3>
+              <div className={s.inlineList}>
+                {supportCost.length > 0
+                  ? supportCost.map((item) => (
+                    <span
+                      key={item.resource}
+                      className={item.missingAmount > 0 ? s.missingCostPill : s.costPill}
+                    >
+                      {item.label} {item.requiredAmount}
+                      {item.missingAmount > 0 ? ` / missing ${item.missingAmount}` : ''}
+                    </span>
+                  ))
+                  : <span className={s.emptyText}>No support required</span>}
               </div>
-            ) : (
-              <span className={s.emptyText}>No synergies active</span>
-            )}
-          </div>
+            </div>
 
-          <div className={s.summaryBlock}>
-            <h3 className={s.summaryTitle}>Warnings</h3>
-            {resolvedTower.warnings.length > 0 ? (
-              <div className={s.warningList}>
-                {resolvedTower.warnings.map((warning) => (
-                  <span key={warning.id} className={s.warningItem}>{warning.message}</span>
-                ))}
-              </div>
-            ) : (
-              <span className={s.emptyText}>Ready for field testing</span>
-            )}
-          </div>
+            <div className={s.summaryBlock}>
+              <h3 className={s.summaryTitle}>Active Synergies</h3>
+              {resolvedTower.synergies.length > 0 ? (
+                <div className={s.synergyList}>
+                  {resolvedTower.synergies.map((synergy) => (
+                    <div key={synergy.id} className={s.synergyItem}>
+                      <strong>{synergy.name}</strong>
+                      <span>{synergy.description}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span className={s.emptyText}>No synergies active</span>
+              )}
+            </div>
 
-          <div className={s.statsActions}>
-            <button
-              className={s.rebuildButton}
-              disabled={!canRebuild}
-              title={!canModifyTower
-                ? 'The city is besieged. Tower rebuilding is blocked.'
-                : !hasCompleteDraft ? 'Select all required tower components before rebuilding.'
-                : !canRebuild ? 'City support is too low for this draft tower' : undefined}
-              onClick={() => {
-                if (!canRebuild) return;
-                dispatch(commitTowerDraft(undefined));
-              }}
-            >
-              Rebuild
-            </button>
-            <button
-              className={s.cancelButton}
-              disabled={!draftChanged}
-              onClick={() => dispatch(cancelTowerDraft(undefined))}
-            >
-              Cancel
-            </button>
-          </div>
-        </aside>
-      </section>
+            <div className={s.summaryBlock}>
+              <h3 className={s.summaryTitle}>Warnings</h3>
+              {resolvedTower.warnings.length > 0 ? (
+                <div className={s.warningList}>
+                  {resolvedTower.warnings.map((warning) => (
+                    <span key={warning.id} className={s.warningItem}>{warning.message}</span>
+                  ))}
+                </div>
+              ) : (
+                <span className={s.emptyText}>Ready for field testing</span>
+              )}
+            </div>
 
-      <section className={s.slotStrip} aria-label="Tower part slots">
-        {availableSlotOptions.map(({ key, label }) => {
-          const part = resolvedTower.selectedParts[key];
-          const active = activeTab === key;
-          return (
-            <button
-              key={key}
-              className={`${s.slotButton} ${active ? s.slotButtonActive : ''}`}
-              onClick={() => selectSlot(key)}
-            >
-              <span className={s.slotLabel}>{label}</span>
-              <span className={s.slotPartName}>{part?.name ?? 'Empty'}</span>
-            </button>
-          );
-        })}
+            <div className={s.statsActions}>
+              <button
+                className={s.rebuildButton}
+                disabled={!canRebuild}
+                title={!canModifyTower
+                  ? 'The city is besieged. Tower rebuilding is blocked.'
+                  : !hasCompleteDraft ? 'Select all required tower components before rebuilding.'
+                  : !canRebuild ? 'City support is too low for this draft tower' : undefined}
+                onClick={() => {
+                  if (!canRebuild) return;
+                  dispatch(commitTowerDraft(undefined));
+                }}
+              >
+                Rebuild
+              </button>
+              <button
+                className={s.cancelButton}
+                disabled={!draftChanged}
+                onClick={() => dispatch(cancelTowerDraft(undefined))}
+              >
+                Cancel
+              </button>
+            </div>
+          </aside>
+        </div>
       </section>
 
       <section className={s.partsPanel}>
@@ -466,6 +443,23 @@ const BuildPage = () => {
               </label>
             ))}
           </div>
+        </div>
+
+        <div className={s.slotStrip} aria-label="Tower part slots">
+          {availableSlotOptions.map(({ key, label }) => {
+            const part = resolvedTower.selectedParts[key];
+            const active = activeTab === key;
+            return (
+              <button
+                key={key}
+                className={`${s.slotButton} ${active ? s.slotButtonActive : ''}`}
+                title={`${label}: ${part?.name ?? 'Empty'}`}
+                onClick={() => selectSlot(key)}
+              >
+                <span className={s.slotLabel}>{label}</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className={s.tableContainer}>
