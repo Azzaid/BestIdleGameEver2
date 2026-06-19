@@ -12,7 +12,6 @@ export interface Building {
     name: string;
     type: BuildingTypesValue;
     level:number,
-    size:number,
     isMultiHex: boolean;
     isMultistructure: boolean;
     vector: DevelopmentVectorValue;

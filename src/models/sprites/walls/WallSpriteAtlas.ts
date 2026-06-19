@@ -22,5 +22,5 @@ export type WallSpriteMetadata = {
     wallId: string;
     sourceSpriteSize: WallSpriteSize;
     targetSpriteSize: WallSpriteSize;
-    sourceVisibleBounds?: WallSpriteBounds;
+    sourceVisiblePixelBounds?: WallSpriteBounds;
 };

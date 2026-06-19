@@ -23,8 +23,8 @@ export function getWallContactY({
 
         const spriteHeight = wallSpriteMetadata.targetSpriteSize.height * cityToBattleScale;
         const spriteTopOffset = spriteHeight / 2;
-        const visibleTopOffset = wallSpriteMetadata.sourceVisibleBounds
-            ? wallSpriteMetadata.sourceVisibleBounds.y
+        const visibleTopOffset = wallSpriteMetadata.sourceVisiblePixelBounds
+            ? wallSpriteMetadata.sourceVisiblePixelBounds.y
                 / wallSpriteMetadata.sourceSpriteSize.height
                 * spriteHeight
             : 0;

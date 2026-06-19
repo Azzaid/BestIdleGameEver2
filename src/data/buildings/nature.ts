@@ -1,73 +1,18 @@
 import type {Building} from "../../models/city/Building.ts";
-import type {BuildingKeyword} from "../../models/city/Keywords.ts";
-import type {MultiHexStructureRule} from "../../models/city/MultiHexStructure.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
-import {UPKEEP_TYPES, type UpkeepAmount} from "../../models/Upkeep.ts";
-import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
+import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
 import {buildings} from "../identificators/index.ts";
-import {
-  cityVisibilityToHomogeneousValueEffect,
-  upkeepAmountToHomogeneousValueEffects,
-} from "../../models/homogeneousValueAdapters.ts";
+import {createBuildingFactory} from "./buildingFactory.ts";
 
-function bioBuilding(
-  id: string,
-  name: string,
-  description: string,
-  trace: number,
-  providedUpkeep: UpkeepAmount = {},
-  requiredUpkeep: UpkeepAmount = {},
-  keywords: BuildingKeyword[] = [],
-): Building {
-  return {
-    id,
-    name,
-    type: BUILDING_TYPES.produce,
-    level: 1,
-    size: 1,
-    isMultiHex: false,
-    isMultistructure: false,
-    vector: DEVELOPMENT_VECTORS.nature,
-    homogeneousValueEffects: [
-      ...upkeepAmountToHomogeneousValueEffects(providedUpkeep, "production"),
-      ...upkeepAmountToHomogeneousValueEffects(requiredUpkeep, "upkeep"),
-      ...cityVisibilityToHomogeneousValueEffect(trace),
-    ],
-    adjacency: [],
-    adjacencyDescription: "Not affected",
-    description,
-    keywords: ["nature", ...keywords],
-  };
-}
-
-function bioSuperstructure(
-  id: string,
-  name: string,
-  description: string,
-  size: number,
-  providedUpkeep: UpkeepAmount = {},
-  requiredUpkeep: UpkeepAmount = {},
-  keywords: BuildingKeyword[] = [],
-): Building {
-  return {
-    ...bioBuilding(id, name, description, 0, providedUpkeep, requiredUpkeep, keywords),
-    size,
-    isMultiHex: true,
-    isMultistructure: true,
-  };
-}
-
-function structureRule(
-  resultingBuildingId: string,
-  requiredBuildingIds: string[],
-): MultiHexStructureRule {
-  return {
-    requiredBuildingIds,
-    resultingBuildingId,
-    replacementMap: Object.fromEntries(requiredBuildingIds.map(id => [id, resultingBuildingId])),
-    developerVector: DEVELOPMENT_VECTORS.nature,
-  };
-}
+const {
+  building: bioBuilding,
+  superstructure: bioSuperstructure,
+  structureRule,
+  multiHexStructure,
+} = createBuildingFactory({
+  vector: DEVELOPMENT_VECTORS.nature,
+  defaultKeywords: ["nature"],
+});
 
 export const natureBuildings: {[key: string]: Building} = {
   [buildings.nature.wildGarden]: {
@@ -80,18 +25,17 @@ export const natureBuildings: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 1},
       ["production", "plants", "garden", "herbs"],
     ),
-    multiHexStructure: [
+    multiHexStructure: multiHexStructure(buildings.nature.wildGarden, [
       structureRule(buildings.nature.herbalistHut, [
         buildings.medieval.stalkerHut,
-        buildings.nature.wildGarden,
       ]),
-    ],
+    ]),
   },
   [buildings.nature.herbalistHut]: bioSuperstructure(
     buildings.nature.herbalistHut,
     "Herbalist Hut",
     "A stalker hut and wild garden combined into a place for cultivating and preparing gathered plants.",
-    2,
+    12,
     {[UPKEEP_TYPES.plants]: 7},
     {},
     ["production", "plants", "herbs"],
@@ -115,11 +59,10 @@ export const natureBuildings: {[key: string]: Building} = {
       },
     ],
     adjacencyDescription: "Neighboring producers gain 25% output.",
-    multiHexStructure: [
+    multiHexStructure: multiHexStructure(buildings.nature.field, [
       structureRule(buildings.medieval.farm, [
-        buildings.nature.field,
         buildings.medieval.woodenHouse,
       ]),
-    ],
+    ]),
   },
 };
