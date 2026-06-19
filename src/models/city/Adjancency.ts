@@ -5,6 +5,7 @@ import type {BuildingKeyword} from "./Keywords.ts";
 import type {PlacedBuilding} from "./Building.ts";
 import type {HomogeneousValueEffect} from "../homogeneousValues.ts";
 import type {HomogeneousResolvedValueMap} from "../homogeneousValues.ts";
+import type {HomogeneousResolvedEntity} from "../homogeneousValueResolution.ts";
 
 export type EffectScope = "self" | "neighbors";
 
@@ -68,6 +69,10 @@ export interface CityResolution {
     requiredUpkeep: UpkeepAmount;
     providedUpkeep: UpkeepAmount;
     effectiveUpkeep: UpkeepAmount,
+    values: Record<string, number>;
+    resolvedHexes: readonly HomogeneousResolvedEntity[];
+    resolvedTowers: readonly HomogeneousResolvedEntity[];
+    resolvedWallSegments: readonly HomogeneousResolvedEntity[];
     homogeneousValues: Record<string, number>;
     homogeneousResolvedValues: HomogeneousResolvedValueMap;
     producedHomogeneousValues: Record<string, number>;

@@ -1,14 +1,18 @@
 import {BattleStage} from "./ui/BattleStage.tsx";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import { useTypedDispatch, useTypedSelector } from "../../store/hooks.ts";
-import { selectHasAnyTowerBuild, selectResolvedAvailableTowers } from "../../store/towers/selectors.ts";
+import { selectHasAnyTowerBuild } from "../../store/towers/selectors.ts";
 import * as styles from './BattlePage.css.ts';
 import { selectCityBattlefield, selectCityHexes, selectCitySideHexes } from "../../store/city/selectors.ts";
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from "../../data/constants.ts";
 import { Link } from "react-router-dom";
 import { recordThreatReached } from "../../store/upkeep/slice.ts";
-import { selectCityTraceStatus, selectTowerAwareCityResolution } from "../../store/upkeep/selectors.ts";
-import { selectWallResolution } from "../../store/wall/selectors.ts";
+import {
+    selectCityTraceStatus,
+    selectEffectiveWallResolution,
+    selectResolvedEffectiveAvailableTowers,
+    selectTowerAwareCityResolution,
+} from "../../store/upkeep/selectors.ts";
 import { recordSurvivedSiege, retreatCityRadius } from "../../store/city/slice.ts";
 import { selectIsDebugModeEnabled } from "../../store/debug/selectors.ts";
 import type { BattleMetrics, BattleResult } from "../../models/battle/world.ts";
@@ -33,7 +37,7 @@ function toPercent(value: number, max: number) {
 
 const BattlePage = () => {
     const dispatch = useTypedDispatch();
-    const resolvedAvailableTowers = useTypedSelector(selectResolvedAvailableTowers);
+    const resolvedAvailableTowers = useTypedSelector(selectResolvedEffectiveAvailableTowers);
     const resolvedBattleTowers = useMemo(
         () => resolvedAvailableTowers
             .map(({resolved}) => resolved)
@@ -47,7 +51,7 @@ const BattlePage = () => {
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
     const traceStatus = useTypedSelector(selectCityTraceStatus);
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
-    const wallResolution = useTypedSelector(selectWallResolution);
+    const wallResolution = useTypedSelector(selectEffectiveWallResolution);
     const controlledTerritoryGrowthStep = useTypedSelector(selectControlledTerritoryGrowthStep);
     const battleWallSegments = useMemo<BattleWallSegment[]>(() => {
         return cityHexes

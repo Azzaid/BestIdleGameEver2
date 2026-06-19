@@ -3,6 +3,7 @@ import type { SpriteInfo } from './spriteInfo.ts';
 import type { DevelopmentVectorKey } from '../DevlopmentVector.ts';
 import type { UpkeepAmount } from '../Upkeep.ts';
 import type { HomogeneousValueEffect } from '../homogeneousValues.ts';
+import type { HomogeneousResolvedValueMap } from '../homogeneousValues.ts';
 
 export interface TowerModifiers {
   rotationSpeed: number;
@@ -97,6 +98,8 @@ export interface TowerAssemblyResolved {
   selectedParts: Partial<Record<TowerPartSlot, GunPart>>;
   stats: TowerStatsResolved;
   supportCost: UpkeepAmount;
+  homogeneousValueEffects: HomogeneousValueEffect[];
+  homogeneousResolvedValues: HomogeneousResolvedValueMap;
   keywords: Set<string>;
   aimKeywords: string[];
   synergies: ResolvedTowerSynergy[];

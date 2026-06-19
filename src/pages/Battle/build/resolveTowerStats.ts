@@ -6,7 +6,7 @@ import {
   towerWeightToHomogeneousValueEffects
 } from '../../../models/homogeneousValueAdapters.ts';
 import type { HomogeneousValueEffect } from '../../../models/homogeneousValues.ts';
-import { resolveHomogeneousValueEffects } from '../../../models/homogeneousValueResolution.ts';
+import { resolveTower } from '../../../models/homogeneousValueResolution.ts';
 
 export function resolveTowerStats(build: TowerBuild): TowerStatsResolved {
   const keywords = new Set<string>();
@@ -28,7 +28,12 @@ export function resolveTowerStats(build: TowerBuild): TowerStatsResolved {
   });
 
   const stats = homogeneousValueTotalsToTowerStats(
-    resolveHomogeneousValueEffects(towerValueEffects),
+    resolveTower({
+      id: 'towerBuild',
+      entityType: 'tower',
+      keywords: [...keywords],
+      contributions: towerValueEffects,
+    }).values,
     keywords,
   );
   stats.rotationSpeed = Math.max(0.25, stats.rotationSpeed - stats.weight * TOWER_WEIGHT_ROTATION_PENALTY);

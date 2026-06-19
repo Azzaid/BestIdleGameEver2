@@ -29,6 +29,7 @@ export type HomogeneousValueDefinition = {
 };
 
 export type HomogeneousAdjacencyRule = {
+    keywords?: string[];
     requiredBuildingKeywords?: string[];
     forbiddenBuildingKeywords?: string[];
     requiredValueKeywords?: string[];

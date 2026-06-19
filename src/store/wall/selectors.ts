@@ -4,9 +4,10 @@ import type {RootState} from "../../models/store/appStore.ts";
 import {selectCityHexes} from "../city/selectors.ts";
 import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
-import {getAvailableValues, getUpkeepValues, resolvePlacedHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
+import {getUpkeepValues, resolveCity} from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
+import type {HomogeneousCityEntityType, HomogeneousValueEntitySource} from "../../models/homogeneousValueResolution.ts";
 
 export const selectUnlockedWallBuildingIds = (state: RootState) => state.wall.unlockedWallBuildingIds;
 
@@ -27,50 +28,39 @@ export const selectWallResolution = createSelector(
             homogeneousResolvedValues: {},
             specialEffects: [],
         };
-        const wallValueSources: Array<{
-            cellKey: string;
-            column: number;
-            row: number;
-            keywords: readonly string[];
-            effects: NonNullable<WallBuilding["homogeneousValueEffects"]>;
-            adjacency: WallBuilding["homogeneousAdjacency"];
-        }> = [];
+        const wallEntities: HomogeneousValueEntitySource[] = [];
 
         hexes.forEach((hex) => {
             if (hex.kind !== "wall") return;
 
-            [hex.wallKey, hex.wallTopKey].forEach((wallBuildingKey) => {
+            [
+                {key: hex.wallKey, entityType: "wallSegment" as const},
+                {key: hex.wallTopKey, entityType: "wallSuperstructure" as const},
+            ].forEach(({key: wallBuildingKey, entityType}: {
+                key?: string | null;
+                entityType: HomogeneousCityEntityType;
+            }) => {
                 if (!wallBuildingKey) return;
 
                 const wallBuilding = ALL_WALL_BUILDINGS[wallBuildingKey];
                 if (!wallBuilding) return;
 
                 resolution.specialEffects.push(...wallBuilding.specialEffects);
-                wallValueSources.push({
-                    cellKey: `${hex.cellKey}:${wallBuilding.id}`,
+                wallEntities.push({
+                    id: `${hex.cellKey}:${wallBuilding.id}`,
+                    entityType,
+                    cellKey: hex.cellKey,
                     column: hex.column,
                     row: hex.row,
-                    keywords: wallBuilding.keywords ?? [],
-                    effects: wallBuilding.homogeneousValueEffects ?? [],
-                    adjacency: wallBuilding.homogeneousAdjacency,
+                    keywords: [String(wallBuilding.type), ...(wallBuilding.keywords ?? [])],
+                    contributions: wallBuilding.homogeneousValueEffects ?? [],
+                    modifiers: wallBuilding.homogeneousAdjacency,
                 });
             });
         });
-        resolution.homogeneousResolvedValues = resolvePlacedHomogeneousValueContributions(
-            wallValueSources,
-            (source, radius) => wallValueSources.filter((candidate) => {
-                if (candidate.cellKey === source.cellKey) return false;
-
-                const columnDistance = Math.abs(candidate.column - source.column);
-                const rowDistance = Math.abs(candidate.row - source.row);
-                const diagonalDistance = Math.abs(
-                    candidate.column + candidate.row - source.column - source.row,
-                );
-
-                return Math.max(columnDistance, rowDistance, diagonalDistance) <= radius;
-            }),
-        );
-        resolution.homogeneousValues = getAvailableValues(resolution.homogeneousResolvedValues);
+        const resolvedWallCity = resolveCity(wallEntities);
+        resolution.homogeneousResolvedValues = resolvedWallCity.resolvedValues;
+        resolution.homogeneousValues = resolvedWallCity.values;
         resolution.requiredUpkeep = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolution.homogeneousResolvedValues));
         resolution.resilience = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0;
         resolution.camoLevel = Math.max(0, -(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0));

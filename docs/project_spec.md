@@ -209,6 +209,8 @@ Support is produced by city infrastructure and consumed by:
 Resources are stored through one keyworded resource map under the hood. UI and derived selectors decide whether a resource is shown as ordinary support, an Aether orb component, or another specialized display.
 The current implementation routes resources, city metrics, monster modifiers, siege modifiers, wall stats, tower stats, and future derived game values through the homogeneous value registry in `src/data/homogeneousValues`. Content contributes `HomogeneousValueEffect` entries to registered values, and gameplay/UI code should read final values through selectors instead of reading those effects directly. Every contribution must carry exactly one role keyword: `production`, `upkeep`, or `unlock`. Production creates the resolved value, upkeep reduces available value, and unlock checks against produced value without spending it.
 
+Homogeneous value resolution is a deterministic two-pass pipeline. First, each city hex entity collects active modifiers from its local hex, adjacency, and city-global effects. Global modifiers are identified by the `global` keyword on the modifier. Radius modifiers are adjacency modifiers. Modifiers without radius are local modifiers unless they contain `global`. Second, active modifiers are applied to contributions and final homogeneous values are resolved. Modifiers may affect contributions, but they do not affect other modifiers and do not depend on resolved city values.
+
 Current resources by vector:
 
 - Technology: Power and Compute.
@@ -216,7 +218,7 @@ Current resources by vector:
 - Nature/Biology: Fungi, Plants, and Animals.
 - Aether/Magic: Veil, Mana Flows, and Death.
 
-Homogeneous value definitions include keywords such as `resource`, `output`, `support`, `atmosphere`, `aether`, and `display_orb`. Adjacency rules can target value keywords plus contribution role keywords, so a production bonus can affect ordinary support, magical outputs, wall stats, siege modifiers, monster modifiers, or later value groups through the same resolver. Display formatting is keyword-driven through reserved `display.*` keywords and must not be used for gameplay checks.
+Homogeneous value definitions include keywords such as `resource`, `output`, `support`, `atmosphere`, `aether`, and `display_orb`. Modifiers can target entity keywords, entity types, value keywords, and contribution role keywords, so a production bonus can affect ordinary support, magical outputs, wall stats, siege modifiers, monster modifiers, or later value groups through the same resolver. Display formatting is keyword-driven through reserved `display.*` keywords and must not be used for gameplay checks.
 
 Important rules:
 

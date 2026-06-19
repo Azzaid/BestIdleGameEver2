@@ -10,8 +10,9 @@ import type { HomogeneousValueEffect } from '../homogeneousValues.ts';
 import {
   getAvailableValues,
   getUpkeepValues,
-  resolveHomogeneousValueContributions,
+  resolveTower,
 } from '../homogeneousValueResolution.ts';
+import type { HomogeneousResolvedValueMap } from '../homogeneousValues.ts';
 
 const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'reloadSpeed' | 'burstCount' | 'projectileDamage' | 'projectileSpeed' | 'targetingDistanceLimit' | 'retargetCooldownSeconds'> = {
   rotationSpeed: 0.25,
@@ -131,21 +132,38 @@ export function resolveTowerAssembly(
     aimKeywords.push('closestToWall');
   }
 
-  const resolvedTowerValues = resolveHomogeneousValueContributions(towerValueEffects);
-  const stats = homogeneousValueTotalsToTowerStats(getAvailableValues(resolvedTowerValues), keywords);
-  const supportCost = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedTowerValues));
-  stats.rotationSpeed -= stats.weight * TOWER_WEIGHT_ROTATION_PENALTY;
-  clampStats(stats);
+  const resolvedTower = resolveTower({
+    id: 'towerAssembly',
+    entityType: 'tower',
+    keywords: [...keywords],
+    contributions: towerValueEffects,
+  });
+  const resolvedTowerValues = resolvedTower.resolvedValues;
+  const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(resolvedTowerValues, keywords);
 
   return {
     selectedParts,
     stats,
     supportCost,
+    homogeneousValueEffects: towerValueEffects,
+    homogeneousResolvedValues: resolvedTowerValues,
     keywords,
     aimKeywords,
     synergies,
     warnings,
   };
+}
+
+export function resolveTowerAssemblyStatsAndSupport(
+  resolvedTowerValues: HomogeneousResolvedValueMap,
+  keywords: Set<string>,
+): Pick<TowerAssemblyResolved, 'stats' | 'supportCost'> {
+  const stats = homogeneousValueTotalsToTowerStats(getAvailableValues(resolvedTowerValues), keywords);
+  const supportCost = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedTowerValues));
+  stats.rotationSpeed -= stats.weight * TOWER_WEIGHT_ROTATION_PENALTY;
+  clampStats(stats);
+
+  return {stats, supportCost};
 }
 
 export function formatTowerSlot(slot: TowerPartSlot): string {

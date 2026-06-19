@@ -13,16 +13,39 @@ import type {
 } from "./homogeneousValues.ts";
 import {HOMOGENEOUS_VALUE_ROLE_KEYWORDS} from "./homogeneousValues.ts";
 
+const GLOBAL_MODIFIER_KEYWORD = "global";
+
+export type HomogeneousCityEntityType = "building" | "tower" | "wallSegment" | "wallSuperstructure";
+
+export type HomogeneousValueEntitySource = {
+    id: string;
+    entityType: HomogeneousCityEntityType;
+    cellKey?: string;
+    column?: number;
+    row?: number;
+    keywords?: readonly string[];
+    contributions?: readonly HomogeneousValueEffect[];
+    modifiers?: readonly HomogeneousAdjacencyRule[];
+};
+
+export type HomogeneousResolvedEntity = HomogeneousValueEntitySource & {
+    activeModifiers: readonly HomogeneousAdjacencyRule[];
+    resolvedContributions: readonly HomogeneousValueEffect[];
+    resolvedValues: HomogeneousResolvedValueMap;
+    values: HomogeneousValueTotals;
+};
+
+export type HomogeneousCityResolution = {
+    values: HomogeneousValueTotals;
+    resolvedValues: HomogeneousResolvedValueMap;
+    resolvedHexes: readonly HomogeneousResolvedEntity[];
+    resolvedTowers: readonly HomogeneousResolvedEntity[];
+    resolvedWallSegments: readonly HomogeneousResolvedEntity[];
+};
+
 type EffectSource = {
     keywords?: readonly string[];
     effects?: readonly HomogeneousValueEffect[];
-};
-
-type PlacedEffectSource = EffectSource & {
-    cellKey: string;
-    column: number;
-    row: number;
-    adjacency?: readonly HomogeneousAdjacencyRule[];
 };
 
 type EffectAccumulator = {
@@ -80,47 +103,61 @@ export function resolveHomogeneousValueContributions(
     return resolvedValues;
 }
 
-export function resolvePlacedHomogeneousValueSources(
-    sources: readonly PlacedEffectSource[],
-    getNearbySources: (source: PlacedEffectSource, radius: number) => readonly PlacedEffectSource[],
-): HomogeneousValueTotals {
-    return getAvailableValues(resolvePlacedHomogeneousValueContributions(sources, getNearbySources));
+export function resolveCityGlobalEffects(
+    entities: readonly HomogeneousValueEntitySource[],
+): HomogeneousAdjacencyRule[] {
+    return entities.flatMap((entity) => (
+        entity.modifiers ?? []
+    ).filter(isGlobalModifier));
 }
 
-export function resolvePlacedHomogeneousValueContributions(
-    sources: readonly PlacedEffectSource[],
-    getNearbySources: (source: PlacedEffectSource, radius: number) => readonly PlacedEffectSource[],
-): HomogeneousResolvedValueMap {
-    const accumulatorsByCellKey = new Map<string, EffectAccumulator[]>();
+export function resolveTower(
+    tower: HomogeneousValueEntitySource,
+    allEntities: readonly HomogeneousValueEntitySource[] = [tower],
+    globalModifiers = resolveCityGlobalEffects(allEntities),
+): HomogeneousResolvedEntity {
+    return resolveEntity(tower, allEntities, globalModifiers);
+}
 
-    for (const source of sources) {
-        accumulatorsByCellKey.set(
-            source.cellKey,
-            (source.effects ?? []).map(createEffectAccumulator),
-        );
-    }
+export function resolveWallSegment(
+    wallSegment: HomogeneousValueEntitySource,
+    wallSuperstructure?: HomogeneousValueEntitySource,
+    allEntities: readonly HomogeneousValueEntitySource[] = [wallSegment, ...(wallSuperstructure ? [wallSuperstructure] : [])],
+    globalModifiers = resolveCityGlobalEffects(allEntities),
+): HomogeneousResolvedEntity {
+    const wallEntities = wallSuperstructure ? [wallSegment, wallSuperstructure] : [wallSegment];
+    const mergedWallEntity: HomogeneousValueEntitySource = {
+        ...wallSegment,
+        id: wallEntities.map((entity) => entity.id).join("+"),
+        keywords: uniqueStrings(wallEntities.flatMap((entity) => [
+            entity.entityType,
+            ...(entity.keywords ?? []),
+        ])),
+        contributions: wallEntities.flatMap((entity) => entity.contributions ?? []),
+        modifiers: wallEntities.flatMap((entity) => entity.modifiers ?? []),
+    };
 
-    for (const source of sources) {
-        for (const rule of source.adjacency ?? []) {
-            const nearbySources = getNearbySources(source, rule.radius ?? 1);
+    return resolveEntity(mergedWallEntity, allEntities, globalModifiers);
+}
 
-            for (const nearbySource of nearbySources) {
-                if (!matchesBuildingKeywords(nearbySource.keywords ?? [], rule)) continue;
-
-                const targetAccumulators = accumulatorsByCellKey.get(nearbySource.cellKey) ?? [];
-                for (const accumulator of targetAccumulators) {
-                    if (!matchesValueKeywords(accumulator.keywords, rule)) continue;
-
-                    accumulator.additive += rule.additive ?? 0;
-                    accumulator.multiplier *= normalizeMultiplier(rule.multiplier);
-                }
-            }
-        }
-    }
-
-    return resolveHomogeneousValueContributions(
-        [...accumulatorsByCellKey.values()].flatMap((accumulators) => accumulators.map(toHomogeneousValueEffect)),
+export function resolveCity(
+    entities: readonly HomogeneousValueEntitySource[],
+): HomogeneousCityResolution {
+    const globalModifiers = resolveCityGlobalEffects(entities);
+    const resolvedEntities = entities.map((entity) => resolveEntity(entity, entities, globalModifiers));
+    const resolvedValues = resolveHomogeneousValueContributions(
+        resolvedEntities.flatMap((entity) => entity.resolvedContributions),
     );
+
+    return {
+        values: getAvailableValues(resolvedValues),
+        resolvedValues,
+        resolvedHexes: resolvedEntities,
+        resolvedTowers: resolvedEntities.filter((entity) => entity.entityType === "tower"),
+        resolvedWallSegments: resolvedEntities.filter((entity) => (
+            entity.entityType === "wallSegment" || entity.entityType === "wallSuperstructure"
+        )),
+    };
 }
 
 export function getEffectKeywords(effect: HomogeneousValueEffect): Set<string> {
@@ -175,6 +212,73 @@ export function getUnlockRequiredValues(resolvedValues: HomogeneousResolvedValue
     return mapResolvedValues(resolvedValues, "unlockRequiredValue");
 }
 
+function resolveEntity(
+    entity: HomogeneousValueEntitySource,
+    allEntities: readonly HomogeneousValueEntitySource[],
+    globalModifiers: readonly HomogeneousAdjacencyRule[],
+    areAdjacent: (
+        source: HomogeneousValueEntitySource,
+        target: HomogeneousValueEntitySource,
+        radius: number,
+    ) => boolean = areEntitiesWithinRadius,
+): HomogeneousResolvedEntity {
+    const contributionAccumulators = (entity.contributions ?? []).map(createEffectAccumulator);
+    const activeModifiers = collectEntityModifiers(entity, allEntities, globalModifiers, areAdjacent);
+
+    for (const modifier of activeModifiers) {
+        for (const contributionAccumulator of contributionAccumulators) {
+            if (!matchesValueKeywords(contributionAccumulator.keywords, modifier)) continue;
+
+            contributionAccumulator.additive += modifier.additive ?? 0;
+            contributionAccumulator.multiplier *= normalizeMultiplier(modifier.multiplier);
+        }
+    }
+
+    const resolvedContributions = contributionAccumulators.map(toHomogeneousValueEffect);
+    const resolvedValues = resolveHomogeneousValueContributions(resolvedContributions);
+
+    return {
+        ...entity,
+        activeModifiers,
+        resolvedContributions,
+        resolvedValues,
+        values: getAvailableValues(resolvedValues),
+    };
+}
+
+function collectEntityModifiers(
+    targetEntity: HomogeneousValueEntitySource,
+    allEntities: readonly HomogeneousValueEntitySource[],
+    globalModifiers: readonly HomogeneousAdjacencyRule[],
+    areAdjacent: (
+        source: HomogeneousValueEntitySource,
+        target: HomogeneousValueEntitySource,
+        radius: number,
+    ) => boolean,
+): HomogeneousAdjacencyRule[] {
+    const localModifiers = allEntities.flatMap((sourceEntity) => (
+        sourceEntity.modifiers ?? []
+    ).filter(isLocalModifier).filter((modifier) => (
+        areEntitiesInSameHex(sourceEntity, targetEntity)
+        && matchesEntity(targetEntity, modifier)
+    )));
+    const adjacencyModifiers = allEntities.flatMap((sourceEntity) => (
+        sourceEntity.modifiers ?? []
+    ).filter(isAdjacencyModifier).filter((modifier) => (
+        sourceEntity.id !== targetEntity.id
+        && !areEntitiesInSameHex(sourceEntity, targetEntity)
+        && areAdjacent(sourceEntity, targetEntity, modifier.radius ?? 1)
+        && matchesEntity(targetEntity, modifier)
+    )));
+    const matchingGlobalModifiers = globalModifiers.filter((modifier) => matchesEntity(targetEntity, modifier));
+
+    return [
+        ...localModifiers,
+        ...adjacencyModifiers,
+        ...matchingGlobalModifiers,
+    ];
+}
+
 function resolveContributionValue(effect: HomogeneousValueEffect): number {
     return (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
 }
@@ -216,11 +320,14 @@ function createEffectAccumulator(effect: HomogeneousValueEffect): EffectAccumula
 }
 
 function toHomogeneousValueEffect(accumulator: EffectAccumulator): HomogeneousValueEffect {
+    const definitionKeywords = new Set(HOMOGENEOUS_VALUE_DEFINITIONS[accumulator.valueId]?.keywords ?? []);
+    const additionalKeywords = [...accumulator.keywords].filter((keyword) => !definitionKeywords.has(keyword));
+    const removedKeywords = [...definitionKeywords].filter((keyword) => !accumulator.keywords.has(keyword));
+
     return {
         valueId: accumulator.valueId,
-        additionalKeywords: [...accumulator.keywords].filter((keyword) => (
-            HOMOGENEOUS_VALUE_ROLE_KEYWORDS.includes(keyword as HomogeneousValueRoleKeyword)
-        )),
+        additionalKeywords,
+        removedKeywords,
         additive: accumulator.additive,
         multiplier: accumulator.multiplier,
     };
@@ -235,24 +342,84 @@ function mapResolvedValues(
     );
 }
 
-function matchesBuildingKeywords(
-    buildingKeywords: readonly string[],
-    rule: HomogeneousAdjacencyRule,
+function matchesEntity(
+    entity: HomogeneousValueEntitySource,
+    modifier: HomogeneousAdjacencyRule,
 ): boolean {
-    const keywords = new Set(buildingKeywords);
+    const keywords = getEntityKeywords(entity);
 
-    if ((rule.requiredBuildingKeywords ?? []).some((keyword) => !keywords.has(keyword))) return false;
-    if ((rule.forbiddenBuildingKeywords ?? []).some((keyword) => keywords.has(keyword))) return false;
+    if ((modifier.requiredBuildingKeywords ?? []).some((keyword) => !keywords.has(keyword))) return false;
+    if ((modifier.forbiddenBuildingKeywords ?? []).some((keyword) => keywords.has(keyword))) return false;
 
     return true;
 }
 
 function matchesValueKeywords(
     valueKeywords: Set<string>,
-    rule: HomogeneousAdjacencyRule,
+    modifier: HomogeneousAdjacencyRule,
 ): boolean {
-    if ((rule.requiredValueKeywords ?? []).some((keyword) => !valueKeywords.has(keyword))) return false;
-    if ((rule.forbiddenValueKeywords ?? []).some((keyword) => valueKeywords.has(keyword))) return false;
+    if ((modifier.requiredValueKeywords ?? []).some((keyword) => !valueKeywords.has(keyword))) return false;
+    if ((modifier.forbiddenValueKeywords ?? []).some((keyword) => valueKeywords.has(keyword))) return false;
 
     return true;
+}
+
+function getEntityKeywords(entity: HomogeneousValueEntitySource): Set<string> {
+    return new Set([
+        entity.entityType,
+        ...(entity.keywords ?? []),
+    ]);
+}
+
+function isGlobalModifier(modifier: HomogeneousAdjacencyRule): boolean {
+    return modifier.keywords?.includes(GLOBAL_MODIFIER_KEYWORD) ?? false;
+}
+
+function isAdjacencyModifier(modifier: HomogeneousAdjacencyRule): boolean {
+    return modifier.radius !== undefined && !isGlobalModifier(modifier);
+}
+
+function isLocalModifier(modifier: HomogeneousAdjacencyRule): boolean {
+    return !isAdjacencyModifier(modifier) && !isGlobalModifier(modifier);
+}
+
+function areEntitiesWithinRadius(
+    sourceEntity: HomogeneousValueEntitySource,
+    targetEntity: HomogeneousValueEntitySource,
+    radius: number,
+): boolean {
+    if (sourceEntity.column === undefined || sourceEntity.row === undefined) return false;
+    if (targetEntity.column === undefined || targetEntity.row === undefined) return false;
+
+    const columnDistance = Math.abs(targetEntity.column - sourceEntity.column);
+    const rowDistance = Math.abs(targetEntity.row - sourceEntity.row);
+    const diagonalDistance = Math.abs(
+        targetEntity.column + targetEntity.row - sourceEntity.column - sourceEntity.row,
+    );
+
+    return Math.max(columnDistance, rowDistance, diagonalDistance) <= radius;
+}
+
+function areEntitiesInSameHex(
+    sourceEntity: HomogeneousValueEntitySource,
+    targetEntity: HomogeneousValueEntitySource,
+): boolean {
+    if (sourceEntity.cellKey && targetEntity.cellKey) {
+        return sourceEntity.cellKey === targetEntity.cellKey;
+    }
+
+    if (
+        sourceEntity.column !== undefined
+        && sourceEntity.row !== undefined
+        && targetEntity.column !== undefined
+        && targetEntity.row !== undefined
+    ) {
+        return sourceEntity.column === targetEntity.column && sourceEntity.row === targetEntity.row;
+    }
+
+    return sourceEntity.id === targetEntity.id;
+}
+
+function uniqueStrings(values: readonly string[]): string[] {
+    return [...new Set(values)];
 }

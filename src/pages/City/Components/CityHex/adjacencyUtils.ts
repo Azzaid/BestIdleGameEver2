@@ -12,6 +12,7 @@ import type {HexCell} from "../../../../models/city/HexGrid.ts";
 import type {Building, PlacedBuilding} from "../../../../models/city/Building.ts";
 import {addUpkeep, applyResourceModifier, deductUpkeep, multiplyUpkeep} from "./upkeepUtils.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
+import {ALL_WALL_BUILDINGS} from "../../../../data/wall/index.ts";
 import {hexesWithinRadius} from "./hexUtils.ts";
 import {TRACE_PER_HEX} from "../../../../data/constants.ts";
 import {deepClone} from "../../../../utils/deepClone.ts";
@@ -25,9 +26,10 @@ import {
     getProducedValues,
     getUpkeepValues,
     resolveHomogeneousValueContributions,
-    resolvePlacedHomogeneousValueContributions
+    resolveCity
 } from "../../../../models/homogeneousValueResolution.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../../../data/homogeneousValues/index.ts";
+import type {HomogeneousValueEntitySource} from "../../../../models/homogeneousValueResolution.ts";
 
 function matchesFilter(
     placed?: PlacedBuilding,
@@ -221,6 +223,10 @@ export function resolveCityUpkeepAndTrace(
         effectiveUpkeep: {} as UpkeepAmount,
         homogeneousValues: {},
         homogeneousResolvedValues: {},
+        values: {},
+        resolvedHexes: [],
+        resolvedTowers: [],
+        resolvedWallSegments: [],
         producedHomogeneousValues: {},
         upkeepHomogeneousValues: {},
         buildingsTrace: 0,
@@ -230,36 +236,48 @@ export function resolveCityUpkeepAndTrace(
     };
 
     resolvedCity.territoryTrace = hexes.length * TRACE_PER_HEX;
-    resolvedCity.homogeneousResolvedValues = resolvePlacedHomogeneousValueContributions(
-        [...city.values()].map((building) => ({
+    const buildingEntities: HomogeneousValueEntitySource[] = [...city.values()].map((building) => ({
+            id: `${building.column}:${building.row}`,
+            entityType: "building",
             cellKey: `${building.column}:${building.row}`,
             column: building.column,
             row: building.row,
             keywords: building.keywords,
-            effects: building.effectiveHomogeneousValueEffects,
-            adjacency: building.homogeneousAdjacency,
-        })),
-        (source, radius) => {
-            const nearbyHexes = hexesWithinRadius(
-                {column: source.column, row: source.row},
-                radius,
-                hexes,
-                {excludeCenter: true, onlyNonEmpty: true},
-            );
-            const nearbyCoordinates = new Set(nearbyHexes.map((hex) => `${hex.column}:${hex.row}`));
+            contributions: building.effectiveHomogeneousValueEffects,
+            modifiers: building.homogeneousAdjacency,
+        }));
+    const wallEntities: HomogeneousValueEntitySource[] = hexes.flatMap((hexCell) => {
+        if (hexCell.kind !== "wall") return [];
 
-            return [...city.values()]
-                .filter((building) => nearbyCoordinates.has(`${building.column}:${building.row}`))
-                .map((building) => ({
-                    cellKey: `${building.column}:${building.row}`,
-                    column: building.column,
-                    row: building.row,
-                    keywords: building.keywords,
-                    effects: building.effectiveHomogeneousValueEffects,
-                    adjacency: building.homogeneousAdjacency,
-                }));
-        },
-    );
+        return [
+            {wallBuildingKey: hexCell.wallKey, entityType: "wallSegment" as const},
+            {wallBuildingKey: hexCell.wallTopKey, entityType: "wallSuperstructure" as const},
+        ].flatMap(({wallBuildingKey, entityType}) => {
+            if (!wallBuildingKey) return [];
+
+            const wallBuilding = ALL_WALL_BUILDINGS[wallBuildingKey];
+            if (!wallBuilding) return [];
+
+            return [{
+                id: `${hexCell.cellKey}:${wallBuilding.id}`,
+                entityType,
+                cellKey: hexCell.cellKey,
+                column: hexCell.column,
+                row: hexCell.row,
+                keywords: [String(wallBuilding.type), ...(wallBuilding.keywords ?? [])],
+                contributions: wallBuilding.homogeneousValueEffects ?? [],
+                modifiers: wallBuilding.homogeneousAdjacency,
+            }];
+        });
+    });
+    const cityEntities = [...buildingEntities, ...wallEntities];
+    const homogeneousCityResolution = resolveCity(cityEntities);
+
+    resolvedCity.values = homogeneousCityResolution.values;
+    resolvedCity.resolvedHexes = homogeneousCityResolution.resolvedHexes;
+    resolvedCity.resolvedTowers = homogeneousCityResolution.resolvedTowers;
+    resolvedCity.resolvedWallSegments = homogeneousCityResolution.resolvedWallSegments;
+    resolvedCity.homogeneousResolvedValues = homogeneousCityResolution.resolvedValues;
     resolvedCity.homogeneousValues = getAvailableValues(resolvedCity.homogeneousResolvedValues);
     resolvedCity.producedHomogeneousValues = getProducedValues(resolvedCity.homogeneousResolvedValues);
     resolvedCity.upkeepHomogeneousValues = getUpkeepValues(resolvedCity.homogeneousResolvedValues);

@@ -5,8 +5,7 @@ import {createInitialHomogeneousValueTotals} from "../../models/homogeneousValue
 import type {HomogeneousValueId, HomogeneousValueTotals} from "../../models/homogeneousValues.ts";
 import type {RootState} from "../../models/store/appStore.ts";
 import {selectCityHexes} from "../city/selectors.ts";
-import {selectCityResolution} from "../upkeep/selectors.ts";
-import {selectWallResolution} from "../wall/selectors.ts";
+import {selectTowerAwareCityResolution} from "../upkeep/selectors.ts";
 
 const emptyResolvedValue = {
     producedValue: 0,
@@ -17,14 +16,13 @@ const emptyResolvedValue = {
 };
 
 export const selectHomogeneousValueTotals = createSelector(
-    [selectCityResolution, selectWallResolution, (state: RootState) => state.upkeep.resilience],
-    (cityResolution, wallResolution, controlledTerritory): HomogeneousValueTotals => {
+    [selectTowerAwareCityResolution, (state: RootState) => state.upkeep.resilience],
+    (cityResolution, controlledTerritory): HomogeneousValueTotals => {
         const initialTotals = createInitialHomogeneousValueTotals();
         const totals = {...initialTotals};
 
         for (const valueId of Object.keys(totals)) {
             totals[valueId] += (cityResolution.homogeneousValues[valueId] ?? initialTotals[valueId] ?? 0) - (initialTotals[valueId] ?? 0);
-            totals[valueId] += (wallResolution.homogeneousValues[valueId] ?? initialTotals[valueId] ?? 0) - (initialTotals[valueId] ?? 0);
         }
 
         totals[HOMOGENEOUS_VALUE_IDS.cityControlledTerritory] = controlledTerritory;
@@ -42,13 +40,13 @@ export const selectHomogeneousValue = createSelector(
 );
 
 export const selectCityVisibility = createSelector(
-    [selectCityResolution],
+    [selectTowerAwareCityResolution],
     (cityResolution): number => cityResolution.producedHomogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0,
 );
 
 export const selectCityResolvedProducedValue = createSelector(
     [
-        selectCityResolution,
+        selectTowerAwareCityResolution,
         (_state: RootState, valueId: HomogeneousValueId) => valueId,
     ],
     (cityResolution, valueId): number => (
@@ -58,7 +56,7 @@ export const selectCityResolvedProducedValue = createSelector(
 
 export const selectCityResolvedUpkeepValue = createSelector(
     [
-        selectCityResolution,
+        selectTowerAwareCityResolution,
         (_state: RootState, valueId: HomogeneousValueId) => valueId,
     ],
     (cityResolution, valueId): number => (
@@ -68,7 +66,7 @@ export const selectCityResolvedUpkeepValue = createSelector(
 
 export const selectCityResolvedAvailableValue = createSelector(
     [
-        selectCityResolution,
+        selectTowerAwareCityResolution,
         (_state: RootState, valueId: HomogeneousValueId) => valueId,
     ],
     (cityResolution, valueId): number => (
@@ -78,7 +76,7 @@ export const selectCityResolvedAvailableValue = createSelector(
 
 export const selectCityResolvedUnlockRequiredValue = createSelector(
     [
-        selectCityResolution,
+        selectTowerAwareCityResolution,
         (_state: RootState, valueId: HomogeneousValueId) => valueId,
     ],
     (cityResolution, valueId): number => (
@@ -88,7 +86,7 @@ export const selectCityResolvedUnlockRequiredValue = createSelector(
 
 export const selectCityResolvedIsUnlockSatisfied = createSelector(
     [
-        selectCityResolution,
+        selectTowerAwareCityResolution,
         (_state: RootState, valueId: HomogeneousValueId) => valueId,
     ],
     (cityResolution, valueId): boolean => (
