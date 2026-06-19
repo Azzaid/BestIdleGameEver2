@@ -20,6 +20,18 @@ import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue 
 import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
 import { TowerAssemblyPreview } from './TowerAssemblyPreview.tsx';
 import type { SupportStatusItem } from '../../models/build/buildPage.ts';
+import {
+  formatHomogeneousValue,
+  getHomogeneousProductionContributions,
+} from '../../models/homogeneousValueHelpers.ts';
+import type {HomogeneousValueEffect} from '../../models/homogeneousValues.ts';
+import {
+  getUpkeepValues,
+  normalizeMultiplier,
+  resolveHomogeneousValueContributions,
+} from '../../models/homogeneousValueResolution.ts';
+import {homogeneousValueTotalsToUpkeepAmount} from '../../models/homogeneousValueAdapters.ts';
+import {HOMOGENEOUS_VALUE_IDS, getHomogeneousValueDefinition} from '../../data/homogeneousValues/index.ts';
 
 function getPartKeywords(part: GunPart) {
   return Array.from(part.keywords);
@@ -30,11 +42,34 @@ function isPartUnlocked(part: GunPart, purchasedTechIds: readonly string[]) {
 }
 
 function formatModifierList(part: GunPart) {
-  if (!part.modifiers) return 'No stat modifiers';
+  const effects = getHomogeneousProductionContributions(part).filter((effect) => (
+    effect.valueId !== HOMOGENEOUS_VALUE_IDS.towerWeight
+  ));
+  if (!effects.length) return 'No stat modifiers';
 
-  return Object.entries(part.modifiers)
-    .map(([key, value]) => `${key} ${Number(value) > 0 ? '+' : ''}${value}`)
+  return effects
+    .map((effect) => {
+      const value = resolveEffectValue(effect);
+      const definition = getHomogeneousValueDefinition(effect.valueId);
+      return `${definition.label} ${value > 0 ? '+' : ''}${formatHomogeneousValue(effect.valueId, value, effect.additionalKeywords)}`;
+    })
     .join(', ');
+}
+
+function getPartSupportCost(part: GunPart): UpkeepAmount {
+  return homogeneousValueTotalsToUpkeepAmount(
+    getUpkeepValues(resolveHomogeneousValueContributions(part.homogeneousValueEffects ?? [])),
+  );
+}
+
+function getPartWeight(part: GunPart): number {
+  return getHomogeneousProductionContributions(part)
+    .filter((effect) => effect.valueId === HOMOGENEOUS_VALUE_IDS.towerWeight)
+    .reduce((total, effect) => total + resolveEffectValue(effect), 0);
+}
+
+function resolveEffectValue(effect: HomogeneousValueEffect): number {
+  return (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
 }
 
 function getSupportStatus(required: UpkeepAmount, available: UpkeepAmount) {
@@ -162,22 +197,23 @@ const BuildPage = () => {
     },
     {
       id: 'weight',
-      accessorFn: (row) => row.weight ?? 0,
+      accessorFn: getPartWeight,
       header: 'Weight',
       cell: (info) => info.getValue(),
     },
     {
       id: 'support',
-      accessorFn: (row) => getSupportStatus(row.supportCost ?? {}, {}).map((item) => item.label).join(', '),
+      accessorFn: (row) => getSupportStatus(getPartSupportCost(row), {}).map((item) => item.label).join(', '),
       header: 'Support',
       cell: (info) => {
         const part = info.row.original;
-        const currentSlotPartCost = resolvedTower.selectedParts[activeTab]?.supportCost ?? {};
+        const currentSlotPart = resolvedTower.selectedParts[activeTab];
+        const currentSlotPartCost = currentSlotPart ? getPartSupportCost(currentSlotPart) : {};
         const availableForThisSlot = getAvailableUpkeepForSlot(
           deductUpkeep(cityResolution.effectiveUpkeep, resolvedTower.supportCost),
           currentSlotPartCost
         );
-        const supportStatus = getSupportStatus(part.supportCost ?? {}, availableForThisSlot);
+        const supportStatus = getSupportStatus(getPartSupportCost(part), availableForThisSlot);
 
         if (supportStatus.length === 0) {
           return <span className={s.emptyText}>None</span>;

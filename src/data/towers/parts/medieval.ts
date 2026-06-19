@@ -1,4 +1,5 @@
 import type {GunPart} from '../../../models/battle/towerParts.ts';
+import {HOMOGENEOUS_VALUE_IDS} from '../../homogeneousValues/index.ts';
 import {gunparts} from '../../identificators/index.ts';
 
 export const medievalTowerParts: GunPart[] = [
@@ -11,9 +12,12 @@ export const medievalTowerParts: GunPart[] = [
     sprite: {textureKey: 'medieval_base_crude-wood'},
     attachmentOffset: {x: 0, y: 0},
     keywords: new Set(['rough', 'grounded', 'turret']),
-    modifiers: {rotationSpeed: 0.25, projectileDamage: 1, retargetCooldownSeconds: 0.04},
-    weight: 1,
-    supportCost: {},
+    homogeneousValueEffects: [
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerRotationSpeed, additionalKeywords: ['production'], additive: 0.25},
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage, additionalKeywords: ['production'], additive: 1},
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds, additionalKeywords: ['production'], additive: 0.04},
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerWeight, additionalKeywords: ['production'], additive: 1},
+    ],
   },
   {
     id: gunparts.ammo.medieval.stoneBasket,
@@ -24,9 +28,11 @@ export const medievalTowerParts: GunPart[] = [
     sprite: {textureKey: 'medieval_ammo_crude-stone'},
     attachmentOffset: {x: 0, y: 0},
     keywords: new Set(['projectile', 'stone']),
-    modifiers: {projectileDamage: 2, projectileSpeed: -20},
-    weight: 2,
-    supportCost: {},
+    homogeneousValueEffects: [
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage, additionalKeywords: ['production'], additive: 2},
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed, additionalKeywords: ['production'], additive: -20},
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerWeight, additionalKeywords: ['production'], additive: 2},
+    ],
   },
   {
     id: gunparts.launchSystems.medieval.crudeSling,
@@ -37,9 +43,12 @@ export const medievalTowerParts: GunPart[] = [
     sprite: {textureKey: 'medieval_launcher_crude-sling'},
     attachmentOffset: {x: 0, y: 0},
     keywords: new Set(['mechanical', 'rough']),
-    modifiers: {projectileDamage: 2, projectileSpeed: 50, reloadSpeed: -0.05},
-    weight: 3,
-    supportCost: {},
+    homogeneousValueEffects: [
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage, additionalKeywords: ['production'], additive: 2},
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed, additionalKeywords: ['production'], additive: 50},
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerReloadSpeed, additionalKeywords: ['production'], additive: -0.05},
+      {valueId: HOMOGENEOUS_VALUE_IDS.towerWeight, additionalKeywords: ['production'], additive: 3},
+    ],
   },
     {
         id: gunparts.barrels.medieval.hollowedTrunk,
@@ -50,8 +59,11 @@ export const medievalTowerParts: GunPart[] = [
         sprite: {textureKey: 'medieval_base_crude-wood'},
         attachmentOffset: {x: 0, y: 0},
         keywords: new Set(['rough', 'grounded', 'turret']),
-        modifiers: {rotationSpeed: 0.25, projectileDamage: 1, retargetCooldownSeconds: 0.04},
-        weight: 1,
-        supportCost: {},
+        homogeneousValueEffects: [
+            {valueId: HOMOGENEOUS_VALUE_IDS.towerRotationSpeed, additionalKeywords: ['production'], additive: 0.25},
+            {valueId: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage, additionalKeywords: ['production'], additive: 1},
+            {valueId: HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds, additionalKeywords: ['production'], additive: 0.04},
+            {valueId: HOMOGENEOUS_VALUE_IDS.towerWeight, additionalKeywords: ['production'], additive: 1},
+        ],
     },
 ];

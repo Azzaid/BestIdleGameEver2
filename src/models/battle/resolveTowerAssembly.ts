@@ -1,14 +1,17 @@
 import { TOWER_PARTS_BY_ID, TOWER_PART_SLOT_ORDER, TOWER_SYNERGY_RULES, REQUIRED_TOWER_PART_SLOTS } from '../../data/towers/index.ts';
 import { TOWER_WEIGHT_ROTATION_PENALTY } from '../../data/constants.ts';
-import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../Upkeep.ts';
+import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount } from '../Upkeep.ts';
 import type { GunPart, TowerAssembly, TowerAssemblyResolved, TowerModifiers, TowerPartSlot } from './towerParts.ts';
 import {
+  homogeneousValueTotalsToUpkeepAmount,
   homogeneousValueTotalsToTowerStats,
-  towerModifiersToHomogeneousValueEffects,
-  towerWeightToHomogeneousValueEffects
 } from '../homogeneousValueAdapters.ts';
 import type { HomogeneousValueEffect } from '../homogeneousValues.ts';
-import { resolveHomogeneousValueEffects } from '../homogeneousValueResolution.ts';
+import {
+  getAvailableValues,
+  getUpkeepValues,
+  resolveHomogeneousValueContributions,
+} from '../homogeneousValueResolution.ts';
 
 const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'reloadSpeed' | 'burstCount' | 'projectileDamage' | 'projectileSpeed' | 'targetingDistanceLimit' | 'retargetCooldownSeconds'> = {
   rotationSpeed: 0.25,
@@ -19,14 +22,6 @@ const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'reloadSpeed' 
   targetingDistanceLimit: 80,
   retargetCooldownSeconds: 0,
 };
-
-function addSupportCost(target: UpkeepAmount, source?: UpkeepAmount) {
-  if (!source) return;
-
-  for (const symbol of Object.keys(source) as UpkeepTypesValue[]) {
-    target[symbol] = (target[symbol] ?? 0) + (source[symbol] ?? 0);
-  }
-}
 
 function addAimKeywords(target: string[], source?: string[]) {
   if (!source) return;
@@ -54,7 +49,6 @@ export function resolveTowerAssembly(
 ): TowerAssemblyResolved {
   const keywords = new Set<string>();
   const selectedParts: TowerAssemblyResolved['selectedParts'] = {};
-  const supportCost: UpkeepAmount = {};
   const aimKeywords: string[] = [];
   const warnings: TowerAssemblyResolved['warnings'] = [];
   const towerValueEffects: HomogeneousValueEffect[] = [];
@@ -76,11 +70,8 @@ export function resolveTowerAssembly(
     selectedParts[slot] = part;
     part.keywords.forEach((keyword) => keywords.add(keyword));
     towerValueEffects.push(
-      ...towerWeightToHomogeneousValueEffects(part.weight),
-      ...towerModifiersToHomogeneousValueEffects(part.modifiers),
       ...(part.homogeneousValueEffects ?? []),
     );
-    addSupportCost(supportCost, part.supportCost);
     addAimKeywords(aimKeywords, part.aimKeywords);
 
     if (!isPartUnlocked(part, purchasedTechIds)) {
@@ -124,7 +115,6 @@ export function resolveTowerAssembly(
     if (!active) return [];
 
     towerValueEffects.push(
-      ...towerModifiersToHomogeneousValueEffects(rule.modifiers),
       ...(rule.homogeneousValueEffects ?? []),
     );
     rule.addKeywords?.forEach((keyword) => keywords.add(keyword));
@@ -141,10 +131,9 @@ export function resolveTowerAssembly(
     aimKeywords.push('closestToWall');
   }
 
-  const stats = homogeneousValueTotalsToTowerStats(
-    resolveHomogeneousValueEffects(towerValueEffects),
-    keywords,
-  );
+  const resolvedTowerValues = resolveHomogeneousValueContributions(towerValueEffects);
+  const stats = homogeneousValueTotalsToTowerStats(getAvailableValues(resolvedTowerValues), keywords);
+  const supportCost = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedTowerValues));
   stats.rotationSpeed -= stats.weight * TOWER_WEIGHT_ROTATION_PENALTY;
   clampStats(stats);
 

@@ -1,7 +1,7 @@
 import {HOMOGENEOUS_VALUE_IDS} from "../data/homogeneousValues/index.ts";
 import {UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "./Upkeep.ts";
 import type {HomogeneousValueEffect, HomogeneousValueId, HomogeneousValueRoleKeyword} from "./homogeneousValues.ts";
-import type {TowerModifiers, TowerStatsResolved} from "./battle/towerParts.ts";
+import type {TowerStatsResolved} from "./battle/towerParts.ts";
 
 const resourceValueIdsByUpkeepType: Record<UpkeepTypesValue, HomogeneousValueId> = {
     [UPKEEP_TYPES.people]: HOMOGENEOUS_VALUE_IDS.resourcePeople,
@@ -53,45 +53,6 @@ export function cityVisibilityToHomogeneousValueEffect(trace: number): Homogeneo
         valueId: HOMOGENEOUS_VALUE_IDS.cityVisibility,
         additionalKeywords: ["production"],
         additive: trace,
-    }];
-}
-
-const towerValueIdsByModifier: Record<keyof TowerModifiers, HomogeneousValueId> = {
-    rotationSpeed: HOMOGENEOUS_VALUE_IDS.towerRotationSpeed,
-    reloadSpeed: HOMOGENEOUS_VALUE_IDS.towerReloadSpeed,
-    burstCount: HOMOGENEOUS_VALUE_IDS.towerBurstCount,
-    projectileDamage: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage,
-    projectileSpeed: HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed,
-    aoeRadius: HOMOGENEOUS_VALUE_IDS.towerAoeRadius,
-    targetingDistanceLimit: HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit,
-    retargetCooldownSeconds: HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds,
-    weight: HOMOGENEOUS_VALUE_IDS.towerWeight,
-};
-
-export function towerModifiersToHomogeneousValueEffects(
-    modifiers?: Partial<TowerModifiers>,
-): HomogeneousValueEffect[] {
-    if (!modifiers) return [];
-
-    return (Object.keys(modifiers) as Array<keyof TowerModifiers>).flatMap((modifierKey) => {
-        const additive = modifiers[modifierKey] ?? 0;
-        if (additive === 0) return [];
-
-        return [{
-            valueId: towerValueIdsByModifier[modifierKey],
-            additionalKeywords: ["production"],
-            additive,
-        }];
-    });
-}
-
-export function towerWeightToHomogeneousValueEffects(weight = 0): HomogeneousValueEffect[] {
-    if (weight === 0) return [];
-
-    return [{
-        valueId: HOMOGENEOUS_VALUE_IDS.towerWeight,
-        additionalKeywords: ["production"],
-        additive: weight,
     }];
 }
 

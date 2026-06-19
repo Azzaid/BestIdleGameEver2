@@ -40,10 +40,7 @@ export interface GunPart {
   attachmentOffset: { x: number; y: number };
   keywords: Set<string>;
   aimKeywords?: string[];
-  modifiers?: Partial<TowerModifiers>;
   homogeneousValueEffects?: HomogeneousValueEffect[];
-  weight?: number;
-  supportCost?: UpkeepAmount;
   unlockRequirements?: TowerPartUnlockRequirement[];
   conflictsWithKeywords?: string[];
   children?: GunPart[]; // chain within a slot
@@ -62,7 +59,6 @@ export interface TowerSynergyRule {
   name: string;
   description: string;
   requiredKeywords: string[];
-  modifiers?: Partial<TowerModifiers>;
   homogeneousValueEffects?: HomogeneousValueEffect[];
   addKeywords?: string[];
   addAimKeywords?: string[];
