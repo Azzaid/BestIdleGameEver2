@@ -8,7 +8,7 @@ export const upkeepBar = style({
     width: '100%',
     boxSizing: 'border-box',
     backgroundColor: vars.color.background.navbar,
-    color:vars.color.text.heading,
+    color: vars.color.text.heading,
     gap: '16px',
     alignItems: 'center',
     overflowX: 'auto',
@@ -119,7 +119,7 @@ export const aetherTooltipRow = style({
     fontSize: '0.85rem',
 });
 
-export const traceMeter = style({
+export const signatureMeter = style({
     display: 'grid',
     gap: '4px',
     minWidth: '240px',
@@ -127,7 +127,7 @@ export const traceMeter = style({
     flex: '1 1 320px',
 });
 
-export const traceMeterHeader = style({
+export const signatureMeterHeader = style({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -136,22 +136,22 @@ export const traceMeterHeader = style({
     lineHeight: 1,
 });
 
-export const traceMeterTitle = style({
+export const signatureMeterTitle = style({
     fontWeight: 700,
     textTransform: 'uppercase',
 });
 
-export const traceStageStable = style({
+export const signatureStageStable = style({
     color: vars.color.text.muted,
     fontWeight: 700,
 });
 
-export const traceStageBesieged = style({
+export const signatureStageBesieged = style({
     color: vars.color.state.error,
     fontWeight: 800,
 });
 
-export const traceTrack = style({
+export const signatureTrack = style({
     position: 'relative',
     height: '12px',
     borderRadius: '999px',
@@ -160,7 +160,7 @@ export const traceTrack = style({
     border: `1px solid ${vars.color.border.default}`,
 });
 
-export const traceFill = style({
+export const signatureFill = style({
     position: 'absolute',
     top: 0,
     height: '100%',
@@ -169,7 +169,7 @@ export const traceFill = style({
     transition: 'left 180ms ease, width 180ms ease, background-color 180ms ease',
 });
 
-export const traceScarFill = style({
+export const signatureFootprintFill = style({
     position: 'absolute',
     top: 0,
     left: 0,
@@ -180,7 +180,7 @@ export const traceScarFill = style({
     transition: 'width 180ms ease',
 });
 
-export const traceNumbers = style({
+export const signatureNumbers = style({
     display: 'flex',
     justifyContent: 'space-between',
     gap: '8px',

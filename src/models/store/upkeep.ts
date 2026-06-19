@@ -1,17 +1,17 @@
 export interface UpkeepState {
-    resilience: number,
+    controlledTerritory: number,
 }
 
 export type CityStage = "stable" | "besieged";
 
-export interface CityTraceStatus {
-    effectiveTrace: number;
-    scarTrace: number;
-    resilience: number;
+export interface CitySignatureStatus {
+    effectiveSignature: number;
+    cityFootprint: number;
+    controlledTerritory: number;
     fillRatio: number;
-    scarFillRatio: number;
+    footprintFillRatio: number;
     activeFillRatio: number;
-    displayedTrace: number;
+    displayedSignature: number;
     stage: CityStage;
     isBesieged: boolean;
 }

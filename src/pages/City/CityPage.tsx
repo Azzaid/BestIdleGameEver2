@@ -18,7 +18,7 @@ import {ALL_WALL_BUILDINGS, TOWER_PLATFORM_BUILDINGS, WALL_SEGMENT_BUILDINGS} fr
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
 import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
-import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
+import {selectCityResolution, selectCitySignatureStatus} from "../../store/upkeep/selectors.ts";
 import type {PlacedBuilding} from "../../models/city/Building.ts";
 import type {StructureDetectionResult} from "../../models/city/multistructureDetection.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
@@ -37,7 +37,7 @@ import type {HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import {getUpkeepValues, normalizeMultiplier, resolveHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 
-const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise resilience in battle before building.";
+const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise controlled territory in battle before building.";
 
 const CityPage = () => {
     const dispatch = useTypedDispatch();
@@ -46,7 +46,7 @@ const CityPage = () => {
     const structureCandidates = useTypedSelector(selectCityStructureCandidates);
     const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
     const wallResolution = useTypedSelector(selectWallResolution);
-    const traceStatus = useTypedSelector(selectCityTraceStatus);
+    const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
     const aetherAtmosphereLevels = useTypedSelector(selectAetherAtmosphereLevels);
     const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
@@ -125,7 +125,7 @@ const CityPage = () => {
     }, [effectiveUpkeep, hexes, selectedHex, unlockedBuildingIds]);
 
     const handleBuildingSelect = (buildingKey: string, developmentVector: DevelopmentVectorValue) => {
-        if (!selectedHex || traceStatus.isBesieged) return;
+        if (!selectedHex || signatureStatus.isBesieged) return;
         if (selectedHex.kind !== "city" || selectedHex.buildingKey || selectedHex.partOfStructureId) return;
         if (!unlockedBuildingIds.has(buildingKey)) return;
 
@@ -138,23 +138,23 @@ const CityPage = () => {
     };
 
     const handleWallBuildingSelect = (buildingKey: string) => {
-        if (!selectedHex || traceStatus.isBesieged) return;
+        if (!selectedHex || signatureStatus.isBesieged) return;
         dispatch(buildWall({cellKey: selectedHex.cellKey, wallKey: buildingKey}))
     };
 
     const handleWallTopBuildingSelect = (buildingKey: string) => {
-        if (!selectedHex || traceStatus.isBesieged) return;
+        if (!selectedHex || signatureStatus.isBesieged) return;
         dispatch(buildWallTop({cellKey: selectedHex.cellKey, wallTopKey: buildingKey}))
     };
 
     const handleDemolishSelectedHex = () => {
-        if (!selectedHex || traceStatus.isBesieged) return;
+        if (!selectedHex || signatureStatus.isBesieged) return;
         dispatch(demolishHex({cellKey: selectedHex.cellKey}));
         setSelectedHex(null);
     };
 
     const handleBuildStructure = (structureId: string) => {
-        if (!selectedHex || traceStatus.isBesieged) return;
+        if (!selectedHex || signatureStatus.isBesieged) return;
         dispatch(buildMultistructure({ coreCellKey: selectedHex.cellKey, structureId }));
     };
 
@@ -183,7 +183,7 @@ const CityPage = () => {
                         structureCandidates={selectedStructureCandidates}
                         isPartOfCompleteStructure={selectedHexIsPartOfCompleteStructure}
                         wallResolution={wallResolution}
-                        blocked={traceStatus.isBesieged}
+                        blocked={signatureStatus.isBesieged}
                         blockedReason={BESIEGED_BUILD_BLOCK_REASON}
                         onBuildStructure={handleBuildStructure}
                         onDemolish={handleDemolishSelectedHex}
@@ -192,7 +192,7 @@ const CityPage = () => {
                         ? <WallBuildingSelector
                             onBuildWall={handleWallBuildingSelect}
                             onBuildWallTop={handleWallTopBuildingSelect}
-                            blocked={traceStatus.isBesieged}
+                            blocked={signatureStatus.isBesieged}
                             blockedReason={BESIEGED_BUILD_BLOCK_REASON}
                         />
                         : selectedHex.buildingKey || selectedHex.partOfStructureId
@@ -203,7 +203,7 @@ const CityPage = () => {
                             onBuild={handleBuildingSelect}
                             unlockedBuildingIds={unlockedBuildingIds}
                             unavailableBuildingReasons={unavailableBuildingReasons}
-                            blocked={traceStatus.isBesieged}
+                            blocked={signatureStatus.isBesieged}
                             blockedReason={BESIEGED_BUILD_BLOCK_REASON}
                         />
                     }
@@ -490,8 +490,8 @@ function AdjacencyEffectSummary({building}: {building: PlacedBuilding}) {
     const hasProvidedAdd = hasUpkeepValues(building.providedUpkeepAdd);
     const hasRequiredMul = hasUpkeepValues(building.requiredUpkeepMul);
     const hasProvidedMul = hasUpkeepValues(building.providedUpkeepMul);
-    const hasTraceEffect = Boolean(building.traceAdd) || (building.traceMul ?? 1) !== 1;
-    const hasAnyEffect = hasRequiredAdd || hasProvidedAdd || hasRequiredMul || hasProvidedMul || hasTraceEffect;
+    const hasSignatureEffect = Boolean(building.signatureAdd) || (building.signatureMul ?? 1) !== 1;
+    const hasAnyEffect = hasRequiredAdd || hasProvidedAdd || hasRequiredMul || hasProvidedMul || hasSignatureEffect;
 
     if (!hasAnyEffect) {
         return <p className={s.emptyStats}>No adjacent modifiers applied.</p>;
@@ -504,15 +504,15 @@ function AdjacencyEffectSummary({building}: {building: PlacedBuilding}) {
             {hasProvidedAdd && <MetricGroup title="Output added" values={building.providedUpkeepAdd ?? {}} />}
             {hasRequiredMul && <MetricGroup title="Cost multiplier" values={building.requiredUpkeepMul ?? {}} />}
             {hasProvidedMul && <MetricGroup title="Output multiplier" values={building.providedUpkeepMul ?? {}} />}
-            {hasTraceEffect && (
+            {hasSignatureEffect && (
                 <dl className={s.metricList}>
                     <div className={s.metricRow}>
-                        <dt>Trace add</dt>
-                        <dd>{building.traceAdd ?? 0}</dd>
+                        <dt>Signature add</dt>
+                        <dd>{building.signatureAdd ?? 0}</dd>
                     </div>
                     <div className={s.metricRow}>
-                        <dt>Trace multiplier</dt>
-                        <dd>{building.traceMul ?? 1}</dd>
+                        <dt>Signature multiplier</dt>
+                        <dd>{building.signatureMul ?? 1}</dd>
                     </div>
                 </dl>
             )}

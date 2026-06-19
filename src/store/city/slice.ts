@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
-import {INITIAL_CITY_CELL_RADIUS, TRACE_PER_DEMOLISHED_HEX, TRACE_PER_SURVIVED_SIEGE} from "../../data/constants.ts";
+import {INITIAL_CITY_CELL_RADIUS, FOOTPRINT_PER_DEMOLISHED_HEX, FOOTPRINT_PER_SURVIVED_SIEGE} from "../../data/constants.ts";
 import { DEFAULT_BATTLE_BACKGROUND_ID } from "../../data/battle/backgrounds.ts";
 import {coordKey} from "../../pages/City/Components/CityHex/hexUtils.ts";
 import type {CityState} from "../../models/store/city.ts";
@@ -78,7 +78,7 @@ const getDemolishedHexKeys = (hexes: HexCell[], targetHex: HexCell): string[] =>
 const initialState: CityState = {
     hexes: getInitialHexes(),
     cellRadius: INITIAL_CITY_CELL_RADIUS,
-    scarTrace: 0,
+    cityFootprint: 0,
     battlefield: {
         backgroundId: DEFAULT_BATTLE_BACKGROUND_ID,
         detailSeed: 1,
@@ -165,7 +165,7 @@ export const citySlice = createSlice({
             if (!targetHex || targetHex.kind !== "city" || (!targetHex.buildingKey && !targetHex.partOfStructureId)) return;
 
             const demolishedHexKeys = new Set(getDemolishedHexKeys(state.hexes, targetHex));
-            state.scarTrace += demolishedHexKeys.size * TRACE_PER_DEMOLISHED_HEX;
+            state.cityFootprint += demolishedHexKeys.size * FOOTPRINT_PER_DEMOLISHED_HEX;
             state.hexes.forEach(hex => {
                 if (!demolishedHexKeys.has(hex.cellKey)) return;
 
@@ -176,7 +176,7 @@ export const citySlice = createSlice({
             });
         },
         recordSurvivedSiege: (state) => {
-            state.scarTrace += TRACE_PER_SURVIVED_SIEGE;
+            state.cityFootprint += FOOTPRINT_PER_SURVIVED_SIEGE;
         },
     },
 })

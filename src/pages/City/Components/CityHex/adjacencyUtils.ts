@@ -14,10 +14,10 @@ import {addUpkeep, applyResourceModifier, deductUpkeep, multiplyUpkeep} from "./
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
 import {ALL_WALL_BUILDINGS} from "../../../../data/wall/index.ts";
 import {hexesWithinRadius} from "./hexUtils.ts";
-import {TRACE_PER_HEX} from "../../../../data/constants.ts";
+import {SIGNATURE_PER_HEX} from "../../../../data/constants.ts";
 import {deepClone} from "../../../../utils/deepClone.ts";
 import {
-    cityVisibilityToHomogeneousValueEffect,
+    citySignatureToHomogeneousValueEffect,
     homogeneousValueTotalsToUpkeepAmount,
     upkeepAmountToHomogeneousValueEffects
 } from "../../../../models/homogeneousValueAdapters.ts";
@@ -68,8 +68,8 @@ function accumulateEffect(
             effect.providedUpkeepAdd
         );
     }
-    if (typeof effect.traceAdd === "number") {
-        initial.traceAdd = (initial.traceAdd ?? 0) + effect.traceAdd;
+    if (typeof effect.signatureAdd === "number") {
+        initial.signatureAdd = (initial.signatureAdd ?? 0) + effect.signatureAdd;
     }
 
     // multiplicative
@@ -94,8 +94,8 @@ function accumulateEffect(
         ];
     }
 
-    if (typeof effect.traceMul === "number") {
-        initial.traceMul = (initial.traceMul ?? 1) * effect.traceMul;
+    if (typeof effect.signatureMul === "number") {
+        initial.signatureMul = (initial.signatureMul ?? 1) * effect.signatureMul;
     }
 
     if (effect.homogeneousValueEffects) {
@@ -139,13 +139,13 @@ export const placeCityBuildings = (
             row,
             providedUpkeepAdd: {},
             requiredUpkeepAdd: {},
-            traceAdd: 0,
+            signatureAdd: 0,
             providedUpkeepMul: {},
             requiredUpkeepMul: {},
-            traceMul: 1,
+            signatureMul: 1,
             effectiveProvidedUpkeep: {},
             effectiveRequiredUpkeep: {},
-            effectiveTrace: 0,
+            effectiveSignature: 0,
             effectiveHomogeneousValueEffects: [...(building.homogeneousValueEffects ?? [])]
         } : undefined;
         if (placed) placedCity.set(cellKey, placed);
@@ -188,34 +188,34 @@ export const placeCityBuildings = (
 
     //3) Apply aggregated effects
     placedCity.forEach((building) => {
-        const { requiredUpkeepAdd, requiredUpkeepMul, providedUpkeepAdd, providedUpkeepMul, outputMul, traceAdd, traceMul } = building;
+        const { requiredUpkeepAdd, requiredUpkeepMul, providedUpkeepAdd, providedUpkeepMul, outputMul, signatureAdd, signatureMul } = building;
         const exactProvidedUpkeep = multiplyUpkeep(providedUpkeepAdd ?? {}, providedUpkeepMul!);
         const legacyProvidedUpkeep = toOutputModifiers(outputMul).reduce(
             (current, modifier) => applyResourceModifier(current, modifier),
             exactProvidedUpkeep,
         );
         const legacyRequiredUpkeep = multiplyUpkeep(requiredUpkeepAdd ?? {}, requiredUpkeepMul!);
-        const legacyTrace = (traceAdd ?? 0) * (traceMul ?? 1);
+        const legacySignature = (signatureAdd ?? 0) * (signatureMul ?? 1);
         building.effectiveHomogeneousValueEffects = [
             ...(building.homogeneousValueEffects ?? []),
             ...upkeepAmountToHomogeneousValueEffects(legacyProvidedUpkeep, "production"),
             ...upkeepAmountToHomogeneousValueEffects(legacyRequiredUpkeep, "upkeep"),
-            ...cityVisibilityToHomogeneousValueEffect(legacyTrace),
+            ...citySignatureToHomogeneousValueEffect(legacySignature),
         ];
 
         const resolvedBuildingValues = resolveHomogeneousValueContributions(building.effectiveHomogeneousValueEffects);
         building.effectiveProvidedUpkeep = homogeneousValueTotalsToUpkeepAmount(getProducedValues(resolvedBuildingValues));
         building.effectiveRequiredUpkeep = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedBuildingValues));
-        building.effectiveTrace = getProducedValues(resolvedBuildingValues)[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0;
+        building.effectiveSignature = getProducedValues(resolvedBuildingValues)[HOMOGENEOUS_VALUE_IDS.citySignature] ?? 0;
     })
 
     return placedCity
 }
 
-export function resolveCityUpkeepAndTrace(
+export function resolveCityUpkeepAndSignature(
     hexes: HexCell[],
     city: PlacedCityMap,
-    scarTrace = 0,
+    cityFootprint = 0,
 ): CityResolution {
     const resolvedCity: CityResolution = {
         requiredUpkeep: {} as UpkeepAmount,
@@ -229,13 +229,13 @@ export function resolveCityUpkeepAndTrace(
         resolvedWallSegments: [],
         producedHomogeneousValues: {},
         upkeepHomogeneousValues: {},
-        buildingsTrace: 0,
-        territoryTrace: 0,
-        scarTrace,
-        effectiveTrace: 0,
+        buildingsSignature: 0,
+        territorySignature: 0,
+        cityFootprint,
+        effectiveSignature: 0,
     };
 
-    resolvedCity.territoryTrace = hexes.length * TRACE_PER_HEX;
+    resolvedCity.territorySignature = hexes.length * SIGNATURE_PER_HEX;
     const buildingEntities: HomogeneousValueEntitySource[] = [...city.values()].map((building) => ({
             id: `${building.column}:${building.row}`,
             entityType: "building",
@@ -283,10 +283,10 @@ export function resolveCityUpkeepAndTrace(
     resolvedCity.upkeepHomogeneousValues = getUpkeepValues(resolvedCity.homogeneousResolvedValues);
     resolvedCity.providedUpkeep = homogeneousValueTotalsToUpkeepAmount(resolvedCity.producedHomogeneousValues);
     resolvedCity.requiredUpkeep = homogeneousValueTotalsToUpkeepAmount(resolvedCity.upkeepHomogeneousValues);
-    resolvedCity.buildingsTrace = resolvedCity.producedHomogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0;
+    resolvedCity.buildingsSignature = resolvedCity.producedHomogeneousValues[HOMOGENEOUS_VALUE_IDS.citySignature] ?? 0;
 
     resolvedCity.effectiveUpkeep = deductUpkeep(resolvedCity.providedUpkeep, resolvedCity.requiredUpkeep);
-    resolvedCity.effectiveTrace = resolvedCity.buildingsTrace + resolvedCity.territoryTrace + resolvedCity.scarTrace;
+    resolvedCity.effectiveSignature = resolvedCity.buildingsSignature + resolvedCity.territorySignature + resolvedCity.cityFootprint;
 
     return resolvedCity
 }

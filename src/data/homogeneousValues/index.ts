@@ -12,9 +12,10 @@ export const HOMOGENEOUS_VALUE_IDS = {
     resourceFungi: "resource.fungi",
     resourcePlants: "resource.plants",
     resourceAnimals: "resource.animals",
-    cityVisibility: "city.visibility",
+    citySignature: "city.signature",
     cityControlledTerritory: "city.controlledTerritory",
     cityControlledTerritoryGrowthStep: "city.controlledTerritoryGrowthStep",
+    cityFootprint: "city.footprint",
     monsterHpFlat: "monster.hpFlat",
     monsterHpMultiplier: "monster.hpMultiplier",
     monsterSpeedFlat: "monster.speedFlat",
@@ -108,16 +109,16 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         keywords: ["resource", "support", "output", "spendable", "display_bar", "nature", "animals", "display.integer"],
         initialValue: 0,
     },
-    [HOMOGENEOUS_VALUE_IDS.cityVisibility]: {
-        id: HOMOGENEOUS_VALUE_IDS.cityVisibility,
-        label: "City Visibility",
-        keywords: ["city", "visibility", "trace", "display.integer"],
+    [HOMOGENEOUS_VALUE_IDS.citySignature]: {
+        id: HOMOGENEOUS_VALUE_IDS.citySignature,
+        label: "City Signature",
+        keywords: ["city", "signature", "display.kilometers"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.cityControlledTerritory]: {
         id: HOMOGENEOUS_VALUE_IDS.cityControlledTerritory,
         label: "Controlled Territory",
-        keywords: ["city", "territory", "resilience", "display.integer"],
+        keywords: ["city", "territory", "display.kilometers"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.cityControlledTerritoryGrowthStep]: {
@@ -125,6 +126,12 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         label: "Controlled Territory Growth Step",
         keywords: ["city", "territory", "growth", "display.multiplier"],
         initialValue: 1.2,
+    },
+    [HOMOGENEOUS_VALUE_IDS.cityFootprint]: {
+        id: HOMOGENEOUS_VALUE_IDS.cityFootprint,
+        label: "City Footprint",
+        keywords: ["city", "footprint", "display.kilometers"],
+        initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterHpFlat]: {
         id: HOMOGENEOUS_VALUE_IDS.monsterHpFlat,

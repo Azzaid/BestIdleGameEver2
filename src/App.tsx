@@ -17,7 +17,7 @@ import IdAuditPage from './pages/IdAudit/IdAuditPage.tsx'
 import {THEME_NAMES} from "./models/Theme.ts";
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedSelector} from "./store/hooks.ts";
-import {selectCityTraceStatus} from "./store/upkeep/selectors.ts";
+import {selectCitySignatureStatus} from "./store/upkeep/selectors.ts";
 import {selectHasAnyTowerBuild} from "./store/towers/selectors.ts";
 import {useTypedDispatch} from "./store/hooks.ts";
 import {selectIsDebugModeEnabled} from "./store/debug/selectors.ts";
@@ -43,10 +43,10 @@ function ThemeSwitcher() {
 function AppFrame() {
   const dispatch = useTypedDispatch();
   const location = useLocation();
-  const traceStatus = useTypedSelector(selectCityTraceStatus);
+  const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
   const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
-  const isBuildBlocked = traceStatus.isBesieged && hasAnyTowerBuild;
+  const isBuildBlocked = signatureStatus.isBesieged && hasAnyTowerBuild;
   const shouldShowUpkeepBar = location.pathname !== "/" && location.pathname !== "/battle";
   const shouldShowCityExpansionControl = location.pathname === "/city";
 
@@ -74,7 +74,7 @@ function AppFrame() {
                               <Link className={isBuildBlocked ? appTheme.navBarLinkBlocked : appTheme.navBarLink} to="/build">Build</Link>
                           </li>
                           <li>
-                              <Link className={traceStatus.isBesieged ? appTheme.navBarLinkBlocked : appTheme.navBarLink} to="/research">Research</Link>
+                              <Link className={signatureStatus.isBesieged ? appTheme.navBarLinkBlocked : appTheme.navBarLink} to="/research">Research</Link>
                           </li>
                           <li>
                               <Link className={appTheme.navBarLink} to="/city">City</Link>
@@ -109,7 +109,7 @@ function AppFrame() {
                           <Route path="/" element={<BattlePage />} />
                           <Route path="/battle" element={<BattlePage />} />
                           <Route path="/build" element={isBuildBlocked ? <BlockedPage title="Build Blocked" /> : <BuildPage/>} />
-                          <Route path="/research" element={traceStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />} />
+                          <Route path="/research" element={signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />} />
                           <Route path="/city" element={<CityPage />} />
                           <Route path="/statistics" element={<StatisticsPage />} />
                           <Route path="/progression" element={<ProgressionPage />} />

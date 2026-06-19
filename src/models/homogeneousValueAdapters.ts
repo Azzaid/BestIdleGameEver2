@@ -46,13 +46,13 @@ export function homogeneousValueTotalsToUpkeepAmount(totals: Record<HomogeneousV
     );
 }
 
-export function cityVisibilityToHomogeneousValueEffect(trace: number): HomogeneousValueEffect[] {
-    if (trace === 0) return [];
+export function citySignatureToHomogeneousValueEffect(signature: number): HomogeneousValueEffect[] {
+    if (signature === 0) return [];
 
     return [{
-        valueId: HOMOGENEOUS_VALUE_IDS.cityVisibility,
+        valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
         additionalKeywords: ["production"],
-        additive: trace,
+        additive: signature,
     }];
 }
 

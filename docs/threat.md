@@ -141,9 +141,9 @@ Different categories generate different amounts.
 
 ---
 
-# Demolition Trace
+# Demolition Footprint
 
-Demolishing a building permanently increases the city's base Threat.
+Demolishing a building permanently increases the city's footprint.
 
 Reason:
 
@@ -156,13 +156,13 @@ The settlement becomes easier to find.
 This creates a direct tradeoff:
 
 - keep obsolete one-shot buildings and lose city space;
-- demolish them and permanently raise city visibility.
+- demolish them and permanently raise city footprint.
 
-Early disposable buildings should therefore create long-term pressure. They either occupy precious land or leave a visible scar on the city when removed.
+Early disposable buildings should therefore create long-term pressure. They either occupy precious land or leave a visible footprint on the city when removed.
 
-Demolition Threat is part of the city's persistent local history. It should not naturally decay during the same settlement lifecycle.
+Demolition footprint is part of the city's persistent local history. It should not naturally decay during the same settlement lifecycle.
 
-Migration is the clean way to escape accumulated demolition scars.
+Migration is the clean way to escape accumulated demolition footprint.
 
 ---
 

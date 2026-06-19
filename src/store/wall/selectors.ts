@@ -63,7 +63,7 @@ export const selectWallResolution = createSelector(
         resolution.homogeneousValues = resolvedWallCity.values;
         resolution.requiredUpkeep = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolution.homogeneousResolvedValues));
         resolution.resilience = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0;
-        resolution.camoLevel = Math.max(0, -(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0));
+        resolution.camoLevel = Math.max(0, -(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.citySignature] ?? 0));
         resolution.ignoredThreat = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0;
 
         return resolution;

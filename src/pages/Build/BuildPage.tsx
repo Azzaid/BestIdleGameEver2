@@ -14,7 +14,7 @@ import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
 import { selectActiveTower, selectActiveTowerDraftAssembly, selectAvailableTowerList, selectHasAnyTowerBuild } from '../../store/towers/selectors.ts';
 import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTower, selectTowerDraftPart } from '../../store/towers/slice.ts';
 import { selectPurchasedTechsIds } from '../../store/research/selectors.ts';
-import { selectCityResolution, selectCityTraceStatus, selectResolvedEffectiveActiveTowerDraft } from '../../store/upkeep/selectors.ts';
+import { selectCityResolution, selectCitySignatureStatus, selectResolvedEffectiveActiveTowerDraft } from '../../store/upkeep/selectors.ts';
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
 import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
 import { TowerAssemblyPreview } from './TowerAssemblyPreview.tsx';
@@ -110,12 +110,12 @@ const BuildPage = () => {
   const resolvedTower = useTypedSelector(selectResolvedEffectiveActiveTowerDraft);
   const purchasedTechIds = useTypedSelector(selectPurchasedTechsIds);
   const cityResolution = useTypedSelector(selectCityResolution);
-  const traceStatus = useTypedSelector(selectCityTraceStatus);
+  const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>('platform');
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 8 });
-  const canModifyTower = !traceStatus.isBesieged || !hasAnyTowerBuild;
+  const canModifyTower = !signatureStatus.isBesieged || !hasAnyTowerBuild;
 
   const selectSlot = (slot: TowerPartSlot) => {
     setActiveTab(slot);

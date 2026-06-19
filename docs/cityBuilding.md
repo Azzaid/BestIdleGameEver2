@@ -199,7 +199,7 @@ Different vectors generate different amounts.
 
 ---
 
-# Demolition and City Scars
+# Demolition and City Footprint
 
 Demolishing buildings is allowed, but it is not clean.
 
@@ -207,19 +207,19 @@ When a building is removed:
 
 - the hex becomes available again;
 - the building's normal active effects end;
-- the city gains permanent demolition Threat.
+- the city gains permanent footprint.
 
 Lore reason:
 
-Rubble, trash, broken machinery, spoiled biomass, ritual residue, and other remains must be hauled outside the walls to clear the site. Those dumps, scars, smells, lights, and disturbances attract monsters.
+Rubble, trash, broken machinery, spoiled biomass, ritual residue, and other remains must be hauled outside the walls to clear the site. Those dumps, footprints, smells, lights, and disturbances attract monsters.
 
 This makes rebuilding a meaningful decision.
 
 The player can keep outdated buildings and let them occupy land.
 
-Or the player can demolish them and permanently increase the city's visibility.
+Or the player can demolish them and permanently increase the city's footprint.
 
-This is especially important for early one-use buildings. They should not be harmless stepping stones forever. They either clog the city layout or pollute the visibility budget.
+This is especially important for early one-use buildings. They should not be harmless stepping stones forever. They either clog the city layout or grow the city's signature budget.
 
 ---
 
@@ -628,7 +628,7 @@ High Openness:
 Openness creates a core city-building tradeoff:
 
 - higher Openness increases maximum city size;
-- higher Openness multiplies city visibility/Threat;
+- higher Openness multiplies city signature/Threat;
 - lower Openness hides the city better but limits long-term expansion.
 
 Advanced technologies, better camouflage, stronger containment, and improved logistics let the player exploit more open terrain.

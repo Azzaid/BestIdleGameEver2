@@ -6,9 +6,9 @@ import * as styles from './BattlePage.css.ts';
 import { selectCityBattlefield, selectCityHexes, selectCitySideHexes } from "../../store/city/selectors.ts";
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from "../../data/constants.ts";
 import { Link } from "react-router-dom";
-import { recordThreatReached } from "../../store/upkeep/slice.ts";
+import { recordControlledTerritoryReached } from "../../store/upkeep/slice.ts";
 import {
-    selectCityTraceStatus,
+    selectCitySignatureStatus,
     selectEffectiveWallResolution,
     selectResolvedEffectiveAvailableTowers,
     selectTowerAwareCityResolution,
@@ -49,7 +49,7 @@ const BattlePage = () => {
     const cityHexes = useTypedSelector(selectCityHexes);
     const cityBattlefield = useTypedSelector(selectCityBattlefield);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
-    const traceStatus = useTypedSelector(selectCityTraceStatus);
+    const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const wallResolution = useTypedSelector(selectEffectiveWallResolution);
     const controlledTerritoryGrowthStep = useTypedSelector(selectControlledTerritoryGrowthStep);
@@ -65,9 +65,9 @@ const BattlePage = () => {
                 wallTopDevelopmentVector: hex.wallTopDevelopmentVector ?? null,
             }));
     }, [cityHexes]);
-    const [battleMode, setBattleMode] = useState<BattleMode>(() => traceStatus.isBesieged ? "siege" : "pressure");
-    const isSiege = battleMode === "siege" && traceStatus.isBesieged;
-    const cityThreat = Math.max(0, cityResolution.effectiveTrace);
+    const [battleMode, setBattleMode] = useState<BattleMode>(() => signatureStatus.isBesieged ? "siege" : "pressure");
+    const isSiege = battleMode === "siege" && signatureStatus.isBesieged;
+    const cityThreat = Math.max(0, cityResolution.effectiveSignature);
     const targetThreat = isSiege
         ? cityThreat * controlledTerritoryGrowthStep
         : cityThreat;
@@ -138,7 +138,7 @@ const BattlePage = () => {
     }, [battleKey, initialThreat, targetThreat, wallResolution.resilience]);
     const handleBattleEnded = useCallback((result: BattleResult) => {
         setMetrics(result);
-        dispatch(recordThreatReached(result.threat));
+        dispatch(recordControlledTerritoryReached(result.threat));
 
         if (result.outcome === "held") {
             dispatch(recordSurvivedSiege());

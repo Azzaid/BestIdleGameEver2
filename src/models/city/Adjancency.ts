@@ -21,11 +21,11 @@ export type HexDirection =
 export interface EffectDelta {
     requiredUpkeepAdd?: UpkeepAmount;
     providedUpkeepAdd?: UpkeepAmount;
-    traceAdd?: number;
+    signatureAdd?: number;
     requiredUpkeepMul?: UpkeepAmount;
     providedUpkeepMul?: UpkeepAmount;
     outputMul?: ResourceOutputModifier | ResourceOutputModifier[];
-    traceMul?: number;
+    signatureMul?: number;
     homogeneousValueEffects?: HomogeneousValueEffect[];
 }
 
@@ -59,7 +59,7 @@ export type ExpandRule = {
 export interface HexResolvedStats extends EffectDelta {
     effectiveRequiredUpkeep: UpkeepAmount;
     effectiveProvidedUpkeep: UpkeepAmount;
-    effectiveTrace: number;
+    effectiveSignature: number;
     effectiveHomogeneousValueEffects: HomogeneousValueEffect[];
 }
 
@@ -77,8 +77,8 @@ export interface CityResolution {
     homogeneousResolvedValues: HomogeneousResolvedValueMap;
     producedHomogeneousValues: Record<string, number>;
     upkeepHomogeneousValues: Record<string, number>;
-    territoryTrace: number;
-    buildingsTrace: number;
-    scarTrace: number;
-    effectiveTrace: number;
+    territorySignature: number;
+    buildingsSignature: number;
+    cityFootprint: number;
+    effectiveSignature: number;
 }

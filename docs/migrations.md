@@ -89,7 +89,7 @@ Examples:
 - region exhausted;
 - better location discovered;
 - threat becoming difficult to manage;
-- demolition scars accumulating too much visibility;
+- demolition footprint accumulating too much signature;
 - old one-use buildings clogging valuable city space;
 - specific ending requirements;
 - specialist accumulation strategy.
@@ -102,11 +102,11 @@ Not a punishment.
 
 # Demolition Pressure
 
-Rebuilding a city creates permanent scars.
+Rebuilding a city creates permanent footprint.
 
 When buildings are demolished, the city clears internal space but pushes rubble, trash, ritual residue, broken machines, contaminated biomass, and other waste outside the walls.
 
-This permanently increases that city's visibility/Threat.
+This permanently increases that city's signature/Threat.
 
 The player therefore faces a long-term settlement question:
 

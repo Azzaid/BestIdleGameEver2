@@ -231,7 +231,7 @@ Implementation direction:
 
 - the core hex owns the multistructure gameplay identity;
 - every part stores the multistructure id and a pointer to the core hex;
-- selection, adjacency, economy, trace, and research checks resolve structure parts through the core;
+- selection, adjacency, economy, signature, and research checks resolve structure parts through the core;
 - each part may store its own sprite id so the structure can become visually integrated without duplicating gameplay effects.
 
 The player sees:

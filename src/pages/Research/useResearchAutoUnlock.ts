@@ -5,7 +5,7 @@ import {canPurchaseResearch} from "../../models/research/researchGraph.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
 import {selectAetherAtmosphereLevels} from "../../store/homogeneousValues/selectors.ts";
-import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
+import {selectCityResolution, selectCitySignatureStatus} from "../../store/upkeep/selectors.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {purchaseTech} from "../../store/research/slice.ts";
 
@@ -42,7 +42,7 @@ export function useResearchAutoUnlock(): void {
     const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
     const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
     const aetherAtmosphereLevels = useTypedSelector(selectAetherAtmosphereLevels);
-    const traceStatus = useTypedSelector(selectCityTraceStatus);
+    const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const notifiedTechIdsRef = useRef(new Set<string>());
 
     const builtBuildingIds = useMemo(() => {
@@ -59,7 +59,7 @@ export function useResearchAutoUnlock(): void {
             completeStructureIds,
             effectiveUpkeep,
             aetherAtmosphereLevels,
-            isBesieged: traceStatus.isBesieged,
+            isBesieged: signatureStatus.isBesieged,
         });
 
         for (const techId of toUnlock) {
@@ -84,6 +84,6 @@ export function useResearchAutoUnlock(): void {
         dispatch,
         effectiveUpkeep,
         purchasedTechsIds,
-        traceStatus.isBesieged,
+        signatureStatus.isBesieged,
     ]);
 }

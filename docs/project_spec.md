@@ -35,7 +35,7 @@ The current app is a frontend-only prototype with multiple routed views:
 - Battle: Pixi/canvas battlefield rendering with enemy spawning, tower fire, projectiles, health bars, wall pressure, and battle state.
 - Build: tower assembly from component slots with resolved stats, support costs, warnings, keywords, and synergies.
 - Research: radial research tree with unlockable nodes and vector coloring.
-- City: SVG hex city visualization with clickable city and wall tiles, build panels, resolved stats, trace/resilience state, and wall-specific construction.
+- City: SVG hex city visualization with clickable city and wall tiles, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
 - Statistics: sample time-series charts.
 
 The prototype has no backend and no formal persistence system yet.
@@ -233,7 +233,7 @@ Important rules:
 
 The key economic question is: can this city sustain what the player wants to build next?
 
-## 9. Threat, Trace, and Containment
+## 9. Threat, Signature, and Containment
 
 Threat is the price of growth. It represents how noticeable and disruptive the city has become.
 
@@ -266,16 +266,16 @@ Threat interacts with:
 
 Containment is battle-proven defensive capacity. It gates expansion, research, megaprojects, and some endings. The player may temporarily exceed safe threat/containment margins, creating threat debt, blocked growth, and stronger attacks rather than immediate city destruction.
 
-Demolishing buildings permanently increases the current city's base visibility/threat. The in-world explanation is that rubble, waste, damaged machinery, polluted biomass, ritual residue, and other remains must be moved outside the walls to reclaim internal space, and those external scars attract monsters. Obsolete early buildings therefore either occupy land or pollute the city's visibility budget. Migration is the clean way to escape accumulated demolition scars.
+Demolishing buildings permanently increases the current city's footprint. The in-world explanation is that rubble, waste, damaged machinery, polluted biomass, ritual residue, and other remains must be moved outside the walls to reclaim internal space, and those external footprints attract monsters. Obsolete early buildings therefore either occupy land or grow the city's signature budget. Migration is the clean way to escape accumulated demolition footprint.
 
-Current prototype terminology also uses city trace and resilience:
+Current prototype terminology uses city signature and controlled territory:
 
-- City trace is displayed in the shared upkeep bar as a capped meter against current city resilience.
-- The meter fill never overflows beyond resilience and shifts from gray through green/yellow to red as it approaches the cap.
-- A city is besieged when trace is greater than resilience.
+- City signature is displayed in the shared upkeep bar as a capped meter against current controlled territory.
+- The meter fill never overflows beyond controlled territory and shifts from gray through green/yellow to red as it approaches the cap.
+- A city is besieged when signature is greater than controlled territory.
 - The city starts with base wall segments, no committed tower, and an initial besieged state caused by the noise of setting camp.
 
-Future naming should reconcile `Threat`, `Trace`, `Visibility`, `Attention`, `Danger`, and related candidates.
+Future naming should reconcile `Threat`, `Signature`, `Attention`, `Danger`, and related candidates.
 
 ## 10. City Building
 
@@ -286,9 +286,9 @@ City rules and goals:
 - The city uses a hex grid.
 - Land is acquired through expansion.
 - Expansion increases available land, flexibility, perimeter, complexity, and threat.
-- Each settlement site has Openness, which raises maximum city size while multiplying city visibility/threat.
+- Each settlement site has Openness, which raises maximum city size while multiplying city signature/threat.
 - Buildings produce support, consume support, create threat, reduce threat, strengthen neighbors, unlock research, form multistructures, and may create crises.
-- Demolishing buildings frees land but leaves permanent demolition threat on the current city.
+- Demolishing buildings frees land but leaves permanent city footprint on the current city.
 - Placement matters through adjacency and district formation.
 - The city should feel like a living puzzle-machine.
 
@@ -333,13 +333,13 @@ Wall buildings may define:
 
 Current battle/wall behavior:
 
-- Wall buildings do not define the city trace cap, but their combined resilience defines how much active siege pressure the wall can endure during battle.
+- Wall buildings do not define controlled territory, but their combined resilience defines how much active siege pressure the wall can endure during battle.
 - Battle uses a growing threat counter instead of a player-facing wave counter.
-- Threat starts at 80% of current city trace and grows until it reaches city trace or the siege breaks the wall line.
-- If the city is not besieged, battle still runs as constant wall pressure with threat locked to current city trace.
+- Threat starts at 80% of current city signature and grows until it reaches city signature or the siege breaks the wall line.
+- If the city is not besieged, battle still runs as constant wall pressure with threat locked to current city signature.
 - Enemies stop once their hit radius reaches the wall.
 - Stopped enemies add siege pressure equal to their pressure reduced by the wall's ignored threat.
-- If combined siege pressure exceeds combined wall resilience, battle ends before the city trace target and the city retreats by one radius.
+- If combined siege pressure exceeds combined wall resilience, battle ends before the city signature target and the city retreats by one radius.
 - On retreat, cells outside the new radius are lost and the new top row is rebuilt as wall.
 - While besieged, research and city/wall building actions are disabled.
 - Tower rebuilding is blocked while besieged, except when the player has no committed tower yet.
@@ -440,7 +440,7 @@ Core rules:
 - Multistructures never appear automatically.
 - The player selects the core and explicitly confirms the upgrade.
 - The City page lists ready and incomplete multistructure candidates for the selected core. Ready candidates expose a Transform action unless the city is besieged.
-- Confirming a transform links the core and matched satellites into one multistructure. Each part stores the multistructure id and the core hex key, while the core owns the gameplay identity used by selection, adjacency, economy, trace, and research checks.
+- Confirming a transform links the core and matched satellites into one multistructure. Each part stores the multistructure id and the core hex key, while the core owns the gameplay identity used by selection, adjacency, economy, signature, and research checks.
 - Structure parts may store their own sprite id, allowing future multistructure art to vary by hex without changing gameplay calculations.
 - Required satellites must be adjacent to the core, not arranged in fixed shapes.
 - Blob-shaped layouts are allowed.
@@ -545,9 +545,9 @@ The UI should feel like one coherent world centered on the city.
 
 Primary visual priorities:
 
-1. Threat or trace.
+1. Threat or signature.
 2. Support.
-3. Containment or resilience.
+3. Containment or controlled territory.
 4. Expansion opportunities.
 5. Research opportunities.
 
@@ -653,7 +653,7 @@ Potential future sharing:
 Open design questions:
 
 - Final game title.
-- Final name for Threat/Trace/Visibility/Attention.
+- Final name for Threat/Signature/Attention.
 - Exact threat formula and whether threat decays naturally.
 - Exact demolition threat values and Openness size/threat scaling.
 - Target city size and whether city shape matters mechanically.
@@ -681,7 +681,7 @@ Prototype success criteria:
 
 - City building feels good.
 - Combat validates planning.
-- Threat/trace is understandable.
+- Threat/signature is understandable.
 - Support economy feels distinct from idle stockpiling.
 - Multistructures are satisfying.
 - Migration feels meaningful.

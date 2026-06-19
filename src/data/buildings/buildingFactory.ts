@@ -5,7 +5,7 @@ import type {MultiHexStructureRule} from "../../models/city/MultiHexStructure.ts
 import type {DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import type {UpkeepAmount} from "../../models/Upkeep.ts";
 import {
-  cityVisibilityToHomogeneousValueEffect,
+  citySignatureToHomogeneousValueEffect,
   upkeepAmountToHomogeneousValueEffects,
 } from "../../models/homogeneousValueAdapters.ts";
 
@@ -24,7 +24,7 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
     id: string,
     name: string,
     description: string,
-    trace: number,
+    signature: number,
     providedUpkeep: UpkeepAmount = {},
     requiredUpkeep: UpkeepAmount = {},
     keywords: BuildingKeyword[] = [],
@@ -40,7 +40,7 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
       homogeneousValueEffects: [
         ...upkeepAmountToHomogeneousValueEffects(providedUpkeep, "production"),
         ...upkeepAmountToHomogeneousValueEffects(requiredUpkeep, "upkeep"),
-        ...cityVisibilityToHomogeneousValueEffect(trace),
+        ...citySignatureToHomogeneousValueEffect(signature),
       ],
       adjacency: [],
       adjacencyDescription: "Not affected",
@@ -53,13 +53,13 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
     id: string,
     name: string,
     description: string,
-    trace: number,
+    signature: number,
     providedUpkeep: UpkeepAmount = {},
     requiredUpkeep: UpkeepAmount = {},
     keywords: BuildingKeyword[] = [],
   ): Building {
     return {
-      ...building(id, name, description, trace, providedUpkeep, requiredUpkeep, keywords),
+      ...building(id, name, description, signature, providedUpkeep, requiredUpkeep, keywords),
       isMultiHex: true,
       isMultistructure: true,
     };

@@ -1,8 +1,8 @@
-export const TRACE_PER_HEX = 5;
+export const SIGNATURE_PER_HEX = 5;
 
-export const TRACE_PER_DEMOLISHED_HEX = 5;
+export const FOOTPRINT_PER_DEMOLISHED_HEX = 5;
 
-export const TRACE_PER_SURVIVED_SIEGE = 1;
+export const FOOTPRINT_PER_SURVIVED_SIEGE = 1;
 
 export const INITIAL_CITY_CELL_RADIUS = 1;
 

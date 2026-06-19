@@ -16,7 +16,7 @@ const emptyResolvedValue = {
 };
 
 export const selectHomogeneousValueTotals = createSelector(
-    [selectTowerAwareCityResolution, (state: RootState) => state.upkeep.resilience],
+    [selectTowerAwareCityResolution, (state: RootState) => state.upkeep.controlledTerritory],
     (cityResolution, controlledTerritory): HomogeneousValueTotals => {
         const initialTotals = createInitialHomogeneousValueTotals();
         const totals = {...initialTotals};
@@ -25,7 +25,9 @@ export const selectHomogeneousValueTotals = createSelector(
             totals[valueId] += (cityResolution.homogeneousValues[valueId] ?? initialTotals[valueId] ?? 0) - (initialTotals[valueId] ?? 0);
         }
 
+        totals[HOMOGENEOUS_VALUE_IDS.citySignature] = cityResolution.effectiveSignature;
         totals[HOMOGENEOUS_VALUE_IDS.cityControlledTerritory] = controlledTerritory;
+        totals[HOMOGENEOUS_VALUE_IDS.cityFootprint] = cityResolution.cityFootprint;
 
         return totals;
     },
@@ -39,9 +41,9 @@ export const selectHomogeneousValue = createSelector(
     (totals, valueId): number => totals[valueId] ?? 0,
 );
 
-export const selectCityVisibility = createSelector(
+export const selectCitySignature = createSelector(
     [selectTowerAwareCityResolution],
-    (cityResolution): number => cityResolution.producedHomogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0,
+    (cityResolution): number => cityResolution.effectiveSignature,
 );
 
 export const selectCityResolvedProducedValue = createSelector(
@@ -113,7 +115,7 @@ export const selectAetherAtmosphereLevels = createSelector(
 );
 
 export const selectControlledTerritory = createSelector(
-    [(state: RootState) => state.upkeep.resilience],
+    [(state: RootState) => state.upkeep.controlledTerritory],
     (controlledTerritory): number => controlledTerritory,
 );
 

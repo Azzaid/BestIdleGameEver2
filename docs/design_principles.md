@@ -351,9 +351,9 @@ Evolve
 
 ## City Signature Interaction
 
-Because biological structures grow and evolve instead of being demolished, the branch naturally produces fewer permanent city traces.
+Because biological structures grow and evolve instead of being demolished, the branch naturally produces less permanent city footprint.
 
-Biological structures may also become one of the primary methods of reducing accumulated city traces.
+Biological structures may also become one of the primary methods of reducing accumulated city footprint.
 
 ## Environmental Requirements
 

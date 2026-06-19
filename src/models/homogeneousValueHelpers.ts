@@ -56,6 +56,8 @@ export function formatHomogeneousValue(
             return `${numberFormatter.format(rawValue)}s`;
         case "display.distance":
             return `${numberFormatter.format(rawValue)} px`;
+        case "display.kilometers":
+            return `${numberFormatter.format(rawValue)} km`;
         case "display.triggerTolerance":
             return formatTriggerTolerance(rawValue);
         case "display.damaged":

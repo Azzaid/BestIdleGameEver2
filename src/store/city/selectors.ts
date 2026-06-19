@@ -1,6 +1,6 @@
 import type {RootState} from "../../models/store/appStore.ts";
 import {createSelector} from "@reduxjs/toolkit";
-import {placeCityBuildings, resolveCityUpkeepAndTrace} from "../../pages/City/Components/CityHex/adjacencyUtils.ts";
+import {placeCityBuildings, resolveCityUpkeepAndSignature} from "../../pages/City/Components/CityHex/adjacencyUtils.ts";
 import {STRUCTURES} from "../../data/buildings/index.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
 import type {CityResolution} from "../../models/city/Adjancency.ts";
@@ -9,7 +9,7 @@ export const selectCityHexes = (state: RootState) => state.city.hexes;
 
 export const selectCityCellRadius = (state: RootState) => state.city.cellRadius;
 
-export const selectCityScarTrace = (state: RootState) => state.city.scarTrace;
+export const selectCityFootprint = (state: RootState) => state.city.cityFootprint;
 
 export const selectCityBattlefield = (state: RootState) => state.city.battlefield;
 
@@ -44,14 +44,14 @@ export const selectCompleteCityStructureIds = createSelector(
 
 export const selectBaseCityResolution = createSelector(
     [selectCityHexes, selectCityBuildings],
-    (hexes, buildings): CityResolution => resolveCityUpkeepAndTrace(hexes, buildings)
+    (hexes, buildings): CityResolution => resolveCityUpkeepAndSignature(hexes, buildings)
 );
 
 export const selectCityResolution = createSelector(
-    [selectBaseCityResolution, selectCityScarTrace],
-    (baseResolution, scarTrace): CityResolution => ({
+    [selectBaseCityResolution, selectCityFootprint],
+    (baseResolution, cityFootprint): CityResolution => ({
         ...baseResolution,
-        scarTrace,
-        effectiveTrace: baseResolution.buildingsTrace + baseResolution.territoryTrace + scarTrace,
+        cityFootprint,
+        effectiveSignature: baseResolution.buildingsSignature + baseResolution.territorySignature + cityFootprint,
     })
 );

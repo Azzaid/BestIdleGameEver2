@@ -10,7 +10,7 @@ import {
     selectResolvedAvailableTowers,
 } from "../towers/selectors.ts";
 import {deductUpkeep} from "../../pages/City/Components/CityHex/upkeepUtils.ts";
-import type {CityTraceStatus} from "../../models/store/upkeep.ts";
+import type {CitySignatureStatus} from "../../models/store/upkeep.ts";
 import {selectIsDebugModeEnabled} from "../debug/selectors.ts";
 import {
     getAvailableValues,
@@ -101,7 +101,7 @@ export const selectEffectiveWallResolution = createSelector(
         return {
             requiredUpkeep: homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedWallValues)),
             resilience: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0,
-            camoLevel: Math.max(0, -(homogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0)),
+            camoLevel: Math.max(0, -(homogeneousValues[HOMOGENEOUS_VALUE_IDS.citySignature] ?? 0)),
             ignoredThreat: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0,
             homogeneousValues,
             homogeneousResolvedValues: resolvedWallValues,
@@ -122,7 +122,7 @@ function resolveEffectiveCityResolution(
     const upkeepHomogeneousValues = getUpkeepValues(resolvedCity.resolvedValues);
     const providedUpkeep = homogeneousValueTotalsToUpkeepAmount(producedHomogeneousValues);
     const requiredUpkeep = homogeneousValueTotalsToUpkeepAmount(upkeepHomogeneousValues);
-    const buildingsTrace = producedHomogeneousValues[HOMOGENEOUS_VALUE_IDS.cityVisibility] ?? 0;
+    const buildingsSignature = producedHomogeneousValues[HOMOGENEOUS_VALUE_IDS.citySignature] ?? 0;
 
     return {
         ...cityResolution,
@@ -137,8 +137,8 @@ function resolveEffectiveCityResolution(
         providedUpkeep,
         requiredUpkeep,
         effectiveUpkeep: deductUpkeep(providedUpkeep, requiredUpkeep),
-        buildingsTrace,
-        effectiveTrace: buildingsTrace + cityResolution.territoryTrace + cityResolution.scarTrace,
+        buildingsSignature,
+        effectiveSignature: buildingsSignature + cityResolution.territorySignature + cityResolution.cityFootprint,
     };
 }
 
@@ -189,31 +189,31 @@ function applyEffectiveTowerEntity(
     };
 }
 
-export const selectBaseResilience = (state: RootState): number => state.upkeep.resilience;
+export const selectBaseControlledTerritory = (state: RootState): number => state.upkeep.controlledTerritory;
 
-export const selectResilience = selectBaseResilience;
+export const selectControlledTerritory = selectBaseControlledTerritory;
 
-export const selectCityTraceStatus = createSelector(
-    [selectTowerAwareCityResolution, selectResilience, selectIsDebugModeEnabled],
-    (cityResolution, resilience, isDebugModeEnabled): CityTraceStatus => {
-        const displayedTrace = Math.min(cityResolution.effectiveTrace, Math.max(0, resilience));
-        const fillRatio = resilience > 0
-            ? displayedTrace / resilience
-            : cityResolution.effectiveTrace > 0 ? 1 : 0;
-        const displayedScarTrace = Math.min(cityResolution.scarTrace, displayedTrace);
-        const scarFillRatio = resilience > 0
-            ? displayedScarTrace / resilience
-            : cityResolution.scarTrace > 0 ? 1 : 0;
-        const activeFillRatio = Math.max(0, fillRatio - scarFillRatio);
-        const isBesieged = !isDebugModeEnabled && cityResolution.effectiveTrace > resilience;
+export const selectCitySignatureStatus = createSelector(
+    [selectTowerAwareCityResolution, selectControlledTerritory, selectIsDebugModeEnabled],
+    (cityResolution, controlledTerritory, isDebugModeEnabled): CitySignatureStatus => {
+        const displayedSignature = Math.min(cityResolution.effectiveSignature, Math.max(0, controlledTerritory));
+        const fillRatio = controlledTerritory > 0
+            ? displayedSignature / controlledTerritory
+            : cityResolution.effectiveSignature > 0 ? 1 : 0;
+        const displayedCityFootprint = Math.min(cityResolution.cityFootprint, displayedSignature);
+        const footprintFillRatio = controlledTerritory > 0
+            ? displayedCityFootprint / controlledTerritory
+            : cityResolution.cityFootprint > 0 ? 1 : 0;
+        const activeFillRatio = Math.max(0, fillRatio - footprintFillRatio);
+        const isBesieged = !isDebugModeEnabled && cityResolution.effectiveSignature > controlledTerritory;
 
         return {
-            effectiveTrace: cityResolution.effectiveTrace,
-            scarTrace: cityResolution.scarTrace,
-            resilience,
-            displayedTrace,
+            effectiveSignature: cityResolution.effectiveSignature,
+            cityFootprint: cityResolution.cityFootprint,
+            controlledTerritory,
+            displayedSignature,
             fillRatio,
-            scarFillRatio,
+            footprintFillRatio,
             activeFillRatio,
             stage: isBesieged ? "besieged" : "stable",
             isBesieged,

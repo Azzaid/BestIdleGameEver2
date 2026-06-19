@@ -9,7 +9,7 @@ import {useTypedSelector} from "../../store/hooks.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
 import {selectAetherAtmosphereLevels} from "../../store/homogeneousValues/selectors.ts";
-import {selectCityResolution, selectCityTraceStatus} from "../../store/upkeep/selectors.ts";
+import {selectCityResolution, selectCitySignatureStatus} from "../../store/upkeep/selectors.ts";
 import {BUILDINGS_ATLAS, STRUCTURES_BY_ID} from "../../data/buildings";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
@@ -138,7 +138,7 @@ export default function ResearchPage() {
     const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
     const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
     const aetherAtmosphereLevels = useTypedSelector(selectAetherAtmosphereLevels);
-    const traceStatus = useTypedSelector(selectCityTraceStatus);
+    const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const viewportRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<CanvasRef>(null);
     const [layout, setLayout] = useState<ElkRoot | null>(null);
@@ -165,7 +165,7 @@ export default function ResearchPage() {
                         completeStructureIds,
                         effectiveUpkeep,
                         aetherAtmosphereLevels,
-                        isBesieged: traceStatus.isBesieged,
+                        isBesieged: signatureStatus.isBesieged,
                     });
 
                     return showDetails
@@ -174,7 +174,7 @@ export default function ResearchPage() {
                 },
             },
         ),
-        [aetherAtmosphereLevels, builtBuildingIds, completeStructureIds, effectiveUpkeep, purchased, traceStatus.isBesieged],
+        [aetherAtmosphereLevels, builtBuildingIds, completeStructureIds, effectiveUpkeep, purchased, signatureStatus.isBesieged],
     );
 
     const layoutOptions = useMemo(() => ({
@@ -298,7 +298,7 @@ export default function ResearchPage() {
                         completeStructureIds,
                         effectiveUpkeep,
                         aetherAtmosphereLevels,
-                        isBesieged: traceStatus.isBesieged,
+                        isBesieged: signatureStatus.isBesieged,
                     });
 
                     const nodeWidth = isResearched || canResearch ? NODE_W : LOCKED_NODE_W;

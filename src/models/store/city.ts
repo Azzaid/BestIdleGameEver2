@@ -9,7 +9,7 @@ export interface CityBattlefieldState {
 export interface CityState {
     hexes: HexCell[],
     cellRadius: number,
-    scarTrace: number,
+    cityFootprint: number,
     selectedHex?: AxialCoordinate,
     battlefield: CityBattlefieldState,
 }

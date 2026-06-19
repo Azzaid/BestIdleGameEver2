@@ -1,6 +1,6 @@
 import type {ReactNode} from "react";
 import {useTypedSelector} from "../store/hooks.ts";
-import {selectCityTraceStatus, selectTowerAwareCityResolution} from "../store/upkeep/selectors.ts";
+import {selectCitySignatureStatus, selectTowerAwareCityResolution} from "../store/upkeep/selectors.ts";
 import {DEVELOPMENT_VECTORS} from "../models/DevlopmentVector.ts";
 import {UPKEEP_SPRITES, UPKEEP_TYPES_BY_VECTOR, type UpkeepTypesValue} from "../models/Upkeep.ts";
 import * as s from './upkeepBar.css.ts';
@@ -11,18 +11,22 @@ import {
     type AetherAtmosphereResolution,
 } from "../models/city/AetherAtmosphere.ts";
 
-const TRACE_COLOR_STOPS = [
+const SIGNATURE_COLOR_STOPS = [
     {ratio: 0, color: [126, 137, 151]},
     {ratio: 0.35, color: [47, 158, 68]},
     {ratio: 0.7, color: [245, 159, 0]},
     {ratio: 1, color: [217, 72, 15]},
 ];
 
-function getTraceColor(ratio: number) {
+const numberFormatter = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 2,
+});
+
+function getSignatureColor(ratio: number) {
     const clampedRatio = Math.max(0, Math.min(1, ratio));
-    const upperStopIndex = TRACE_COLOR_STOPS.findIndex(stop => clampedRatio <= stop.ratio);
-    const upperStop = TRACE_COLOR_STOPS[Math.max(upperStopIndex, 1)];
-    const lowerStop = TRACE_COLOR_STOPS[Math.max(upperStopIndex - 1, 0)];
+    const upperStopIndex = SIGNATURE_COLOR_STOPS.findIndex(stop => clampedRatio <= stop.ratio);
+    const upperStop = SIGNATURE_COLOR_STOPS[Math.max(upperStopIndex, 1)];
+    const lowerStop = SIGNATURE_COLOR_STOPS[Math.max(upperStopIndex - 1, 0)];
     const localRatio = upperStop.ratio === lowerStop.ratio
         ? 0
         : (clampedRatio - lowerStop.ratio) / (upperStop.ratio - lowerStop.ratio);
@@ -35,10 +39,10 @@ function getTraceColor(ratio: number) {
 }
 
 export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
-    const {providedUpkeep, effectiveUpkeep, effectiveTrace} = useTypedSelector(selectTowerAwareCityResolution);
-    const traceStatus = useTypedSelector(selectCityTraceStatus);
+    const {providedUpkeep, effectiveUpkeep, effectiveSignature} = useTypedSelector(selectTowerAwareCityResolution);
+    const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const aetherAtmosphere = useTypedSelector(selectAetherAtmosphere);
-    const traceFillColor = getTraceColor(traceStatus.fillRatio);
+    const signatureFillColor = getSignatureColor(signatureStatus.fillRatio);
 
     return (
         <div className={s.upkeepBar}>
@@ -72,34 +76,34 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
                 )
             })}
             <div
-                className={s.traceMeter}
-                aria-label={`City trace ${effectiveTrace} of ${traceStatus.resilience} resilience, ${traceStatus.scarTrace} trail`}
+                className={s.signatureMeter}
+                aria-label={`City signature ${formatKilometers(effectiveSignature)} of ${formatKilometers(signatureStatus.controlledTerritory)} controlled territory, ${formatKilometers(signatureStatus.cityFootprint)} footprint`}
             >
-                <div className={s.traceMeterHeader}>
-                    <span className={s.traceMeterTitle}>City Trace</span>
-                    <span className={traceStatus.isBesieged ? s.traceStageBesieged : s.traceStageStable}>
-                        {traceStatus.isBesieged ? "Besieged" : "Stable"}
+                <div className={s.signatureMeterHeader}>
+                    <span className={s.signatureMeterTitle}>City Signature</span>
+                    <span className={signatureStatus.isBesieged ? s.signatureStageBesieged : s.signatureStageStable}>
+                        {signatureStatus.isBesieged ? "Besieged" : "Stable"}
                     </span>
                 </div>
-                <div className={s.traceTrack}>
+                <div className={s.signatureTrack}>
                     <div
-                        className={s.traceScarFill}
+                        className={s.signatureFootprintFill}
                         style={{
-                            width: `${traceStatus.scarFillRatio * 100}%`,
+                            width: `${signatureStatus.footprintFillRatio * 100}%`,
                         }}
                     />
                     <div
-                        className={s.traceFill}
+                        className={s.signatureFill}
                         style={{
-                            left: `${traceStatus.scarFillRatio * 100}%`,
-                            width: `${traceStatus.activeFillRatio * 100}%`,
-                            backgroundColor: traceFillColor,
+                            left: `${signatureStatus.footprintFillRatio * 100}%`,
+                            width: `${signatureStatus.activeFillRatio * 100}%`,
+                            backgroundColor: signatureFillColor,
                         }}
                     />
                 </div>
-                <div className={s.traceNumbers}>
-                    <span>{effectiveTrace}/{traceStatus.resilience}</span>
-                    <span>Trail {traceStatus.scarTrace}</span>
+                <div className={s.signatureNumbers}>
+                    <span>{formatKilometers(effectiveSignature)}/{formatKilometers(signatureStatus.controlledTerritory)}</span>
+                    <span>Footprint {formatKilometers(signatureStatus.cityFootprint)}</span>
                 </div>
             </div>
             {rightSlot && <div className={s.rightSlot}>{rightSlot}</div>}
@@ -153,6 +157,10 @@ function isResourceProduced(resource: UpkeepTypesValue, providedUpkeep: Partial<
 
 function hasAetherAtmosphere(atmosphere: AetherAtmosphereResolution): boolean {
     return AETHER_ATMOSPHERES.some(atmosphereKey => atmosphere.totals[atmosphereKey] !== 0);
+}
+
+function formatKilometers(value: number): string {
+    return `${numberFormatter.format(value)} km`;
 }
 
 function getSaturatedColor(target: [number, number, number], value: number): string {
