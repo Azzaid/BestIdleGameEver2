@@ -62,7 +62,7 @@ export const gunpartIdRows = Object.entries(gunparts).flatMap(([slotGroup, byVec
 Checklist when adding a tower part id:
 1. Add the id here, in the vector file and slot group that owns it.
 2. Add the GunPart definition under src/data/towers/parts/<vector>.ts using this identifier.
-3. Add or update unlock rules in src/data/content/rules.ts.
+3. Add or update unlock rules in src/data/progression/rules/<vector>.ts.
 4. Add PNG and JSON metadata under src/assets/battle/towerParts when the part needs a visual asset.
 5. Add visual metadata mapping in src/data/towers/partVisualMetadata.ts when needed by battle rendering.
 6. Open /gun-part-editor and /ids to check that the id has data and assets.

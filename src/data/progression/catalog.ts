@@ -1,7 +1,6 @@
-import {BUILDINGS_ATLAS} from "../buildings/index.ts";
+import {BUILDINGS_ATLAS, STRUCTURES} from "../buildings/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {researchGraphValidationErrors, researchTree} from "../research/index.ts";
-import {STRUCTURES} from "../structures/index.ts";
 import {TOWER_PARTS} from "../towers/index.ts";
 import {buildProgressionGraph, validateProgressionGraph} from "./progression.ts";
 import {PROGRESSION_RULES} from "./rules.ts";

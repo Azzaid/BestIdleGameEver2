@@ -1,11 +1,10 @@
 import type {ResearchNodeData} from "../../models/research/ResearchNode.ts";
 import type {ResearchAtlas, ResearchDB} from "../../models/research/researchDB.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
-import {BUILDINGS_ATLAS} from "../buildings/index.ts";
-import {PROGRESSION_RULES} from "../content/rules.ts";
-import {getProgressionUnlockLabels, getRuleForTarget} from "../content/progression.ts";
-import type {ProgressionRegistry, ProgressionRegistryEntry} from "../content/types.ts";
-import {STRUCTURES} from "../structures/index.ts";
+import {BUILDINGS_ATLAS, STRUCTURES} from "../buildings/index.ts";
+import {PROGRESSION_RULES} from "../progression/rules.ts";
+import {getProgressionUnlockLabels, getRuleForTarget} from "../progression/progression.ts";
+import type {ProgressionRegistry, ProgressionRegistryEntry} from "../progression/types.ts";
 import {TOWER_PART_DEFINITIONS} from "../towers/parts/index.ts";
 import {validateResearchGraph} from "../../models/research/researchGraph.ts";
 import {aetherResearch} from "./aether.ts";

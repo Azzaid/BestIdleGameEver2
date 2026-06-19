@@ -7,7 +7,7 @@ import { DEFAULT_BATTLE_BACKGROUND_ID } from "../../data/battle/backgrounds.ts";
 import {coordKey} from "../../pages/City/Components/CityHex/hexUtils.ts";
 import type {CityState} from "../../models/store/city.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
-import {STRUCTURES, STRUCTURES_BY_ID} from "../../data/structures/index.ts";
+import {STRUCTURES, STRUCTURES_BY_ID} from "../../data/buildings/index.ts";
 import {superstructures, walls} from "../../data/identificators/index.ts";
 
 const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {

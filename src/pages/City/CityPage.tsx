@@ -23,8 +23,8 @@ import type {PlacedBuilding} from "../../models/city/Building.ts";
 import type {StructureDetectionResult} from "../../models/city/multistructureDetection.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
-import {PROGRESSION_RULES} from "../../data/content/rules.ts";
-import {getRuleForTarget, isProgressionRuleUnlocked} from "../../data/content/progression.ts";
+import {PROGRESSION_RULES} from "../../data/progression/rules.ts";
+import {getRuleForTarget, isProgressionRuleUnlocked} from "../../data/progression/progression.ts";
 import {getUpkeepShortfalls, hasEnoughUpkeep} from "./Components/CityHex/upkeepUtils.ts";
 import {placeCityBuildings} from "./Components/CityHex/adjacencyUtils.ts";
 import {

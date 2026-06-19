@@ -1,4 +1,4 @@
-import type {StructureDefinition} from "../../data/structures/index.ts";
+import type {StructureDefinition} from "../../data/buildings/index.ts";
 import type {HexCell} from "./HexGrid.ts";
 
 export type StructureRequirementMatch = {

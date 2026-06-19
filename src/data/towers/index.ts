@@ -1,7 +1,7 @@
 import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {GunPart, TowerPartsAtlas} from "../../models/battle/towerParts.ts";
-import {PROGRESSION_RULES} from "../content/rules.ts";
-import {getResearchRequirementsForTarget} from "../content/progression.ts";
+import {PROGRESSION_RULES} from "../progression/rules.ts";
+import {getResearchRequirementsForTarget} from "../progression/progression.ts";
 import {researchTree} from "../research/index.ts";
 import {
   REQUIRED_TOWER_PART_SLOTS,

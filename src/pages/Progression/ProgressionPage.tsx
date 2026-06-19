@@ -3,12 +3,12 @@ import {Canvas, CanvasPosition, Edge, type CanvasDirection, type CanvasRef, type
 import {
   PROGRESSION_GRAPH,
   PROGRESSION_VALIDATION_ERRORS,
-} from "../../data/content/catalog.ts";
+} from "../../data/progression/catalog.ts";
 import type {
   ProgressionEdge,
   ProgressionGraphNode,
   ProgressionNodeKind,
-} from "../../data/content/types.ts";
+} from "../../data/progression/types.ts";
 import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import {AETHER_ATMOSPHERE_LABELS, type AetherAtmosphere, type AetherAtmosphereLevel} from "../../models/city/AetherAtmosphere.ts";
 import * as s from "./ProgressionPage.css.ts";

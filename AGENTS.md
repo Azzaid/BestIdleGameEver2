@@ -35,7 +35,7 @@ For design intent and game mechanics, also refer to the docs folder before makin
 - `src/components` - shared UI components, currently including the upkeep bar.
 - `src/store` - Redux store setup, root reducer, typed hooks, slices, and selectors.
 - `src/models` - TypeScript domain models for city, battle, research, sprites, themes, and upkeep.
-- `src/data` - static gameplay data and constants.
+- `src/data` - static gameplay data and constants, including progression catalog data under `src/data/progression`.
 - `src/theme` - vanilla-extract theme contract, theme values, and theme provider.
 - `src/styles` - global vanilla-extract styles only.
 - `src/assets` - bundled image assets, organized by active texture type plus `src/assets/unused` for images not currently loaded.

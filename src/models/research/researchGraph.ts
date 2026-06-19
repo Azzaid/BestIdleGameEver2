@@ -1,7 +1,7 @@
 import type {ResearchNodeData} from "./ResearchNode.ts";
 import type {ResearchDB} from "./researchDB.ts";
 import type {FlatEdge, FlatNode, StubData} from "./researchView.ts";
-import {areProgressionRequirementsMet, type ProgressionUnlockContext} from "../../data/content/progression.ts";
+import {areProgressionRequirementsMet, type ProgressionUnlockContext} from "../../data/progression/progression.ts";
 import type {UpkeepAmount} from "../Upkeep.ts";
 import type {AetherAtmosphereLevels} from "../city/AetherAtmosphere.ts";
 

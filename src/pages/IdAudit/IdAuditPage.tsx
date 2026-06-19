@@ -1,7 +1,7 @@
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
 import {useMemo, useState} from "react";
-import {PROGRESSION_RULES} from "../../data/content/rules.ts";
-import {getRuleForTarget} from "../../data/content/progression.ts";
+import {PROGRESSION_RULES} from "../../data/progression/rules.ts";
+import {getRuleForTarget} from "../../data/progression/progression.ts";
 import {BATTLE_ENEMY_BLUEPRINTS} from "../../data/enemies/index.ts";
 import {
   buildings,
@@ -14,7 +14,7 @@ import {
 import {researchTree} from "../../data/research/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/towers/index.ts";
 import {WALL_SEGMENT_BUILDINGS, TOWER_PLATFORM_BUILDINGS} from "../../data/wall/index.ts";
-import type {ProgressionNodeKind} from "../../data/content/types.ts";
+import type {ProgressionNodeKind} from "../../data/progression/types.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {Building} from "../../models/city/Building.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";

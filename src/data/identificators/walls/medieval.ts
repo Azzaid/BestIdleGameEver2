@@ -1,4 +1,3 @@
 export const medievalWalls = {
-  timberBulwark: "timberBulwark",
-  veiledStoneRampart: "veiledStoneRampart",
+  scrapBarricade: "scrapBarricade",
 } as const;

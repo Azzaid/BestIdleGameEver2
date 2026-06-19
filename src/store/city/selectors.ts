@@ -1,7 +1,7 @@
 import type {RootState} from "../../models/store/appStore.ts";
 import {createSelector} from "@reduxjs/toolkit";
 import {placeCityBuildings, resolveCityUpkeepAndTrace} from "../../pages/City/Components/CityHex/adjacencyUtils.ts";
-import {STRUCTURES} from "../../data/structures/index.ts";
+import {STRUCTURES} from "../../data/buildings/index.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
 import type {CityResolution} from "../../models/city/Adjancency.ts";
 

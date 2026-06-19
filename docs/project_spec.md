@@ -76,7 +76,7 @@ Important directories:
 - `src/pages/Research/Components` contains research tree node components.
 - `src/components` contains shared UI such as the upkeep bar.
 - `src/models` contains TypeScript domain models.
-- `src/data` contains static gameplay data and constants.
+- `src/data` contains static gameplay data and constants, including progression catalog data under `src/data/progression`.
 - `src/theme` contains theme tokens and runtime theme selection.
 - `src/styles` contains global vanilla-extract styles.
 - `src/assets` contains active textures organized by gameplay type plus `src/assets/unused` for images not currently loaded.
@@ -89,6 +89,7 @@ Content data layout:
 - `src/data/wall` uses the same atlas pattern, keyed by development vector and flattened for wall lookup. Wall segment content lives under `segments`, wall-top superstructure content lives under `superstructures`, and wall hexes store those two layers separately.
 - `src/data/towers` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research` exposes a vector-keyed research atlas and flattened helpers for the research tree.
+- `src/data/progression` contains progression catalog data, shared progression types, and vector-split rules under `src/data/progression/rules`.
 - `src/data/enemies` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
 - `src/data/identificators` is the single source of truth for content ids. Category folders collect ids by vector or biome and expose structured paths such as `buildings.aether.leylineWell` and `gunparts.barrels.medieval.crudeWood`.
 - `/ids` renders an audit table that compares registered ids against data definitions, progression rules, and available assets.
@@ -589,6 +590,7 @@ Current content layout:
 - `src/data/enemies/` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
 - `src/data/towers/` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research/` exposes a vector-keyed research atlas and flattened helpers for the research tree.
+- `src/data/progression/` contains progression catalog data, shared progression types, and vector-split rules under `src/data/progression/rules`.
 - `src/data/identificators/` owns content ids for buildings, technologies, tower parts, enemies, wall segments, and wall superstructures. Add ids there first, then consume those constants from data, progression, state defaults, and asset registries.
 - `/ids` is the content audit screen for checking missing definitions, progression rules, and assets by id.
 

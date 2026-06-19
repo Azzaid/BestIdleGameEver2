@@ -1,6 +1,5 @@
 import {
     getResourcesWithKeywords,
-    UPKEEP_TYPES,
     type ResourceKeyword,
     type UpkeepAmount,
     type UpkeepTypesValue
@@ -58,7 +57,7 @@ export function deductUpkeep(a: UpkeepAmount, b: UpkeepAmount): UpkeepAmount {
 export function getUpkeepShortfalls(required: UpkeepAmount, available: UpkeepAmount): UpkeepAmount {
     const shortfalls: UpkeepAmount = {};
 
-    for (const resource of Object.values(UPKEEP_TYPES)) {
+    for (const resource of Object.keys(required) as UpkeepTypesValue[]) {
         const missing = Math.max(0, (required[resource] ?? 0) - (available[resource] ?? 0));
         if (missing > 0) {
             shortfalls[resource] = missing;
