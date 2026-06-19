@@ -19,6 +19,7 @@ export type HomogeneousCityEntityType = "building" | "tower" | "wallSegment" | "
 
 export type HomogeneousValueEntitySource = {
     id: string;
+    contentId?: string;
     entityType: HomogeneousCityEntityType;
     cellKey?: string;
     column?: number;
@@ -36,6 +37,8 @@ export type HomogeneousResolvedEntity = HomogeneousValueEntitySource & {
 };
 
 export type HomogeneousCityResolution = {
+    buildingIds: Set<string>;
+    buildingKeywords: Set<string>;
     values: HomogeneousValueTotals;
     resolvedValues: HomogeneousResolvedValueMap;
     resolvedHexes: readonly HomogeneousResolvedEntity[];
@@ -150,6 +153,16 @@ export function resolveCity(
     );
 
     return {
+        buildingIds: new Set(
+            entities
+                .filter((entity) => entity.entityType === "building")
+                .map((entity) => entity.contentId ?? entity.id),
+        ),
+        buildingKeywords: new Set(
+            entities
+                .filter((entity) => entity.entityType === "building")
+                .flatMap((entity) => entity.keywords ?? []),
+        ),
         values: getAvailableValues(resolvedValues),
         resolvedValues,
         resolvedHexes: resolvedEntities,

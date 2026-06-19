@@ -6,6 +6,7 @@ import researchSlice from "./research/slice.ts";
 import towersSlice from "./towers/slice.ts";
 import wallSlice from "./wall/slice.ts";
 import debugSlice from "./debug/slice.ts";
+import unlocksSlice from "./unlocks/slice.ts";
 
 export const rootReducer = combineSlices(
     cityReducer,
@@ -13,5 +14,6 @@ export const rootReducer = combineSlices(
     researchSlice,
     towersSlice,
     wallSlice,
-    debugSlice
+    debugSlice,
+    unlocksSlice
 );

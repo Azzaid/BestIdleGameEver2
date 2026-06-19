@@ -23,7 +23,7 @@ import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValu
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import type {HomogeneousResolvedEntity, HomogeneousValueEntitySource} from "../../models/homogeneousValueResolution.ts";
-import {selectPurchasedTechsIds} from "../research/selectors.ts";
+import {selectUnlockedTowerPartIds} from "../unlocks/selectors.ts";
 import {resolveTowerAssembly, resolveTowerAssemblyStatsAndSupport} from "../../models/battle/resolveTowerAssembly.ts";
 import type {TowerAssemblyResolved} from "../../models/battle/towerParts.ts";
 import type {WallResolution} from "../../models/city/Wall.ts";
@@ -59,7 +59,7 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
         selectActiveTower,
         selectActiveTowerDraftAssembly,
         selectResolvedActiveTowerDraft,
-        selectPurchasedTechsIds,
+        selectUnlockedTowerPartIds,
     ],
     (
         cityResolution,
@@ -68,7 +68,7 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
         activeTower,
         activeTowerDraftAssembly,
         resolvedActiveTowerDraft,
-        purchasedTechIds,
+        unlockedTowerPartIds,
     ): TowerAssemblyResolved => {
         const activeTowerIndex = availableTowers.findIndex((tower) => tower.id === activeTower?.id);
         if (activeTowerIndex < 0) return resolvedActiveTowerDraft;
@@ -78,7 +78,7 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
 
             return {
                 tower: resolvedTower.tower,
-                resolved: resolveTowerAssembly(activeTowerDraftAssembly, purchasedTechIds),
+                resolved: resolveTowerAssembly(activeTowerDraftAssembly, unlockedTowerPartIds),
             };
         });
         const effectiveCityResolution = resolveEffectiveCityResolution(cityResolution, substitutedResolvedTowers);
@@ -126,6 +126,14 @@ function resolveEffectiveCityResolution(
 
     return {
         ...cityResolution,
+        buildingIds: new Set([
+            ...cityResolution.buildingIds,
+            ...resolvedCity.buildingIds,
+        ]),
+        buildingKeywords: new Set([
+            ...cityResolution.buildingKeywords,
+            ...resolvedCity.buildingKeywords,
+        ]),
         values: resolvedCity.values,
         resolvedHexes: resolvedCity.resolvedHexes,
         resolvedTowers: resolvedCity.resolvedTowers,
@@ -193,28 +201,25 @@ export const selectBaseControlledTerritory = (state: RootState): number => state
 
 export const selectControlledTerritory = selectBaseControlledTerritory;
 
+export const selectLastSiegeSignature = (state: RootState): number => state.upkeep.lastSiegeSignature;
+
 export const selectCitySignatureStatus = createSelector(
-    [selectTowerAwareCityResolution, selectControlledTerritory, selectIsDebugModeEnabled],
-    (cityResolution, controlledTerritory, isDebugModeEnabled): CitySignatureStatus => {
+    [selectTowerAwareCityResolution, selectControlledTerritory, selectLastSiegeSignature, selectIsDebugModeEnabled],
+    (cityResolution, controlledTerritory, lastSiegeSignature, isDebugModeEnabled): CitySignatureStatus => {
+        const signatureRange = controlledTerritory - lastSiegeSignature;
         const displayedSignature = Math.min(cityResolution.effectiveSignature, Math.max(0, controlledTerritory));
-        const fillRatio = controlledTerritory > 0
-            ? displayedSignature / controlledTerritory
-            : cityResolution.effectiveSignature > 0 ? 1 : 0;
-        const displayedCityFootprint = Math.min(cityResolution.cityFootprint, displayedSignature);
-        const footprintFillRatio = controlledTerritory > 0
-            ? displayedCityFootprint / controlledTerritory
-            : cityResolution.cityFootprint > 0 ? 1 : 0;
-        const activeFillRatio = Math.max(0, fillRatio - footprintFillRatio);
+        const fillRatio = signatureRange > 0
+            ? (displayedSignature - lastSiegeSignature) / signatureRange
+            : cityResolution.effectiveSignature > controlledTerritory ? 1 : 0;
         const isBesieged = !isDebugModeEnabled && cityResolution.effectiveSignature > controlledTerritory;
 
         return {
             effectiveSignature: cityResolution.effectiveSignature,
             cityFootprint: cityResolution.cityFootprint,
             controlledTerritory,
+            lastSiegeSignature,
             displayedSignature,
-            fillRatio,
-            footprintFillRatio,
-            activeFillRatio,
+            fillRatio: Math.max(0, Math.min(1, fillRatio)),
             stage: isBesieged ? "besieged" : "stable",
             isBesieged,
         };

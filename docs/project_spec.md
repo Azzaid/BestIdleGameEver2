@@ -270,8 +270,8 @@ Demolishing buildings permanently increases the current city's footprint. The in
 
 Current prototype terminology uses city signature and controlled territory:
 
-- City signature is displayed in the shared upkeep bar as a capped meter against current controlled territory.
-- The meter fill never overflows beyond controlled territory and shifts from gray through green/yellow to red as it approaches the cap.
+- City signature is displayed in the shared upkeep bar as a threat-level meter from the last survived siege signature to current controlled territory.
+- The meter label uses the clamped fill percentage: low below 20%, elevated below 40%, medium below 60%, moderate below 80%, and high from 80% to full. The fill shifts smoothly from green to red and reveals signature, footprint, and controlled territory values on hover.
 - A city is besieged when signature is greater than controlled territory.
 - The city starts with base wall segments, no committed tower, and an initial besieged state caused by the noise of setting camp.
 

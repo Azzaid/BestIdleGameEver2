@@ -1,7 +1,9 @@
 import type {Building} from "../../models/city/Building.ts";
+import type {Requirement} from "../../models/progression/requirements.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
-import {buildings} from "../identificators/index.ts";
+import {buildings, technologies} from "../identificators/index.ts";
+import {requires} from "../requirements.ts";
 import {createBuildingFactory} from "./buildingFactory.ts";
 
 const {building, superstructure, structureRule, multiHexStructure} = createBuildingFactory({
@@ -9,7 +11,7 @@ const {building, superstructure, structureRule, multiHexStructure} = createBuild
   defaultKeywords: ["medieval"],
 });
 
-export const medievalBuildings: {[key: string]: Building} = {
+const medievalBuildingsRaw: {[key: string]: Building} = {
   [buildings.medieval.shelter]: {
     ...building(
       buildings.medieval.shelter,
@@ -282,3 +284,85 @@ export const medievalBuildings: {[key: string]: Building} = {
     ["infrastructure", "laboratory"],
   ),
 };
+
+const medievalBuildingRequirements: Record<string, Requirement[]> = {
+  [buildings.medieval.scrapCollectionPoint]: [
+    requires.technologyUnlocked(technologies.medieval.foraging),
+  ],
+  [buildings.medieval.stalkerHut]: [
+    requires.buildingExists(buildings.medieval.shelter),
+    requires.buildingExists(buildings.medieval.scrapCollectionPoint),
+  ],
+  [buildings.medieval.toolShed]: [
+    requires.technologyUnlocked(technologies.medieval.scrapTools),
+  ],
+  [buildings.medieval.lumberjackHouse]: [
+    requires.buildingExists(buildings.medieval.toolShed),
+    requires.buildingExists(buildings.medieval.stalkerHut),
+  ],
+  [buildings.medieval.woodenHouse]: [
+    requires.technologyUnlocked(technologies.medieval.timberProcessing),
+  ],
+  [buildings.medieval.farm]: [
+    requires.buildingExists(buildings.nature.field),
+    requires.buildingExists(buildings.medieval.woodenHouse),
+  ],
+  [buildings.medieval.market]: [
+    requires.buildingExists(buildings.medieval.farm),
+  ],
+  [buildings.medieval.craftsmansHouse]: [
+    requires.buildingExists(buildings.medieval.woodenHouse),
+    requires.buildingExists(buildings.medieval.toolShed),
+  ],
+  [buildings.medieval.stoneHouse]: [
+    requires.technologyUnlocked(technologies.medieval.stoneworking),
+  ],
+  [buildings.medieval.university]: [
+    requires.technologyUnlocked(technologies.medieval.stoneworking),
+    requires.buildingExists(buildings.medieval.stoneHouse),
+  ],
+  [buildings.medieval.workshop]: [
+    requires.technologyUnlocked(technologies.medieval.engineering),
+  ],
+  [buildings.medieval.engineersHouse]: [
+    requires.buildingExists(buildings.medieval.workshop),
+    requires.buildingExists(buildings.medieval.stoneHouse),
+  ],
+  [buildings.medieval.barracks]: [
+    requires.technologyUnlocked(technologies.medieval.fortification),
+  ],
+  [buildings.medieval.barn]: [
+    requires.technologyUnlocked(technologies.medieval.animalHusbandry),
+  ],
+  [buildings.medieval.stable]: [
+    requires.buildingExists(buildings.medieval.barn),
+    requires.buildingExists(buildings.medieval.farm),
+  ],
+  [buildings.medieval.tradeStation]: [
+    requires.technologyUnlocked(technologies.medieval.horses),
+  ],
+  [buildings.medieval.shop]: [
+    requires.technologyUnlocked(technologies.medieval.trade),
+  ],
+  [buildings.medieval.tradingStation]: [
+    requires.buildingExists(buildings.medieval.shop),
+    requires.buildingExists(buildings.medieval.tradeStation),
+  ],
+  [buildings.medieval.chemicalStorage]: [
+    requires.technologyUnlocked(technologies.medieval.naturalPhilosophy),
+  ],
+  [buildings.medieval.alchemicalLaboratory]: [
+    requires.buildingExists(buildings.medieval.chemicalStorage),
+    requires.buildingExists(buildings.medieval.stoneHouse),
+  ],
+};
+
+export const medievalBuildings: {[key: string]: Building} = Object.fromEntries(
+  Object.values(medievalBuildingsRaw).map(building => [
+    building.id,
+    {
+      ...building,
+      requirements: medievalBuildingRequirements[building.id] ?? [],
+    },
+  ]),
+);

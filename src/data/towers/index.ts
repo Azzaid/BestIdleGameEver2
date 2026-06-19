@@ -1,8 +1,5 @@
 import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {GunPart, TowerPartsAtlas} from "../../models/battle/towerParts.ts";
-import {PROGRESSION_RULES} from "../progression/rules.ts";
-import {getResearchRequirementsForTarget} from "../progression/progression.ts";
-import {researchTree} from "../research/index.ts";
 import {
   REQUIRED_TOWER_PART_SLOTS,
   TOWER_PART_SLOT_ORDER,
@@ -17,21 +14,7 @@ const createEmptyTowerPartsAtlas = (): TowerPartsAtlas => ({
   aether: {},
 });
 
-const TOWER_PART_LIST = TOWER_PART_DEFINITIONS.map<GunPart>(part => {
-  const requiredResearchIds = getResearchRequirementsForTarget(PROGRESSION_RULES, "towerPart", part.id);
-
-  if (!requiredResearchIds.length) return part;
-
-  return {
-    ...part,
-    unlockRequirements: requiredResearchIds.map(researchId => ({
-      researchId,
-      label: researchTree[researchId]?.name ?? researchId,
-    })),
-  };
-});
-
-export const TOWER_PARTS_ATLAS = TOWER_PART_LIST.reduce<TowerPartsAtlas>((atlas, part) => {
+export const TOWER_PARTS_ATLAS = TOWER_PART_DEFINITIONS.reduce<TowerPartsAtlas>((atlas, part) => {
   const vector: DevelopmentVectorKey = part.vector ?? "medieval";
   atlas[vector][part.id] = part;
   return atlas;

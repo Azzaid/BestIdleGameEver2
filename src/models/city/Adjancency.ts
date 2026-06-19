@@ -66,6 +66,8 @@ export interface HexResolvedStats extends EffectDelta {
 export type PlacedCityMap = Map<string, PlacedBuilding>;
 
 export interface CityResolution {
+    buildingIds: Set<string>;
+    buildingKeywords: Set<string>;
     requiredUpkeep: UpkeepAmount;
     providedUpkeep: UpkeepAmount;
     effectiveUpkeep: UpkeepAmount,

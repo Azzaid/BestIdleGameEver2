@@ -4,6 +4,7 @@ import type { DevelopmentVectorKey } from '../DevlopmentVector.ts';
 import type { UpkeepAmount } from '../Upkeep.ts';
 import type { HomogeneousValueEffect } from '../homogeneousValues.ts';
 import type { HomogeneousResolvedValueMap } from '../homogeneousValues.ts';
+import type {RequirementGate} from '../progression/requirements.ts';
 
 export interface TowerModifiers {
   rotationSpeed: number;
@@ -29,12 +30,7 @@ export type TowerPartSlot =
   | 'loadingSystem'
   | 'launchSystem';
 
-export interface TowerPartUnlockRequirement {
-  researchId: string;
-  label: string;
-}
-
-export interface GunPart {
+export interface GunPart extends RequirementGate {
   id: string;
   name: string;
   slot?: TowerPartSlot;
@@ -45,7 +41,6 @@ export interface GunPart {
   keywords: Set<string>;
   aimKeywords?: string[];
   homogeneousValueEffects?: HomogeneousValueEffect[];
-  unlockRequirements?: TowerPartUnlockRequirement[];
   conflictsWithKeywords?: string[];
   children?: GunPart[]; // chain within a slot
 }

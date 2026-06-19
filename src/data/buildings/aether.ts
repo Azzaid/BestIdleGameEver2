@@ -1,7 +1,10 @@
 import type {Building} from "../../models/city/Building.ts";
+import type {Requirement} from "../../models/progression/requirements.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
-import {buildings} from "../identificators/index.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../homogeneousValues/index.ts";
+import {buildings, technologies} from "../identificators/index.ts";
+import {requires} from "../requirements.ts";
 import {createBuildingFactory} from "./buildingFactory.ts";
 
 const {
@@ -14,7 +17,7 @@ const {
   defaultKeywords: ["aether"],
 });
 
-export const aetherBuildings: {[key: string]: Building} = {
+const aetherBuildingsRaw: {[key: string]: Building} = {
   [buildings.aether.dolmen]: {
     ...magicBuilding(
       buildings.aether.dolmen,
@@ -185,3 +188,76 @@ export const aetherBuildings: {[key: string]: Building} = {
     ["production", "manaFlows", "ritual"],
   ),
 };
+
+const aetherBuildingRequirements: Record<string, Requirement[]> = {
+  [buildings.aether.dolmen]: [
+    requires.technologyUnlocked(technologies.aether.wickedItems),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 1),
+  ],
+  [buildings.aether.shamanHut]: [
+    requires.buildingExists(buildings.aether.dolmen),
+    requires.buildingExists(buildings.medieval.stalkerHut),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 2),
+  ],
+  [buildings.aether.wardedHome]: [
+    requires.technologyUnlocked(technologies.aether.magicStones),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 2),
+  ],
+  [buildings.aether.runedHouse]: [
+    requires.buildingExists(buildings.aether.wardedHome),
+    requires.buildingExists(buildings.aether.dolmen),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 2),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 1),
+  ],
+  [buildings.aether.coven]: [
+    requires.buildingExists(buildings.aether.runedHouse),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 3),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 2),
+  ],
+  [buildings.aether.obelisk]: [
+    requires.technologyUnlocked(technologies.aether.mysticalCommand),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 2),
+  ],
+  [buildings.aether.spiritHut]: [
+    requires.technologyUnlocked(technologies.aether.mysticalFriendship),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 3),
+  ],
+  [buildings.aether.houseOfSpirits]: [
+    requires.buildingExists(buildings.aether.spiritHut),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 4),
+  ],
+  [buildings.aether.veilThinning]: [
+    requires.technologyUnlocked(technologies.aether.ancestorSpirits),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 4),
+  ],
+  [buildings.aether.embodimentStone]: [
+    requires.buildingExists(buildings.aether.obelisk),
+    requires.buildingExists(buildings.aether.spiritHut),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 4),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 3),
+  ],
+  [buildings.aether.golemBuilder]: [
+    requires.technologyUnlocked(technologies.aether.livingClay),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 3),
+  ],
+  [buildings.aether.suppressionTotem]: [
+    requires.technologyUnlocked(technologies.aether.mysticalHostility),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceDeath, 2),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 1),
+  ],
+  [buildings.aether.spiritTrap]: [
+    requires.buildingExists(buildings.aether.spiritHut),
+    requires.buildingExists(buildings.aether.suppressionTotem),
+    requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceDeath, 3),
+  ],
+};
+
+export const aetherBuildings: {[key: string]: Building} = Object.fromEntries(
+  Object.values(aetherBuildingsRaw).map(building => [
+    building.id,
+    {
+      ...building,
+      requirements: aetherBuildingRequirements[building.id] ?? [],
+    },
+  ]),
+);

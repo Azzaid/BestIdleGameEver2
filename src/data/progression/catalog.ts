@@ -1,4 +1,5 @@
 import {BUILDINGS_ATLAS, STRUCTURES} from "../buildings/index.ts";
+import {ALL_WALL_BUILDINGS} from "../wall/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {researchGraphValidationErrors, researchTree} from "../research/index.ts";
 import {TOWER_PARTS} from "../towers/index.ts";
@@ -10,7 +11,6 @@ import type {DevelopmentVectorKey, DevelopmentVectorValue} from "../../models/De
 const buildingEntries = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string, ProgressionRegistryEntry>>(
   (entries, vector) => {
     for (const building of Object.values(BUILDINGS_ATLAS[vector])) {
-      if (building.isMultistructure) continue;
       entries[building.id] = {
         name: building.name,
         vector: getDevelopmentVectorKey(building.vector),
@@ -20,6 +20,12 @@ const buildingEntries = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string,
   },
   {},
 );
+
+for (const wallBuilding of Object.values(ALL_WALL_BUILDINGS)) {
+  buildingEntries[wallBuilding.id] = {
+    name: wallBuilding.name,
+  };
+}
 
 export const PROGRESSION_REGISTRY: ProgressionRegistry = {
   research: Object.fromEntries(Object.values(researchTree).map(research => [

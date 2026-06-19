@@ -6,7 +6,7 @@ import * as styles from './BattlePage.css.ts';
 import { selectCityBattlefield, selectCityHexes, selectCitySideHexes } from "../../store/city/selectors.ts";
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from "../../data/constants.ts";
 import { Link } from "react-router-dom";
-import { recordControlledTerritoryReached } from "../../store/upkeep/slice.ts";
+import { recordControlledTerritoryReached, recordLastSiegeSignature } from "../../store/upkeep/slice.ts";
 import {
     selectCitySignatureStatus,
     selectEffectiveWallResolution,
@@ -141,6 +141,7 @@ const BattlePage = () => {
         dispatch(recordControlledTerritoryReached(result.threat));
 
         if (result.outcome === "held") {
+            dispatch(recordLastSiegeSignature(cityThreat));
             dispatch(recordSurvivedSiege());
             setBattleMessage("Siege is over. The wall shifts back into pressure watch.");
             setBattleMode("pressure");
@@ -162,7 +163,7 @@ const BattlePage = () => {
 
         setBattleMessage("Pressure exceeded wall resilience. Improve the wall or tower build.");
         setBattleMode("pressure");
-    }, [dispatch, isDebugModeEnabled]);
+    }, [cityThreat, dispatch, isDebugModeEnabled]);
     const handleBattleMetrics = useCallback((nextMetrics: BattleMetrics) => {
         const nextSecond = Math.floor(nextMetrics.siegeElapsedSeconds);
         if (nextSecond === lastRenderedMetricsSecondRef.current) return;

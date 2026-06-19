@@ -11,21 +11,39 @@ export const upkeepBar = style({
     color: vars.color.text.heading,
     gap: '16px',
     alignItems: 'center',
-    overflowX: 'auto',
+    overflow: 'visible',
 });
 
 export const rightSlot = style({
     marginLeft: 'auto',
     flex: '0 0 auto',
-    alignSelf: 'flex-start',
-    position: 'sticky',
-    right: 0,
+});
+
+export const resourceGroup = style({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    flex: '1 1 0',
+    minWidth: 0,
+    overflowX: 'auto',
+});
+
+export const rightGroup = style({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '16px',
+    flex: '1 1 0',
+    minWidth: 0,
 });
 
 export const vectorCard = style({
-    position: 'relative',
     display: 'grid',
     gap: '2px',
+    flex: '0 0 auto',
+});
+
+export const aetherMeterSlot = style({
     flex: '0 0 auto',
 });
 
@@ -69,9 +87,9 @@ export const aetherOrb = style({
 });
 
 export const aetherTooltip = style({
-    position: 'fixed',
-    top: '72px',
-    left: '12px',
+    position: 'absolute',
+    top: 'calc(100% + 8px)',
+    left: '50%',
     minWidth: '190px',
     display: 'grid',
     gap: '6px',
@@ -82,24 +100,24 @@ export const aetherTooltip = style({
     color: vars.color.text.primary,
     boxShadow: '0 12px 32px rgba(0, 0, 0, 0.24)',
     opacity: 0,
-    transform: 'translateY(-4px)',
+    transform: 'translate(-50%, -4px)',
     pointerEvents: 'none',
     transition: 'opacity 140ms ease, transform 140ms ease',
     zIndex: 10,
     selectors: {
         [`${aetherOrbWrap}:hover &`]: {
             opacity: 1,
-            transform: 'translateY(0)',
+            transform: 'translate(-50%, 0)',
             pointerEvents: 'auto',
         },
         [`${aetherOrbWrap}:focus &`]: {
             opacity: 1,
-            transform: 'translateY(0)',
+            transform: 'translate(-50%, 0)',
             pointerEvents: 'auto',
         },
         [`${aetherOrbWrap}:focus-within &`]: {
             opacity: 1,
-            transform: 'translateY(0)',
+            transform: 'translate(-50%, 0)',
             pointerEvents: 'auto',
         },
     },
@@ -120,39 +138,31 @@ export const aetherTooltipRow = style({
 });
 
 export const signatureMeter = style({
+    position: 'relative',
+    flex: '0 0 clamp(240px, 32vw, 420px)',
+    width: 'clamp(240px, 32vw, 420px)',
+    maxWidth: 'calc(100vw - 24px)',
     display: 'grid',
     gap: '4px',
-    minWidth: '240px',
-    maxWidth: '420px',
-    flex: '1 1 320px',
-});
-
-export const signatureMeterHeader = style({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '12px',
-    fontSize: '0.78rem',
-    lineHeight: 1,
 });
 
 export const signatureMeterTitle = style({
+    textAlign: 'center',
+    fontSize: '0.78rem',
     fontWeight: 700,
-    textTransform: 'uppercase',
+    lineHeight: 1,
 });
 
-export const signatureStageStable = style({
-    color: vars.color.text.muted,
-    fontWeight: 700,
-});
-
-export const signatureStageBesieged = style({
-    color: vars.color.state.error,
-    fontWeight: 800,
-});
+export const signatureMeterTitleSiege = style([
+    signatureMeterTitle,
+    {
+        color: vars.color.state.error,
+        fontSize: '0.9rem',
+        fontWeight: 900,
+    },
+]);
 
 export const signatureTrack = style({
-    position: 'relative',
     height: '12px',
     borderRadius: '999px',
     overflow: 'hidden',
@@ -161,30 +171,47 @@ export const signatureTrack = style({
 });
 
 export const signatureFill = style({
-    position: 'absolute',
-    top: 0,
     height: '100%',
     maxWidth: '100%',
     borderRadius: '999px',
-    transition: 'left 180ms ease, width 180ms ease, background-color 180ms ease',
+    transition: 'width 180ms ease, background-color 180ms ease',
 });
 
-export const signatureFootprintFill = style({
+export const signatureTooltip = style({
     position: 'absolute',
-    top: 0,
-    left: 0,
-    height: '100%',
-    maxWidth: '100%',
-    borderRadius: '999px',
-    background: 'rgb(112 118 128 / 0.9)',
-    transition: 'width 180ms ease',
+    top: 'calc(100% + 8px)',
+    left: '50%',
+    minWidth: '230px',
+    display: 'grid',
+    gap: '6px',
+    padding: '10px',
+    border: `1px solid ${vars.color.border.default}`,
+    borderRadius: 8,
+    background: vars.color.background.surface,
+    color: vars.color.text.primary,
+    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.24)',
+    opacity: 0,
+    pointerEvents: 'none',
+    transform: 'translate(-50%, -4px)',
+    transition: 'opacity 140ms ease, transform 140ms ease',
+    zIndex: 10,
+    selectors: {
+        [`${signatureMeter}:hover &`]: {
+            opacity: 1,
+            pointerEvents: 'auto',
+            transform: 'translate(-50%, 0)',
+        },
+        [`${signatureMeter}:focus-within &`]: {
+            opacity: 1,
+            pointerEvents: 'auto',
+            transform: 'translate(-50%, 0)',
+        },
+    },
 });
 
-export const signatureNumbers = style({
+export const signatureTooltipRow = style({
     display: 'flex',
     justifyContent: 'space-between',
-    gap: '8px',
-    color: vars.color.text.muted,
-    fontSize: '0.75rem',
-    lineHeight: 1,
+    gap: '18px',
+    fontSize: '0.85rem',
 });

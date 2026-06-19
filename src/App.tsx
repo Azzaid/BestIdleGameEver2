@@ -25,6 +25,7 @@ import {toggleDebugMode} from "./store/debug/slice.ts";
 import { NotificationCenter } from "./components/Notifications/NotificationCenter.tsx";
 import { useResearchAutoUnlock } from "./pages/Research/useResearchAutoUnlock.ts";
 import {CityExpansionControl} from "./components/CityExpansionControl.tsx";
+import {useContentAutoUnlock} from "./hooks/useContentAutoUnlock.ts";
 
 //this is temporary theme switcher
 function ThemeSwitcher() {
@@ -51,6 +52,7 @@ function AppFrame() {
   const shouldShowCityExpansionControl = location.pathname === "/city";
 
   useResearchAutoUnlock();
+  useContentAutoUnlock();
 
   return (
               <div className={appTheme.appContainer}>

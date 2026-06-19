@@ -1,8 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../../models/store/appStore.ts';
 import { resolveTowerAssembly } from '../../models/battle/resolveTowerAssembly.ts';
-import { selectPurchasedTechsIds } from '../research/selectors.ts';
 import { selectBuiltTowerPlatformCount } from '../wall/selectors.ts';
+import {selectUnlockedTowerPartIds} from "../unlocks/selectors.ts";
 
 export const selectTowersState = (state: RootState) => state.towers;
 
@@ -34,13 +34,13 @@ export const selectActiveTowerDraftAssembly = createSelector(
 );
 
 export const selectResolvedActiveTower = createSelector(
-  [selectActiveTowerAssembly, selectPurchasedTechsIds],
-  (assembly, purchasedTechIds) => resolveTowerAssembly(assembly, purchasedTechIds)
+  [selectActiveTowerAssembly, selectUnlockedTowerPartIds],
+  (assembly, unlockedTowerPartIds) => resolveTowerAssembly(assembly, unlockedTowerPartIds)
 );
 
 export const selectResolvedActiveTowerDraft = createSelector(
-  [selectActiveTowerDraftAssembly, selectPurchasedTechsIds],
-  (assembly, purchasedTechIds) => resolveTowerAssembly(assembly, purchasedTechIds)
+  [selectActiveTowerDraftAssembly, selectUnlockedTowerPartIds],
+  (assembly, unlockedTowerPartIds) => resolveTowerAssembly(assembly, unlockedTowerPartIds)
 );
 
 export const selectHasActiveTowerBuild = createSelector(
@@ -49,17 +49,17 @@ export const selectHasActiveTowerBuild = createSelector(
 );
 
 export const selectHasAnyTowerBuild = createSelector(
-  [selectAvailableTowerList, selectPurchasedTechsIds],
-  (towers, purchasedTechIds) => towers.some((tower) => (
-    resolveTowerAssembly({ selectedPartIds: tower.selectedPartIds }, purchasedTechIds).warnings.length === 0
+  [selectAvailableTowerList, selectUnlockedTowerPartIds],
+  (towers, unlockedTowerPartIds) => towers.some((tower) => (
+    resolveTowerAssembly({ selectedPartIds: tower.selectedPartIds }, unlockedTowerPartIds).warnings.length === 0
   ))
 );
 
 export const selectResolvedAvailableTowers = createSelector(
-  [selectAvailableTowerList, selectPurchasedTechsIds],
-  (towers, purchasedTechIds) => towers
+  [selectAvailableTowerList, selectUnlockedTowerPartIds],
+  (towers, unlockedTowerPartIds) => towers
     .map((tower) => ({
       tower,
-      resolved: resolveTowerAssembly({ selectedPartIds: tower.selectedPartIds }, purchasedTechIds),
+      resolved: resolveTowerAssembly({ selectedPartIds: tower.selectedPartIds }, unlockedTowerPartIds),
     }))
 );

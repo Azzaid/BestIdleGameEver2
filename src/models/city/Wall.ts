@@ -4,6 +4,7 @@ import type {BuildingKeyword} from "./Keywords.ts";
 import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../homogeneousValues.ts";
 import type {HomogeneousResolvedValueMap} from "../homogeneousValues.ts";
+import type {RequirementGate} from "../progression/requirements.ts";
 
 export type WallEffectKeyword = Extract<BuildingKeyword, "slow" | "harm" | "push" | "visibility">;
 
@@ -13,7 +14,7 @@ export type WallSpecialEffect = {
     description: string;
 };
 
-export interface WallBuilding {
+export interface WallBuilding extends RequirementGate {
     id: string;
     name: string;
     type: BuildingTypesValue;

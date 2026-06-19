@@ -1,6 +1,5 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {ALL_WALL_BUILDINGS} from "../../data/wall/index.ts";
-import type {RootState} from "../../models/store/appStore.ts";
 import {selectCityHexes} from "../city/selectors.ts";
 import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
@@ -8,8 +7,12 @@ import {getUpkeepValues, resolveCity} from "../../models/homogeneousValueResolut
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
 import type {HomogeneousCityEntityType, HomogeneousValueEntitySource} from "../../models/homogeneousValueResolution.ts";
+import {selectUnlockedWallSegmentIds, selectUnlockedWallSuperstructureIds} from "../unlocks/selectors.ts";
 
-export const selectUnlockedWallBuildingIds = (state: RootState) => state.wall.unlockedWallBuildingIds;
+export const selectUnlockedWallBuildingIds = createSelector(
+    [selectUnlockedWallSegmentIds, selectUnlockedWallSuperstructureIds],
+    (segmentIds, superstructureIds) => [...segmentIds, ...superstructureIds],
+);
 
 export const selectUnlockedWallBuildings = createSelector(
     [selectUnlockedWallBuildingIds],

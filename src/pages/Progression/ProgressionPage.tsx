@@ -9,8 +9,13 @@ import type {
   ProgressionGraphNode,
   ProgressionNodeKind,
 } from "../../data/progression/types.ts";
-import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
-import {AETHER_ATMOSPHERE_LABELS, type AetherAtmosphere, type AetherAtmosphereLevel} from "../../models/city/AetherAtmosphere.ts";
+import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
+import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
+import {researchTree} from "../../data/research/index.ts";
+import {TOWER_PARTS_BY_ID} from "../../data/towers/index.ts";
+import {ALL_WALL_BUILDINGS} from "../../data/wall/index.ts";
+import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
+import type {Requirement} from "../../models/progression/requirements.ts";
 import * as s from "./ProgressionPage.css.ts";
 
 const NODE_DIMENSIONS: Record<ProgressionNodeKind, {width: number; height: number}> = {
@@ -505,7 +510,7 @@ function RequirementList({node}: {node: ProgressionGraphNode}) {
 
   return (
     <div className={s.field}>
-      <span className={s.label}>Branch Requirements</span>
+      <span className={s.label}>Unlock Requirements</span>
       <ul className={s.list}>
         {requirements.map(requirement => <li key={requirement}>{requirement}</li>)}
       </ul>
@@ -522,24 +527,39 @@ function getNodeColor(node: ProgressionGraphNode) {
 }
 
 function getRequirementLines(node: ProgressionGraphNode): string[] {
-  const requirements = node.requirements;
-  if (!requirements) return [];
+  return (findContentRequirements(node) ?? []).map(formatRequirement);
+}
 
-  const lines: string[] = [];
+function findContentRequirements(node: ProgressionGraphNode): readonly Requirement[] | undefined {
+  if (node.kind === "towerPart") return TOWER_PARTS_BY_ID[node.id]?.requirements;
+  if (node.kind === "building") {
+    const building = Object.values(DEVELOPMENT_VECTORS)
+      .map(vector => BUILDINGS_ATLAS[vector][node.id])
+      .find(Boolean);
 
-  if (node.vector === "aether" && requirements.aetherAtmosphere) {
-    const entries = Object.entries(requirements.aetherAtmosphere) as [AetherAtmosphere, AetherAtmosphereLevel][];
-    for (const [atmosphere, level] of entries) {
-      const label = AETHER_ATMOSPHERE_LABELS[atmosphere];
-      lines.push(`${label.name}: ${label.levels[level]}`);
-    }
+    return building?.requirements ?? ALL_WALL_BUILDINGS[node.id]?.requirements;
   }
 
-  if (node.vector === "nature" && typeof requirements.biodiversity === "number") {
-    lines.push(`Biodiversity: ${requirements.biodiversity.toFixed(2)}`);
+  if (node.kind === "research") return researchTree[node.id]?.requirements;
+
+  return undefined;
+}
+
+function formatRequirement(requirement: Requirement): string {
+  if (requirement.type === "buildingKeywordExists") {
+    return `Building keyword exists: ${requirement.keyword}`;
   }
 
-  return lines;
+  if (requirement.type === "buildingExists") {
+    return `Building exists: ${requirement.buildingId}`;
+  }
+
+  if (requirement.type === "technologyUnlocked") {
+    return `Technology unlocked: ${requirement.technologyId}`;
+  }
+
+  const definition = getHomogeneousValueDefinition(requirement.valueId);
+  return `${definition.label} at least ${requirement.amount}`;
 }
 
 function truncateLabel(label: string, maxLength: number) {

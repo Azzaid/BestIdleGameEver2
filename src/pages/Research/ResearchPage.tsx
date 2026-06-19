@@ -136,7 +136,8 @@ export default function ResearchPage() {
     const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
     const cityHexes = useTypedSelector(selectCityHexes);
     const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
-    const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
+    const resolvedCityData = useTypedSelector(selectCityResolution);
+    const {effectiveUpkeep} = resolvedCityData;
     const aetherAtmosphereLevels = useTypedSelector(selectAetherAtmosphereLevels);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const viewportRef = useRef<HTMLDivElement>(null);
@@ -166,6 +167,7 @@ export default function ResearchPage() {
                         effectiveUpkeep,
                         aetherAtmosphereLevels,
                         isBesieged: signatureStatus.isBesieged,
+                        resolvedCityData,
                     });
 
                     return showDetails
@@ -174,7 +176,7 @@ export default function ResearchPage() {
                 },
             },
         ),
-        [aetherAtmosphereLevels, builtBuildingIds, completeStructureIds, effectiveUpkeep, purchased, signatureStatus.isBesieged],
+        [aetherAtmosphereLevels, builtBuildingIds, completeStructureIds, effectiveUpkeep, purchased, resolvedCityData, signatureStatus.isBesieged],
     );
 
     const layoutOptions = useMemo(() => ({
@@ -299,6 +301,7 @@ export default function ResearchPage() {
                         effectiveUpkeep,
                         aetherAtmosphereLevels,
                         isBesieged: signatureStatus.isBesieged,
+                        resolvedCityData,
                     });
 
                     const nodeWidth = isResearched || canResearch ? NODE_W : LOCKED_NODE_W;

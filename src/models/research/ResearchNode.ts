@@ -1,6 +1,7 @@
 import type {DevelopmentVectorKey} from "../DevlopmentVector.ts";
 import type {UpkeepAmount} from "../Upkeep.ts";
 import type {AetherAtmosphere, AetherAtmosphereLevel} from "../city/AetherAtmosphere.ts";
+import type {Requirement} from "../progression/requirements.ts";
 
 export type ResearchNodeData = {
     id: string;
@@ -9,6 +10,7 @@ export type ResearchNodeData = {
     vector: DevelopmentVectorKey;
     summary?: string;
     unlocks?: string[];
+    requirements?: Requirement[];
     requiredBuildings?: string[];
     requiredStructures?: string[];
     requiredFreeUpkeep?: UpkeepAmount;

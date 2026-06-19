@@ -1,66 +1,24 @@
-import {useEffect, useMemo, useRef} from "react";
+import {useEffect, useRef} from "react";
 import {researchTree} from "../../data/research/index.ts";
 import {sendNotification} from "../../lib/notifications/eventBus.ts";
-import {canPurchaseResearch} from "../../models/research/researchGraph.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
-import {selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
-import {selectAetherAtmosphereLevels} from "../../store/homogeneousValues/selectors.ts";
-import {selectCityResolution, selectCitySignatureStatus} from "../../store/upkeep/selectors.ts";
+import {selectCitySignatureStatus} from "../../store/upkeep/selectors.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {purchaseTech} from "../../store/research/slice.ts";
-
-function collectAutoUnlockableTechIds(
-    purchasedTechsIds: readonly string[],
-    context: Omit<Parameters<typeof canPurchaseResearch>[1], "purchased">,
-): string[] {
-    const purchased = new Set(purchasedTechsIds);
-    const toUnlock: string[] = [];
-
-    while (true) {
-        let found = false;
-
-        for (const node of Object.values(researchTree)) {
-            if (node.id === "root" || purchased.has(node.id)) continue;
-
-            if (canPurchaseResearch(node, {...context, purchased})) {
-                toUnlock.push(node.id);
-                purchased.add(node.id);
-                found = true;
-            }
-        }
-
-        if (!found) break;
-    }
-
-    return toUnlock;
-}
+import {selectUnlockableTechnologyIds} from "../../store/unlocks/selectors.ts";
 
 export function useResearchAutoUnlock(): void {
     const dispatch = useTypedDispatch();
     const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
-    const cityHexes = useTypedSelector(selectCityHexes);
-    const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
-    const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
-    const aetherAtmosphereLevels = useTypedSelector(selectAetherAtmosphereLevels);
+    const unlockableTechIds = useTypedSelector(selectUnlockableTechnologyIds);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const notifiedTechIdsRef = useRef(new Set<string>());
 
-    const builtBuildingIds = useMemo(() => {
-        return new Set(cityHexes.flatMap(hex => [
-            !hex.partOfStructureId || (hex.structureCoreCellKey ?? hex.cellKey) === hex.cellKey ? hex.buildingKey : null,
-            hex.wallKey,
-            hex.wallTopKey,
-        ].filter((buildingId): buildingId is string => Boolean(buildingId))));
-    }, [cityHexes]);
-
     useEffect(() => {
-        const toUnlock = collectAutoUnlockableTechIds(purchasedTechsIds, {
-            builtBuildingIds,
-            completeStructureIds,
-            effectiveUpkeep,
-            aetherAtmosphereLevels,
-            isBesieged: signatureStatus.isBesieged,
-        });
+        if (signatureStatus.isBesieged) return;
+
+        const purchased = new Set(purchasedTechsIds);
+        const toUnlock = unlockableTechIds.filter(techId => !purchased.has(techId));
 
         for (const techId of toUnlock) {
             dispatch(purchaseTech(techId));
@@ -78,12 +36,9 @@ export function useResearchAutoUnlock(): void {
             });
         }
     }, [
-        aetherAtmosphereLevels,
-        builtBuildingIds,
-        completeStructureIds,
         dispatch,
-        effectiveUpkeep,
         purchasedTechsIds,
         signatureStatus.isBesieged,
+        unlockableTechIds,
     ]);
 }

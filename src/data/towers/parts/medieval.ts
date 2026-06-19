@@ -1,6 +1,7 @@
 import type {GunPart} from '../../../models/battle/towerParts.ts';
 import {HOMOGENEOUS_VALUE_IDS} from '../../homogeneousValues/index.ts';
-import {gunparts} from '../../identificators/index.ts';
+import {buildings, gunparts, technologies} from '../../identificators/index.ts';
+import {requires} from "../../requirements.ts";
 
 export const medievalTowerParts: GunPart[] = [
   {
@@ -59,6 +60,10 @@ export const medievalTowerParts: GunPart[] = [
         sprite: {textureKey: ''},
         attachmentOffset: {x: 0, y: 0},
         keywords: new Set(['rough', 'barrel', 'tower', 'wooden', 'medieval']),
+        requirements: [
+            requires.technologyUnlocked(technologies.medieval.foraging),
+            requires.buildingExists(buildings.medieval.scrapCollectionPoint),
+        ],
         homogeneousValueEffects: [
             {valueId: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage, additionalKeywords: ['production'], additive: 1},
             {valueId: HOMOGENEOUS_VALUE_IDS.towerWeight, additionalKeywords: ['production'], additive: 2},

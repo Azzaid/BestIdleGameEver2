@@ -43,13 +43,13 @@ function clampStats(stats: TowerAssemblyResolved['stats']) {
   }
 }
 
-function isPartUnlocked(part: GunPart, purchasedTechIds: readonly string[]) {
-  return (part.unlockRequirements ?? []).every((requirement) => purchasedTechIds.includes(requirement.researchId));
+function isPartUnlocked(part: GunPart, unlockedTowerPartIds: readonly string[]) {
+  return unlockedTowerPartIds.includes(part.id);
 }
 
 export function resolveTowerAssembly(
   assembly: TowerAssembly,
-  purchasedTechIds: readonly string[] = []
+  unlockedTowerPartIds: readonly string[] = []
 ): TowerAssemblyResolved {
   const keywords = new Set<string>();
   const selectedParts: TowerAssemblyResolved['selectedParts'] = {};
@@ -78,15 +78,11 @@ export function resolveTowerAssembly(
     );
     addAimKeywords(aimKeywords, part.aimKeywords);
 
-    if (!isPartUnlocked(part, purchasedTechIds)) {
-      const missing = part.unlockRequirements
-        ?.filter((requirement) => !purchasedTechIds.includes(requirement.researchId))
-        .map((requirement) => requirement.label)
-        .join(', ');
+    if (!isPartUnlocked(part, unlockedTowerPartIds)) {
       warnings.push({
         id: `locked-${part.id}`,
         kind: 'lockedPart',
-        message: `${part.name} needs ${missing ?? 'more research'} before it can be installed.`,
+        message: `${part.name} is visible, but not permanently unlocked yet.`,
       });
     }
   }

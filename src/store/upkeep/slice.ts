@@ -5,6 +5,7 @@ import type {UpkeepState} from "../../models/store/upkeep.ts";
 // Define the initial state using that type
 const initialState: UpkeepState = {
     controlledTerritory: 0,
+    lastSiegeSignature: 0,
 }
 
 export const upkeepSlice = createSlice({
@@ -17,9 +18,12 @@ export const upkeepSlice = createSlice({
         recordControlledTerritoryReached: (state, action: PayloadAction<number>) => {
             state.controlledTerritory = Math.max(state.controlledTerritory, action.payload);
         },
+        recordLastSiegeSignature: (state, action: PayloadAction<number>) => {
+            state.lastSiegeSignature = Math.max(0, action.payload);
+        },
     },
 })
 
-export const { recordControlledTerritoryReached, setControlledTerritory } = upkeepSlice.actions
+export const { recordControlledTerritoryReached, recordLastSiegeSignature, setControlledTerritory } = upkeepSlice.actions
 
 export default upkeepSlice

@@ -218,6 +218,8 @@ export function resolveCityUpkeepAndSignature(
     cityFootprint = 0,
 ): CityResolution {
     const resolvedCity: CityResolution = {
+        buildingIds: new Set<string>(),
+        buildingKeywords: new Set<string>(),
         requiredUpkeep: {} as UpkeepAmount,
         providedUpkeep: {} as UpkeepAmount,
         effectiveUpkeep: {} as UpkeepAmount,
@@ -238,6 +240,7 @@ export function resolveCityUpkeepAndSignature(
     resolvedCity.territorySignature = hexes.length * SIGNATURE_PER_HEX;
     const buildingEntities: HomogeneousValueEntitySource[] = [...city.values()].map((building) => ({
             id: `${building.column}:${building.row}`,
+            contentId: building.id,
             entityType: "building",
             cellKey: `${building.column}:${building.row}`,
             column: building.column,
@@ -273,6 +276,8 @@ export function resolveCityUpkeepAndSignature(
     const cityEntities = [...buildingEntities, ...wallEntities];
     const homogeneousCityResolution = resolveCity(cityEntities);
 
+    resolvedCity.buildingIds = homogeneousCityResolution.buildingIds;
+    resolvedCity.buildingKeywords = homogeneousCityResolution.buildingKeywords;
     resolvedCity.values = homogeneousCityResolution.values;
     resolvedCity.resolvedHexes = homogeneousCityResolution.resolvedHexes;
     resolvedCity.resolvedTowers = homogeneousCityResolution.resolvedTowers;

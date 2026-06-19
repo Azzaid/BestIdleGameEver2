@@ -11,102 +11,94 @@ import {
     type AetherAtmosphereResolution,
 } from "../models/city/AetherAtmosphere.ts";
 
-const SIGNATURE_COLOR_STOPS = [
-    {ratio: 0, color: [126, 137, 151]},
-    {ratio: 0.35, color: [47, 158, 68]},
-    {ratio: 0.7, color: [245, 159, 0]},
-    {ratio: 1, color: [217, 72, 15]},
-];
-
 const numberFormatter = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 2,
 });
 
-function getSignatureColor(ratio: number) {
+function getThreatFillColor(ratio: number) {
     const clampedRatio = Math.max(0, Math.min(1, ratio));
-    const upperStopIndex = SIGNATURE_COLOR_STOPS.findIndex(stop => clampedRatio <= stop.ratio);
-    const upperStop = SIGNATURE_COLOR_STOPS[Math.max(upperStopIndex, 1)];
-    const lowerStop = SIGNATURE_COLOR_STOPS[Math.max(upperStopIndex - 1, 0)];
-    const localRatio = upperStop.ratio === lowerStop.ratio
-        ? 0
-        : (clampedRatio - lowerStop.ratio) / (upperStop.ratio - lowerStop.ratio);
-    const [red, green, blue] = upperStop.color.map((channel, index) => {
-        const lowerChannel = lowerStop.color[index];
-        return Math.round(lowerChannel + (channel - lowerChannel) * localRatio);
-    });
+    const hue = 128 - clampedRatio * 122;
 
-    return `rgb(${red} ${green} ${blue})`;
+    return `hsl(${hue} 72% 42%)`;
 }
 
 export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
     const {providedUpkeep, effectiveUpkeep, effectiveSignature} = useTypedSelector(selectTowerAwareCityResolution);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const aetherAtmosphere = useTypedSelector(selectAetherAtmosphere);
-    const signatureFillColor = getSignatureColor(signatureStatus.fillRatio);
+    const showAetherAtmosphere = hasAetherAtmosphere(aetherAtmosphere);
+    const threatPercent = Math.round(signatureStatus.fillRatio * 100);
+    const threatLevel = getThreatLevel(signatureStatus.fillRatio);
+    const threatLabel = signatureStatus.isBesieged ? "SIEGE" : `Threat level: ${threatLevel}`;
+    const signatureFillColor = getThreatFillColor(signatureStatus.fillRatio);
 
     return (
         <div className={s.upkeepBar}>
-            {Object.values(DEVELOPMENT_VECTORS).map(vector => {
-                if (vector === DEVELOPMENT_VECTORS.aether) {
-                    return hasAetherAtmosphere(aetherAtmosphere)
-                        ? (
-                            <div key={vector.description} className={s.vectorCard}>
-                                <AetherAtmosphereOrb atmosphere={aetherAtmosphere} />
-                            </div>
-                        )
-                        : null;
-                }
+            <div className={s.resourceGroup}>
+                {Object.values(DEVELOPMENT_VECTORS).map(vector => {
+                    if (vector === DEVELOPMENT_VECTORS.aether) {
+                        return null;
+                    }
 
-                const visibleResources = UPKEEP_TYPES_BY_VECTOR[vector].filter(resource => isResourceProduced(resource, providedUpkeep));
-                if (!visibleResources.length) return null;
+                    const visibleResources = UPKEEP_TYPES_BY_VECTOR[vector].filter(resource => isResourceProduced(resource, providedUpkeep));
+                    if (!visibleResources.length) return null;
 
-                return (
-                    <div key={vector.description} className={s.vectorCard}>
-                        {visibleResources.map(resource => {
-                            return (
-                                <div key={resource} className={s.resourceEntry}>
-                                    <img  className={s.resourceIcon}/>
-                                    <div className={s.resourceText}>
-                                        {UPKEEP_SPRITES[resource]}: {effectiveUpkeep[resource] || 0}
+                    return (
+                        <div key={vector.description} className={s.vectorCard}>
+                            {visibleResources.map(resource => {
+                                return (
+                                    <div key={resource} className={s.resourceEntry}>
+                                        <img  className={s.resourceIcon}/>
+                                        <div className={s.resourceText}>
+                                            {UPKEEP_SPRITES[resource]}: {effectiveUpkeep[resource] || 0}
+                                        </div>
                                     </div>
-                                </div>
-                            )
-                        })}
-                    </div>
-                )
-            })}
+                                )
+                            })}
+                        </div>
+                    )
+                })}
+            </div>
             <div
                 className={s.signatureMeter}
-                aria-label={`City signature ${formatKilometers(effectiveSignature)} of ${formatKilometers(signatureStatus.controlledTerritory)} controlled territory, ${formatKilometers(signatureStatus.cityFootprint)} footprint`}
+                tabIndex={0}
+                aria-label={`${threatLabel}. City signature ${formatKilometers(effectiveSignature)}, city footprint ${formatKilometers(signatureStatus.cityFootprint)}, controlled territory ${formatKilometers(signatureStatus.controlledTerritory)}`}
             >
-                <div className={s.signatureMeterHeader}>
-                    <span className={s.signatureMeterTitle}>City Signature</span>
-                    <span className={signatureStatus.isBesieged ? s.signatureStageBesieged : s.signatureStageStable}>
-                        {signatureStatus.isBesieged ? "Besieged" : "Stable"}
-                    </span>
+                <div className={signatureStatus.isBesieged ? s.signatureMeterTitleSiege : s.signatureMeterTitle}>
+                    {threatLabel}
                 </div>
                 <div className={s.signatureTrack}>
                     <div
-                        className={s.signatureFootprintFill}
-                        style={{
-                            width: `${signatureStatus.footprintFillRatio * 100}%`,
-                        }}
-                    />
-                    <div
                         className={s.signatureFill}
                         style={{
-                            left: `${signatureStatus.footprintFillRatio * 100}%`,
-                            width: `${signatureStatus.activeFillRatio * 100}%`,
+                            width: `${threatPercent}%`,
                             backgroundColor: signatureFillColor,
                         }}
                     />
                 </div>
-                <div className={s.signatureNumbers}>
-                    <span>{formatKilometers(effectiveSignature)}/{formatKilometers(signatureStatus.controlledTerritory)}</span>
-                    <span>Footprint {formatKilometers(signatureStatus.cityFootprint)}</span>
+                <div className={s.signatureTooltip} role="tooltip">
+                    <div className={s.signatureTooltipRow}>
+                        <span>City signature</span>
+                        <strong>{formatKilometers(effectiveSignature)}</strong>
+                    </div>
+                    <div className={s.signatureTooltipRow}>
+                        <span>City footprint</span>
+                        <strong>{formatKilometers(signatureStatus.cityFootprint)}</strong>
+                    </div>
+                    <div className={s.signatureTooltipRow}>
+                        <span>Controlled territory</span>
+                        <strong>{formatKilometers(signatureStatus.controlledTerritory)}</strong>
+                    </div>
                 </div>
             </div>
-            {rightSlot && <div className={s.rightSlot}>{rightSlot}</div>}
+            <div className={s.rightGroup}>
+                {showAetherAtmosphere && (
+                    <div className={s.aetherMeterSlot}>
+                        <AetherAtmosphereOrb atmosphere={aetherAtmosphere} />
+                    </div>
+                )}
+                {rightSlot && <div className={s.rightSlot}>{rightSlot}</div>}
+            </div>
         </div>
     )
 }
@@ -131,7 +123,11 @@ function AetherAtmosphereOrb({atmosphere}: {atmosphere: AetherAtmosphereResoluti
     ].join(", ");
 
     return (
-        <div className={s.aetherOrbWrap} tabIndex={0} aria-label="Aether atmosphere">
+        <div
+            className={s.aetherOrbWrap}
+            tabIndex={0}
+            aria-label="Aether atmosphere"
+        >
             <div className={s.aetherOrb} style={{background}} />
             <div className={s.aetherTooltip} role="tooltip">
                 <div className={s.aetherTooltipTitle}>Aether atmosphere</div>
@@ -161,6 +157,17 @@ function hasAetherAtmosphere(atmosphere: AetherAtmosphereResolution): boolean {
 
 function formatKilometers(value: number): string {
     return `${numberFormatter.format(value)} km`;
+}
+
+function getThreatLevel(ratio: number): string {
+    const percent = Math.max(0, Math.min(100, ratio * 100));
+
+    if (percent < 20) return "low";
+    if (percent < 40) return "elevated";
+    if (percent < 60) return "medium";
+    if (percent < 80) return "moderate";
+
+    return "high";
 }
 
 function getSaturatedColor(target: [number, number, number], value: number): string {

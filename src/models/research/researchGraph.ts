@@ -1,9 +1,10 @@
 import type {ResearchNodeData} from "./ResearchNode.ts";
 import type {ResearchDB} from "./researchDB.ts";
 import type {FlatEdge, FlatNode, StubData} from "./researchView.ts";
-import {areProgressionRequirementsMet, type ProgressionUnlockContext} from "../../data/progression/progression.ts";
 import type {UpkeepAmount} from "../Upkeep.ts";
 import type {AetherAtmosphereLevels} from "../city/AetherAtmosphere.ts";
+import type {CityResolution} from "../city/Adjancency.ts";
+import {areRequirementsMet} from "../progression/requirements.ts";
 
 export type ResearchPurchaseContext = {
     purchased: ReadonlySet<string>;
@@ -13,28 +14,21 @@ export type ResearchPurchaseContext = {
     aetherAtmosphereLevels: AetherAtmosphereLevels;
     biodiversity?: number;
     isBesieged: boolean;
+    resolvedCityData?: CityResolution;
 };
 
 export function canPurchaseResearch(node: ResearchNodeData, context: ResearchPurchaseContext): boolean {
     if (context.isBesieged || context.purchased.has(node.id)) return false;
     if (!isResearchUnlocked(node, context.purchased)) return false;
 
-    const progressionContext: ProgressionUnlockContext = {
-        researchIds: context.purchased,
-        buildingIds: context.builtBuildingIds,
-        structureIds: context.completeStructureIds,
-        freeUpkeep: context.effectiveUpkeep,
-        aetherAtmosphereLevels: context.aetherAtmosphereLevels,
-        biodiversity: context.biodiversity,
-    };
+    if (context.resolvedCityData) {
+        return areRequirementsMet(node.requirements, {
+            resolvedCityData: context.resolvedCityData,
+            unlockedTechnologyIds: context.purchased,
+        });
+    }
 
-    return areProgressionRequirementsMet({
-        buildings: node.requiredBuildings,
-        structures: node.requiredStructures,
-        freeUpkeep: node.requiredFreeUpkeep,
-        aetherAtmosphere: node.requiredAetherAtmosphere,
-        biodiversity: node.requiredBiodiversity,
-    }, progressionContext);
+    return true;
 }
 
 const ROOT_CHILD_ORDER = ['aether', 'tech', 'nature', 'medieval'];

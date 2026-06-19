@@ -13,8 +13,8 @@ import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
 import { selectActiveTower, selectActiveTowerDraftAssembly, selectAvailableTowerList, selectHasAnyTowerBuild } from '../../store/towers/selectors.ts';
 import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTower, selectTowerDraftPart } from '../../store/towers/slice.ts';
-import { selectPurchasedTechsIds } from '../../store/research/selectors.ts';
 import { selectCityResolution, selectCitySignatureStatus, selectResolvedEffectiveActiveTowerDraft } from '../../store/upkeep/selectors.ts';
+import {selectUnlockedTowerPartIds, selectVisibleTowerPartIds} from "../../store/unlocks/selectors.ts";
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
 import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
 import { TowerAssemblyPreview } from './TowerAssemblyPreview.tsx';
@@ -34,10 +34,6 @@ import {HOMOGENEOUS_VALUE_IDS, getHomogeneousValueDefinition} from '../../data/h
 
 function getPartKeywords(part: GunPart) {
   return Array.from(part.keywords);
-}
-
-function isPartUnlocked(part: GunPart, purchasedTechIds: readonly string[]) {
-  return (part.unlockRequirements ?? []).every((requirement) => purchasedTechIds.includes(requirement.researchId));
 }
 
 function formatModifierList(part: GunPart) {
@@ -108,7 +104,8 @@ const BuildPage = () => {
   const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
   const towerDraftAssembly = useTypedSelector(selectActiveTowerDraftAssembly);
   const resolvedTower = useTypedSelector(selectResolvedEffectiveActiveTowerDraft);
-  const purchasedTechIds = useTypedSelector(selectPurchasedTechsIds);
+  const visibleTowerPartIds = useTypedSelector(selectVisibleTowerPartIds);
+  const unlockedTowerPartIds = useTypedSelector(selectUnlockedTowerPartIds);
   const cityResolution = useTypedSelector(selectCityResolution);
   const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>('platform');
@@ -123,21 +120,23 @@ const BuildPage = () => {
   };
 
   const selectedPartId = towerDraftAssembly.selectedPartIds[activeTab];
+  const visibleTowerPartIdSet = useMemo(() => new Set(visibleTowerPartIds), [visibleTowerPartIds]);
+  const unlockedTowerPartIdSet = useMemo(() => new Set(unlockedTowerPartIds), [unlockedTowerPartIds]);
   const availableSlotOptions = useMemo(() => (
     TOWER_PART_SLOT_ORDER
       .map((slotOption) => ({
         ...slotOption,
         partsCount: TOWER_PARTS.filter((part) => (
-          part.slot === slotOption.key && isPartUnlocked(part, purchasedTechIds)
+          part.slot === slotOption.key && visibleTowerPartIdSet.has(part.id)
         )).length,
       }))
       .filter((slotOption) => slotOption.partsCount > 0)
-  ), [purchasedTechIds]);
+  ), [visibleTowerPartIdSet]);
   const activeSlotParts = useMemo(
     () => TOWER_PARTS.filter((part) => (
-      part.slot === activeTab && isPartUnlocked(part, purchasedTechIds)
+      part.slot === activeTab && visibleTowerPartIdSet.has(part.id)
     )),
-    [activeTab, purchasedTechIds]
+    [activeTab, visibleTowerPartIdSet]
   );
 
   useEffect(() => {
@@ -250,15 +249,17 @@ const BuildPage = () => {
       cell: (info) => {
         const part = info.row.original;
         const selected = selectedPartId === part.id;
+        const unlocked = unlockedTowerPartIdSet.has(part.id);
         const blockedTitle = !canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined;
+        const lockedTitle = !unlocked ? 'This part is visible, but not permanently unlocked yet.' : undefined;
 
         return (
           <button
             className={selected ? s.removeButton : s.installButton}
-            disabled={!canModifyTower}
-            title={blockedTitle ?? (selected ? 'Remove this part from the draft tower.' : undefined)}
+            disabled={!canModifyTower || (!selected && !unlocked)}
+            title={blockedTitle ?? lockedTitle ?? (selected ? 'Remove this part from the draft tower.' : undefined)}
             onClick={() => {
-              if (!canModifyTower) return;
+              if (!canModifyTower || (!selected && !unlocked)) return;
               if (selected) {
                 dispatch(clearTowerDraftPart({ slot: activeTab }));
                 return;
@@ -272,7 +273,7 @@ const BuildPage = () => {
         );
       },
     },
-  ], [activeTab, canModifyTower, cityResolution.effectiveUpkeep, dispatch, resolvedTower.selectedParts, resolvedTower.supportCost, selectedPartId]);
+  ], [activeTab, canModifyTower, cityResolution.effectiveUpkeep, dispatch, resolvedTower.selectedParts, resolvedTower.supportCost, selectedPartId, unlockedTowerPartIdSet]);
 
   const table = useReactTable({
     data: activeSlotParts,
