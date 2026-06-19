@@ -23,7 +23,7 @@ const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
                 kind: row === -cityRadius ? "wall" : "city",
                 buildingKey: null,
                 developmentVector: DEVELOPMENT_VECTORS.medieval,
-                wallKey: row === -cityRadius ? walls.medieval.timberBulwark : null,
+                wallKey: row === -cityRadius ? walls.medieval.scrapBarricade : null,
                 wallDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
                 wallTopKey: column === 0 && row === -cityRadius ? superstructures.medieval.scaffoldTowerBase : null,
                 wallTopDevelopmentVector: DEVELOPMENT_VECTORS.medieval,

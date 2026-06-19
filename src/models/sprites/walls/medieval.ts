@@ -6,9 +6,9 @@ import scrapWallMetadata from "../../../assets/city/walls/medieval/wall_medieval
 import scrapWallUrl from "../../../assets/city/walls/medieval/wall_medieval_timber-bulwark.png";
 
 export const medievalWallSprites: SpriteList = {
-    [walls.medieval.timberBulwark]: scrapWallUrl,
+    [walls.medieval.scrapBarricade]: scrapWallUrl,
 };
 
 export const medievalWallSpriteMetadata: Record<string, WallSpriteMetadata> = {
-    [walls.medieval.timberBulwark]: scrapWallMetadata,
+    [walls.medieval.scrapBarricade]: scrapWallMetadata,
 };

@@ -40,11 +40,11 @@ export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): P
 
         const metadata = wallSpriteMetadataAtlas[segment.wallDevelopmentVector][segment.wallKey];
         const src = wallSpritesAtlas[segment.wallDevelopmentVector][segment.wallKey];
-        if (!metadata || !src || Assets.cache.has(metadata.spriteId) || queuedAliases.has(metadata.spriteId)) return [];
-        queuedAliases.add(metadata.spriteId);
+        if (!metadata || !src || Assets.cache.has(segment.wallKey) || queuedAliases.has(segment.wallKey)) return [];
+        queuedAliases.add(segment.wallKey);
 
         return [{
-            alias: metadata.spriteId,
+            alias: segment.wallKey,
             src,
         }];
     });

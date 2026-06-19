@@ -17,9 +17,6 @@ export type WallSpriteBounds = {
 };
 
 export type WallSpriteMetadata = {
-    id: string;
-    spriteId: string;
-    wallId: string;
     sourceSpriteSize: WallSpriteSize;
     targetSpriteSize: WallSpriteSize;
     sourceVisiblePixelBounds?: WallSpriteBounds;
