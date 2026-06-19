@@ -410,7 +410,7 @@ function createBattleWallLayer({
         const wallTopSpriteMetadata = segment.wallTopKey && segment.wallTopDevelopmentVector
             ? wallTopSpriteMetadataAtlas[segment.wallTopDevelopmentVector][segment.wallTopKey]
             : undefined;
-        const textureAlias = wallTopSpriteMetadata?.spriteId;
+        const textureAlias = wallTopSpriteMetadata ? segment.wallTopKey : undefined;
 
         if (textureAlias && Assets.cache.has(textureAlias)) {
             const sprite = new Sprite(Texture.from(textureAlias));

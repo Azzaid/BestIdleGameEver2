@@ -147,10 +147,11 @@ function getFileStem(path: string) {
 function buildAssetMap() {
   const assets: Record<string, EditorAsset> = {};
 
-  for (const module of Object.values(metadataModules)) {
+  for (const [path, module] of Object.entries(metadataModules)) {
     const metadata = module.default;
-    assets[metadata.id] = {
-      ...assets[metadata.id],
+    const id = getFileStem(path);
+    assets[id] = {
+      ...assets[id],
       metadata,
     };
   }
@@ -273,8 +274,6 @@ function getSvgPoint(svg: SVGSVGElement, clientX: number, clientY: number): Towe
 }
 
 function getJson(
-  partId: string,
-  spriteId: string,
   sourceSpriteSize: TowerVisualSize,
   targetSpriteSize: TowerVisualSize,
   rotationDegrees: number,
@@ -288,8 +287,6 @@ function getJson(
   );
 
   return JSON.stringify({
-    id: partId,
-    spriteId,
     sourceSpriteSize,
     targetSpriteSize,
     rotationDegrees,
@@ -419,7 +416,6 @@ export default function GunPartEditorPage() {
   const [selectedPartId, setSelectedPartId] = useState(initialPart.id);
   const selectedPart = TOWER_PARTS.find((part) => part.id === selectedPartId) ?? initialPart;
   const selectedAsset = EDITOR_ASSETS[selectedPart.id];
-  const [partId, setPartId] = useState(selectedPart.id);
   const [slot, setSlot] = useState<TowerPartSlot>(selectedPart.slot ?? 'barrel');
   const [sourceSpriteSize, setSourceSpriteSize] = useState<TowerVisualSize>(
     selectedAsset?.metadata?.sourceSpriteSize ?? DEFAULT_SOURCE_SIZE
@@ -441,7 +437,6 @@ export default function GunPartEditorPage() {
     const nextSourceSize = nextAsset?.metadata?.sourceSpriteSize ?? DEFAULT_SOURCE_SIZE;
     const nextSlot = nextPart.slot ?? 'barrel';
 
-    setPartId(nextPart.id);
     setSlot(nextSlot);
     setSourceSpriteSize(nextSourceSize);
     setTargetSpriteSize(nextAsset?.metadata?.targetSpriteSize ?? DEFAULT_TARGET_SIZE);
@@ -466,8 +461,8 @@ export default function GunPartEditorPage() {
   }, [selectedAsset?.metadata, selectedAsset?.src, slot]);
 
   const generatedJson = useMemo(
-    () => getJson(partId, selectedPart.sprite.textureKey, sourceSpriteSize, targetSpriteSize, rotationDegrees, sockets),
-    [partId, rotationDegrees, selectedPart.sprite.textureKey, sourceSpriteSize, sockets, targetSpriteSize]
+    () => getJson(sourceSpriteSize, targetSpriteSize, rotationDegrees, sockets),
+    [rotationDegrees, sourceSpriteSize, sockets, targetSpriteSize]
   );
 
   function updateSlot(nextSlot: TowerPartSlot) {
@@ -555,8 +550,8 @@ export default function GunPartEditorPage() {
       <section className={s.editorGrid}>
         <div className={s.controlsPanel}>
           <label className={s.field}>
-            <span className={s.label}>Part ID</span>
-            <input className={s.input} value={partId} onChange={(event) => setPartId(event.target.value)} />
+            <span className={s.label}>Asset ID</span>
+            <input className={s.input} value={selectedPart.id} readOnly />
           </label>
           <label className={s.field}>
             <span className={s.label}>Part Type</span>

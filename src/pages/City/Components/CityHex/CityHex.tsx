@@ -299,10 +299,10 @@ export default function CityHex({
                         ? spriteKey
                         : buildingKey;
                     const spriteUrl = kind === "city" && spriteLookupKey
-                        ? citySpriteAtlas?.[spriteLookupKey]
+                        ? citySpriteAtlas?.[spriteLookupKey]?.src
                         : undefined;
                     const wallSpriteUrl = kind === "wall" && wallKey && wallDevelopmentVector
-                        ? wallSpritesAtlas[wallDevelopmentVector]?.[wallKey]
+                        ? wallSpritesAtlas[wallDevelopmentVector]?.[wallKey]?.src
                         : undefined;
                     const wallSpriteMetadata = kind === "wall" && wallKey && wallDevelopmentVector
                         ? wallSpriteMetadataAtlas[wallDevelopmentVector]?.[wallKey]
@@ -310,7 +310,7 @@ export default function CityHex({
                     const wallSpriteWidth = wallSpriteMetadata?.targetSpriteSize.width ?? SPRITE_WIDTH;
                     const wallSpriteHeight = wallSpriteMetadata?.targetSpriteSize.height ?? SPRITE_HEIGHT;
                     const wallTopSpriteUrl = kind === "wall" && wallTopKey && wallDevelopmentVector
-                        ? wallTopSpritesAtlas[wallDevelopmentVector]?.[wallTopKey]
+                        ? wallTopSpritesAtlas[wallDevelopmentVector]?.[wallTopKey]?.src
                         : undefined;
                     const wallTopSpriteMetadata = kind === "wall" && wallTopKey && wallDevelopmentVector
                         ? wallTopSpriteMetadataAtlas[wallDevelopmentVector]?.[wallTopKey]

@@ -13,7 +13,11 @@ import {
 } from "../../data/identificators/index.ts";
 import {researchTree} from "../../data/research/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/towers/index.ts";
+import {TOWER_PART_VISUAL_ASSETS} from "../../data/towers/partVisualMetadata.ts";
 import {WALL_SEGMENT_BUILDINGS, TOWER_PLATFORM_BUILDINGS} from "../../data/wall/index.ts";
+import {buildingsSpriteAtlas} from "../../models/sprites/buildings/buildingsSpriteAtlas.ts";
+import {wallSpritesAtlas} from "../../models/sprites/walls/wallsSpriteAtlas.ts";
+import {wallTopSpritesAtlas} from "../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
 import type {ProgressionNodeKind} from "../../data/progression/types.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {Building} from "../../models/city/Building.ts";
@@ -42,7 +46,7 @@ type StatusFilter = AuditStatus | "any";
 
 const metadataModules = import.meta.glob("../../assets/battle/towerParts/**/*.json", {
   eager: true,
-}) as Record<string, { default: { id: string } }>;
+}) as Record<string, unknown>;
 
 const imageModules = import.meta.glob("../../assets/battle/towerParts/**/*.png", {
   eager: true,
@@ -50,8 +54,9 @@ const imageModules = import.meta.glob("../../assets/battle/towerParts/**/*.png",
   import: "default",
 }) as Record<string, string>;
 
-const gunPartMetadataIds = new Set(Object.values(metadataModules).map(module => module.default.id));
+const gunPartMetadataIds = new Set(Object.keys(metadataModules).map(getFileStem));
 const gunPartImageIds = new Set(Object.keys(imageModules).map(getFileStem));
+const registeredTowerPartAssetIds = new Set(Object.keys(TOWER_PART_VISUAL_ASSETS));
 
 function getFileStem(path: string) {
   return path.split("/").at(-1)?.replace(/\.(json|png)$/i, "") ?? path;
@@ -80,6 +85,7 @@ function createRows(): AuditRow[] {
   for (const item of flattenGroupedIds(buildings, "buildings")) {
     const vector = item.groupName as DevelopmentVectorKey;
     const data = BUILDINGS_ATLAS[DEVELOPMENT_VECTORS[vector]]?.[item.id];
+    const hasAsset = Boolean(buildingsSpriteAtlas[DEVELOPMENT_VECTORS[vector]]?.[item.id]?.src);
     rows.push({
       category: "Building",
       path: item.path,
@@ -87,8 +93,8 @@ function createRows(): AuditRow[] {
       name: data?.name,
       dataStatus: data ? "ok" : "missing",
       progressionStatus: getProgressionStatus("building", item.id),
-      assetStatus: "none",
-      notes: data ? `${vector} / ${data.type.description ?? "building"}` : "No building definition",
+      assetStatus: hasAsset ? "ok" : "none",
+      notes: data ? `${vector} / ${data.type.description ?? "building"} / asset ${hasAsset ? "yes" : "no"}` : "No building definition",
     });
   }
 
@@ -110,6 +116,7 @@ function createRows(): AuditRow[] {
     const data = TOWER_PARTS_BY_ID[item.id];
     const hasPng = gunPartImageIds.has(item.id);
     const hasJson = gunPartMetadataIds.has(item.id);
+    const isRegistered = registeredTowerPartAssetIds.has(item.id);
 
     rows.push({
       category: "Tower Part",
@@ -118,8 +125,8 @@ function createRows(): AuditRow[] {
       name: data?.name,
       dataStatus: data ? "ok" : "missing",
       progressionStatus: getProgressionStatus("towerPart", item.id),
-      assetStatus: hasPng && hasJson ? "ok" : "missing",
-      notes: data ? `${data.slot ?? "unknown slot"} / PNG ${hasPng ? "yes" : "no"} / JSON ${hasJson ? "yes" : "no"}` : "No tower part definition",
+      assetStatus: hasPng && hasJson && isRegistered ? "ok" : "missing",
+      notes: data ? `${data.slot ?? "unknown slot"} / PNG ${hasPng ? "yes" : "no"} / JSON ${hasJson ? "yes" : "no"} / registry ${isRegistered ? "yes" : "no"}` : "No tower part definition",
     });
   }
 
@@ -139,6 +146,8 @@ function createRows(): AuditRow[] {
 
   for (const item of flattenGroupedIds(walls, "walls")) {
     const data = WALL_SEGMENT_BUILDINGS[item.id];
+    const vector = item.groupName as DevelopmentVectorKey;
+    const hasAsset = Boolean(wallSpritesAtlas[DEVELOPMENT_VECTORS[vector]]?.[item.id]?.src);
     rows.push({
       category: "Wall",
       path: item.path,
@@ -146,13 +155,15 @@ function createRows(): AuditRow[] {
       name: data?.name,
       dataStatus: data ? "ok" : "missing",
       progressionStatus: "none",
-      assetStatus: "none",
-      notes: data ? describeWallBuildingStats(data) : "No wall segment definition",
+      assetStatus: hasAsset ? "ok" : "none",
+      notes: data ? `${describeWallBuildingStats(data)} / asset ${hasAsset ? "yes" : "no"}` : "No wall segment definition",
     });
   }
 
   for (const item of flattenGroupedIds(superstructures, "superstructures")) {
     const data = TOWER_PLATFORM_BUILDINGS[item.id];
+    const vector = item.groupName as DevelopmentVectorKey;
+    const hasAsset = Boolean(wallTopSpritesAtlas[DEVELOPMENT_VECTORS[vector]]?.[item.id]?.src);
     rows.push({
       category: "Superstructure",
       path: item.path,
@@ -160,8 +171,8 @@ function createRows(): AuditRow[] {
       name: data?.name,
       dataStatus: data ? "ok" : "missing",
       progressionStatus: "none",
-      assetStatus: "none",
-      notes: data ? `${describeWallBuildingStats(data)} / effects ${data.specialEffects.length}` : "No wall superstructure definition",
+      assetStatus: hasAsset ? "ok" : "none",
+      notes: data ? `${describeWallBuildingStats(data)} / effects ${data.specialEffects.length} / asset ${hasAsset ? "yes" : "no"}` : "No wall superstructure definition",
     });
   }
 

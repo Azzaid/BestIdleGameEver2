@@ -1,7 +1,7 @@
 import type {DevelopmentVectorValue} from "../../DevlopmentVector.ts";
-import type {SpriteList} from "../SpriteAtlas.ts";
+import type {SpriteAtlas} from "../SpriteAtlas.ts";
 
-export type WallSpriteAtlas = Record<DevelopmentVectorValue, SpriteList>;
+export type WallSpriteAtlas = SpriteAtlas<WallSpriteMetadata>;
 export type WallSpriteMetadataAtlas = Record<DevelopmentVectorValue, Record<string, WallSpriteMetadata>>;
 
 export type WallSpriteSize = {

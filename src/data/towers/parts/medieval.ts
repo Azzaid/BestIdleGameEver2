@@ -9,7 +9,7 @@ export const medievalTowerParts: GunPart[] = [
     name: 'Crude Wood Frame',
     description: 'A rough rotating scaffold lashed onto a wall tower platform.',
     vector: 'medieval',
-    sprite: {textureKey: 'medieval_base_crude-wood'},
+    sprite: {textureKey: gunparts.bases.medieval.crudeWoodFrame},
     attachmentOffset: {x: 0, y: 0},
     keywords: new Set(['rough', 'grounded', 'turret']),
     homogeneousValueEffects: [
@@ -25,7 +25,7 @@ export const medievalTowerParts: GunPart[] = [
     name: 'Stone Basket',
     description: 'A basket of hand-picked stones for the first city defensive towers.',
     vector: 'medieval',
-    sprite: {textureKey: 'medieval_ammo_crude-stone'},
+    sprite: {textureKey: gunparts.ammo.medieval.stoneBasket},
     attachmentOffset: {x: 0, y: 0},
     keywords: new Set(['projectile', 'stone']),
     homogeneousValueEffects: [
@@ -40,7 +40,7 @@ export const medievalTowerParts: GunPart[] = [
     name: 'Primitive Launcher',
     description: 'The starting launcher component for the first tower.',
     vector: 'medieval',
-    sprite: {textureKey: 'medieval_launcher_crude-sling'},
+    sprite: {textureKey: gunparts.launchSystems.medieval.crudeSling},
     attachmentOffset: {x: 0, y: 0},
     keywords: new Set(['mechanical', 'rough']),
     homogeneousValueEffects: [

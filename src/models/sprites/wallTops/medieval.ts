@@ -5,10 +5,9 @@ import {superstructures} from "../../../data/identificators/index.ts";
 import scaffoldTowerBaseMetadata from "../../../assets/city/wallTops/medieval/walltop_medieval_scaffold-tower-base.json";
 import scaffoldTowerBaseUrl from "../../../assets/city/wallTops/medieval/walltop_medieval_scaffold-tower-base.png";
 
-export const medievalWallTopSprites: SpriteList = {
-    [superstructures.medieval.scaffoldTowerBase]: scaffoldTowerBaseUrl,
-};
-
-export const medievalWallTopSpriteMetadata: Record<string, WallTopSpriteMetadata> = {
-    [superstructures.medieval.scaffoldTowerBase]: scaffoldTowerBaseMetadata,
+export const medievalWallTopSprites: SpriteList<WallTopSpriteMetadata> = {
+    [superstructures.medieval.scaffoldTowerBase]: {
+        src: scaffoldTowerBaseUrl,
+        metadata: scaffoldTowerBaseMetadata,
+    },
 };

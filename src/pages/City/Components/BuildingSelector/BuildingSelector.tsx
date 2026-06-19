@@ -106,7 +106,7 @@ export function BuildingSelector({
                             <section className={s.zoneRow}>
                                 <div className={s.previewCol}>
                                     <HexTilePreview
-                                        imageUrl={buildingsSpriteAtlas[building.vector][building.id]}
+                                        imageUrl={buildingsSpriteAtlas[building.vector][building.id]?.src}
                                     />
                                 </div>
                                 <div className={s.contentCol}>

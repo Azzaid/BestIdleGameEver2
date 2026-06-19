@@ -19,12 +19,12 @@ export async function loadBattleBackground(backgroundId: BattleBackgroundId): Pr
 }
 
 export async function loadTowerPartAssets(): Promise<void> {
-    const spriteAliases = new Set(TOWER_PARTS.map((part) => part.sprite.textureKey));
-    const assetsToLoad = Object.values(TOWER_PART_VISUAL_ASSETS)
-        .filter((asset) => spriteAliases.has(asset.metadata.spriteId))
-        .filter((asset) => !Assets.cache.has(asset.metadata.spriteId))
-        .map((asset) => ({
-            alias: asset.metadata.spriteId,
+    const partIds = new Set(TOWER_PARTS.map((part) => part.id));
+    const assetsToLoad = Object.entries(TOWER_PART_VISUAL_ASSETS)
+        .filter(([partId]) => partIds.has(partId))
+        .filter(([partId]) => !Assets.cache.has(partId))
+        .map(([partId, asset]) => ({
+            alias: partId,
             src: asset.src,
         }));
 
@@ -39,7 +39,7 @@ export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): P
         if (!segment.wallKey || !segment.wallDevelopmentVector) return [];
 
         const metadata = wallSpriteMetadataAtlas[segment.wallDevelopmentVector][segment.wallKey];
-        const src = wallSpritesAtlas[segment.wallDevelopmentVector][segment.wallKey];
+        const src = wallSpritesAtlas[segment.wallDevelopmentVector][segment.wallKey]?.src;
         if (!metadata || !src || Assets.cache.has(segment.wallKey) || queuedAliases.has(segment.wallKey)) return [];
         queuedAliases.add(segment.wallKey);
 
@@ -52,12 +52,12 @@ export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): P
         if (!segment.wallTopKey || !segment.wallTopDevelopmentVector) return [];
 
         const metadata = wallTopSpriteMetadataAtlas[segment.wallTopDevelopmentVector][segment.wallTopKey];
-        const src = wallTopSpritesAtlas[segment.wallTopDevelopmentVector][segment.wallTopKey];
-        if (!metadata || !src || Assets.cache.has(metadata.spriteId) || queuedAliases.has(metadata.spriteId)) return [];
-        queuedAliases.add(metadata.spriteId);
+        const src = wallTopSpritesAtlas[segment.wallTopDevelopmentVector][segment.wallTopKey]?.src;
+        if (!metadata || !src || Assets.cache.has(segment.wallTopKey) || queuedAliases.has(segment.wallTopKey)) return [];
+        queuedAliases.add(segment.wallTopKey);
 
         return [{
-            alias: metadata.spriteId,
+            alias: segment.wallTopKey,
             src,
         }];
     });

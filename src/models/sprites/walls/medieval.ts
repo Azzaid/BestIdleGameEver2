@@ -5,10 +5,9 @@ import {walls} from "../../../data/identificators/index.ts";
 import scrapWallMetadata from "../../../assets/city/walls/medieval/wall_medieval_timber-bulwark.json";
 import scrapWallUrl from "../../../assets/city/walls/medieval/wall_medieval_timber-bulwark.png";
 
-export const medievalWallSprites: SpriteList = {
-    [walls.medieval.scrapBarricade]: scrapWallUrl,
-};
-
-export const medievalWallSpriteMetadata: Record<string, WallSpriteMetadata> = {
-    [walls.medieval.scrapBarricade]: scrapWallMetadata,
+export const medievalWallSprites: SpriteList<WallSpriteMetadata> = {
+    [walls.medieval.scrapBarricade]: {
+        src: scrapWallUrl,
+        metadata: scrapWallMetadata,
+    },
 };
