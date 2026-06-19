@@ -125,10 +125,11 @@ export function useContentAutoUnlock(): void {
       if (!previousVisibleIdsRef.current.has(visibleId)) {
         const [kind, id] = visibleId.split(":");
         const name = getVisibleContentName(kind, id, buildingNamesById);
+        const label = getVisibleContentKindLabel(kind);
 
         sendNotification({
-          title: "New option visible",
-          message: `${name} is now visible.`,
+          title: `${label} now available`,
+          message: `${name} is now available.`,
           scheme: "congratulation",
         });
       }
@@ -139,10 +140,11 @@ export function useContentAutoUnlock(): void {
 
       const [kind, id] = previousVisibleId.split(":");
       const name = getVisibleContentName(kind, id, buildingNamesById);
+      const label = getVisibleContentKindLabel(kind);
 
       sendNotification({
-        title: "Option hidden",
-        message: `${name} is no longer visible.`,
+        title: `${label} no longer available`,
+        message: `${name} is no longer available.`,
         scheme: "warning",
       });
     }
@@ -180,8 +182,8 @@ function unlockNewIds(options: {
 
     options.notifiedIds.add(notificationId);
     sendNotification({
-      title: `${options.kind} unlocked`,
-      message: `${options.getName(id)} permanently unlocked.`,
+      title: `${options.kind} discovered`,
+      message: `${options.getName(id)} discovered.`,
       scheme: "congratulation",
     });
   }
@@ -198,4 +200,12 @@ function getVisibleContentName(
   if (kind === "wallSegment") return WALL_SEGMENT_BUILDINGS[id]?.name ?? id;
   if (kind === "wallSuperstructure") return TOWER_PLATFORM_BUILDINGS[id]?.name ?? id;
   return id;
+}
+
+function getVisibleContentKindLabel(kind: string | undefined): string {
+  if (kind === "building") return "Building";
+  if (kind === "towerPart") return "Tower part";
+  if (kind === "wallSegment") return "Wall segment";
+  if (kind === "wallSuperstructure") return "Tower platform";
+  return "Option";
 }

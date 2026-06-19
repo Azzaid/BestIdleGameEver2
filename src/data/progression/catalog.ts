@@ -1,4 +1,4 @@
-import {BUILDINGS_ATLAS, STRUCTURES} from "../buildings/index.ts";
+import {BUILDINGS_ATLAS} from "../buildings/index.ts";
 import {ALL_WALL_BUILDINGS} from "../wall/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {researchGraphValidationErrors, researchTree} from "../research/index.ts";
@@ -37,10 +37,7 @@ export const PROGRESSION_REGISTRY: ProgressionRegistry = {
     part.id,
     {name: part.name, vector: part.vector},
   ])),
-  structures: Object.fromEntries(STRUCTURES.map(structure => [
-    structure.id,
-    {name: structure.name, vector: structure.vector},
-  ])),
+  structures: {},
 };
 
 export const PROGRESSION_GRAPH = buildProgressionGraph(PROGRESSION_RULES, PROGRESSION_REGISTRY);
