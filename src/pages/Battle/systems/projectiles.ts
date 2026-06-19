@@ -11,7 +11,7 @@ export function ProjectilesSystem(world: World) {
       if (!enemyTf) continue;
       const dx = enemyTf.position.x - projTf.position.x;
       const dy = enemyTf.position.y - projTf.position.y;
-      const r = enemy.hitRadius ?? 14;
+      const r = (enemy.hitRadius ?? 14) + info.projectileRadius;
       if (dx*dx + dy*dy <= r*r) {
         applyProjectileDamage(world, enemyId, info);
         applyAreaDamage(world, enemyId, info);

@@ -11,9 +11,12 @@ export interface TowerData {
   burstCount: number;
   projectileDamage: number;
   projectileSpeed: number;
+  projectileRadius: number;
+  projectileSpread: number;
   aoeRadius: number;
   keywords: Set<string>;
   targetingDistanceLimit: number;
+  triggerTolerance: number;
 
   // Runtime targeting state
   rangePixels: number;

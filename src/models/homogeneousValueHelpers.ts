@@ -56,11 +56,22 @@ export function formatHomogeneousValue(
             return `${numberFormatter.format(rawValue)}s`;
         case "display.distance":
             return `${numberFormatter.format(rawValue)} px`;
+        case "display.triggerTolerance":
+            return formatTriggerTolerance(rawValue);
         case "display.damaged":
         case "display.default":
         default:
             return numberFormatter.format(rawValue);
     }
+}
+
+function formatTriggerTolerance(rawValue: number): string {
+    if (rawValue <= 0) return "zero";
+    if (rawValue <= 0.01) return "perfect";
+    if (rawValue <= 0.03) return "tight";
+    if (rawValue <= 0.06) return "medium";
+    if (rawValue <= 0.12) return "better";
+    return "low";
 }
 
 function getHomogeneousContributionsByRole(

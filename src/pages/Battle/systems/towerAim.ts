@@ -1,6 +1,13 @@
 import type { Transform } from '../../../models/battle/transform.ts';
 import type { MovementController } from '../../../models/battle/movement.ts';
 
+export function shortestAngleDelta(current: number, desired: number): number {
+  let d = desired - current;
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d < -Math.PI) d += 2 * Math.PI;
+  return d;
+}
+
 export function getProjectileSpawnPosition(
   basePosition: { x: number; y: number },
   angleRadians: number,

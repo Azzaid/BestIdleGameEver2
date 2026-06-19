@@ -38,9 +38,12 @@ export const HOMOGENEOUS_VALUE_IDS = {
     towerBurstCount: "tower.burstCount",
     towerProjectileDamage: "tower.projectileDamage",
     towerProjectileSpeed: "tower.projectileSpeed",
+    towerProjectileRadius: "tower.projectileRadius",
+    towerProjectileSpread: "tower.projectileSpread",
     towerAoeRadius: "tower.aoeRadius",
     towerTargetingDistanceLimit: "tower.targetingDistanceLimit",
     towerRetargetCooldownSeconds: "tower.retargetCooldownSeconds",
+    towerTriggerTolerance: "tower.triggerTolerance",
     towerWeight: "tower.weight",
 } as const satisfies Record<string, HomogeneousValueId>;
 
@@ -261,6 +264,18 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         keywords: ["tower", "projectileSpeed", "display.distance"],
         initialValue: BASE_TOWER_STATS.projectileSpeed,
     },
+    [HOMOGENEOUS_VALUE_IDS.towerProjectileRadius]: {
+        id: HOMOGENEOUS_VALUE_IDS.towerProjectileRadius,
+        label: "Tower Projectile Radius",
+        keywords: ["tower", "projectileRadius", "display.distance"],
+        initialValue: BASE_TOWER_STATS.projectileRadius,
+    },
+    [HOMOGENEOUS_VALUE_IDS.towerProjectileSpread]: {
+        id: HOMOGENEOUS_VALUE_IDS.towerProjectileSpread,
+        label: "Tower Projectile Spread",
+        keywords: ["tower", "projectileSpread", "display.default"],
+        initialValue: BASE_TOWER_STATS.projectileSpread,
+    },
     [HOMOGENEOUS_VALUE_IDS.towerAoeRadius]: {
         id: HOMOGENEOUS_VALUE_IDS.towerAoeRadius,
         label: "Tower AOE Radius",
@@ -278,6 +293,12 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         label: "Tower Retarget Cooldown",
         keywords: ["tower", "retargetCooldownSeconds", "display.seconds"],
         initialValue: BASE_TOWER_STATS.retargetCooldownSeconds,
+    },
+    [HOMOGENEOUS_VALUE_IDS.towerTriggerTolerance]: {
+        id: HOMOGENEOUS_VALUE_IDS.towerTriggerTolerance,
+        label: "Tower Trigger Tolerance",
+        keywords: ["tower", "triggerTolerance", "display.triggerTolerance"],
+        initialValue: BASE_TOWER_STATS.triggerTolerance,
     },
     [HOMOGENEOUS_VALUE_IDS.towerWeight]: {
         id: HOMOGENEOUS_VALUE_IDS.towerWeight,

@@ -1,6 +1,6 @@
 import { TOWER_PARTS_BY_ID, TOWER_PART_SLOT_ORDER, TOWER_SYNERGY_RULES, REQUIRED_TOWER_PART_SLOTS } from '../../data/towers/index.ts';
 import { TOWER_WEIGHT_ROTATION_PENALTY } from '../../data/constants.ts';
-import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount } from '../Upkeep.ts';
+import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../Upkeep.ts';
 import type { GunPart, TowerAssembly, TowerAssemblyResolved, TowerModifiers, TowerPartSlot } from './towerParts.ts';
 import {
   homogeneousValueTotalsToUpkeepAmount,
@@ -14,14 +14,17 @@ import {
 } from '../homogeneousValueResolution.ts';
 import type { HomogeneousResolvedValueMap } from '../homogeneousValues.ts';
 
-const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'reloadSpeed' | 'burstCount' | 'projectileDamage' | 'projectileSpeed' | 'targetingDistanceLimit' | 'retargetCooldownSeconds'> = {
+const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'reloadSpeed' | 'burstCount' | 'projectileDamage' | 'projectileSpeed' | 'projectileRadius' | 'projectileSpread' | 'targetingDistanceLimit' | 'retargetCooldownSeconds' | 'triggerTolerance'> = {
   rotationSpeed: 0.25,
   reloadSpeed: 0.1,
   burstCount: 1,
   projectileDamage: 1,
   projectileSpeed: 80,
+  projectileRadius: 0,
+  projectileSpread: 0,
   targetingDistanceLimit: 80,
   retargetCooldownSeconds: 0,
+  triggerTolerance: 0,
 };
 
 function addAimKeywords(target: string[], source?: string[]) {

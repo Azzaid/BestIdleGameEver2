@@ -11,9 +11,12 @@ export interface TowerModifiers {
   burstCount: number;
   projectileDamage: number;
   projectileSpeed: number;
+  projectileRadius: number;
+  projectileSpread: number;
   aoeRadius: number;
   targetingDistanceLimit: number;
   retargetCooldownSeconds: number;
+  triggerTolerance: number;
   weight: number;
 }
 
@@ -87,9 +90,12 @@ export interface TowerStatsResolved {
   burstCount: number;
   projectileDamage: number;
   projectileSpeed: number;
+  projectileRadius: number;
+  projectileSpread: number;
   aoeRadius: number;
   targetingDistanceLimit: number;
   retargetCooldownSeconds: number;
+  triggerTolerance: number;
   weight: number;
   keywords: Set<string>;
 }

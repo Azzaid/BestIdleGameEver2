@@ -66,9 +66,12 @@ export function homogeneousValueTotalsToTowerStats(
         burstCount: totals[HOMOGENEOUS_VALUE_IDS.towerBurstCount] ?? 0,
         projectileDamage: totals[HOMOGENEOUS_VALUE_IDS.towerProjectileDamage] ?? 0,
         projectileSpeed: totals[HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed] ?? 0,
+        projectileRadius: totals[HOMOGENEOUS_VALUE_IDS.towerProjectileRadius] ?? 0,
+        projectileSpread: totals[HOMOGENEOUS_VALUE_IDS.towerProjectileSpread] ?? 0,
         aoeRadius: totals[HOMOGENEOUS_VALUE_IDS.towerAoeRadius] ?? 0,
         targetingDistanceLimit: totals[HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit] ?? 0,
         retargetCooldownSeconds: totals[HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds] ?? 0,
+        triggerTolerance: totals[HOMOGENEOUS_VALUE_IDS.towerTriggerTolerance] ?? 0,
         weight: totals[HOMOGENEOUS_VALUE_IDS.towerWeight] ?? 0,
         keywords,
     };

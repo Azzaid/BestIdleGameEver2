@@ -1,12 +1,5 @@
 import type { World } from '../../../models/battle/world.ts';
-import { predictProjectileAimAngle } from './towerAim.ts';
-
-function shortestAngleDelta(current: number, desired: number): number {
-  let d = desired - current;
-  while (d > Math.PI) d -= 2 * Math.PI;
-  while (d < -Math.PI) d += 2 * Math.PI;
-  return d;
-}
+import { predictProjectileAimAngle, shortestAngleDelta } from './towerAim.ts';
 
 export function AimingSystem(world: World, dt: number) {
   for (const [towerId, tower] of world.towersData) {

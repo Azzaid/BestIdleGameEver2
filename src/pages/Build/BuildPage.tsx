@@ -291,10 +291,13 @@ const BuildPage = () => {
     ['Reload', `${resolvedTower.stats.reloadSpeed.toFixed(2)} shots/s`],
     ['Range', `${resolvedTower.stats.targetingDistanceLimit.toFixed(0)} px`],
     ['Projectile speed', `${resolvedTower.stats.projectileSpeed.toFixed(0)} px/s`],
+    ['Projectile radius', `${resolvedTower.stats.projectileRadius.toFixed(0)} px`],
+    ['Spread', `${resolvedTower.stats.projectileSpread.toFixed(2)} rad`],
     ['Rotation', `${resolvedTower.stats.rotationSpeed.toFixed(2)} rad/s`],
     ['Weight', resolvedTower.stats.weight.toFixed(0)],
     ['Area', `${resolvedTower.stats.aoeRadius.toFixed(0)} px`],
     ['Retarget', `${resolvedTower.stats.retargetCooldownSeconds.toFixed(2)} s`],
+    ['Trigger', formatHomogeneousValue(HOMOGENEOUS_VALUE_IDS.towerTriggerTolerance, resolvedTower.stats.triggerTolerance)],
   ];
 
   return (

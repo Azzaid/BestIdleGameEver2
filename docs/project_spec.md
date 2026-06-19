@@ -376,6 +376,7 @@ Current implementation:
 - The Build page stores selected tower part ids in Redux.
 - `src/models/battle/resolveTowerAssembly.ts` resolves stats, support costs, keywords, targeting behavior, warnings, and synergies.
 - Build and Battle share resolved tower state.
+- Tower projectile radius, projectile spread, and trigger tolerance are resolved as homogeneous tower values alongside damage, speed, range, reload, rotation, and area.
 - Shared tower content starts in `src/data/towers/parts`, with tower parts split by development vector.
 - Battle is blocked until the player assembles the first tower and commits it with Rebuild.
 - The most basic tower components are medieval and require no upkeep.

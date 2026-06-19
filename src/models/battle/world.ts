@@ -70,5 +70,5 @@ export interface World {
   battleEnded: boolean;
   towerReloadRemainingSeconds: Map<EntityId, number>;
 
-  projectileInfo: Map<EntityId, { damage: number; aoeRadius: number; keywords: Set<string> }>;
+  projectileInfo: Map<EntityId, { damage: number; projectileRadius: number; aoeRadius: number; keywords: Set<string> }>;
 }

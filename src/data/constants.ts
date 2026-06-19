@@ -34,8 +34,11 @@ export const BASE_TOWER_STATS = {
     burstCount: 1,
     projectileDamage: 10,
     projectileSpeed: 500,
+    projectileRadius: 3,
+    projectileSpread: 0.06,
     aoeRadius: 0,
     targetingDistanceLimit: 360,
     retargetCooldownSeconds: 0.25,
+    triggerTolerance: Math.PI,
     weight: 0,
 };
