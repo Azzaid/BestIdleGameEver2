@@ -25,7 +25,7 @@ const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
                 developmentVector: DEVELOPMENT_VECTORS.medieval,
                 wallKey: row === -cityRadius ? walls.medieval.scrapBarricade : null,
                 wallDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
-                wallTopKey: column === 0 && row === -cityRadius ? superstructures.medieval.scaffoldTowerBase : null,
+                wallTopKey: column === 0 && row === -cityRadius ? superstructures.medieval.oldStump : null,
                 wallTopDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
             });
         }

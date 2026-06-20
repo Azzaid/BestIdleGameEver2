@@ -71,7 +71,7 @@ export const assemblyGrid = style({
 });
 
 export const towerPreview = style({
-  display: 'block',
+  display: 'flex',
   minHeight: '340px',
   borderRight: `1px solid ${vars.color.border.default}`,
   '@media': {
@@ -83,8 +83,9 @@ export const towerPreview = style({
 });
 
 export const towerImage = style({
+  flex: 1,
   position: 'relative',
-  minHeight: '280px',
+  minHeight: '340px',
   overflow: 'hidden',
   borderRadius: '8px',
   background: `linear-gradient(180deg, ${vars.color.background.surface}, ${vars.color.background.surfaceHover})`,

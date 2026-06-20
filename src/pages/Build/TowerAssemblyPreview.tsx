@@ -1,10 +1,60 @@
-import { Application } from 'pixi.js';
+import { Application, Container, Sprite, Texture, TilingSprite } from 'pixi.js';
 import { useEffect, useMemo, useRef } from 'react';
 import type { TowerAssemblyPreviewProps } from '../../models/build/towerAssemblyPreview.ts';
 import { createTowerVisualDefinitionFromAssembly } from '../../data/towers/visuals.ts';
 import { loadBattleAssets } from '../Battle/assets/assetLoader.ts';
 import { buildTowerVisualContainer } from '../Battle/factories/towerVisualRenderer.ts';
 import { INITIAL_TOWER_AIM_RADIANS } from '../../models/battle/tower.ts';
+import { DEVELOPMENT_VECTORS } from '../../models/DevlopmentVector.ts';
+import { wallSpriteMetadataAtlas } from '../../models/sprites/walls/wallsSpriteAtlas.ts';
+import { wallTopSpriteMetadataAtlas } from '../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
+import { superstructures, walls } from '../../data/identificators/index.ts';
+import type { BattleWallSegment } from '../../models/battle/wallSegment.ts';
+import { CITY_HEX_SIZE } from '../../data/constants.ts';
+import { BATTLE_BACKGROUNDS, DEFAULT_BATTLE_BACKGROUND_ID } from '../../data/battle/backgrounds.ts';
+
+const previewWallSegment: BattleWallSegment = {
+  cellKey: 'tower-preview-wall',
+  wallKey: walls.medieval.scrapBarricade,
+  wallDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
+  wallTopKey: superstructures.medieval.oldStump,
+  wallTopDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
+};
+
+const wallMetadata = wallSpriteMetadataAtlas[DEVELOPMENT_VECTORS.medieval][walls.medieval.scrapBarricade];
+const wallTopMetadata = wallTopSpriteMetadataAtlas[DEVELOPMENT_VECTORS.medieval][superstructures.medieval.oldStump];
+const previewSegmentSize = 190;
+const previewCityToBattleScale = previewSegmentSize / CITY_HEX_SIZE;
+
+function createMountedTowerPreview(towerVisualDefinition: ReturnType<typeof createTowerVisualDefinitionFromAssembly>) {
+  const scene = new Container();
+  scene.sortableChildren = true;
+
+  const wall = new Sprite(Texture.from(walls.medieval.scrapBarricade));
+  wall.anchor.set(0.5);
+  wall.width = wallMetadata.targetSpriteSize.width * previewCityToBattleScale;
+  wall.height = wallMetadata.targetSpriteSize.height * previewCityToBattleScale;
+  wall.position.set(0, 0);
+  wall.zIndex = 1;
+  scene.addChild(wall);
+
+  const towerBase = new Sprite(Texture.from(superstructures.medieval.oldStump));
+  towerBase.anchor.set(0.5);
+  towerBase.width = wallTopMetadata.targetSpriteSize.width * previewCityToBattleScale;
+  towerBase.height = wallTopMetadata.targetSpriteSize.height * previewCityToBattleScale;
+  towerBase.position.set(0, 0);
+  towerBase.zIndex = 2;
+  scene.addChild(towerBase);
+
+  const { container: tower } = buildTowerVisualContainer(towerVisualDefinition);
+  tower.position.set(0, 0);
+  tower.rotation = INITIAL_TOWER_AIM_RADIANS;
+  tower.scale.set(1.35);
+  tower.zIndex = 3;
+  scene.addChild(tower);
+
+  return scene;
+}
 
 export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProps) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -34,20 +84,43 @@ export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProp
       }
 
       hostElement.appendChild(app.canvas);
-      await loadBattleAssets();
+      await loadBattleAssets({
+        backgroundId: DEFAULT_BATTLE_BACKGROUND_ID,
+        wallSegments: [previewWallSegment],
+      });
 
       if (disposed || !app) return;
 
-      const { container } = buildTowerVisualContainer(towerVisualDefinition);
-      container.position.set(app.renderer.width / 2, app.renderer.height * 0.66);
-      container.rotation = INITIAL_TOWER_AIM_RADIANS;
-      container.scale.set(1.15);
-      app.stage.addChild(container);
+      app.stage.sortableChildren = true;
+
+      const backgroundDefinition = BATTLE_BACKGROUNDS[DEFAULT_BATTLE_BACKGROUND_ID];
+      const background = new TilingSprite({
+        texture: Texture.from(backgroundDefinition.textureAlias),
+        width: app.renderer.width,
+        height: app.renderer.height,
+      });
+      background.zIndex = -10;
+      app.stage.addChild(background);
+
+      const scene = createMountedTowerPreview(towerVisualDefinition);
+      scene.zIndex = 1;
+      app.stage.addChild(scene);
 
       const resizePreview = () => {
         if (!app) return;
-        container.position.set(app.renderer.width / 2, app.renderer.height * 0.66);
+        const width = app.renderer.width;
+        const height = app.renderer.height;
+        const scale = Math.min(1.8, Math.max(1.25, Math.min(width / 320, height / 300) * 1.5));
+
+        background.width = width;
+        background.height = height;
+        background.tileScale.set(scale * 0.45);
+        background.tilePosition.set(width * 0.08, height * 0.1);
+        scene.position.set(width / 2, height * 0.6);
+        scene.scale.set(scale);
       };
+
+      resizePreview();
       app.renderer.on('resize', resizePreview);
     };
 
@@ -61,5 +134,5 @@ export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProp
     };
   }, [towerVisualDefinition]);
 
-  return <div ref={hostRef} style={{ width: '100%', height: '100%' }} aria-label="Tower assembly preview" />;
+  return <div ref={hostRef} style={{ position: 'absolute', inset: 0 }} aria-label="Tower assembly preview" />;
 }

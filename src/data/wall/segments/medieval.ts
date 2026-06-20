@@ -14,7 +14,7 @@ export const medievalWallSegments: Record<string, WallBuilding> = {
         walls.medieval.scrapBarricade,
         "Scrap barricade",
         "Just a pile of scrap an rubbish to fen off attackers",
-        {resilience: 5},
+        {resilience: 6},
     ),
     [walls.medieval.palisade]: segment(
         walls.medieval.palisade,

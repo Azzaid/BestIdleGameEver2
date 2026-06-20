@@ -118,7 +118,7 @@ const BuildPage = () => {
   const unlockedTowerPartIds = useTypedSelector(selectUnlockedTowerPartIds);
   const cityResolution = useTypedSelector(selectCityResolution);
   const signatureStatus = useTypedSelector(selectCitySignatureStatus);
-  const [activeTab, setActiveTab] = useState<TowerPartSlot>('platform');
+  const [activeTab, setActiveTab] = useState<TowerPartSlot>(TOWER_PART_SLOT_ORDER[0].key);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 8 });
@@ -319,6 +319,7 @@ const BuildPage = () => {
   const statRows = [
     ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
     ['Shots/s', resolvedTower.stats.shotsPerSecond.toFixed(2)],
+    ['Burst', resolvedTower.stats.burstCount.toFixed(0)],
     ['Range', `${resolvedTower.stats.targetingDistanceLimit.toFixed(0)} px`],
     ['Max range', formatOptionalLimit(resolvedTower.stats.maximumRange, HOMOGENEOUS_VALUE_IDS.towerMaximumRange)],
     ['Min range', formatOptionalLimit(resolvedTower.stats.minimumRange, HOMOGENEOUS_VALUE_IDS.towerMinimumRange, true)],

@@ -1,7 +1,7 @@
 import { TOWER_PARTS_BY_ID, TOWER_PART_SLOT_ORDER, TOWER_SYNERGY_RULES, REQUIRED_TOWER_PART_SLOTS } from '../../data/towers/index.ts';
 import { TOWER_WEIGHT_ROTATION_PENALTY } from '../../data/constants.ts';
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../Upkeep.ts';
-import type { GunPart, TowerAssembly, TowerAssemblyResolved, TowerModifiers, TowerPartSlot } from './towerParts.ts';
+import type { GunPart, TowerAssembly, TowerAssemblyResolved, TowerPartSlot } from './towerParts.ts';
 import {
   homogeneousValueTotalsToUpkeepAmount,
   homogeneousValueTotalsToTowerStats,
@@ -17,19 +17,6 @@ import {
   resolveTower,
 } from '../homogeneousValueResolution.ts';
 
-const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'shotsPerSecond' | 'burstCount' | 'projectileDamage' | 'projectileSpeed' | 'projectileRadius' | 'projectileSpread' | 'targetingDistanceLimit' | 'retargetCooldownSeconds' | 'triggerTolerance'> = {
-  rotationSpeed: 0.25,
-  shotsPerSecond: 0.1,
-  burstCount: 1,
-  projectileDamage: 1,
-  projectileSpeed: 80,
-  projectileRadius: 0,
-  projectileSpread: 0,
-  targetingDistanceLimit: 80,
-  retargetCooldownSeconds: 0,
-  triggerTolerance: 0,
-};
-
 function addAimKeywords(target: string[], source?: string[]) {
   if (!source) return;
 
@@ -37,12 +24,6 @@ function addAimKeywords(target: string[], source?: string[]) {
     if (!target.includes(keyword)) {
       target.push(keyword);
     }
-  }
-}
-
-function clampStats(stats: TowerAssemblyResolved['stats']) {
-  for (const key of Object.keys(MINIMUM_STAT_VALUES) as Array<keyof typeof MINIMUM_STAT_VALUES>) {
-    stats[key] = Math.max(MINIMUM_STAT_VALUES[key], stats[key]);
   }
 }
 
@@ -169,7 +150,11 @@ export function resolveTowerAssembly(
     contributions: cityValueEffects,
     modifiers: cityModifiers,
   }).resolvedValues;
-  const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(resolvedGunValues, resolvedCityValues, keywords);
+  const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(
+    resolvedGunValues,
+    resolvedCityValues,
+    keywords,
+  );
 
   return {
     selectedParts,
@@ -196,7 +181,6 @@ export function resolveTowerAssemblyStatsAndSupport(
   const stats = homogeneousValueTotalsToTowerStats(getAvailableValues(resolvedGunValues), keywords);
   const supportCost = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedCityValues));
   stats.rotationSpeed -= stats.weight * TOWER_WEIGHT_ROTATION_PENALTY;
-  clampStats(stats);
 
   return {stats, supportCost};
 }

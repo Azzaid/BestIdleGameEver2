@@ -1,4 +1,3 @@
 export const medievalSuperstructures = {
-  scaffoldTowerBase: "scaffoldTowerBase",
-  repulsorTowerBase: "repulsorTowerBase",
+  oldStump: "medieval_tower_oldStump",
 } as const;
