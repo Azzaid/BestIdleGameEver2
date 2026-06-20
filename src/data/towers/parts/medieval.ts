@@ -22,6 +22,8 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
       targetingDistanceLimit: 300,
       projectileSpread: 0.7,
       weight: 3,
+        retargetCooldownSeconds: 1,
+        rotationSpeed: 1.5,
     },
     {keywords: ["rough", "wood"]},
   ),
@@ -258,7 +260,30 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
             spriteTextureKey: "",
             keywords: ["stone"],
             requirements: [
-                requires.technologyUnlocked(technologies.medieval.woodworking),
+                requires.technologyUnlocked(technologies.medieval.stoneworking),
+                requires.buildingKeywordExists("stoneWorking"),
+            ],
+            supportCost: {
+                [UPKEEP_TYPES.people]: 2,
+                [UPKEEP_TYPES.gold]: 3,
+            },
+        },
+    ),
+    [gunparts.aimSystems.medieval.makeshiftWoodenAim]: part(
+        gunparts.aimSystems.medieval.makeshiftWoodenAim,
+        "aimSystem",
+        "Makeshift wooden aim",
+        "Few planks with holes in them but it still helps to land a shot",
+        {
+            targetingDistanceLimit: 100,
+            projectileSpread: -0.1,
+            retargetCooldownSeconds: -0.5,
+        },
+        {
+            spriteTextureKey: "",
+            keywords: ["stone"],
+            requirements: [
+                requires.technologyUnlocked(technologies.medieval.stoneworking),
                 requires.buildingKeywordExists("stoneWorking"),
             ],
             supportCost: {
@@ -280,7 +305,7 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
             spriteTextureKey: "",
             keywords: ["stone"],
             requirements: [
-                requires.technologyUnlocked(technologies.medieval.woodworking),
+                requires.technologyUnlocked(technologies.medieval.stoneworking),
                 requires.buildingKeywordExists("stoneWorking"),
             ],
             supportCost: {
@@ -299,7 +324,7 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
             spriteTextureKey: "",
             keywords: ["stone"],
             requirements: [
-                requires.technologyUnlocked(technologies.medieval.woodworking),
+                requires.technologyUnlocked(technologies.medieval.stoneworking),
                 requires.buildingKeywordExists("stoneWorking"),
             ],
             supportCost: {

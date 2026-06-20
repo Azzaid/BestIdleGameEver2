@@ -15,7 +15,9 @@ export const medievalGunparts = {
       sharpenedStakes: "medieval_ammo_base-sharpened_stakes",
       baseWoodArrow: "medieval_ammo_base-wood-arrow",
   },
-  aimSystems: {},
+  aimSystems: {
+      makeshiftWoodenAim: "medieval_aimSystems_makeshift_wooden_aim",
+  },
   barrelAttachments: {},
   loadingSystems: {
       leverLoader: "medieval_loader_lever_loader",
