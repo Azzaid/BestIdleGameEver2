@@ -37,7 +37,9 @@ function getPartKeywords(part: GunPart) {
 }
 
 function formatModifierList(part: GunPart) {
-  const effects = getHomogeneousProductionContributions(part).filter((effect) => (
+  const effects = getHomogeneousProductionContributions({
+    homogeneousValueEffects: part.gunHomogeneousValueEffects,
+  }).filter((effect) => (
     effect.valueId !== HOMOGENEOUS_VALUE_IDS.towerWeight
   ));
   if (!effects.length) return 'No stat modifiers';
@@ -53,18 +55,26 @@ function formatModifierList(part: GunPart) {
 
 function getPartSupportCost(part: GunPart): UpkeepAmount {
   return homogeneousValueTotalsToUpkeepAmount(
-    getUpkeepValues(resolveHomogeneousValueContributions(part.homogeneousValueEffects ?? [])),
+    getUpkeepValues(resolveHomogeneousValueContributions(part.cityHomogeneousValueEffects ?? [])),
   );
 }
 
 function getPartWeight(part: GunPart): number {
-  return getHomogeneousProductionContributions(part)
+  return getHomogeneousProductionContributions({
+    homogeneousValueEffects: part.gunHomogeneousValueEffects,
+  })
     .filter((effect) => effect.valueId === HOMOGENEOUS_VALUE_IDS.towerWeight)
     .reduce((total, effect) => total + resolveEffectValue(effect), 0);
 }
 
 function resolveEffectValue(effect: HomogeneousValueEffect): number {
   return (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
+}
+
+function formatOptionalLimit(value: number, valueId: string, zeroIsUnlimited = false): string {
+  return Number.isFinite(value) && (!zeroIsUnlimited || value > 0)
+    ? formatHomogeneousValue(valueId, value)
+    : 'Unlimited';
 }
 
 function getSupportStatus(required: UpkeepAmount, available: UpkeepAmount) {
@@ -310,10 +320,13 @@ const BuildPage = () => {
     ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
     ['Shots/s', resolvedTower.stats.shotsPerSecond.toFixed(2)],
     ['Range', `${resolvedTower.stats.targetingDistanceLimit.toFixed(0)} px`],
+    ['Max range', formatOptionalLimit(resolvedTower.stats.maximumRange, HOMOGENEOUS_VALUE_IDS.towerMaximumRange)],
+    ['Min range', formatOptionalLimit(resolvedTower.stats.minimumRange, HOMOGENEOUS_VALUE_IDS.towerMinimumRange, true)],
     ['Projectile speed', `${resolvedTower.stats.projectileSpeed.toFixed(0)} px/s`],
     ['Projectile radius', `${resolvedTower.stats.projectileRadius.toFixed(0)} px`],
     ['Spread', `${resolvedTower.stats.projectileSpread.toFixed(2)} rad`],
     ['Rotation', `${resolvedTower.stats.rotationSpeed.toFixed(2)} rad/s`],
+    ['Rotation limit', formatOptionalLimit(resolvedTower.stats.maximumRotationAngle, HOMOGENEOUS_VALUE_IDS.towerMaximumRotationAngle)],
     ['Weight', resolvedTower.stats.weight.toFixed(0)],
     ['Area', `${resolvedTower.stats.aoeRadius.toFixed(0)} px`],
     ['Retarget', `${resolvedTower.stats.retargetCooldownSeconds.toFixed(2)} s`],

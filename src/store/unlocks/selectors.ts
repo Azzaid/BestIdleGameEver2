@@ -1,7 +1,7 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
 import {TOWER_PARTS} from "../../data/towers/index.ts";
-import {WALL_SEGMENT_BUILDINGS, TOWER_PLATFORM_BUILDINGS} from "../../data/wall/index.ts";
+import {WALL_SEGMENT_BUILDINGS, WALL_TOWER_BUILDINGS} from "../../data/wall/index.ts";
 import {researchTree} from "../../data/research/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import type {GunPart} from "../../models/battle/towerParts.ts";
@@ -62,12 +62,12 @@ export const selectVisibleWallSegmentIds = createSelector(
 
 export const selectUnlockableWallSuperstructureIds = createSelector(
   [selectRequirementResolutionData],
-  (data) => getRuleMetIds(Object.values(TOWER_PLATFORM_BUILDINGS), data),
+  (data) => getRuleMetIds(Object.values(WALL_TOWER_BUILDINGS), data),
 );
 
 export const selectVisibleWallSuperstructureIds = createSelector(
   [selectRequirementResolutionData],
-  (data) => getVisibleIds(Object.values(TOWER_PLATFORM_BUILDINGS), data),
+  (data) => getVisibleIds(Object.values(WALL_TOWER_BUILDINGS), data),
 );
 
 export const selectUnlockableTechnologyIds = createSelector(

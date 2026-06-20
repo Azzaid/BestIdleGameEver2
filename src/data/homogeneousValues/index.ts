@@ -1,4 +1,8 @@
-import type {HomogeneousValueDefinition, HomogeneousValueId} from "../../models/homogeneousValues.ts";
+import type {
+    HomogeneousValueDefinition,
+    HomogeneousValueId,
+    HomogeneousValueResolutionConfig,
+} from "../../models/homogeneousValues.ts";
 import {BASE_TOWER_STATS} from "../constants.ts";
 
 export const HOMOGENEOUS_VALUE_IDS = {
@@ -43,6 +47,9 @@ export const HOMOGENEOUS_VALUE_IDS = {
     towerProjectileSpread: "tower.projectileSpread",
     towerAoeRadius: "tower.aoeRadius",
     towerTargetingDistanceLimit: "tower.targetingDistanceLimit",
+    towerMaximumRange: "tower.maximumRange",
+    towerMinimumRange: "tower.minimumRange",
+    towerMaximumRotationAngle: "tower.maximumRotationAngle",
     towerRetargetCooldownSeconds: "tower.retargetCooldownSeconds",
     towerTriggerTolerance: "tower.triggerTolerance",
     towerWeight: "tower.weight",
@@ -295,6 +302,24 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         keywords: ["tower", "targetingDistanceLimit", "display.distance"],
         initialValue: BASE_TOWER_STATS.targetingDistanceLimit,
     },
+    [HOMOGENEOUS_VALUE_IDS.towerMaximumRange]: {
+        id: HOMOGENEOUS_VALUE_IDS.towerMaximumRange,
+        label: "Tower Maximum Range",
+        keywords: ["tower", "maximumRange", "display.distance"],
+        initialValue: BASE_TOWER_STATS.maximumRange,
+    },
+    [HOMOGENEOUS_VALUE_IDS.towerMinimumRange]: {
+        id: HOMOGENEOUS_VALUE_IDS.towerMinimumRange,
+        label: "Tower Minimum Range",
+        keywords: ["tower", "minimumRange", "display.distance"],
+        initialValue: BASE_TOWER_STATS.minimumRange,
+    },
+    [HOMOGENEOUS_VALUE_IDS.towerMaximumRotationAngle]: {
+        id: HOMOGENEOUS_VALUE_IDS.towerMaximumRotationAngle,
+        label: "Tower Maximum Rotation Angle",
+        keywords: ["tower", "maximumRotationAngle", "display.default"],
+        initialValue: BASE_TOWER_STATS.maximumRotationAngle,
+    },
     [HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds]: {
         id: HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds,
         label: "Tower Retarget Cooldown",
@@ -314,6 +339,18 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         initialValue: BASE_TOWER_STATS.weight,
     },
 } as const satisfies Record<HomogeneousValueId, HomogeneousValueDefinition>;
+
+export const HOMOGENEOUS_VALUE_RESOLUTION_CONFIG: Partial<Record<HomogeneousValueId, HomogeneousValueResolutionConfig>> = {
+    [HOMOGENEOUS_VALUE_IDS.towerMaximumRange]: {
+        resolveType: "minimum",
+    },
+    [HOMOGENEOUS_VALUE_IDS.towerMinimumRange]: {
+        resolveType: "maximum",
+    },
+    [HOMOGENEOUS_VALUE_IDS.towerMaximumRotationAngle]: {
+        resolveType: "minimum",
+    },
+};
 
 export const HOMOGENEOUS_VALUE_DEFINITION_LIST = Object.values(HOMOGENEOUS_VALUE_DEFINITIONS);
 

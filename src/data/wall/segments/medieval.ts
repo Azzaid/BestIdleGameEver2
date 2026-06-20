@@ -8,7 +8,7 @@ export const medievalWallSegments: Record<string, WallBuilding> = {
         id: walls.medieval.scrapBarricade,
         name: "Scrap barricade",
         type: BUILDING_TYPES.wallSegment,
-        homogeneousValueEffects: [
+        cityHomogeneousValueEffects: [
             {
                 valueId: HOMOGENEOUS_VALUE_IDS.wallResilience,
                 additionalKeywords: ["production"],

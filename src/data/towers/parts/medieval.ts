@@ -14,7 +14,7 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
     gunparts.bases.medieval.crudeWoodFrame,
     "platform",
     "Crude Wood Frame",
-    "A rough rotating scaffold lashed onto a wall tower platform.",
+    "A rough rotating platform lashed into a wall tower.",
     {rotationSpeed: 0.25},
     {keywords: ["rough", "grounded", "turret"]},
   ),
@@ -116,7 +116,7 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
     gunparts.launchSystems.medieval.handTrebuchet,
     "launchSystem",
     "Hand drawn trebuchet",
-    "Flexible planks and a bit of rope. Basically a big bow attached to a tower base.",
+    "Flexible planks and a bit of rope. Basically a big bow attached to a gun platform.",
     {
       projectileDamage: 7,
       projectileSpeed: 400,

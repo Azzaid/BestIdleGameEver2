@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useRef} from "react";
 import {BUILDINGS_ATLAS} from "../data/buildings/index.ts";
 import {TOWER_PARTS_BY_ID} from "../data/towers/index.ts";
-import {TOWER_PLATFORM_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../data/wall/index.ts";
+import {WALL_TOWER_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../data/wall/index.ts";
 import {DEVELOPMENT_VECTORS} from "../models/DevlopmentVector.ts";
 import {sendNotification} from "../lib/notifications/eventBus.ts";
 import {useTypedDispatch, useTypedSelector} from "../store/hooks.ts";
@@ -87,8 +87,8 @@ export function useContentAutoUnlock(): void {
       unlockableIds: unlockableWallSuperstructureIds,
       unlockedIds: unlockedWallSuperstructureIds,
       action: ids => dispatch(unlockWallSuperstructures(ids)),
-      kind: "Tower platform",
-      getName: id => TOWER_PLATFORM_BUILDINGS[id]?.name ?? id,
+      kind: "Tower",
+      getName: id => WALL_TOWER_BUILDINGS[id]?.name ?? id,
       notifiedIds: notifiedUnlockIdsRef.current,
       notify,
     });
@@ -198,7 +198,7 @@ function getVisibleContentName(
   if (kind === "building") return buildingNamesById[id] ?? id;
   if (kind === "towerPart") return TOWER_PARTS_BY_ID[id]?.name ?? id;
   if (kind === "wallSegment") return WALL_SEGMENT_BUILDINGS[id]?.name ?? id;
-  if (kind === "wallSuperstructure") return TOWER_PLATFORM_BUILDINGS[id]?.name ?? id;
+  if (kind === "wallSuperstructure") return WALL_TOWER_BUILDINGS[id]?.name ?? id;
   return id;
 }
 
@@ -206,6 +206,6 @@ function getVisibleContentKindLabel(kind: string | undefined): string {
   if (kind === "building") return "Building";
   if (kind === "towerPart") return "Tower part";
   if (kind === "wallSegment") return "Wall segment";
-  if (kind === "wallSuperstructure") return "Tower platform";
+  if (kind === "wallSuperstructure") return "Tower";
   return "Option";
 }

@@ -268,8 +268,10 @@ export function resolveCityUpkeepAndSignature(
                 column: hexCell.column,
                 row: hexCell.row,
                 keywords: [String(wallBuilding.type), ...(wallBuilding.keywords ?? [])],
-                contributions: wallBuilding.homogeneousValueEffects ?? [],
-                modifiers: wallBuilding.homogeneousAdjacency,
+                contributions: wallBuilding.cityHomogeneousValueEffects ?? [],
+                modifiers: wallBuilding.cityHomogeneousAdjacency,
+                mountedGunContributions: wallBuilding.mountedGunHomogeneousValueEffects,
+                mountedGunModifiers: wallBuilding.mountedGunHomogeneousAdjacency,
             }];
         });
     });

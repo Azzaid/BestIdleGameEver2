@@ -14,6 +14,10 @@ export interface TowerData {
   aoeRadius: number;
   keywords: Set<string>;
   targetingDistanceLimit: number;
+  maximumRange: number;
+  minimumRange: number;
+  maximumRotationAngle: number;
+  zeroRotationRadians: number;
   triggerTolerance: number;
 
   // Runtime targeting state

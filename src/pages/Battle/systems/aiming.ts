@@ -20,13 +20,34 @@ export function AimingSystem(world: World, dt: number) {
       targetMovement: world.movements.get(tower.currentTarget),
       projectileSpeed: tower.projectileSpeed,
     });
-    const delta = shortestAngleDelta(gunTf.rotationRadians, desired);
+    const constrainedDesired = constrainTowerAimAngle(
+      desired,
+      tower.zeroRotationRadians,
+      tower.maximumRotationAngle,
+    );
+    const delta = shortestAngleDelta(gunTf.rotationRadians, constrainedDesired);
     const maxTurn = tower.rotationSpeed * dt;
     const applied = Math.max(-maxTurn, Math.min(maxTurn, delta));
 
-    gunTf.rotationRadians += applied;
+    gunTf.rotationRadians = constrainTowerAimAngle(
+      gunTf.rotationRadians + applied,
+      tower.zeroRotationRadians,
+      tower.maximumRotationAngle,
+    );
     baseTf.rotationRadians = gunTf.rotationRadians;
     gunTf.position.x = baseTf.position.x;
     gunTf.position.y = baseTf.position.y;
   }
+}
+
+function constrainTowerAimAngle(
+  angleRadians: number,
+  zeroRotationRadians: number,
+  maximumRotationAngle: number,
+): number {
+  if (!Number.isFinite(maximumRotationAngle)) return angleRadians;
+
+  const delta = shortestAngleDelta(zeroRotationRadians, angleRadians);
+  const constrainedDelta = Math.max(-maximumRotationAngle, Math.min(maximumRotationAngle, delta));
+  return zeroRotationRadians + constrainedDelta;
 }

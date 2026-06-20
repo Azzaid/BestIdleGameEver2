@@ -20,7 +20,8 @@ type TowerPartOptions = {
   spriteTextureKey?: string;
   aimKeywords?: string[];
   conflictsWithKeywords?: string[];
-  homogeneousValueEffects?: HomogeneousValueEffect[];
+  gunHomogeneousValueEffects?: HomogeneousValueEffect[];
+  cityHomogeneousValueEffects?: HomogeneousValueEffect[];
   children?: GunPart[];
 };
 
@@ -34,6 +35,9 @@ const statValueIds: Record<keyof TowerModifiers, string> = {
   projectileSpread: HOMOGENEOUS_VALUE_IDS.towerProjectileSpread,
   aoeRadius: HOMOGENEOUS_VALUE_IDS.towerAoeRadius,
   targetingDistanceLimit: HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit,
+  maximumRange: HOMOGENEOUS_VALUE_IDS.towerMaximumRange,
+  minimumRange: HOMOGENEOUS_VALUE_IDS.towerMinimumRange,
+  maximumRotationAngle: HOMOGENEOUS_VALUE_IDS.towerMaximumRotationAngle,
   retargetCooldownSeconds: HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds,
   triggerTolerance: HOMOGENEOUS_VALUE_IDS.towerTriggerTolerance,
   weight: HOMOGENEOUS_VALUE_IDS.towerWeight,
@@ -60,10 +64,13 @@ export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPart
       aimKeywords: options.aimKeywords,
       conflictsWithKeywords: options.conflictsWithKeywords,
       children: options.children,
-      homogeneousValueEffects: [
+      gunHomogeneousValueEffects: [
         ...towerStatsToHomogeneousValueEffects(stats),
+        ...(options.gunHomogeneousValueEffects ?? []),
+      ],
+      cityHomogeneousValueEffects: [
         ...upkeepAmountToHomogeneousValueEffects(options.supportCost ?? {}, "upkeep"),
-        ...(options.homogeneousValueEffects ?? []),
+        ...(options.cityHomogeneousValueEffects ?? []),
       ],
     };
   }

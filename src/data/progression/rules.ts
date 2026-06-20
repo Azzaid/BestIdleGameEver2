@@ -1,7 +1,7 @@
 import {BUILDINGS_ATLAS} from "../buildings/index.ts";
 import {researchTree} from "../research/index.ts";
 import {TOWER_PARTS} from "../towers/index.ts";
-import {TOWER_PLATFORM_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../wall/index.ts";
+import {WALL_TOWER_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../wall/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {defineProgression} from "./progression.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
@@ -37,7 +37,7 @@ function getProgressionRuleSources(): RuleSource[] {
       id: wallSegment.id,
       requirements: wallSegment.requirements,
     })),
-    ...Object.values(TOWER_PLATFORM_BUILDINGS).map((wallSuperstructure): RuleSource => ({
+    ...Object.values(WALL_TOWER_BUILDINGS).map((wallSuperstructure): RuleSource => ({
       kind: "building",
       id: wallSuperstructure.id,
       requirements: wallSuperstructure.requirements,

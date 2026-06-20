@@ -12,7 +12,7 @@ import {
 } from "../../store/city/selectors.ts";
 import {buildHex, buildWall, buildWallTop, demolishHex, buildMultistructure} from "../../store/city/slice.ts";
 import {UPKEEP_SPRITES, UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
-import {ALL_WALL_BUILDINGS, TOWER_PLATFORM_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
+import {ALL_WALL_BUILDINGS, WALL_TOWER_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
 import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
@@ -459,16 +459,25 @@ function HomogeneousContributionGroup({title, effects}: {title: string; effects:
 }
 
 function WallStats({wallBuilding}: {wallBuilding: WallBuilding}) {
+    const cityEffects = {homogeneousValueEffects: wallBuilding.cityHomogeneousValueEffects};
+    const mountedGunEffects = {homogeneousValueEffects: wallBuilding.mountedGunHomogeneousValueEffects};
+
     return (
         <>
             <HomogeneousContributionGroup
                 title="Upkeep"
-                effects={getHomogeneousRequirementContributions(wallBuilding)}
+                effects={getHomogeneousRequirementContributions(cityEffects)}
             />
             <HomogeneousContributionGroup
                 title="Stats"
-                effects={getHomogeneousProductionContributions(wallBuilding)}
+                effects={getHomogeneousProductionContributions(cityEffects)}
             />
+            {wallBuilding.mountedGunHomogeneousValueEffects?.length ? (
+                <HomogeneousContributionGroup
+                    title="Mounted gun"
+                    effects={getHomogeneousProductionContributions(mountedGunEffects)}
+                />
+            ) : null}
             {wallBuilding.specialEffects.length > 0 && (
                 <ul className={s.effectList}>
                     {wallBuilding.specialEffects.map((effect) => (
@@ -593,13 +602,13 @@ function WallBuildingSelector({
 }) {
     const visibleWallSegments = Object.values(WALL_SEGMENT_BUILDINGS)
         .filter(building => visibleWallSegmentIds.has(building.id));
-    const visibleWallSuperstructures = Object.values(TOWER_PLATFORM_BUILDINGS)
+    const visibleWallSuperstructures = Object.values(WALL_TOWER_BUILDINGS)
         .filter(building => visibleWallSuperstructureIds.has(building.id));
 
     return (
         <div className={s.wallSelector}>
             <WallBuildingList title="Wall" buildings={visibleWallSegments} unlockedBuildingIds={unlockedWallSegmentIds} onBuild={onBuildWall} blocked={blocked} blockedReason={blockedReason} />
-            <WallBuildingList title="On top of wall" buildings={visibleWallSuperstructures} unlockedBuildingIds={unlockedWallSuperstructureIds} onBuild={onBuildWallTop} blocked={blocked} blockedReason={blockedReason} />
+            <WallBuildingList title="Tower" buildings={visibleWallSuperstructures} unlockedBuildingIds={unlockedWallSuperstructureIds} onBuild={onBuildWallTop} blocked={blocked} blockedReason={blockedReason} />
         </div>
     );
 }

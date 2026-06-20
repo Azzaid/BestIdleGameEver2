@@ -18,6 +18,7 @@ import {
     getUpkeepValues,
     resolveCity,
     resolveHomogeneousValueContributions,
+    resolveTower,
 } from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
@@ -154,22 +155,24 @@ function createTowerEntities(
     cityResolution: CityResolution,
     resolvedTowers: readonly ResolvedAvailableTower[],
 ): HomogeneousValueEntitySource[] {
-    const towerBaseEntities = cityResolution.resolvedWallSegments.filter((entity) => (
+    const towerEntities = cityResolution.resolvedWallSegments.filter((entity) => (
         entity.entityType === "wallSuperstructure"
-        && (entity.keywords ?? []).includes(String(BUILDING_TYPES.towerBase))
+        && (entity.keywords ?? []).includes(String(BUILDING_TYPES.tower))
     ));
 
     return resolvedTowers.map(({tower, resolved}, index) => {
-        const towerBaseEntity = towerBaseEntities[index];
+        const wallTowerEntity = towerEntities[index];
 
         return {
             id: getTowerEntityId(tower.id),
             entityType: "tower",
-            cellKey: towerBaseEntity?.cellKey,
-            column: towerBaseEntity?.column,
-            row: towerBaseEntity?.row,
+            cellKey: wallTowerEntity?.cellKey,
+            column: wallTowerEntity?.column,
+            row: wallTowerEntity?.row,
             keywords: [...resolved.keywords],
-            contributions: resolved.homogeneousValueEffects,
+            contributions: resolved.cityHomogeneousValueEffects,
+            mountedGunContributions: wallTowerEntity?.mountedGunContributions,
+            mountedGunModifiers: wallTowerEntity?.mountedGunModifiers,
         };
     });
 }
@@ -184,7 +187,21 @@ function applyEffectiveTowerEntity(
 ): TowerAssemblyResolved {
     if (!effectiveTowerEntity) return resolvedTower;
 
+    const effectiveGunEntity = resolveTower({
+        id: `${effectiveTowerEntity.id}:gun`,
+        entityType: "tower",
+        cellKey: effectiveTowerEntity.cellKey,
+        column: effectiveTowerEntity.column,
+        row: effectiveTowerEntity.row,
+        keywords: [...resolvedTower.keywords],
+        contributions: [
+            ...resolvedTower.gunHomogeneousValueEffects,
+            ...(effectiveTowerEntity.mountedGunContributions ?? []),
+        ],
+        modifiers: effectiveTowerEntity.mountedGunModifiers,
+    });
     const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(
+        effectiveGunEntity.resolvedValues,
         effectiveTowerEntity.resolvedValues,
         resolvedTower.keywords,
     );
@@ -193,7 +210,8 @@ function applyEffectiveTowerEntity(
         ...resolvedTower,
         stats,
         supportCost,
-        homogeneousResolvedValues: effectiveTowerEntity.resolvedValues,
+        gunHomogeneousResolvedValues: effectiveGunEntity.resolvedValues,
+        cityHomogeneousResolvedValues: effectiveTowerEntity.resolvedValues,
     };
 }
 

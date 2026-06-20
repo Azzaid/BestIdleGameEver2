@@ -1,6 +1,7 @@
 // /battle/systems/targeting.ts
 import type { World } from '../../../models/battle/world.ts';
 import type {EntityId} from "../../../models/battle/common.ts";
+import {shortestAngleDelta} from "./towerAim.ts";
 
 
 /** Sort helper */
@@ -165,12 +166,22 @@ export function TargetingSystem(world: World, dtSeconds?: number) {
         }
 
         const basePos = world.transforms.get(towerId)!.position;
-        const limit2 = tower.targetingDistanceLimit * tower.targetingDistanceLimit;
+        const maximumDistance = getEffectiveMaximumTargetingDistance(tower.targetingDistanceLimit, tower.maximumRange);
+        const minimumDistance = getEffectiveMinimumTargetingDistance(tower.minimumRange);
+        const maximumDistance2 = maximumDistance * maximumDistance;
+        const minimumDistance2 = minimumDistance * minimumDistance;
 
         // Validate current target
         const currentPos = tower.currentTarget ? world.transforms.get(tower.currentTarget)?.position : undefined;
         const currentAlive = !!(tower.currentTarget && world.enemiesData.has(tower.currentTarget));
-        const currentInRange = !!(currentPos && ((currentPos.x - basePos.x) ** 2 + (currentPos.y - basePos.y) ** 2 <= limit2));
+        const currentInRange = !!(currentPos && isTargetInsideTowerConstraints(
+            currentPos,
+            basePos,
+            minimumDistance2,
+            maximumDistance2,
+            tower.zeroRotationRadians,
+            tower.maximumRotationAngle,
+        ));
         if (currentAlive && currentInRange && tower.retargetRemainingSeconds > 0) {
             continue; // keep the current target during the hold window
         }
@@ -180,9 +191,16 @@ export function TargetingSystem(world: World, dtSeconds?: number) {
         for (const [enemyId] of world.enemiesData) {
             const pos = world.transforms.get(enemyId)?.position;
             if (!pos) continue;
-            const dx = pos.x - basePos.x,
-                dy = pos.y - basePos.y;
-            if (dx * dx + dy * dy <= limit2) candidates.push(enemyId);
+            if (isTargetInsideTowerConstraints(
+                pos,
+                basePos,
+                minimumDistance2,
+                maximumDistance2,
+                tower.zeroRotationRadians,
+                tower.maximumRotationAngle,
+            )) {
+                candidates.push(enemyId);
+            }
         }
         if (candidates.length === 0) {
             tower.currentTarget = undefined;
@@ -196,4 +214,35 @@ export function TargetingSystem(world: World, dtSeconds?: number) {
 
         tower.currentTarget = chooseTargetByAimKeywords(world, towerId, candidates, tokens);
     }
+}
+
+function getEffectiveMaximumTargetingDistance(
+    targetingDistanceLimit: number,
+    maximumRange: number,
+): number {
+    return Number.isFinite(maximumRange)
+        ? Math.min(targetingDistanceLimit, maximumRange)
+        : targetingDistanceLimit;
+}
+
+function getEffectiveMinimumTargetingDistance(minimumRange: number): number {
+    return Number.isFinite(minimumRange) ? Math.max(0, minimumRange) : 0;
+}
+
+function isTargetInsideTowerConstraints(
+    targetPosition: { x: number; y: number },
+    towerPosition: { x: number; y: number },
+    minimumDistance2: number,
+    maximumDistance2: number,
+    zeroRotationRadians: number,
+    maximumRotationAngle: number,
+): boolean {
+    const dx = targetPosition.x - towerPosition.x;
+    const dy = targetPosition.y - towerPosition.y;
+    const distance2 = dx * dx + dy * dy;
+    if (distance2 < minimumDistance2 || distance2 > maximumDistance2) return false;
+    if (!Number.isFinite(maximumRotationAngle)) return true;
+
+    const targetAngle = Math.atan2(dy, dx);
+    return Math.abs(shortestAngleDelta(zeroRotationRadians, targetAngle)) <= maximumRotationAngle;
 }

@@ -16,7 +16,6 @@ import type { TowerAssemblyResolved } from '../../../models/battle/towerParts.ts
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
 import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/towers/visuals.ts';
 import type { BattleMetrics, BattleResult } from '../../../models/battle/world.ts';
-import { INITIAL_TOWER_AIM_RADIANS } from '../../../models/battle/tower.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX, CITY_HEX_SIZE } from '../../../data/constants.ts';
 import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
@@ -201,8 +200,13 @@ export function BattleStage(props: {
                     battlefieldWidth: props.battlefieldWidth,
                     wallY,
                 });
-                world.transforms.set(baseId, { position: towerPosition, rotationRadians: INITIAL_TOWER_AIM_RADIANS });
-                world.transforms.set(gunId,  { position: towerPosition, rotationRadians: INITIAL_TOWER_AIM_RADIANS });
+                const zeroRotationRadians = getTowerZeroRotationRadians({
+                    towerPosition,
+                    battlefieldWidth: props.battlefieldWidth,
+                    battlefieldHeight: props.battlefieldHeight,
+                });
+                world.transforms.set(baseId, { position: towerPosition, rotationRadians: zeroRotationRadians });
+                world.transforms.set(gunId,  { position: towerPosition, rotationRadians: zeroRotationRadians });
                 const towerVisualDefinition = createTowerVisualDefinitionFromAssembly(resolvedTower);
                 const towerVisual = buildTowerVisualContainer(towerVisualDefinition, { warn: () => {} });
                 towerVisual.container.zIndex = 30;
@@ -229,6 +233,10 @@ export function BattleStage(props: {
                     aoeRadius: resolvedTower.stats.aoeRadius,
                     keywords: new Set(resolvedTower.keywords),
                     targetingDistanceLimit: resolvedTower.stats.targetingDistanceLimit,
+                    maximumRange: resolvedTower.stats.maximumRange,
+                    minimumRange: resolvedTower.stats.minimumRange,
+                    maximumRotationAngle: resolvedTower.stats.maximumRotationAngle,
+                    zeroRotationRadians,
                     triggerTolerance: resolvedTower.stats.triggerTolerance,
                     rangePixels: resolvedTower.stats.targetingDistanceLimit,
                     currentTarget: undefined,
@@ -478,4 +486,19 @@ function getTowerAnchorPosition({
         x: battlefieldWidth * (towerIndex + 1) / (towerCount + 1),
         y: getWallTopAnchorY(wallY),
     };
+}
+
+function getTowerZeroRotationRadians({
+    towerPosition,
+    battlefieldWidth,
+    battlefieldHeight,
+}: {
+    towerPosition: { x: number; y: number };
+    battlefieldWidth: number;
+    battlefieldHeight: number;
+}) {
+    return Math.atan2(
+        battlefieldHeight / 2 - towerPosition.y,
+        battlefieldWidth / 2 - towerPosition.x,
+    );
 }

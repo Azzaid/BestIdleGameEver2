@@ -141,7 +141,7 @@ Effects:
 - Faster tower rotation.
 
 Description:
-A magical tower platform using floating stones.
+A magical wall tower using floating stones.
 
 ---
 
@@ -526,7 +526,7 @@ Unlocked By:
 - Living Clay (magic, technology)
 
 Description:
-An animated living tower platform.
+An animated living wall tower.
 
 Notes:
 Exact stats are undecided. It should probably mitigate weight and rotate without needing human crews.

@@ -55,7 +55,8 @@ export function resolveTowerAssembly(
   const selectedParts: TowerAssemblyResolved['selectedParts'] = {};
   const aimKeywords: string[] = [];
   const warnings: TowerAssemblyResolved['warnings'] = [];
-  const towerValueEffects: HomogeneousValueEffect[] = [];
+  const gunValueEffects: HomogeneousValueEffect[] = [];
+  const cityValueEffects: HomogeneousValueEffect[] = [];
 
   for (const { key: slot } of TOWER_PART_SLOT_ORDER) {
     const partId = assembly.selectedPartIds[slot];
@@ -73,8 +74,11 @@ export function resolveTowerAssembly(
 
     selectedParts[slot] = part;
     part.keywords.forEach((keyword) => keywords.add(keyword));
-    towerValueEffects.push(
-      ...(part.homogeneousValueEffects ?? []),
+    gunValueEffects.push(
+      ...(part.gunHomogeneousValueEffects ?? []),
+    );
+    cityValueEffects.push(
+      ...(part.cityHomogeneousValueEffects ?? []),
     );
     addAimKeywords(aimKeywords, part.aimKeywords);
 
@@ -114,8 +118,11 @@ export function resolveTowerAssembly(
     const active = rule.requiredKeywords.every((keyword) => keywords.has(keyword));
     if (!active) return [];
 
-    towerValueEffects.push(
-      ...(rule.homogeneousValueEffects ?? []),
+    gunValueEffects.push(
+      ...(rule.gunHomogeneousValueEffects ?? []),
+    );
+    cityValueEffects.push(
+      ...(rule.cityHomogeneousValueEffects ?? []),
     );
     rule.addKeywords?.forEach((keyword) => keywords.add(keyword));
     addAimKeywords(aimKeywords, rule.addAimKeywords);
@@ -131,21 +138,28 @@ export function resolveTowerAssembly(
     aimKeywords.push('closestToWall');
   }
 
-  const resolvedTower = resolveTower({
-    id: 'towerAssembly',
+  const resolvedGunValues = resolveTower({
+    id: 'towerAssemblyGun',
     entityType: 'tower',
     keywords: [...keywords],
-    contributions: towerValueEffects,
-  });
-  const resolvedTowerValues = resolvedTower.resolvedValues;
-  const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(resolvedTowerValues, keywords);
+    contributions: gunValueEffects,
+  }).resolvedValues;
+  const resolvedCityValues = resolveTower({
+    id: 'towerAssemblyCity',
+    entityType: 'tower',
+    keywords: [...keywords],
+    contributions: cityValueEffects,
+  }).resolvedValues;
+  const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(resolvedGunValues, resolvedCityValues, keywords);
 
   return {
     selectedParts,
     stats,
     supportCost,
-    homogeneousValueEffects: towerValueEffects,
-    homogeneousResolvedValues: resolvedTowerValues,
+    gunHomogeneousValueEffects: gunValueEffects,
+    cityHomogeneousValueEffects: cityValueEffects,
+    gunHomogeneousResolvedValues: resolvedGunValues,
+    cityHomogeneousResolvedValues: resolvedCityValues,
     keywords,
     aimKeywords,
     synergies,
@@ -154,11 +168,12 @@ export function resolveTowerAssembly(
 }
 
 export function resolveTowerAssemblyStatsAndSupport(
-  resolvedTowerValues: HomogeneousResolvedValueMap,
+  resolvedGunValues: HomogeneousResolvedValueMap,
+  resolvedCityValues: HomogeneousResolvedValueMap,
   keywords: Set<string>,
 ): Pick<TowerAssemblyResolved, 'stats' | 'supportCost'> {
-  const stats = homogeneousValueTotalsToTowerStats(getAvailableValues(resolvedTowerValues), keywords);
-  const supportCost = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedTowerValues));
+  const stats = homogeneousValueTotalsToTowerStats(getAvailableValues(resolvedGunValues), keywords);
+  const supportCost = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedCityValues));
   stats.rotationSpeed -= stats.weight * TOWER_WEIGHT_ROTATION_PENALTY;
   clampStats(stats);
 

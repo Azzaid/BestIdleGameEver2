@@ -1,6 +1,7 @@
 import {
     HOMOGENEOUS_VALUE_DEFINITION_LIST,
     HOMOGENEOUS_VALUE_DEFINITIONS,
+    HOMOGENEOUS_VALUE_RESOLUTION_CONFIG,
 } from "../data/homogeneousValues/index.ts";
 import type {
     HomogeneousAdjacencyRule,
@@ -9,6 +10,7 @@ import type {
     HomogeneousValueEffect,
     HomogeneousValueId,
     HomogeneousValueRoleKeyword,
+    HomogeneousValueResolveType,
     HomogeneousValueTotals,
 } from "./homogeneousValues.ts";
 import {HOMOGENEOUS_VALUE_ROLE_KEYWORDS} from "./homogeneousValues.ts";
@@ -27,6 +29,8 @@ export type HomogeneousValueEntitySource = {
     keywords?: readonly string[];
     contributions?: readonly HomogeneousValueEffect[];
     modifiers?: readonly HomogeneousAdjacencyRule[];
+    mountedGunContributions?: readonly HomogeneousValueEffect[];
+    mountedGunModifiers?: readonly HomogeneousAdjacencyRule[];
 };
 
 export type HomogeneousResolvedEntity = HomogeneousValueEntitySource & {
@@ -86,9 +90,14 @@ export function resolveHomogeneousValueContributions(
         const roleKeyword = getContributionRoleKeyword(keywords, effect.valueId);
         const contributionValue = resolveContributionValue(effect);
         const resolvedValue = resolvedValues[effect.valueId] ?? createEmptyResolvedValue();
+        const resolveType = getHomogeneousValueResolveType(effect.valueId);
 
         if (roleKeyword === "production") {
-            resolvedValue.producedValue += contributionValue;
+            resolvedValue.producedValue = resolveProducedValue(
+                resolvedValue.producedValue,
+                contributionValue,
+                resolveType,
+            );
         }
 
         if (roleKeyword === "upkeep") {
@@ -321,6 +330,26 @@ function createEmptyResolvedValue(): HomogeneousResolvedValue {
 function updateDerivedResolvedValue(resolvedValue: HomogeneousResolvedValue): void {
     resolvedValue.availableValue = resolvedValue.producedValue - resolvedValue.upkeepValue;
     resolvedValue.unlockSatisfied = resolvedValue.producedValue >= resolvedValue.unlockRequiredValue;
+}
+
+function getHomogeneousValueResolveType(valueId: HomogeneousValueId): HomogeneousValueResolveType {
+    return HOMOGENEOUS_VALUE_RESOLUTION_CONFIG[valueId]?.resolveType ?? "sum";
+}
+
+function resolveProducedValue(
+    currentValue: number,
+    contributionValue: number,
+    resolveType: HomogeneousValueResolveType,
+): number {
+    if (resolveType === "minimum") {
+        return Math.min(currentValue, contributionValue);
+    }
+
+    if (resolveType === "maximum") {
+        return Math.max(currentValue, contributionValue);
+    }
+
+    return currentValue + contributionValue;
 }
 
 function createEffectAccumulator(effect: HomogeneousValueEffect): EffectAccumulator {

@@ -14,7 +14,7 @@ import {
 import {researchTree} from "../../data/research/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/towers/index.ts";
 import {TOWER_PART_VISUAL_ASSETS} from "../../data/towers/partVisualMetadata.ts";
-import {WALL_SEGMENT_BUILDINGS, TOWER_PLATFORM_BUILDINGS} from "../../data/wall/index.ts";
+import {WALL_SEGMENT_BUILDINGS, WALL_TOWER_BUILDINGS} from "../../data/wall/index.ts";
 import {buildingsSpriteAtlas} from "../../models/sprites/buildings/buildingsSpriteAtlas.ts";
 import {wallSpritesAtlas} from "../../models/sprites/walls/wallsSpriteAtlas.ts";
 import {wallTopSpritesAtlas} from "../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
@@ -161,11 +161,11 @@ function createRows(): AuditRow[] {
   }
 
   for (const item of flattenGroupedIds(superstructures, "superstructures")) {
-    const data = TOWER_PLATFORM_BUILDINGS[item.id];
+    const data = WALL_TOWER_BUILDINGS[item.id];
     const vector = item.groupName as DevelopmentVectorKey;
     const hasAsset = Boolean(wallTopSpritesAtlas[DEVELOPMENT_VECTORS[vector]]?.[item.id]?.src);
     rows.push({
-      category: "Superstructure",
+      category: "Tower",
       path: item.path,
       id: item.id,
       name: data?.name,
@@ -180,7 +180,7 @@ function createRows(): AuditRow[] {
 }
 
 function describeWallBuildingStats(data: WallBuilding): string {
-  const producedValues = getProducedValues(resolveHomogeneousValueContributions(data.homogeneousValueEffects ?? []));
+  const producedValues = getProducedValues(resolveHomogeneousValueContributions(data.cityHomogeneousValueEffects ?? []));
   const resilience = producedValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0;
   const ignoredThreat = producedValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0;
 
@@ -231,9 +231,9 @@ function getUnregisteredRows(rows: readonly AuditRow[]): AuditRow[] {
     unregisteredRows.push(createUnregisteredRow("Wall", wall.id, wall.name));
   }
 
-  for (const structure of Object.values(TOWER_PLATFORM_BUILDINGS)) {
-    if (registeredIds.has(structure.id)) continue;
-    unregisteredRows.push(createUnregisteredRow("Superstructure", structure.id, structure.name));
+  for (const tower of Object.values(WALL_TOWER_BUILDINGS)) {
+    if (registeredIds.has(tower.id)) continue;
+    unregisteredRows.push(createUnregisteredRow("Tower", tower.id, tower.name));
   }
 
   return unregisteredRows;

@@ -1,6 +1,6 @@
 # Project Specification: Best Idle Game Ever 2
 
-Last updated: 2026-06-14 (local)
+Last updated: 2026-06-20 (local)
 
 This document is the repository's single project specification. It summarizes the implemented prototype and the current design direction from the rest of the `docs` folder. The focused design documents remain the deeper references for individual systems.
 
@@ -210,6 +210,8 @@ Support is produced by city infrastructure and consumed by:
 Resources are stored through one keyworded resource map under the hood. UI and derived selectors decide whether a resource is shown as ordinary support, an Aether orb component, or another specialized display.
 The current implementation routes resources, city metrics, monster modifiers, siege modifiers, wall stats, tower stats, and future derived game values through the homogeneous value registry in `src/data/homogeneousValues`. Content contributes `HomogeneousValueEffect` entries to registered values, and gameplay/UI code should read final values through selectors instead of reading those effects directly. Every contribution must carry exactly one role keyword: `production`, `upkeep`, or `unlock`. Production creates the resolved value, upkeep reduces available value, and unlock checks against produced value without spending it.
 
+Tower part homogeneous effects are split by scope. `gunHomogeneousValueEffects` are internal to the mounted gun and resolve that gun's stats only. `cityHomogeneousValueEffects` are the only tower-part effects contributed to the city resolution, usually support upkeep or explicit city-facing effects. Wall towers follow the same split with city-facing wall values and mounted-gun effects that apply only to the gun mounted on that wall tower.
+
 Homogeneous value resolution is a deterministic two-pass pipeline. First, each city hex entity collects active modifiers from its local hex, adjacency, and city-global effects. Global modifiers are identified by the `global` keyword on the modifier. Radius modifiers are adjacency modifiers. Modifiers without radius are local modifiers unless they contain `global`. Second, active modifiers are applied to contributions and final homogeneous values are resolved. Modifiers may affect contributions, but they do not affect other modifiers and do not depend on resolved city values.
 
 Current resources by vector:
@@ -316,7 +318,7 @@ The wall is the central connector between city and combat.
 In the city view:
 
 - The wall appears as the top row of city hexes.
-- Wall hexes can contain wall-specific buildings such as wall segments and tower platforms.
+- Wall hexes can contain wall-specific buildings such as wall segments and towers.
 
 In battle:
 
@@ -377,7 +379,8 @@ Current implementation:
 - The Build page stores selected tower part ids in Redux.
 - `src/models/battle/resolveTowerAssembly.ts` resolves stats, support costs, keywords, targeting behavior, warnings, and synergies.
 - Build and Battle share resolved tower state.
-- Tower projectile radius, projectile spread, and trigger tolerance are resolved as homogeneous tower values alongside damage, speed, range, reload, rotation, and area.
+- Tower projectile radius, projectile spread, trigger tolerance, maximum range, minimum range, and maximum rotation angle are resolved as homogeneous tower values alongside damage, speed, range, reload, rotation, and area. Maximum range, minimum range, and maximum rotation angle default to unlimited when no source contributes them. If multiple sources contribute maximum range or maximum rotation angle, the lower value wins; if multiple sources contribute minimum range, the higher value wins.
+- Gun stat values from tower parts stay inside the specific mounted gun assembly. Only city-scoped tower-part values enter city homogeneous totals, which prevents stats such as projectile damage from being summed into the city and reused by other towers.
 - Shared tower content starts in `src/data/towers/parts`, with tower parts split by development vector.
 - Battle is blocked until the player assembles the first tower and commits it with Rebuild.
 - The most basic tower components are medieval and require no upkeep.

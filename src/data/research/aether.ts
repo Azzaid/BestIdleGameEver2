@@ -32,7 +32,7 @@ export const aetherResearch: ResearchDB = {
     parentId: technologies.aether.mysticism,
     name: "Magic Stones",
     vector: "aether",
-    summary: "A shaman hut turns early ritual stones into useful floating tower platforms.",
+    summary: "A shaman hut turns early ritual stones into useful floating wall towers.",
     requirements: [
       requires.technologyUnlocked(technologies.aether.mysticism),
       requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 2),

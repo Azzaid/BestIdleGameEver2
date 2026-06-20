@@ -56,8 +56,10 @@ export const selectWallResolution = createSelector(
                     column: hex.column,
                     row: hex.row,
                     keywords: [String(wallBuilding.type), ...(wallBuilding.keywords ?? [])],
-                    contributions: wallBuilding.homogeneousValueEffects ?? [],
-                    modifiers: wallBuilding.homogeneousAdjacency,
+                    contributions: wallBuilding.cityHomogeneousValueEffects ?? [],
+                    modifiers: wallBuilding.cityHomogeneousAdjacency,
+                    mountedGunContributions: wallBuilding.mountedGunHomogeneousValueEffects,
+                    mountedGunModifiers: wallBuilding.mountedGunHomogeneousAdjacency,
                 });
             });
         });
@@ -83,11 +85,11 @@ export const selectWallThreatSuppression = createSelector(
     (resolution): number => resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0,
 );
 
-export const selectBuiltTowerPlatformCount = createSelector(
+export const selectBuiltWallTowerCount = createSelector(
     [selectCityHexes],
     (hexes): number => hexes.filter((hex) => {
         if (hex.kind !== "wall" || !hex.wallTopKey) return false;
 
-        return ALL_WALL_BUILDINGS[hex.wallTopKey]?.type === BUILDING_TYPES.towerBase;
+        return ALL_WALL_BUILDINGS[hex.wallTopKey]?.type === BUILDING_TYPES.tower;
     }).length
 );

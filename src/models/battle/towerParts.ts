@@ -15,6 +15,9 @@ export interface TowerModifiers {
   projectileSpread: number;
   aoeRadius: number;
   targetingDistanceLimit: number;
+  maximumRange: number;
+  minimumRange: number;
+  maximumRotationAngle: number;
   retargetCooldownSeconds: number;
   triggerTolerance: number;
   weight: number;
@@ -38,7 +41,8 @@ export interface GunPart extends RequirementGate {
   sprite: SpriteInfo;
   keywords: Set<string>;
   aimKeywords?: string[];
-  homogeneousValueEffects?: HomogeneousValueEffect[];
+  gunHomogeneousValueEffects?: HomogeneousValueEffect[];
+  cityHomogeneousValueEffects?: HomogeneousValueEffect[];
   conflictsWithKeywords?: string[];
   children?: GunPart[]; // chain within a slot
 }
@@ -52,7 +56,8 @@ export interface TowerSynergyRule {
   name: string;
   description: string;
   requiredKeywords: string[];
-  homogeneousValueEffects?: HomogeneousValueEffect[];
+  gunHomogeneousValueEffects?: HomogeneousValueEffect[];
+  cityHomogeneousValueEffects?: HomogeneousValueEffect[];
   addKeywords?: string[];
   addAimKeywords?: string[];
 }
@@ -83,6 +88,9 @@ export interface TowerStatsResolved {
   projectileSpread: number;
   aoeRadius: number;
   targetingDistanceLimit: number;
+  maximumRange: number;
+  minimumRange: number;
+  maximumRotationAngle: number;
   retargetCooldownSeconds: number;
   triggerTolerance: number;
   weight: number;
@@ -93,8 +101,10 @@ export interface TowerAssemblyResolved {
   selectedParts: Partial<Record<TowerPartSlot, GunPart>>;
   stats: TowerStatsResolved;
   supportCost: UpkeepAmount;
-  homogeneousValueEffects: HomogeneousValueEffect[];
-  homogeneousResolvedValues: HomogeneousResolvedValueMap;
+  gunHomogeneousValueEffects: HomogeneousValueEffect[];
+  cityHomogeneousValueEffects: HomogeneousValueEffect[];
+  gunHomogeneousResolvedValues: HomogeneousResolvedValueMap;
+  cityHomogeneousResolvedValues: HomogeneousResolvedValueMap;
   keywords: Set<string>;
   aimKeywords: string[];
   synergies: ResolvedTowerSynergy[];

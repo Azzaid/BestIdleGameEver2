@@ -505,7 +505,7 @@ Effects:
 - Faster tower rotation.
 
 Description:
-A magical tower platform using floating stones.
+A magical wall tower using floating stones.
 
 ---
 
@@ -915,7 +915,7 @@ Effects:
 - Strongly increases tower rotation speed.
 
 Description:
-A tower platform rotated by animal power through gears, ropes or capstans.
+A wall tower rotated by animal power through gears, ropes or capstans.
 
 ---
 

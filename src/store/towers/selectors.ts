@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../../models/store/appStore.ts';
 import { resolveTowerAssembly } from '../../models/battle/resolveTowerAssembly.ts';
-import { selectBuiltTowerPlatformCount } from '../wall/selectors.ts';
+import { selectBuiltWallTowerCount } from '../wall/selectors.ts';
 import {selectUnlockedTowerPartIds} from "../unlocks/selectors.ts";
 
 export const selectTowersState = (state: RootState) => state.towers;
@@ -12,8 +12,8 @@ export const selectTowerList = createSelector(
 );
 
 export const selectAvailableTowerList = createSelector(
-  [selectTowerList, selectBuiltTowerPlatformCount],
-  (towers, towerPlatformCount) => towers.slice(0, towerPlatformCount)
+  [selectTowerList, selectBuiltWallTowerCount],
+  (towers, wallTowerCount) => towers.slice(0, wallTowerCount)
 );
 
 export const selectActiveTower = createSelector(
