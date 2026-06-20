@@ -1,0 +1,135 @@
+import type {TowerModifiers} from "../../models/battle/towerParts.ts";
+import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
+import type {BuildingKeyword} from "../../models/city/Keywords.ts";
+import type {WallBuilding, WallSpecialEffect} from "../../models/city/Wall.ts";
+import type {DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {Requirement} from "../../models/progression/requirements.ts";
+import type {UpkeepAmount} from "../../models/Upkeep.ts";
+import {upkeepAmountToHomogeneousValueEffects} from "../../models/homogeneousValueAdapters.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../homogeneousValues/index.ts";
+
+type WallStats = {
+    resilience?: number;
+    threatSuppression?: number;
+};
+
+type MountedGunStats = Partial<TowerModifiers>;
+
+type WallFactoryOptions = {
+    vector: DevelopmentVectorValue;
+    defaultKeywords?: BuildingKeyword[];
+};
+
+type WallBuildingOptions = {
+    keywords?: BuildingKeyword[];
+    supportCost?: UpkeepAmount;
+    requirements?: Requirement[];
+    cityHomogeneousValueEffects?: HomogeneousValueEffect[];
+    cityHomogeneousAdjacency?: HomogeneousAdjacencyRule[];
+    mountedGunStats?: MountedGunStats;
+    mountedGunHomogeneousValueEffects?: HomogeneousValueEffect[];
+    mountedGunHomogeneousAdjacency?: HomogeneousAdjacencyRule[];
+    specialEffects?: WallSpecialEffect[];
+};
+
+const wallStatValueIds: Record<keyof WallStats, string> = {
+    resilience: HOMOGENEOUS_VALUE_IDS.wallResilience,
+    threatSuppression: HOMOGENEOUS_VALUE_IDS.wallThreatSuppression,
+};
+
+const mountedGunStatValueIds: Record<keyof TowerModifiers, string> = {
+    rotationSpeed: HOMOGENEOUS_VALUE_IDS.towerRotationSpeed,
+    shotsPerSecond: HOMOGENEOUS_VALUE_IDS.towerShotsPerSecond,
+    burstCount: HOMOGENEOUS_VALUE_IDS.towerBurstCount,
+    projectileDamage: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage,
+    projectileSpeed: HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed,
+    projectileRadius: HOMOGENEOUS_VALUE_IDS.towerProjectileRadius,
+    projectileSpread: HOMOGENEOUS_VALUE_IDS.towerProjectileSpread,
+    aoeRadius: HOMOGENEOUS_VALUE_IDS.towerAoeRadius,
+    targetingDistanceLimit: HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit,
+    maximumRange: HOMOGENEOUS_VALUE_IDS.towerMaximumRange,
+    minimumRange: HOMOGENEOUS_VALUE_IDS.towerMinimumRange,
+    maximumRotationAngle: HOMOGENEOUS_VALUE_IDS.towerMaximumRotationAngle,
+    retargetCooldownSeconds: HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds,
+    triggerTolerance: HOMOGENEOUS_VALUE_IDS.towerTriggerTolerance,
+    weight: HOMOGENEOUS_VALUE_IDS.towerWeight,
+};
+
+export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOptions) {
+    function segment(
+        id: string,
+        name: string,
+        description: string,
+        stats: WallStats = {},
+        options: WallBuildingOptions = {},
+    ): WallBuilding {
+        return wallBuilding(id, name, description, BUILDING_TYPES.wallSegment, stats, options);
+    }
+
+    function tower(
+        id: string,
+        name: string,
+        description: string,
+        stats: WallStats = {},
+        options: WallBuildingOptions = {},
+    ): WallBuilding {
+        return wallBuilding(id, name, description, BUILDING_TYPES.tower, stats, options);
+    }
+
+    function wallBuilding(
+        id: string,
+        name: string,
+        description: string,
+        type: WallBuilding["type"],
+        stats: WallStats,
+        options: WallBuildingOptions,
+    ): WallBuilding {
+        return {
+            id,
+            name,
+            type,
+            vector,
+            keywords: [...defaultKeywords, ...(options.keywords ?? [])],
+            requirements: options.requirements,
+            cityHomogeneousValueEffects: [
+                ...upkeepAmountToHomogeneousValueEffects(options.supportCost ?? {}, "upkeep"),
+                ...wallStatsToHomogeneousValueEffects(stats),
+                ...(options.cityHomogeneousValueEffects ?? []),
+            ],
+            cityHomogeneousAdjacency: options.cityHomogeneousAdjacency,
+            mountedGunHomogeneousValueEffects: [
+                ...mountedGunStatsToHomogeneousValueEffects(options.mountedGunStats ?? {}),
+                ...(options.mountedGunHomogeneousValueEffects ?? []),
+            ],
+            mountedGunHomogeneousAdjacency: options.mountedGunHomogeneousAdjacency,
+            specialEffects: options.specialEffects ?? [],
+            description,
+        };
+    }
+
+    return {
+        segment,
+        tower,
+    };
+}
+
+function wallStatsToHomogeneousValueEffects(stats: WallStats): HomogeneousValueEffect[] {
+    return (Object.entries(stats) as Array<[keyof WallStats, number | undefined]>)
+        .flatMap(([stat, additive]) => statToHomogeneousValueEffect(wallStatValueIds[stat], additive));
+}
+
+function mountedGunStatsToHomogeneousValueEffects(stats: MountedGunStats): HomogeneousValueEffect[] {
+    return (Object.entries(stats) as Array<[keyof TowerModifiers, number | undefined]>)
+        .flatMap(([stat, additive]) => statToHomogeneousValueEffect(mountedGunStatValueIds[stat], additive));
+}
+
+function statToHomogeneousValueEffect(valueId: string, additive: number | undefined): HomogeneousValueEffect[] {
+    if (additive === undefined || additive === 0) return [];
+
+    return [{
+        valueId,
+        additionalKeywords: ["production"],
+        additive,
+    }];
+}

@@ -1,21 +1,34 @@
-import {BUILDING_TYPES} from "../../../models/city/BuildingTypes.ts";
 import type {WallBuilding} from "../../../models/city/Wall.ts";
-import {walls} from "../../identificators/index.ts";
-import {HOMOGENEOUS_VALUE_IDS} from "../../homogeneousValues/index.ts";
+import {DEVELOPMENT_VECTORS} from "../../../models/DevlopmentVector.ts";
+import {technologies, walls} from "../../identificators/index.ts";
+import {createWallFactory} from "../wallFactory.ts";
+import {requires} from "../../requirements.ts";
+import {UPKEEP_TYPES} from "../../../models/Upkeep.ts";
+
+const {segment} = createWallFactory({
+    vector: DEVELOPMENT_VECTORS.medieval,
+});
 
 export const medievalWallSegments: Record<string, WallBuilding> = {
-    [walls.medieval.scrapBarricade]: {
-        id: walls.medieval.scrapBarricade,
-        name: "Scrap barricade",
-        type: BUILDING_TYPES.wallSegment,
-        cityHomogeneousValueEffects: [
-            {
-                valueId: HOMOGENEOUS_VALUE_IDS.wallResilience,
-                additionalKeywords: ["production"],
-                additive: 10,
+    [walls.medieval.scrapBarricade]: segment(
+        walls.medieval.scrapBarricade,
+        "Scrap barricade",
+        "Just a pile of scrap an rubbish to fen off attackers",
+        {resilience: 5},
+    ),
+    [walls.medieval.palisade]: segment(
+        walls.medieval.palisade,
+        "Palisade",
+        "Row of sharpened wood trunks. Strong but require a lot of maintenance",
+        {resilience: 10},
+        {
+            requirements: [
+                requires.technologyUnlocked(technologies.medieval.timberProcessing),
+                requires.buildingKeywordExists("timberwork"),
+            ],
+            supportCost: {
+                [UPKEEP_TYPES.people]: 4,
             },
-        ],
-        specialEffects: [],
-        description: "Just a pile of scrap an rubbish to fen off attackers",
-    },
+        }
+    ),
 };

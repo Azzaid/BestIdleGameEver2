@@ -18,6 +18,7 @@ export interface WallBuilding extends RequirementGate {
     id: string;
     name: string;
     type: BuildingTypesValue;
+    vector?: DevelopmentVectorValue;
     keywords?: BuildingKeyword[];
     cityHomogeneousValueEffects?: HomogeneousValueEffect[];
     cityHomogeneousAdjacency?: HomogeneousAdjacencyRule[];
