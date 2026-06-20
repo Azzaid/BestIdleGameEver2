@@ -1,19 +1,23 @@
 export const medievalGunparts = {
   bases: {
-    crudeWoodFrame: "medieval_base_crude-wood",
+      woodenRails: "medieval_base_wooden_rails",
   },
   barrels: {
       hollowedTrunk: "medieval_barrel_hollowed-trunk",
-      carvedTrunk: "medieval_barrel_carved-trunk",
+      carvedLog: "medieval_barrel_carved-log",
+      boredTimberBarrel: "medieval_barrel_bored-timber-barrel",
   },
   ammo: {
     stoneBasket: "medieval_ammo_crude-stone",
       pickedStones: "medieval_ammo_picked-stones",
+      sharpenedStakes: "medieval_ammo_base-sharpened_stakes",
       baseWoodArrow: "medieval_ammo_base-wood-arrow",
   },
   aimSystems: {},
   barrelAttachments: {},
-  loadingSystems: {},
+  loadingSystems: {
+      leverLoader: "medieval_loader_lever_loader",
+  },
   launchSystems: {
     crudeSling: "medieval_launcher_crude-sling",
       handTrebuchet: "medieval_launcher_hand-trebuchet",

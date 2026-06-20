@@ -1,5 +1,3 @@
-import medievalBaseCrudeWoodMetadata from '../../assets/battle/towerParts/medieval/medieval_base_crude-wood.json';
-import medievalBaseCrudeWoodUrl from '../../assets/battle/towerParts/medieval/medieval_base_crude-wood.png';
 import medievalAmmoCrudeStoneMetadata from '../../assets/battle/towerParts/medieval/medieval_ammo_crude-stone.json';
 import medievalAmmoCrudeStoneUrl from '../../assets/battle/towerParts/medieval/medieval_ammo_crude-stone.png';
 import medievalLauncherCrudeSlingMetadata from '../../assets/battle/towerParts/medieval/medieval_launcher_crude-sling.json';
@@ -65,10 +63,6 @@ function normalizeMetadata(metadata: TowerPartVisualMetadata): TowerPartVisualMe
 }
 
 export const TOWER_PART_VISUAL_ASSETS: Record<string, TowerPartVisualAsset> = {
-  [gunparts.bases.medieval.crudeWoodFrame]: {
-    metadata: normalizeMetadata(medievalBaseCrudeWoodMetadata),
-    src: medievalBaseCrudeWoodUrl,
-  },
   [gunparts.ammo.medieval.stoneBasket]: {
     metadata: normalizeMetadata(medievalAmmoCrudeStoneMetadata),
     src: medievalAmmoCrudeStoneUrl,

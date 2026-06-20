@@ -30,7 +30,7 @@ export const TOWER_WEIGHT_ROTATION_PENALTY = 0.08;
 
 export const BASE_TOWER_STATS = {
     rotationSpeed: 1.5,
-    shotsPerSecond: 2.0,
+    shotsPerSecond: 0,
     burstCount: 0,
     projectileDamage: 0,
     projectileSpeed: 0,

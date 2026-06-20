@@ -36,7 +36,7 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       3,
       {[UPKEEP_TYPES.gold]: 1},
       {[UPKEEP_TYPES.people]: 2},
-      ["production", "gold", "salvage"],
+      ["production", "gold", "scavenger"],
     ),
     multiHexStructure: multiHexStructure(buildings.medieval.scrapCollectionPoint, [
       structureRule(buildings.medieval.stalkerHut, [
@@ -51,7 +51,7 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     7,
     {[UPKEEP_TYPES.people]: 5, [UPKEEP_TYPES.gold]: 3},
     {},
-    ["production", "people", "gold", "salvage"],
+    ["production", "people", "gold", "scavenger"],
   ),
   [buildings.medieval.toolShed]: {
     ...building(
@@ -79,7 +79,7 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     16,
     {[UPKEEP_TYPES.people]: 4, [UPKEEP_TYPES.gold]: 5},
     {},
-    ["production", "people", "gold", "wood"],
+    ["production", "people", "gold", "wood", "timberwork"],
   ),
   [buildings.medieval.farm]: superstructure(
     buildings.medieval.farm,
@@ -116,7 +116,7 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     18,
     {[UPKEEP_TYPES.people]: 8, [UPKEEP_TYPES.gold]: 5},
     {},
-    ["production", "people", "gold", "craft"],
+    ["production", "people", "gold", "craft", "woodWorking", "stoneWorking"],
   ),
   [buildings.medieval.market]: building(
     buildings.medieval.market,
