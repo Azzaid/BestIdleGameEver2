@@ -1,13 +1,11 @@
 import type { EntityId } from './common.ts';
 
-export type GunSlotDirection = 0 | 1 | 2 | 3;
-
 export const INITIAL_TOWER_AIM_RADIANS = -Math.PI / 2;
 
 export interface TowerData {
   // Resolved from the build phase (keywords + numeric mods)
   rotationSpeed: number;   // rad/sec
-  reloadSpeed: number;     // shots/sec
+  shotsPerSecond: number;
   burstCount: number;
   projectileDamage: number;
   projectileSpeed: number;

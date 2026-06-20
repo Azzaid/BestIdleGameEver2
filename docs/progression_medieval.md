@@ -387,7 +387,7 @@ Unlocked By:
 - Farm (medieval, superstructure)
 
 Effects:
-- Increases reload speed.
+- Increases shots per second.
 
 Description:
 An early tower crew improvement. People are trained to operate the tower rather than relying on whoever reaches it first.
@@ -968,7 +968,7 @@ Unlocked By:
 - Trade (medieval, technology)
 
 Effects:
-- Increases reload speed.
+- Increases shots per second.
 
 Description:
 A paid and trained tower crew member. Reloading is handled by a permanent shift instead of random citizens.

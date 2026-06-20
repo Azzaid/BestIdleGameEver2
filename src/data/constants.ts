@@ -29,15 +29,15 @@ export const MAX_TOWER_SLOTS = 5;
 export const TOWER_WEIGHT_ROTATION_PENALTY = 0.08;
 
 export const BASE_TOWER_STATS = {
-    rotationSpeed: 2.5,
-    reloadSpeed: 1.0,
-    burstCount: 1,
-    projectileDamage: 10,
-    projectileSpeed: 500,
-    projectileRadius: 3,
-    projectileSpread: 0.06,
+    rotationSpeed: 1.5,
+    shotsPerSecond: 2.0,
+    burstCount: 0,
+    projectileDamage: 0,
+    projectileSpeed: 0,
+    projectileRadius: 0,
+    projectileSpread: 0,
     aoeRadius: 0,
-    targetingDistanceLimit: 360,
+    targetingDistanceLimit: 0,
     retargetCooldownSeconds: 0.25,
     triggerTolerance: Math.PI,
     weight: 0,

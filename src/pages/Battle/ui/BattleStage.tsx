@@ -220,7 +220,7 @@ export function BattleStage(props: {
 
                 world.towersData.set(baseId, {
                     rotationSpeed: resolvedTower.stats.rotationSpeed,
-                    reloadSpeed: resolvedTower.stats.reloadSpeed,
+                    shotsPerSecond: resolvedTower.stats.shotsPerSecond,
                     burstCount: resolvedTower.stats.burstCount,
                     projectileDamage: resolvedTower.stats.projectileDamage,
                     projectileSpeed: resolvedTower.stats.projectileSpeed,

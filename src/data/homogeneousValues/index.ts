@@ -35,7 +35,7 @@ export const HOMOGENEOUS_VALUE_IDS = {
     wallResilience: "wall.resilience",
     wallThreatSuppression: "wall.threatSuppression",
     towerRotationSpeed: "tower.rotationSpeed",
-    towerReloadSpeed: "tower.reloadSpeed",
+    towerShotsPerSecond: "tower.shotsPerSecond",
     towerBurstCount: "tower.burstCount",
     towerProjectileDamage: "tower.projectileDamage",
     towerProjectileSpeed: "tower.projectileSpeed",
@@ -247,11 +247,11 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         keywords: ["tower", "rotationSpeed", "display.default"],
         initialValue: BASE_TOWER_STATS.rotationSpeed,
     },
-    [HOMOGENEOUS_VALUE_IDS.towerReloadSpeed]: {
-        id: HOMOGENEOUS_VALUE_IDS.towerReloadSpeed,
-        label: "Tower Reload Speed",
-        keywords: ["tower", "reloadSpeed", "display.default"],
-        initialValue: BASE_TOWER_STATS.reloadSpeed,
+    [HOMOGENEOUS_VALUE_IDS.towerShotsPerSecond]: {
+        id: HOMOGENEOUS_VALUE_IDS.towerShotsPerSecond,
+        label: "Tower Shots Per Second",
+        keywords: ["tower", "shotsPerSecond", "display.default"],
+        initialValue: BASE_TOWER_STATS.shotsPerSecond,
     },
     [HOMOGENEOUS_VALUE_IDS.towerBurstCount]: {
         id: HOMOGENEOUS_VALUE_IDS.towerBurstCount,

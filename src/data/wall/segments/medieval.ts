@@ -15,9 +15,7 @@ export const medievalWallSegments: Record<string, WallBuilding> = {
                 additive: 10,
             },
         ],
-        specialEffects: [
-            {keyword: "push", value: 6, description: "Periodic shove against enemies near the wall"},
-        ],
-        description: "A fast-built wooden wall line that buys the city its first real safety margin.",
+        specialEffects: [],
+        description: "Just a pile of scrap an rubbish to fen off attackers",
     },
 };

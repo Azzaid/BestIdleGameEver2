@@ -48,7 +48,7 @@ export function FiringSystem(world: World, dt: number) {
     }
 
     // Reset weapon timer & hold current target to prevent wobble
-    world.towerReloadRemainingSeconds.set(towerId, 1 / Math.max(0.0001, tower.reloadSpeed));
+    world.towerReloadRemainingSeconds.set(towerId, 1 / Math.max(0.0001, tower.shotsPerSecond));
     tower.retargetRemainingSeconds = tower.retargetCooldownSeconds;
   }
 }

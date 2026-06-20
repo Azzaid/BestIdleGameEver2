@@ -308,7 +308,7 @@ const BuildPage = () => {
   };
   const statRows = [
     ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
-    ['Reload', `${resolvedTower.stats.reloadSpeed.toFixed(2)} shots/s`],
+    ['Shots/s', resolvedTower.stats.shotsPerSecond.toFixed(2)],
     ['Range', `${resolvedTower.stats.targetingDistanceLimit.toFixed(0)} px`],
     ['Projectile speed', `${resolvedTower.stats.projectileSpeed.toFixed(0)} px/s`],
     ['Projectile radius', `${resolvedTower.stats.projectileRadius.toFixed(0)} px`],

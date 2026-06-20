@@ -14,9 +14,9 @@ import {
 } from '../homogeneousValueResolution.ts';
 import type { HomogeneousResolvedValueMap } from '../homogeneousValues.ts';
 
-const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'reloadSpeed' | 'burstCount' | 'projectileDamage' | 'projectileSpeed' | 'projectileRadius' | 'projectileSpread' | 'targetingDistanceLimit' | 'retargetCooldownSeconds' | 'triggerTolerance'> = {
+const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'shotsPerSecond' | 'burstCount' | 'projectileDamage' | 'projectileSpeed' | 'projectileRadius' | 'projectileSpread' | 'targetingDistanceLimit' | 'retargetCooldownSeconds' | 'triggerTolerance'> = {
   rotationSpeed: 0.25,
-  reloadSpeed: 0.1,
+  shotsPerSecond: 0.1,
   burstCount: 1,
   projectileDamage: 1,
   projectileSpeed: 80,

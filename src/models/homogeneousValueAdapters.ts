@@ -62,7 +62,7 @@ export function homogeneousValueTotalsToTowerStats(
 ): TowerStatsResolved {
     return {
         rotationSpeed: totals[HOMOGENEOUS_VALUE_IDS.towerRotationSpeed] ?? 0,
-        reloadSpeed: totals[HOMOGENEOUS_VALUE_IDS.towerReloadSpeed] ?? 0,
+        shotsPerSecond: totals[HOMOGENEOUS_VALUE_IDS.towerShotsPerSecond] ?? 0,
         burstCount: totals[HOMOGENEOUS_VALUE_IDS.towerBurstCount] ?? 0,
         projectileDamage: totals[HOMOGENEOUS_VALUE_IDS.towerProjectileDamage] ?? 0,
         projectileSpeed: totals[HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed] ?? 0,

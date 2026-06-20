@@ -349,7 +349,7 @@ Unlocked By:
 - Ancestor Spirits (magic, technology)
 
 Effects:
-- Greatly increases reload speed.
+- Greatly increases shots per second.
 
 Description:
 A ghostly loader that manipulates tower mechanisms.

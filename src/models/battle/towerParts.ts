@@ -1,4 +1,3 @@
-import type { GunSlotDirection } from './tower.ts';
 import type { SpriteInfo } from './spriteInfo.ts';
 import type { DevelopmentVectorKey } from '../DevlopmentVector.ts';
 import type { UpkeepAmount } from '../Upkeep.ts';
@@ -8,7 +7,7 @@ import type {RequirementGate} from '../progression/requirements.ts';
 
 export interface TowerModifiers {
   rotationSpeed: number;
-  reloadSpeed: number;
+  shotsPerSecond: number;
   burstCount: number;
   projectileDamage: number;
   projectileSpeed: number;
@@ -37,16 +36,11 @@ export interface GunPart extends RequirementGate {
   description?: string;
   vector?: DevelopmentVectorKey;
   sprite: SpriteInfo;
-  attachmentOffset: { x: number; y: number };
   keywords: Set<string>;
   aimKeywords?: string[];
   homogeneousValueEffects?: HomogeneousValueEffect[];
   conflictsWithKeywords?: string[];
   children?: GunPart[]; // chain within a slot
-}
-
-export interface TowerBuild {
-  slots: Partial<Record<GunSlotDirection, GunPart[]>>;
 }
 
 export interface TowerAssembly {
@@ -81,7 +75,7 @@ export interface TowerBuildWarning {
 
 export interface TowerStatsResolved {
   rotationSpeed: number;
-  reloadSpeed: number;
+  shotsPerSecond: number;
   burstCount: number;
   projectileDamage: number;
   projectileSpeed: number;
