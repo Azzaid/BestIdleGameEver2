@@ -1,0 +1,87 @@
+import type {DevelopmentVectorKey} from "../../../models/DevlopmentVector.ts";
+import type {HomogeneousValueEffect} from "../../../models/homogeneousValues.ts";
+import type {Requirement} from "../../../models/progression/requirements.ts";
+import type {UpkeepAmount} from "../../../models/Upkeep.ts";
+import type {GunPart, TowerModifiers, TowerPartSlot} from "../../../models/battle/towerParts.ts";
+import {upkeepAmountToHomogeneousValueEffects} from "../../../models/homogeneousValueAdapters.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../../homogeneousValues/index.ts";
+
+type TowerPartStats = Partial<TowerModifiers>;
+
+type TowerPartFactoryOptions = {
+  vector: DevelopmentVectorKey;
+  defaultKeywords?: string[];
+};
+
+type TowerPartOptions = {
+  keywords?: string[];
+  supportCost?: UpkeepAmount;
+  requirements?: Requirement[];
+  spriteTextureKey?: string;
+  aimKeywords?: string[];
+  conflictsWithKeywords?: string[];
+  homogeneousValueEffects?: HomogeneousValueEffect[];
+  children?: GunPart[];
+};
+
+const statValueIds: Record<keyof TowerModifiers, string> = {
+  rotationSpeed: HOMOGENEOUS_VALUE_IDS.towerRotationSpeed,
+  shotsPerSecond: HOMOGENEOUS_VALUE_IDS.towerShotsPerSecond,
+  burstCount: HOMOGENEOUS_VALUE_IDS.towerBurstCount,
+  projectileDamage: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage,
+  projectileSpeed: HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed,
+  projectileRadius: HOMOGENEOUS_VALUE_IDS.towerProjectileRadius,
+  projectileSpread: HOMOGENEOUS_VALUE_IDS.towerProjectileSpread,
+  aoeRadius: HOMOGENEOUS_VALUE_IDS.towerAoeRadius,
+  targetingDistanceLimit: HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit,
+  retargetCooldownSeconds: HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds,
+  triggerTolerance: HOMOGENEOUS_VALUE_IDS.towerTriggerTolerance,
+  weight: HOMOGENEOUS_VALUE_IDS.towerWeight,
+};
+
+export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPartFactoryOptions) {
+  function part(
+    id: string,
+    slot: TowerPartSlot,
+    name: string,
+    description: string,
+    stats: TowerPartStats = {},
+    options: TowerPartOptions = {},
+  ): GunPart {
+    return {
+      id,
+      slot,
+      name,
+      description,
+      vector,
+      sprite: {textureKey: options.spriteTextureKey ?? id},
+      keywords: new Set([...defaultKeywords, slot, ...(options.keywords ?? [])]),
+      requirements: options.requirements,
+      aimKeywords: options.aimKeywords,
+      conflictsWithKeywords: options.conflictsWithKeywords,
+      children: options.children,
+      homogeneousValueEffects: [
+        ...towerStatsToHomogeneousValueEffects(stats),
+        ...upkeepAmountToHomogeneousValueEffects(options.supportCost ?? {}, "upkeep"),
+        ...(options.homogeneousValueEffects ?? []),
+      ],
+    };
+  }
+
+  return {
+    part,
+  };
+}
+
+function towerStatsToHomogeneousValueEffects(stats: TowerPartStats): HomogeneousValueEffect[] {
+  return (Object.entries(stats) as Array<[keyof TowerModifiers, number | undefined]>)
+    .flatMap(([stat, additive]) => {
+      if (additive === undefined || additive === 0) return [];
+
+      return [{
+        valueId: statValueIds[stat],
+        additionalKeywords: ["production"],
+        additive,
+      }];
+    });
+}
