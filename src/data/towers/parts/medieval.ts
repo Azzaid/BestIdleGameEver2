@@ -57,6 +57,7 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
       projectileSpeed: -100,
       targetingDistanceLimit: -100,
       weight: 2,
+        projectileRadius: 5,
     },
     {keywords: ["stone"]},
   ),
@@ -293,7 +294,7 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
         "loadingSystem",
         "Counterweight loader",
         "Loader with a handy stone counterweight. Allows to handle bigger projectiles just as quick",
-        {projectileSize},
+        {projectileRadius: 4},
         {
             spriteTextureKey: "",
             keywords: ["stone"],
@@ -305,6 +306,12 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 [UPKEEP_TYPES.people]: 1,
                 [UPKEEP_TYPES.gold]: 5,
             },
+            gunHomogeneousModifiers: [
+                {
+                    requiredValueKeywords: ["projectileDamage"],
+                    multiplier: 1.2,
+                },
+            ],
         },
     ),
 };

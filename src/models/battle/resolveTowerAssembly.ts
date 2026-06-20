@@ -6,13 +6,16 @@ import {
   homogeneousValueTotalsToUpkeepAmount,
   homogeneousValueTotalsToTowerStats,
 } from '../homogeneousValueAdapters.ts';
-import type { HomogeneousValueEffect } from '../homogeneousValues.ts';
+import type {
+  HomogeneousAdjacencyRule,
+  HomogeneousResolvedValueMap,
+  HomogeneousValueEffect,
+} from '../homogeneousValues.ts';
 import {
   getAvailableValues,
   getUpkeepValues,
   resolveTower,
 } from '../homogeneousValueResolution.ts';
-import type { HomogeneousResolvedValueMap } from '../homogeneousValues.ts';
 
 const MINIMUM_STAT_VALUES: Pick<TowerModifiers, 'rotationSpeed' | 'shotsPerSecond' | 'burstCount' | 'projectileDamage' | 'projectileSpeed' | 'projectileRadius' | 'projectileSpread' | 'targetingDistanceLimit' | 'retargetCooldownSeconds' | 'triggerTolerance'> = {
   rotationSpeed: 0.25,
@@ -57,6 +60,8 @@ export function resolveTowerAssembly(
   const warnings: TowerAssemblyResolved['warnings'] = [];
   const gunValueEffects: HomogeneousValueEffect[] = [];
   const cityValueEffects: HomogeneousValueEffect[] = [];
+  const gunModifiers: HomogeneousAdjacencyRule[] = [];
+  const cityModifiers: HomogeneousAdjacencyRule[] = [];
 
   for (const { key: slot } of TOWER_PART_SLOT_ORDER) {
     const partId = assembly.selectedPartIds[slot];
@@ -79,6 +84,12 @@ export function resolveTowerAssembly(
     );
     cityValueEffects.push(
       ...(part.cityHomogeneousValueEffects ?? []),
+    );
+    gunModifiers.push(
+      ...(part.gunHomogeneousModifiers ?? []),
+    );
+    cityModifiers.push(
+      ...(part.cityHomogeneousModifiers ?? []),
     );
     addAimKeywords(aimKeywords, part.aimKeywords);
 
@@ -124,6 +135,12 @@ export function resolveTowerAssembly(
     cityValueEffects.push(
       ...(rule.cityHomogeneousValueEffects ?? []),
     );
+    gunModifiers.push(
+      ...(rule.gunHomogeneousModifiers ?? []),
+    );
+    cityModifiers.push(
+      ...(rule.cityHomogeneousModifiers ?? []),
+    );
     rule.addKeywords?.forEach((keyword) => keywords.add(keyword));
     addAimKeywords(aimKeywords, rule.addAimKeywords);
 
@@ -143,12 +160,14 @@ export function resolveTowerAssembly(
     entityType: 'tower',
     keywords: [...keywords],
     contributions: gunValueEffects,
+    modifiers: gunModifiers,
   }).resolvedValues;
   const resolvedCityValues = resolveTower({
     id: 'towerAssemblyCity',
     entityType: 'tower',
     keywords: [...keywords],
     contributions: cityValueEffects,
+    modifiers: cityModifiers,
   }).resolvedValues;
   const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(resolvedGunValues, resolvedCityValues, keywords);
 
@@ -158,6 +177,8 @@ export function resolveTowerAssembly(
     supportCost,
     gunHomogeneousValueEffects: gunValueEffects,
     cityHomogeneousValueEffects: cityValueEffects,
+    gunHomogeneousModifiers: gunModifiers,
+    cityHomogeneousModifiers: cityModifiers,
     gunHomogeneousResolvedValues: resolvedGunValues,
     cityHomogeneousResolvedValues: resolvedCityValues,
     keywords,

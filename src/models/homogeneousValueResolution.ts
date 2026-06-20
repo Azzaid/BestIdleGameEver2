@@ -57,6 +57,7 @@ type EffectSource = {
 
 type EffectAccumulator = {
     valueId: HomogeneousValueId;
+    roleKeyword: HomogeneousValueRoleKeyword;
     keywords: Set<string>;
     additive: number;
     multiplier: number;
@@ -84,32 +85,31 @@ export function resolveHomogeneousValueContributions(
     effects: readonly HomogeneousValueEffect[],
 ): HomogeneousResolvedValueMap {
     const resolvedValues = createInitialHomogeneousResolvedValues();
+    const contributionAccumulators = groupHomogeneousValueEffects(effects);
 
-    for (const effect of effects) {
-        const keywords = getEffectKeywords(effect);
-        const roleKeyword = getContributionRoleKeyword(keywords, effect.valueId);
-        const contributionValue = resolveContributionValue(effect);
-        const resolvedValue = resolvedValues[effect.valueId] ?? createEmptyResolvedValue();
-        const resolveType = getHomogeneousValueResolveType(effect.valueId);
+    for (const accumulator of contributionAccumulators) {
+        const resolvedValue = resolvedValues[accumulator.valueId] ?? createEmptyResolvedValue();
+        const resolveType = getHomogeneousValueResolveType(accumulator.valueId);
+        const contributionValue = resolveAccumulatorValue(
+            accumulator,
+            resolvedValue.producedValue,
+            resolveType,
+        );
 
-        if (roleKeyword === "production") {
-            resolvedValue.producedValue = resolveProducedValue(
-                resolvedValue.producedValue,
-                contributionValue,
-                resolveType,
-            );
+        if (accumulator.roleKeyword === "production") {
+            resolvedValue.producedValue = contributionValue;
         }
 
-        if (roleKeyword === "upkeep") {
+        if (accumulator.roleKeyword === "upkeep") {
             resolvedValue.upkeepValue += contributionValue;
         }
 
-        if (roleKeyword === "unlock") {
+        if (accumulator.roleKeyword === "unlock") {
             resolvedValue.unlockRequiredValue += contributionValue;
         }
 
         updateDerivedResolvedValue(resolvedValue);
-        resolvedValues[effect.valueId] = resolvedValue;
+        resolvedValues[accumulator.valueId] = resolvedValue;
     }
 
     return resolvedValues;
@@ -244,20 +244,26 @@ function resolveEntity(
         radius: number,
     ) => boolean = areEntitiesWithinRadius,
 ): HomogeneousResolvedEntity {
-    const contributionAccumulators = (entity.contributions ?? []).map(createEffectAccumulator);
+    const contributionAccumulators = groupHomogeneousValueEffects(entity.contributions ?? []);
     const activeModifiers = collectEntityModifiers(entity, allEntities, globalModifiers, areAdjacent);
 
     for (const modifier of activeModifiers) {
+        ensureModifierTargetAccumulators(contributionAccumulators, modifier);
+
         for (const contributionAccumulator of contributionAccumulators) {
             if (!matchesValueKeywords(contributionAccumulator.keywords, modifier)) continue;
 
-            contributionAccumulator.additive += modifier.additive ?? 0;
+            contributionAccumulator.additive = resolveFlatModifierValue(
+                contributionAccumulator.additive,
+                modifier.additive ?? 0,
+                getHomogeneousValueResolveType(contributionAccumulator.valueId),
+            );
             contributionAccumulator.multiplier *= normalizeMultiplier(modifier.multiplier);
         }
     }
 
-    const resolvedContributions = contributionAccumulators.map(toHomogeneousValueEffect);
-    const resolvedValues = resolveHomogeneousValueContributions(resolvedContributions);
+    const resolvedContributions = contributionAccumulators.map(toResolvedHomogeneousValueEffect);
+    const resolvedValues = resolveGroupedHomogeneousValueContributions(contributionAccumulators);
 
     return {
         ...entity,
@@ -301,8 +307,102 @@ function collectEntityModifiers(
     ];
 }
 
-function resolveContributionValue(effect: HomogeneousValueEffect): number {
-    return (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
+function groupHomogeneousValueEffects(effects: readonly HomogeneousValueEffect[]): EffectAccumulator[] {
+    const accumulators = new Map<string, EffectAccumulator>();
+
+    for (const effect of effects) {
+        const keywords = getEffectKeywords(effect);
+        const roleKeyword = getContributionRoleKeyword(keywords, effect.valueId);
+        const key = getAccumulatorKey(effect.valueId, roleKeyword);
+        const existing = accumulators.get(key);
+
+        if (existing) {
+            existing.additive = resolveFlatModifierValue(
+                existing.additive,
+                effect.additive ?? 0,
+                getHomogeneousValueResolveType(effect.valueId),
+            );
+            existing.multiplier *= normalizeMultiplier(effect.multiplier);
+            for (const keyword of keywords) existing.keywords.add(keyword);
+            continue;
+        }
+
+        accumulators.set(key, createEffectAccumulator(effect, keywords, roleKeyword));
+    }
+
+    return [...accumulators.values()];
+}
+
+function ensureModifierTargetAccumulators(
+    contributionAccumulators: EffectAccumulator[],
+    modifier: HomogeneousAdjacencyRule,
+): void {
+    if ((modifier.additive ?? 0) === 0 && normalizeMultiplier(modifier.multiplier) === 1) return;
+
+    const roleKeyword = getModifierRoleKeyword(modifier);
+
+    for (const definition of HOMOGENEOUS_VALUE_DEFINITION_LIST) {
+        const key = getAccumulatorKey(definition.id, roleKeyword);
+        if (contributionAccumulators.some((accumulator) => getAccumulatorKey(accumulator.valueId, accumulator.roleKeyword) === key)) {
+            continue;
+        }
+
+        const keywords = new Set([...definition.keywords, roleKeyword]);
+        if (!matchesValueKeywords(keywords, modifier)) continue;
+
+        contributionAccumulators.push({
+            valueId: definition.id,
+            roleKeyword,
+            keywords,
+            additive: 0,
+            multiplier: 1,
+        });
+    }
+}
+
+function getModifierRoleKeyword(modifier: HomogeneousAdjacencyRule): HomogeneousValueRoleKeyword {
+    const roleKeywords = (modifier.requiredValueKeywords ?? []).filter((keyword): keyword is HomogeneousValueRoleKeyword => (
+        HOMOGENEOUS_VALUE_ROLE_KEYWORDS.includes(keyword as HomogeneousValueRoleKeyword)
+    ));
+
+    return roleKeywords[0] ?? "production";
+}
+
+function getAccumulatorKey(valueId: HomogeneousValueId, roleKeyword: HomogeneousValueRoleKeyword): string {
+    return `${valueId}:${roleKeyword}`;
+}
+
+function resolveGroupedHomogeneousValueContributions(
+    contributionAccumulators: readonly EffectAccumulator[],
+): HomogeneousResolvedValueMap {
+    const resolvedValues = createInitialHomogeneousResolvedValues();
+
+    for (const accumulator of contributionAccumulators) {
+        const resolvedValue = resolvedValues[accumulator.valueId] ?? createEmptyResolvedValue();
+        const resolveType = getHomogeneousValueResolveType(accumulator.valueId);
+        const contributionValue = resolveAccumulatorValue(
+            accumulator,
+            resolvedValue.producedValue,
+            resolveType,
+        );
+
+        if (accumulator.roleKeyword === "production") {
+            resolvedValue.producedValue = contributionValue;
+        }
+
+        if (accumulator.roleKeyword === "upkeep") {
+            resolvedValue.upkeepValue += contributionValue;
+        }
+
+        if (accumulator.roleKeyword === "unlock") {
+            resolvedValue.unlockRequiredValue += contributionValue;
+        }
+
+        updateDerivedResolvedValue(resolvedValue);
+        resolvedValues[accumulator.valueId] = resolvedValue;
+    }
+
+    return resolvedValues;
 }
 
 function createInitialHomogeneousResolvedValues(): HomogeneousResolvedValueMap {
@@ -336,29 +436,63 @@ function getHomogeneousValueResolveType(valueId: HomogeneousValueId): Homogeneou
     return HOMOGENEOUS_VALUE_RESOLUTION_CONFIG[valueId]?.resolveType ?? "sum";
 }
 
-function resolveProducedValue(
-    currentValue: number,
-    contributionValue: number,
+function resolveAccumulatorValue(
+    accumulator: EffectAccumulator,
+    baseValue: number,
+    resolveType: HomogeneousValueResolveType,
+): number {
+    if (accumulator.roleKeyword !== "production") {
+        return accumulator.additive * accumulator.multiplier;
+    }
+
+    const flatValue = resolveFlatModifierValue(baseValue, accumulator.additive, resolveType);
+
+    return flatValue * accumulator.multiplier;
+}
+
+function resolveFlatModifierValue(
+    baseValue: number,
+    additive: number,
     resolveType: HomogeneousValueResolveType,
 ): number {
     if (resolveType === "minimum") {
-        return Math.min(currentValue, contributionValue);
+        return Math.min(baseValue, additive);
     }
 
     if (resolveType === "maximum") {
-        return Math.max(currentValue, contributionValue);
+        return Math.max(baseValue, additive);
     }
 
-    return currentValue + contributionValue;
+    return baseValue + additive;
 }
 
-function createEffectAccumulator(effect: HomogeneousValueEffect): EffectAccumulator {
+function createEffectAccumulator(
+    effect: HomogeneousValueEffect,
+    keywords = getEffectKeywords(effect),
+    roleKeyword = getContributionRoleKeyword(keywords, effect.valueId),
+): EffectAccumulator {
     return {
         valueId: effect.valueId,
-        keywords: getEffectKeywords(effect),
+        roleKeyword,
+        keywords,
         additive: effect.additive ?? 0,
         multiplier: normalizeMultiplier(effect.multiplier),
     };
+}
+
+function toResolvedHomogeneousValueEffect(accumulator: EffectAccumulator): HomogeneousValueEffect {
+    const resolveType = getHomogeneousValueResolveType(accumulator.valueId);
+    const initialValue = HOMOGENEOUS_VALUE_DEFINITIONS[accumulator.valueId]?.initialValue ?? 0;
+    const resolvedValue = resolveAccumulatorValue(accumulator, initialValue, resolveType);
+    const additive = accumulator.roleKeyword === "production" && resolveType === "sum"
+        ? resolvedValue - initialValue
+        : resolvedValue;
+
+    return toHomogeneousValueEffect({
+        ...accumulator,
+        additive,
+        multiplier: 1,
+    });
 }
 
 function toHomogeneousValueEffect(accumulator: EffectAccumulator): HomogeneousValueEffect {

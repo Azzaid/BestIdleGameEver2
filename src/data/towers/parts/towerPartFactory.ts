@@ -1,12 +1,13 @@
 import type {DevelopmentVectorKey} from "../../../models/DevlopmentVector.ts";
-import type {HomogeneousValueEffect} from "../../../models/homogeneousValues.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../../models/homogeneousValues.ts";
 import type {Requirement} from "../../../models/progression/requirements.ts";
 import type {UpkeepAmount} from "../../../models/Upkeep.ts";
 import type {GunPart, TowerModifiers, TowerPartSlot} from "../../../models/battle/towerParts.ts";
 import {upkeepAmountToHomogeneousValueEffects} from "../../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../homogeneousValues/index.ts";
 
-type TowerPartStats = Partial<TowerModifiers>;
+type TowerPartStatKey = keyof TowerModifiers | "projectileSize";
+type TowerPartStats = Partial<Record<TowerPartStatKey, number>>;
 
 type TowerPartFactoryOptions = {
   vector: DevelopmentVectorKey;
@@ -22,15 +23,18 @@ type TowerPartOptions = {
   conflictsWithKeywords?: string[];
   gunHomogeneousValueEffects?: HomogeneousValueEffect[];
   cityHomogeneousValueEffects?: HomogeneousValueEffect[];
+  gunHomogeneousModifiers?: HomogeneousAdjacencyRule[];
+  cityHomogeneousModifiers?: HomogeneousAdjacencyRule[];
   children?: GunPart[];
 };
 
-const statValueIds: Record<keyof TowerModifiers, string> = {
+const statValueIds: Record<TowerPartStatKey, string> = {
   rotationSpeed: HOMOGENEOUS_VALUE_IDS.towerRotationSpeed,
   shotsPerSecond: HOMOGENEOUS_VALUE_IDS.towerShotsPerSecond,
   burstCount: HOMOGENEOUS_VALUE_IDS.towerBurstCount,
   projectileDamage: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage,
   projectileSpeed: HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed,
+  projectileSize: HOMOGENEOUS_VALUE_IDS.towerProjectileRadius,
   projectileRadius: HOMOGENEOUS_VALUE_IDS.towerProjectileRadius,
   projectileSpread: HOMOGENEOUS_VALUE_IDS.towerProjectileSpread,
   aoeRadius: HOMOGENEOUS_VALUE_IDS.towerAoeRadius,
@@ -64,6 +68,8 @@ export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPart
       aimKeywords: options.aimKeywords,
       conflictsWithKeywords: options.conflictsWithKeywords,
       children: options.children,
+      gunHomogeneousModifiers: options.gunHomogeneousModifiers,
+      cityHomogeneousModifiers: options.cityHomogeneousModifiers,
       gunHomogeneousValueEffects: [
         ...towerStatsToHomogeneousValueEffects(stats),
         ...(options.gunHomogeneousValueEffects ?? []),
@@ -81,7 +87,7 @@ export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPart
 }
 
 function towerStatsToHomogeneousValueEffects(stats: TowerPartStats): HomogeneousValueEffect[] {
-  return (Object.entries(stats) as Array<[keyof TowerModifiers, number | undefined]>)
+  return (Object.entries(stats) as Array<[TowerPartStatKey, number | undefined]>)
     .flatMap(([stat, additive]) => {
       if (additive === undefined || additive === 0) return [];
 

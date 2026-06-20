@@ -1,8 +1,11 @@
 import type { SpriteInfo } from './spriteInfo.ts';
 import type { DevelopmentVectorKey } from '../DevlopmentVector.ts';
 import type { UpkeepAmount } from '../Upkeep.ts';
-import type { HomogeneousValueEffect } from '../homogeneousValues.ts';
-import type { HomogeneousResolvedValueMap } from '../homogeneousValues.ts';
+import type {
+  HomogeneousAdjacencyRule,
+  HomogeneousResolvedValueMap,
+  HomogeneousValueEffect,
+} from '../homogeneousValues.ts';
 import type {RequirementGate} from '../progression/requirements.ts';
 
 export interface TowerModifiers {
@@ -43,6 +46,8 @@ export interface GunPart extends RequirementGate {
   aimKeywords?: string[];
   gunHomogeneousValueEffects?: HomogeneousValueEffect[];
   cityHomogeneousValueEffects?: HomogeneousValueEffect[];
+  gunHomogeneousModifiers?: HomogeneousAdjacencyRule[];
+  cityHomogeneousModifiers?: HomogeneousAdjacencyRule[];
   conflictsWithKeywords?: string[];
   children?: GunPart[]; // chain within a slot
 }
@@ -60,6 +65,8 @@ export interface TowerSynergyRule {
   cityHomogeneousValueEffects?: HomogeneousValueEffect[];
   addKeywords?: string[];
   addAimKeywords?: string[];
+  gunHomogeneousModifiers?: HomogeneousAdjacencyRule[];
+  cityHomogeneousModifiers?: HomogeneousAdjacencyRule[];
 }
 
 export type TowerPartsAtlas = Record<DevelopmentVectorKey, Record<string, GunPart>>;
@@ -103,6 +110,8 @@ export interface TowerAssemblyResolved {
   supportCost: UpkeepAmount;
   gunHomogeneousValueEffects: HomogeneousValueEffect[];
   cityHomogeneousValueEffects: HomogeneousValueEffect[];
+  gunHomogeneousModifiers: HomogeneousAdjacencyRule[];
+  cityHomogeneousModifiers: HomogeneousAdjacencyRule[];
   gunHomogeneousResolvedValues: HomogeneousResolvedValueMap;
   cityHomogeneousResolvedValues: HomogeneousResolvedValueMap;
   keywords: Set<string>;
