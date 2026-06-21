@@ -28,11 +28,12 @@ function getThreatFillColor(ratio: number) {
 }
 
 export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
-    const {providedUpkeep, effectiveUpkeep, effectiveSignature} = useTypedSelector(selectTowerAwareCityResolution);
+    const {providedUpkeep, effectiveUpkeep, effectiveSignature, producedHomogeneousValues} = useTypedSelector(selectTowerAwareCityResolution);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const aetherAtmosphere = useTypedSelector(selectAetherAtmosphere);
     const homogeneousTotals = useTypedSelector(selectHomogeneousValueTotals);
     const showAetherAtmosphere = hasAetherAtmosphere(aetherAtmosphere);
+    const showNatureBalance = hasNatureBalanceProduction(producedHomogeneousValues);
     const threatPercent = Math.round(signatureStatus.fillRatio * 100);
     const threatLevel = getThreatLevel(signatureStatus.fillRatio);
     const threatLabel = signatureStatus.isBesieged ? "SIEGE" : `Threat level: ${threatLevel}`;
@@ -65,12 +66,14 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
                     )
                 })}
             </div>
-            <NatureBalanceTriangle
-                fungi={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0}
-                plants={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourcePlants] ?? 0}
-                animals={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceAnimals] ?? 0}
-                bioComplexity={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.natureBioComplexity] ?? 0}
-            />
+            {showNatureBalance && (
+                <NatureBalanceTriangle
+                    fungi={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0}
+                    plants={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourcePlants] ?? 0}
+                    animals={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceAnimals] ?? 0}
+                    bioComplexity={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.natureBioComplexity] ?? 0}
+                />
+            )}
             <div
                 className={s.signatureMeter}
                 tabIndex={0}
@@ -228,6 +231,14 @@ function AetherAtmosphereOrb({atmosphere}: {atmosphere: AetherAtmosphereResoluti
 
 function isResourceProduced(resource: UpkeepTypesValue, providedUpkeep: Partial<Record<UpkeepTypesValue, number>>): boolean {
     return (providedUpkeep[resource] ?? 0) !== 0;
+}
+
+function hasNatureBalanceProduction(producedValues: Partial<Record<string, number>>): boolean {
+    return (
+        (producedValues[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0) !== 0
+        || (producedValues[HOMOGENEOUS_VALUE_IDS.resourcePlants] ?? 0) !== 0
+        || (producedValues[HOMOGENEOUS_VALUE_IDS.resourceAnimals] ?? 0) !== 0
+    );
 }
 
 function hasAetherAtmosphere(atmosphere: AetherAtmosphereResolution): boolean {
