@@ -13,4 +13,7 @@ export const requires = {
   homogeneousValueAtLeast(valueId: string, amount: number): Requirement {
     return {type: "homogeneousValueAtLeast", valueId, amount};
   },
+  homogeneousValueLessThan(valueId: string, amount: number): Requirement {
+    return {type: "homogeneousValueLessThan", valueId, amount};
+  },
 };

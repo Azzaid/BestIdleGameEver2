@@ -122,7 +122,8 @@ function resolveEffectiveCityResolution(
         .filter((entity) => entity.entityType !== "tower")
         .map((entity) => ({
             ...entity,
-            values: entity.resolvedContributions,
+            keywords: entity.baseKeywords,
+            values: entity.baseValueEffects,
         }));
     const resolvedCity = resolveCity([
         ...baseCityEntities,
@@ -197,15 +198,17 @@ function applyEffectiveTowerEntity(
 ): TowerAssemblyResolved {
     if (!effectiveTowerEntity) return resolvedTower;
 
+    const effectiveKeywords = new Set(effectiveTowerEntity.effectiveKeywords);
     const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(
         effectiveTowerEntity.resolvedValues,
-        resolvedTower.keywords,
+        effectiveKeywords,
     );
 
     return {
         ...resolvedTower,
         stats,
         supportCost,
+        keywords: effectiveKeywords,
         homogeneousResolvedValues: effectiveTowerEntity.resolvedValues,
     };
 }

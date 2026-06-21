@@ -1,18 +1,23 @@
-import type {ReactNode} from "react";
+import {type ReactNode, useId} from "react";
 import {useTypedSelector} from "../store/hooks.ts";
 import {selectCitySignatureStatus, selectTowerAwareCityResolution} from "../store/upkeep/selectors.ts";
 import {DEVELOPMENT_VECTORS} from "../models/DevlopmentVector.ts";
 import {UPKEEP_SPRITES, UPKEEP_TYPES_BY_VECTOR, type UpkeepTypesValue} from "../models/Upkeep.ts";
 import * as s from './upkeepBar.css.ts';
-import {selectAetherAtmosphere} from "../store/homogeneousValues/selectors.ts";
+import {selectAetherAtmosphere, selectHomogeneousValueTotals} from "../store/homogeneousValues/selectors.ts";
 import {
     AETHER_ATMOSPHERES,
     AETHER_ATMOSPHERE_LABELS,
     type AetherAtmosphereResolution,
 } from "../models/city/AetherAtmosphere.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../data/homogeneousValues/index.ts";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 2,
+});
+
+const integerFormatter = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 0,
 });
 
 function getThreatFillColor(ratio: number) {
@@ -26,6 +31,7 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
     const {providedUpkeep, effectiveUpkeep, effectiveSignature} = useTypedSelector(selectTowerAwareCityResolution);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const aetherAtmosphere = useTypedSelector(selectAetherAtmosphere);
+    const homogeneousTotals = useTypedSelector(selectHomogeneousValueTotals);
     const showAetherAtmosphere = hasAetherAtmosphere(aetherAtmosphere);
     const threatPercent = Math.round(signatureStatus.fillRatio * 100);
     const threatLevel = getThreatLevel(signatureStatus.fillRatio);
@@ -59,6 +65,12 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
                     )
                 })}
             </div>
+            <NatureBalanceTriangle
+                fungi={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0}
+                plants={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourcePlants] ?? 0}
+                animals={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceAnimals] ?? 0}
+                bioComplexity={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.natureBioComplexity] ?? 0}
+            />
             <div
                 className={s.signatureMeter}
                 tabIndex={0}
@@ -101,6 +113,73 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
             </div>
         </div>
     )
+}
+
+function NatureBalanceTriangle({
+    fungi,
+    plants,
+    animals,
+    bioComplexity,
+}: {
+    fungi: number;
+    plants: number;
+    animals: number;
+    bioComplexity: number;
+}) {
+    const gradientId = useId();
+    const clipId = useId();
+    const center = 30;
+    const maxDistance = 24;
+    const maxValue = Math.max(0, fungi, plants, animals);
+    const points = [
+        getTrianglePoint(center, maxDistance, plants, maxValue, -90),
+        getTrianglePoint(center, maxDistance, animals, maxValue, 30),
+        getTrianglePoint(center, maxDistance, fungi, maxValue, 150),
+    ];
+    const fillRatio = Math.max(0, Math.min(1, bioComplexity / 1000));
+    const filledPoints = points.map(point => ({
+        x: center + (point.x - center) * fillRatio,
+        y: center + (point.y - center) * fillRatio,
+    }));
+    const fillOpacity = 0.12 + fillRatio * 0.86;
+    const edgeColor = `hsl(150 78% ${28 + fillRatio * 28}%)`;
+    const pointList = formatSvgPoints(points);
+    const filledPointList = formatSvgPoints(filledPoints);
+
+    return (
+        <div
+            className={s.natureBalanceWrap}
+            tabIndex={0}
+            aria-label={`Nature balance. Fungi ${formatInteger(fungi)}, plants ${formatInteger(plants)}, animals ${formatInteger(animals)}, bio complexity ${formatInteger(bioComplexity)}`}
+        >
+            <svg className={s.natureBalanceSvg} viewBox="0 0 60 60" role="img" aria-hidden="true">
+                <defs>
+                    <radialGradient id={gradientId} cx="50%" cy="50%" r="58%">
+                        <stop offset="0%" stopColor="rgb(211 255 221)" stopOpacity={0.24 + fillRatio * 0.2} />
+                        <stop offset="58%" stopColor="rgb(54 211 119)" stopOpacity={0.4 + fillRatio * 0.35} />
+                        <stop offset="100%" stopColor="rgb(0 201 112)" stopOpacity={fillOpacity} />
+                    </radialGradient>
+                    <clipPath id={clipId}>
+                        <polygon points={filledPointList} />
+                    </clipPath>
+                </defs>
+                <line className={s.natureBalanceAxis} x1={center} y1={center} x2={center} y2={6} />
+                <line className={s.natureBalanceAxis} x1={center} y1={center} x2={50.8} y2={42} />
+                <line className={s.natureBalanceAxis} x1={center} y1={center} x2={9.2} y2={42} />
+                <polygon className={s.natureBalanceFrame} points="30,6 50.8,42 9.2,42" />
+                <polygon className={s.natureBalanceShape} points={pointList} />
+                <polygon points={pointList} fill={`url(#${gradientId})`} clipPath={`url(#${clipId})`} />
+                <circle cx={center} cy={center} r="2.2" fill={edgeColor} />
+            </svg>
+            <div className={s.natureTooltip} role="tooltip">
+                <div className={s.natureTooltipTitle}>Nature balance</div>
+                <div className={s.natureTooltipRow}><span>Plants</span><strong>{formatInteger(plants)}</strong></div>
+                <div className={s.natureTooltipRow}><span>Animals</span><strong>{formatInteger(animals)}</strong></div>
+                <div className={s.natureTooltipRow}><span>Fungi</span><strong>{formatInteger(fungi)}</strong></div>
+                <div className={s.natureTooltipRow}><span>Bio complexity</span><strong>{formatInteger(bioComplexity)}</strong></div>
+            </div>
+        </div>
+    );
 }
 
 function AetherAtmosphereOrb({atmosphere}: {atmosphere: AetherAtmosphereResolution}) {
@@ -157,6 +236,31 @@ function hasAetherAtmosphere(atmosphere: AetherAtmosphereResolution): boolean {
 
 function formatKilometers(value: number): string {
     return `${numberFormatter.format(value)} km`;
+}
+
+function formatInteger(value: number): string {
+    return integerFormatter.format(value);
+}
+
+function getTrianglePoint(
+    center: number,
+    maxDistance: number,
+    value: number,
+    maxValue: number,
+    angleDegrees: number,
+): {x: number; y: number} {
+    const ratio = maxValue > 0 ? Math.max(0, value) / maxValue : 0;
+    const distance = maxDistance * Math.min(1, ratio);
+    const radians = angleDegrees * Math.PI / 180;
+
+    return {
+        x: center + Math.cos(radians) * distance,
+        y: center + Math.sin(radians) * distance,
+    };
+}
+
+function formatSvgPoints(points: readonly {x: number; y: number}[]): string {
+    return points.map(point => `${numberFormatter.format(point.x)},${numberFormatter.format(point.y)}`).join(" ");
 }
 
 function getThreatLevel(ratio: number): string {

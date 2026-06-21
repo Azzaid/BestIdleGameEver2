@@ -47,6 +47,97 @@ export const aetherMeterSlot = style({
     flex: '0 0 auto',
 });
 
+export const natureBalanceWrap = style({
+    position: 'relative',
+    flex: '0 0 54px',
+    width: '54px',
+    height: '54px',
+    display: 'grid',
+    placeItems: 'center',
+    border: 0,
+    outline: 'none',
+    selectors: {
+        '&:focus-visible': {
+            boxShadow: `0 0 0 3px ${vars.color.border.selected}`,
+        },
+    },
+});
+
+export const natureBalanceSvg = style({
+    width: '54px',
+    height: '54px',
+    display: 'block',
+    overflow: 'visible',
+    filter: 'drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2))',
+});
+
+export const natureBalanceAxis = style({
+    stroke: 'rgba(210, 238, 218, 0.28)',
+    strokeWidth: 1,
+    strokeLinecap: 'round',
+});
+
+export const natureBalanceFrame = style({
+    fill: 'rgba(10, 28, 18, 0.18)',
+    stroke: 'rgba(191, 226, 199, 0.44)',
+    strokeWidth: 1.2,
+    vectorEffect: 'non-scaling-stroke',
+});
+
+export const natureBalanceShape = style({
+    fill: 'rgba(64, 160, 96, 0.08)',
+    stroke: 'rgba(77, 221, 129, 0.72)',
+    strokeWidth: 1.5,
+    vectorEffect: 'non-scaling-stroke',
+    transition: 'd 180ms ease, fill 180ms ease, stroke 180ms ease',
+});
+
+export const natureTooltip = style({
+    position: 'absolute',
+    top: 'calc(100% + 8px)',
+    left: '50%',
+    minWidth: '180px',
+    display: 'grid',
+    gap: '6px',
+    padding: '10px',
+    border: `1px solid ${vars.color.border.default}`,
+    borderRadius: 8,
+    background: vars.color.background.surface,
+    color: vars.color.text.primary,
+    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.24)',
+    opacity: 0,
+    pointerEvents: 'none',
+    transform: 'translate(-50%, -4px)',
+    transition: 'opacity 140ms ease, transform 140ms ease',
+    zIndex: 10,
+    selectors: {
+        [`${natureBalanceWrap}:hover &`]: {
+            opacity: 1,
+            pointerEvents: 'auto',
+            transform: 'translate(-50%, 0)',
+        },
+        [`${natureBalanceWrap}:focus-within &`]: {
+            opacity: 1,
+            pointerEvents: 'auto',
+            transform: 'translate(-50%, 0)',
+        },
+    },
+});
+
+export const natureTooltipTitle = style({
+    fontSize: '0.78rem',
+    fontWeight: 800,
+    color: vars.color.text.heading,
+    textTransform: 'uppercase',
+});
+
+export const natureTooltipRow = style({
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '14px',
+    fontSize: '0.85rem',
+});
+
 export const resourceEntry = style({
     display: 'flex',
     alignItems: 'center',

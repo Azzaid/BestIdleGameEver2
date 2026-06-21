@@ -20,6 +20,8 @@ import {HOMOGENEOUS_VALUE_ROLE_KEYWORDS} from "./homogeneousValues.ts";
 const homogeneousValueDefinitions = HOMOGENEOUS_VALUE_DEFINITIONS as Record<HomogeneousValueId, HomogeneousValueDefinition>;
 
 export type HomogeneousCityEntityType = "building" | "tower" | "wallSegment" | "wallSuperstructure" | "technology";
+export type HomogeneousRuleSourceEntityType = "hex" | "tower" | "technology";
+export type HexCoordinates = { column: number; row: number };
 
 export type HomogeneousValueEntitySource = {
     id: string;
@@ -34,6 +36,10 @@ export type HomogeneousValueEntitySource = {
 };
 
 export type HomogeneousResolvedEntity = Omit<HomogeneousValueEntitySource, "values"> & {
+    baseKeywords: readonly string[];
+    effectiveKeywords: readonly string[];
+    matchedRuleIds: readonly string[];
+    baseValueEffects: readonly HomogeneousValueEffect[];
     activeModifiers: readonly HomogeneousAdjacencyRule[];
     resolvedContributions: readonly HomogeneousValueEffect[];
     resolvedValues: HomogeneousResolvedValueMap;
@@ -64,6 +70,24 @@ type EffectAccumulator = {
     multiplier: number;
 };
 
+type HomogeneousCollectedAdjacencyRule = {
+    id: string;
+    sourceEntityId: string;
+    sourceEntityType: HomogeneousRuleSourceEntityType;
+    sourcePosition: HexCoordinates | null;
+    rule: HomogeneousAdjacencyRule;
+};
+
+type ResolvedEntityDraft = HomogeneousValueEntitySource & {
+    baseKeywords: readonly string[];
+    effectiveKeywords: readonly string[];
+    matchedRules: readonly HomogeneousCollectedAdjacencyRule[];
+    matchedRuleIds: readonly string[];
+    baseValueEffects: readonly HomogeneousValueEffect[];
+};
+
+const MAX_KEYWORD_RESOLUTION_ITERATIONS = 20;
+
 export function createInitialHomogeneousValueTotals(): HomogeneousValueTotals {
     return Object.fromEntries(
         HOMOGENEOUS_VALUE_DEFINITION_LIST.map((definition) => [definition.id, definition.initialValue]),
@@ -89,19 +113,18 @@ export function resolveHomogeneousValueContributions(
     return resolveGroupedHomogeneousValueContributions(contributionAccumulators);
 }
 
-function resolveCityWideEffects(
-    entities: readonly HomogeneousValueEntitySource[],
-): readonly HomogeneousAdjacencyRule[] {
-    return entities.flatMap((entity) => (
-        getEntityEffects(entity)
-    ).filter(isGlobalModifier));
-}
-
 export function resolveTower(
     tower: HomogeneousValueEntitySource,
     allEntities: readonly HomogeneousValueEntitySource[] = [tower],
 ): HomogeneousResolvedEntity {
-    return resolveEntity(tower, allEntities);
+    const resolvedTower = resolveCityEntities(allEntities).find((entity) => entity.id === tower.id)
+        ?? resolveCityEntities([tower])[0];
+
+    if (!resolvedTower) {
+        throw new Error(`Unable to resolve tower entity ${tower.id}.`);
+    }
+
+    return resolvedTower;
 }
 
 export function resolveWallSegment(
@@ -121,13 +144,22 @@ export function resolveWallSegment(
         effects: wallEntities.flatMap((entity) => getEntityEffects(entity)),
     };
 
-    return resolveEntity(mergedWallEntity, allEntities);
+    const resolvedWallSegment = resolveCityEntities([
+        mergedWallEntity,
+        ...allEntities.filter((entity) => entity.id !== wallSegment.id && entity.id !== wallSuperstructure?.id),
+    ]).find((entity) => entity.id === mergedWallEntity.id) ?? resolveCityEntities([mergedWallEntity])[0];
+
+    if (!resolvedWallSegment) {
+        throw new Error(`Unable to resolve wall segment entity ${mergedWallEntity.id}.`);
+    }
+
+    return resolvedWallSegment;
 }
 
 export function resolveCity(
     entities: readonly HomogeneousValueEntitySource[],
 ): HomogeneousCityResolution {
-    const resolvedEntities = entities.map((entity) => resolveEntity(entity, entities));
+    const resolvedEntities = resolveCityEntities(entities);
     const resolvedValues = resolveHomogeneousValueContributions(
         resolvedEntities.flatMap((entity) => entity.resolvedContributions),
     );
@@ -139,13 +171,15 @@ export function resolveCity(
                 .map((entity) => entity.contentId ?? entity.id),
         ),
         buildingKeywords: new Set(
-            entities
+            resolvedEntities
                 .filter((entity) => entity.entityType === "building")
-                .flatMap((entity) => entity.keywords ?? []),
+                .flatMap((entity) => entity.effectiveKeywords),
         ),
         values: getAvailableValues(resolvedValues),
         resolvedValues,
-        resolvedHexes: resolvedEntities.filter((entity) => entity.entityType !== "technology"),
+        resolvedHexes: resolvedEntities.filter((entity) => (
+            entity.entityType !== "technology" && entity.entityType !== "tower"
+        )),
         resolvedTowers: resolvedEntities.filter((entity) => entity.entityType === "tower"),
         resolvedWallSegments: resolvedEntities.filter((entity) => (
             entity.entityType === "wallSegment" || entity.entityType === "wallSuperstructure"
@@ -206,17 +240,125 @@ export function getUnlockRequiredValues(resolvedValues: HomogeneousResolvedValue
     return mapResolvedValues(resolvedValues, "unlockRequiredValue");
 }
 
-function resolveEntity(
-    entity: HomogeneousValueEntitySource,
-    allEntities: readonly HomogeneousValueEntitySource[],
-    areAdjacent: (
-        source: HomogeneousValueEntitySource,
-        target: HomogeneousValueEntitySource,
-        radius: number,
-    ) => boolean = areEntitiesWithinRadius,
-): HomogeneousResolvedEntity {
-    const contributionAccumulators = groupHomogeneousValueEffects(getEntityValues(entity));
-    const activeModifiers = collectEntityModifiers(entity, allEntities, areAdjacent);
+function resolveCityEntities(
+    sources: readonly HomogeneousValueEntitySource[],
+): HomogeneousResolvedEntity[] {
+    const entityDrafts = buildResolvedEntityDrafts(sources);
+    const collectedRules = collectHomogeneousAdjacencyRules(sources);
+    const keywordResolvedEntityDrafts = resolveEffectiveEntityKeywords(entityDrafts, collectedRules);
+    const resolvedTechnologyEntities = sources
+        .filter((source) => source.entityType === "technology")
+        .map(resolveTechnologySourceValues);
+
+    return [
+        ...keywordResolvedEntityDrafts.map(resolveEntityValues),
+        ...resolvedTechnologyEntities,
+    ];
+}
+
+function buildResolvedEntityDrafts(
+    sources: readonly HomogeneousValueEntitySource[],
+): ResolvedEntityDraft[] {
+    return sources
+        .filter((source) => source.entityType !== "technology")
+        .map((source) => {
+            const baseKeywords = normalizeEntityKeywords(source);
+
+            return {
+                ...source,
+                keywords: [...(source.keywords ?? [])],
+                values: [...getEntityValues(source)],
+                effects: [...getEntityEffects(source)],
+                baseKeywords,
+                effectiveKeywords: baseKeywords,
+                matchedRules: [],
+                matchedRuleIds: [],
+                baseValueEffects: [...getEntityValues(source)],
+            };
+        });
+}
+
+function collectHomogeneousAdjacencyRules(
+    sources: readonly HomogeneousValueEntitySource[],
+): HomogeneousCollectedAdjacencyRule[] {
+    return sources.flatMap((source) => getEntityEffects(source).map((rule, ruleIndex) => ({
+        id: `${source.id}:rule:${ruleIndex}`,
+        sourceEntityId: source.id,
+        sourceEntityType: getRuleSourceEntityType(source),
+        sourcePosition: getEntityPosition(source),
+        rule,
+    })));
+}
+
+function resolveEffectiveEntityKeywords(
+    initialEntityDrafts: readonly ResolvedEntityDraft[],
+    collectedRules: readonly HomogeneousCollectedAdjacencyRule[],
+): ResolvedEntityDraft[] {
+    let entityDrafts = initialEntityDrafts.map((entity) => resolveEntityKeywordIteration(entity, collectedRules));
+
+    for (let iteration = 0; iteration < MAX_KEYWORD_RESOLUTION_ITERATIONS; iteration += 1) {
+        const nextEntityDrafts = entityDrafts.map((entity) => resolveEntityKeywordIteration(entity, collectedRules));
+        const unstableEntity = nextEntityDrafts.find((nextEntity, entityIndex) => (
+            getEntityResolutionSignature(entityDrafts[entityIndex]) !== getEntityResolutionSignature(nextEntity)
+        ));
+
+        if (!unstableEntity) {
+            return nextEntityDrafts;
+        }
+
+        entityDrafts = nextEntityDrafts;
+    }
+
+    const nextEntityDrafts = entityDrafts.map((entity) => resolveEntityKeywordIteration(entity, collectedRules));
+    const unstableEntity = nextEntityDrafts.find((nextEntity, entityIndex) => (
+        getEntityResolutionSignature(entityDrafts[entityIndex]) !== getEntityResolutionSignature(nextEntity)
+    ));
+
+    if (unstableEntity) {
+        const previousEntity = entityDrafts.find((entity) => entity.id === unstableEntity.id);
+        throw new Error(
+            `Homogeneous keyword resolution did not stabilize for entity ${unstableEntity.id} after ${MAX_KEYWORD_RESOLUTION_ITERATIONS} iterations. `
+            + `Previous signature: ${previousEntity ? getEntityResolutionSignature(previousEntity) : "missing"}. `
+            + `Current signature: ${getEntityResolutionSignature(unstableEntity)}. `
+            + `Matched rule ids: ${unstableEntity.matchedRuleIds.join(", ") || "none"}.`,
+        );
+    }
+
+    return nextEntityDrafts;
+}
+
+function resolveEntityKeywordIteration(
+    entity: ResolvedEntityDraft,
+    collectedRules: readonly HomogeneousCollectedAdjacencyRule[],
+): ResolvedEntityDraft {
+    const matchedRules = collectedRules.filter((collectedRule) => matchesCollectedRule(entity, collectedRule));
+    const effectiveKeywordSet = new Set(entity.baseKeywords);
+
+    for (const matchedRule of matchedRules) {
+        for (const removedKeyword of matchedRule.rule.removedBuildingKeywords ?? []) {
+            effectiveKeywordSet.delete(removedKeyword);
+        }
+
+        for (const additionalKeyword of matchedRule.rule.additionalBuildingKeywords ?? []) {
+            effectiveKeywordSet.add(additionalKeyword);
+        }
+    }
+
+    const effectiveKeywords = sortStrings([...effectiveKeywordSet]);
+    const matchedRuleIds = sortStrings(matchedRules.map((matchedRule) => matchedRule.id));
+
+    return {
+        ...entity,
+        effectiveKeywords,
+        keywords: effectiveKeywords,
+        matchedRules,
+        matchedRuleIds,
+    };
+}
+
+function resolveEntityValues(entity: ResolvedEntityDraft): HomogeneousResolvedEntity {
+    const contributionAccumulators = groupHomogeneousValueEffects(entity.baseValueEffects);
+    const activeModifiers = entity.matchedRules.map((matchedRule) => matchedRule.rule);
 
     for (const modifier of activeModifiers) {
         ensureModifierTargetAccumulators(contributionAccumulators, modifier);
@@ -235,9 +377,10 @@ function resolveEntity(
 
     const resolvedContributions = contributionAccumulators.map(toResolvedHomogeneousValueEffect);
     const resolvedValues = resolveGroupedHomogeneousValueContributions(contributionAccumulators);
+    const {matchedRules, ...resolvedEntitySource} = entity;
 
     return {
-        ...entity,
+        ...resolvedEntitySource,
         activeModifiers,
         resolvedContributions,
         resolvedValues,
@@ -245,36 +388,26 @@ function resolveEntity(
     };
 }
 
-function collectEntityModifiers(
-    targetEntity: HomogeneousValueEntitySource,
-    allEntities: readonly HomogeneousValueEntitySource[],
-    areAdjacent: (
-        source: HomogeneousValueEntitySource,
-        target: HomogeneousValueEntitySource,
-        radius: number,
-    ) => boolean,
-): HomogeneousAdjacencyRule[] {
-    const localModifiers = allEntities.flatMap((sourceEntity) => (
-        getEntityEffects(sourceEntity)
-    ).filter(isLocalModifier).filter((modifier) => (
-        sourceEntity.id === targetEntity.id
-        && matchesEntity(targetEntity, modifier)
-    )));
-    const adjacencyModifiers = allEntities.flatMap((sourceEntity) => (
-        getEntityEffects(sourceEntity)
-    ).filter(isAdjacencyModifier).filter((modifier) => (
-        sourceEntity.id !== targetEntity.id
-        && !areEntitiesInSameHex(sourceEntity, targetEntity)
-        && areAdjacent(sourceEntity, targetEntity, modifier.radius ?? 1)
-        && matchesEntity(targetEntity, modifier)
-    )));
-    const matchingCityWideModifiers = resolveCityWideEffects(allEntities).filter((modifier) => matchesEntity(targetEntity, modifier));
+function resolveTechnologySourceValues(source: HomogeneousValueEntitySource): HomogeneousResolvedEntity {
+    const baseKeywords = normalizeEntityKeywords(source);
+    const baseValueEffects = [...getEntityValues(source)];
+    const contributionAccumulators = groupHomogeneousValueEffects(baseValueEffects);
+    const resolvedContributions = contributionAccumulators.map(toResolvedHomogeneousValueEffect);
+    const resolvedValues = resolveGroupedHomogeneousValueContributions(contributionAccumulators);
 
-    return [
-        ...localModifiers,
-        ...adjacencyModifiers,
-        ...matchingCityWideModifiers,
-    ];
+    return {
+        ...source,
+        keywords: [...(source.keywords ?? [])],
+        effects: [...getEntityEffects(source)],
+        baseKeywords,
+        effectiveKeywords: baseKeywords,
+        matchedRuleIds: [],
+        baseValueEffects,
+        activeModifiers: [],
+        resolvedContributions,
+        resolvedValues,
+        values: getAvailableValues(resolvedValues),
+    };
 }
 
 function groupHomogeneousValueEffects(effects: readonly HomogeneousValueEffect[]): EffectAccumulator[] {
@@ -528,6 +661,28 @@ function mapResolvedValues(
     );
 }
 
+function matchesCollectedRule(
+    targetEntity: ResolvedEntityDraft,
+    collectedRule: HomogeneousCollectedAdjacencyRule,
+): boolean {
+    const modifier = collectedRule.rule;
+
+    if (isGlobalModifier(modifier)) {
+        return matchesEntity(targetEntity, modifier);
+    }
+
+    if (isLocalModifier(modifier)) {
+        return collectedRule.sourceEntityId === targetEntity.id && matchesEntity(targetEntity, modifier);
+    }
+
+    if (!isAdjacencyModifier(modifier)) return false;
+    if (collectedRule.sourceEntityId === targetEntity.id) return false;
+    if (areRuleSourceAndTargetInSameHex(collectedRule, targetEntity)) return false;
+    if (!isRuleSourceWithinRadius(collectedRule, targetEntity, modifier.radius ?? 1)) return false;
+
+    return matchesEntity(targetEntity, modifier);
+}
+
 function matchesEntity(
     entity: HomogeneousValueEntitySource,
     modifier: HomogeneousAdjacencyRule,
@@ -538,6 +693,13 @@ function matchesEntity(
     if ((modifier.forbiddenBuildingKeywords ?? []).some((keyword) => keywords.has(keyword))) return false;
 
     return true;
+}
+
+function getEntityResolutionSignature(entity: ResolvedEntityDraft): string {
+    return JSON.stringify({
+        effectiveKeywords: sortStrings(entity.effectiveKeywords),
+        matchedRuleIds: sortStrings(entity.matchedRuleIds),
+    });
 }
 
 function matchesValueKeywords(
@@ -551,10 +713,38 @@ function matchesValueKeywords(
 }
 
 function getEntityKeywords(entity: HomogeneousValueEntitySource): Set<string> {
+    if ("effectiveKeywords" in entity && Array.isArray(entity.effectiveKeywords)) {
+        return new Set(entity.effectiveKeywords);
+    }
+
     return new Set([
         entity.entityType,
         ...(entity.keywords ?? []),
     ]);
+}
+
+function normalizeEntityKeywords(entity: HomogeneousValueEntitySource): string[] {
+    return sortStrings([
+        entity.entityType,
+        ...(entity.keywords ?? []),
+    ]);
+}
+
+function getRuleSourceEntityType(entity: HomogeneousValueEntitySource): HomogeneousRuleSourceEntityType {
+    if (entity.entityType === "technology") return "technology";
+    if (entity.entityType === "tower") return "tower";
+
+    return "hex";
+}
+
+function getEntityPosition(entity: HomogeneousValueEntitySource): HexCoordinates | null {
+    if (entity.entityType === "technology") return null;
+    if (entity.column === undefined || entity.row === undefined) return null;
+
+    return {
+        column: entity.column,
+        row: entity.row,
+    };
 }
 
 function isGlobalModifier(modifier: HomogeneousAdjacencyRule): boolean {
@@ -577,43 +767,37 @@ function getEntityEffects(entity: HomogeneousValueEntitySource): readonly Homoge
     return entity.effects ?? [];
 }
 
-function areEntitiesWithinRadius(
-    sourceEntity: HomogeneousValueEntitySource,
+function isRuleSourceWithinRadius(
+    sourceRule: HomogeneousCollectedAdjacencyRule,
     targetEntity: HomogeneousValueEntitySource,
     radius: number,
 ): boolean {
-    if (sourceEntity.column === undefined || sourceEntity.row === undefined) return false;
+    if (!sourceRule.sourcePosition) return false;
     if (targetEntity.column === undefined || targetEntity.row === undefined) return false;
 
-    const columnDistance = Math.abs(targetEntity.column - sourceEntity.column);
-    const rowDistance = Math.abs(targetEntity.row - sourceEntity.row);
+    const columnDistance = Math.abs(targetEntity.column - sourceRule.sourcePosition.column);
+    const rowDistance = Math.abs(targetEntity.row - sourceRule.sourcePosition.row);
     const diagonalDistance = Math.abs(
-        targetEntity.column + targetEntity.row - sourceEntity.column - sourceEntity.row,
+        targetEntity.column + targetEntity.row - sourceRule.sourcePosition.column - sourceRule.sourcePosition.row,
     );
 
     return Math.max(columnDistance, rowDistance, diagonalDistance) <= radius;
 }
 
-function areEntitiesInSameHex(
-    sourceEntity: HomogeneousValueEntitySource,
+function areRuleSourceAndTargetInSameHex(
+    sourceRule: HomogeneousCollectedAdjacencyRule,
     targetEntity: HomogeneousValueEntitySource,
 ): boolean {
-    if (sourceEntity.cellKey && targetEntity.cellKey) {
-        return sourceEntity.cellKey === targetEntity.cellKey;
-    }
+    if (!sourceRule.sourcePosition) return false;
+    if (targetEntity.column === undefined || targetEntity.row === undefined) return false;
 
-    if (
-        sourceEntity.column !== undefined
-        && sourceEntity.row !== undefined
-        && targetEntity.column !== undefined
-        && targetEntity.row !== undefined
-    ) {
-        return sourceEntity.column === targetEntity.column && sourceEntity.row === targetEntity.row;
-    }
-
-    return sourceEntity.id === targetEntity.id;
+    return sourceRule.sourcePosition.column === targetEntity.column && sourceRule.sourcePosition.row === targetEntity.row;
 }
 
 function uniqueStrings(values: readonly string[]): string[] {
-    return [...new Set(values)];
+    return sortStrings([...new Set(values)]);
+}
+
+function sortStrings(values: readonly string[]): string[] {
+    return [...values].sort((left, right) => left.localeCompare(right));
 }

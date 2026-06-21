@@ -21,6 +21,7 @@ export const HOMOGENEOUS_VALUE_IDS = {
     natureShroomsDomination: "nature.shroomsDomination",
     natureAnimalsDomination: "nature.animalsDomination",
     natureBioComplexity: "nature.bioComplexity",
+    natureBioDisbalance: "nature.bioDisbalance",
     citySignature: "city.signature",
     cityControlledTerritory: "city.controlledTerritory",
     cityControlledTerritoryGrowthStep: "city.controlledTerritoryGrowthStep",
@@ -143,6 +144,12 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         id: HOMOGENEOUS_VALUE_IDS.natureBioComplexity,
         label: "Bio Complexity",
         keywords: ["nature", "derived", "bioComplexity", "display.integer"],
+        initialValue: 0,
+    },
+    [HOMOGENEOUS_VALUE_IDS.natureBioDisbalance]: {
+        id: HOMOGENEOUS_VALUE_IDS.natureBioDisbalance,
+        label: "Bio Disbalance",
+        keywords: ["nature", "derived", "bioDisbalance", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.citySignature]: {
@@ -404,6 +411,10 @@ export const HOMOGENEOUS_VALUE_DERIVED_RESOLUTION_CONFIG: Partial<Record<Homogen
         sourceValueIds: natureBalanceSourceValueIds,
         resolveValue: getNatureBalanceMinimum,
     },
+    [HOMOGENEOUS_VALUE_IDS.natureBioDisbalance]: {
+        sourceValueIds: natureBalanceSourceValueIds,
+        resolveValue: (sourceValues) => getNatureBalanceMaximum(sourceValues) - getNatureBalanceMinimum(sourceValues),
+    },
 };
 
 export const HOMOGENEOUS_VALUE_DEFINITION_LIST = Object.values(HOMOGENEOUS_VALUE_DEFINITIONS);
@@ -425,6 +436,14 @@ function validateHomogeneousValueDefinitions(definitions: readonly HomogeneousVa
 
 function getNatureBalanceMinimum(sourceValues: Record<HomogeneousValueId, number>): number {
     return Math.min(
+        getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourcePlants),
+        getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourceFungi),
+        getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourceAnimals),
+    );
+}
+
+function getNatureBalanceMaximum(sourceValues: Record<HomogeneousValueId, number>): number {
+    return Math.max(
         getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourcePlants),
         getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourceFungi),
         getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourceAnimals),

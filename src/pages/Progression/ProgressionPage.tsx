@@ -558,8 +558,13 @@ function formatRequirement(requirement: Requirement): string {
     return `Technology unlocked: ${requirement.technologyId}`;
   }
 
+  if (requirement.type === "homogeneousValueAtLeast") {
+    const definition = getHomogeneousValueDefinition(requirement.valueId);
+    return `${definition.label} at least ${requirement.amount}`;
+  }
+
   const definition = getHomogeneousValueDefinition(requirement.valueId);
-  return `${definition.label} at least ${requirement.amount}`;
+  return `${definition.label} less than ${requirement.amount}`;
 }
 
 function truncateLabel(label: string, maxLength: number) {

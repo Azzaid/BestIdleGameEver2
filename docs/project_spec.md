@@ -214,7 +214,7 @@ Tower parts use the same `values` and `effects` fields as other homogeneous enti
 
 Unlocked technologies may contribute city-wide homogeneous values and effects. Technology effects are assigned `radius: Infinity` by the technology factory, and technology homogeneous sources are included in effective city resolution alongside buildings, walls, and towers.
 
-Homogeneous value resolution is a deterministic pipeline. Content entities use `values` for direct homogeneous value contributions and `effects` for `HomogeneousAdjacencyRule` modifiers. A modifier with `radius: 0` affects only the source entity, a finite positive radius affects nearby entities, and `radius: Infinity` affects every matching entity. There is no special keyword for city-wide effects. First, each entity collects active self, radius, and city-wide effects. Then active effects are applied to direct values and final direct homogeneous values are resolved. Configured derived homogeneous values are calculated after direct values, and effects targeting derived values are applied after their base derived value exists. Effects may affect contributions, but they do not affect other effects.
+Homogeneous value resolution is a deterministic pipeline. Content entities use `values` for direct homogeneous value contributions and `effects` for `HomogeneousAdjacencyRule` modifiers. A modifier with `radius: 0` affects only the source entity, a finite positive radius affects nearby entities, and `radius: Infinity` affects every matching entity. There is no special keyword for city-wide effects. Runtime resolution builds resolved city entities from occupied hex sources and tower assemblies without mutating source definitions; technologies are global effect sources, not positioned city entities. The resolver collects rules from hexes, towers, and unlocked technologies, then iterates effective keywords from base keywords plus matched rule keyword changes until sorted effective keywords and sorted matched rule ids stabilize. Only after keyword/rule matching stabilizes are active effects applied to each entity's homogeneous values. City-level homogeneous totals are summed from resolved entities, configured derived homogeneous values are calculated from those totals, and effects targeting derived values are applied after the derived base value exists. Derived value effects do not participate in keyword or rule matching during the same resolution pass.
 
 Current resources by vector:
 
@@ -222,6 +222,8 @@ Current resources by vector:
 - Medieval/Human: People and Gold.
 - Nature/Biology: Fungi, Plants, and Animals.
 - Aether/Magic: Veil, Mana Flows, and Death.
+
+The shared upkeep bar includes a Nature/Biology balance indicator beside the threat meter. It renders Fungi, Plants, and Animals as a three-axis triangular balance shape, while Bio Complexity controls the center-to-edge emerald fill from empty at 0 to fully filled at 1000. Nature also derives Bio Disbalance as the difference between the highest and lowest Fungi, Plants, and Animals values.
 
 Homogeneous value definitions include keywords such as `resource`, `output`, `support`, `atmosphere`, `aether`, and `display_orb`. Modifiers can target entity keywords, entity types, value keywords, and contribution role keywords, so a production bonus can affect ordinary support, magical outputs, wall stats, siege modifiers, monster modifiers, or later value groups through the same resolver. Display formatting is keyword-driven through reserved `display.*` keywords and must not be used for gameplay checks.
 

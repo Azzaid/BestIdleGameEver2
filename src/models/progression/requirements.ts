@@ -4,7 +4,8 @@ export type Requirement =
   | { type: "buildingKeywordExists"; keyword: string }
   | { type: "buildingExists"; buildingId: string }
   | { type: "technologyUnlocked"; technologyId: string }
-  | { type: "homogeneousValueAtLeast"; valueId: string; amount: number };
+  | { type: "homogeneousValueAtLeast"; valueId: string; amount: number }
+  | { type: "homogeneousValueLessThan"; valueId: string; amount: number };
 
 export type RequirementGate = {
   requirements?: Requirement[];
@@ -38,5 +39,9 @@ export function isRequirementMet(
     return data.unlockedTechnologyIds.has(requirement.technologyId);
   }
 
-  return (data.resolvedCityData.homogeneousValues[requirement.valueId] ?? 0) >= requirement.amount;
+  if (requirement.type === "homogeneousValueAtLeast") {
+    return (data.resolvedCityData.homogeneousValues[requirement.valueId] ?? 0) >= requirement.amount;
+  }
+
+  return (data.resolvedCityData.homogeneousValues[requirement.valueId] ?? 0) < requirement.amount;
 }
