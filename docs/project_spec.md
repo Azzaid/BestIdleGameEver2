@@ -340,6 +340,8 @@ Wall buildings may define:
 - resilience;
 - camo level;
 - ignored threat;
+- push-back distance, push-backs per second, and push-back zone size;
+- zone DoT damage, zone DoT ticks per second, and zone DoT zone size;
 - keyword-driven effects such as slow, harm, and push.
 
 Current battle/wall behavior:
@@ -350,6 +352,7 @@ Current battle/wall behavior:
 - If the city is not besieged, battle still runs as constant wall pressure with threat locked to current city signature.
 - Enemies stop once their hit radius reaches the wall.
 - Stopped enemies add siege pressure equal to their pressure reduced by the wall's ignored threat.
+- Wall push-back and zone DoT values affect enemies inside rectangular battlefield zones measured upward from the wall contact line. Push-back speed is derived from push-back distance so the configured distance is covered over 0.5 seconds.
 - If combined siege pressure exceeds combined wall resilience, battle ends before the city signature target and the city retreats by one radius.
 - On retreat, cells outside the new radius are lost and the new top row is rebuilt as wall.
 - While besieged, research and city/wall building actions are disabled.

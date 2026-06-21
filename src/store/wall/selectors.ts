@@ -27,6 +27,12 @@ export const selectWallResolution = createSelector(
             resilience: 0,
             camoLevel: 0,
             ignoredThreat: 0,
+            pushBackDistance: 0,
+            pushBacksPerSecond: 0,
+            pushBackEffectZoneSize: 0,
+            zoneDotDamage: 0,
+            zoneDotTicksPerSecond: 0,
+            zoneDotZoneSize: 0,
             homogeneousValues: {},
             homogeneousResolvedValues: {},
             specialEffects: [],
@@ -68,6 +74,12 @@ export const selectWallResolution = createSelector(
         resolution.resilience = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0;
         resolution.camoLevel = Math.max(0, -(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.citySignature] ?? 0));
         resolution.ignoredThreat = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0;
+        resolution.pushBackDistance = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackDistance] ?? 0;
+        resolution.pushBacksPerSecond = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBacksPerSecond] ?? 0;
+        resolution.pushBackEffectZoneSize = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackEffectZoneSize] ?? 0;
+        resolution.zoneDotDamage = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage] ?? 0;
+        resolution.zoneDotTicksPerSecond = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotTicksPerSecond] ?? 0;
+        resolution.zoneDotZoneSize = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0;
 
         return resolution;
     }

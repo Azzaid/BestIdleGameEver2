@@ -11,6 +11,12 @@ import {HOMOGENEOUS_VALUE_IDS} from "../homogeneousValues/index.ts";
 type WallStats = {
     resilience?: number;
     threatSuppression?: number;
+    pushBackDistance?: number;
+    pushBacksPerSecond?: number;
+    pushBackEffectZoneSize?: number;
+    zoneDotDamage?: number;
+    zoneDotTicksPerSecond?: number;
+    zoneDotZoneSize?: number;
 };
 
 type WallFactoryOptions = {
@@ -30,6 +36,12 @@ type WallBuildingOptions = {
 const wallStatValueIds: Record<keyof WallStats, string> = {
     resilience: HOMOGENEOUS_VALUE_IDS.wallResilience,
     threatSuppression: HOMOGENEOUS_VALUE_IDS.wallThreatSuppression,
+    pushBackDistance: HOMOGENEOUS_VALUE_IDS.wallPushBackDistance,
+    pushBacksPerSecond: HOMOGENEOUS_VALUE_IDS.wallPushBacksPerSecond,
+    pushBackEffectZoneSize: HOMOGENEOUS_VALUE_IDS.wallPushBackEffectZoneSize,
+    zoneDotDamage: HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage,
+    zoneDotTicksPerSecond: HOMOGENEOUS_VALUE_IDS.wallZoneDotTicksPerSecond,
+    zoneDotZoneSize: HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize,
 };
 
 export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOptions) {

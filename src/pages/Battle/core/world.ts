@@ -25,6 +25,9 @@ export function createWorld(config: WorldConfig): World {
       currentThreat: config.initialThreat,
       battleEnded: false,
       towerReloadRemainingSeconds: new Map(),
+      enemyPushBackCooldownRemainingSeconds: new Map(),
+      enemyPushBackRemainingSeconds: new Map(),
+      enemyZoneDotProgress: new Map(),
       projectileInfo: new Map(),
       spawners: [],
       waveScheduler: {

@@ -57,6 +57,21 @@ const BattlePage = () => {
     const wallResolution = useTypedSelector(selectEffectiveWallResolution);
     const controlledTerritoryGrowthStep = useTypedSelector(selectControlledTerritoryGrowthStep);
     const monsterModifierValues = useTypedSelector(selectMonsterModifierValues);
+    const wallZoneEffects = useMemo(() => ({
+        pushBackDistance: wallResolution.pushBackDistance,
+        pushBacksPerSecond: wallResolution.pushBacksPerSecond,
+        pushBackEffectZoneSize: wallResolution.pushBackEffectZoneSize,
+        zoneDotDamage: wallResolution.zoneDotDamage,
+        zoneDotTicksPerSecond: wallResolution.zoneDotTicksPerSecond,
+        zoneDotZoneSize: wallResolution.zoneDotZoneSize,
+    }), [
+        wallResolution.pushBackDistance,
+        wallResolution.pushBacksPerSecond,
+        wallResolution.pushBackEffectZoneSize,
+        wallResolution.zoneDotDamage,
+        wallResolution.zoneDotTicksPerSecond,
+        wallResolution.zoneDotZoneSize,
+    ]);
     const monsterMovementModifiers = useMemo(() => ({
         speedFlat: monsterModifierValues.speedFlat,
         speedMultiplier: monsterModifierValues.speedMultiplier,
@@ -118,6 +133,12 @@ const BattlePage = () => {
         isSiege,
         wallResolution.resilience,
         wallResolution.ignoredThreat,
+        wallZoneEffects.pushBackDistance,
+        wallZoneEffects.pushBacksPerSecond,
+        wallZoneEffects.pushBackEffectZoneSize,
+        wallZoneEffects.zoneDotDamage,
+        wallZoneEffects.zoneDotTicksPerSecond,
+        wallZoneEffects.zoneDotZoneSize,
         monsterMovementModifiers.speedFlat,
         monsterMovementModifiers.speedMultiplier,
         monsterMovementModifiers.swayFlat,
@@ -141,6 +162,12 @@ const BattlePage = () => {
         isSiege,
         wallResolution.resilience,
         wallResolution.ignoredThreat,
+        wallZoneEffects.pushBackDistance,
+        wallZoneEffects.pushBacksPerSecond,
+        wallZoneEffects.pushBackEffectZoneSize,
+        wallZoneEffects.zoneDotDamage,
+        wallZoneEffects.zoneDotTicksPerSecond,
+        wallZoneEffects.zoneDotZoneSize,
         monsterMovementModifiers.speedFlat,
         monsterMovementModifiers.speedMultiplier,
         monsterMovementModifiers.swayFlat,
@@ -256,6 +283,7 @@ const BattlePage = () => {
                         wallResilience={wallResolution.resilience}
                         wallIgnoredThreat={wallResolution.ignoredThreat}
                         monsterMovementModifiers={monsterMovementModifiers}
+                        wallZoneEffects={wallZoneEffects}
                         showDebugOutlines={isDebugModeEnabled}
                         showSiegeOutline={isSiege}
                         onBattleMetrics={handleBattleMetrics}

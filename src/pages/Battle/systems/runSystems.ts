@@ -12,6 +12,7 @@ import {SpawnerSystem} from "./spawnerSystem.ts";
 import { HealthSystem } from './healthSystem.ts';
 import { WallLoadSystem } from './wallLoadSystem.ts';
 import { SiegeSystem } from './siegeSystem.ts';
+import { WallZoneEffectsSystem } from './wallZoneEffectsSystem.ts';
 
 /** Per-frame update orchestrator */
 export function runSystems(world: World, dt: number) {
@@ -24,6 +25,7 @@ export function runSystems(world: World, dt: number) {
   ProjectileMovementSystem(world, dt);
   LifespanSystem(world, dt);
   ProjectilesSystem(world);
+  WallZoneEffectsSystem(world, dt);
   HealthSystem(world);
   WallLoadSystem(world);
   SiegeSystem(world, dt);
@@ -40,6 +42,9 @@ export function runSystems(world: World, dt: number) {
       world.towersData.delete(id);
       world.enemiesData.delete(id);
       world.towerReloadRemainingSeconds.delete(id);
+      world.enemyPushBackCooldownRemainingSeconds.delete(id);
+      world.enemyPushBackRemainingSeconds.delete(id);
+      world.enemyZoneDotProgress.delete(id);
       const hb = world.healthBars.get(id);
       if (hb) { hb.destroy(); world.healthBars.delete(id); }
       const view = world.sprites.get(id);

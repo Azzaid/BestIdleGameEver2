@@ -33,6 +33,12 @@ export type WallResolution = {
     resilience: number;
     camoLevel: number;
     ignoredThreat: number;
+    pushBackDistance: number;
+    pushBacksPerSecond: number;
+    pushBackEffectZoneSize: number;
+    zoneDotDamage: number;
+    zoneDotTicksPerSecond: number;
+    zoneDotZoneSize: number;
     homogeneousValues: Record<string, number>;
     homogeneousResolvedValues: HomogeneousResolvedValueMap;
     specialEffects: WallBuilding["specialEffects"];

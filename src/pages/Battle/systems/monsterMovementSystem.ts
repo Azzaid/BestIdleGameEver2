@@ -175,5 +175,4 @@ function stopEnemyAtWall(world: World, entityId: number, enemyHitRadius: number)
 
   transform.position.y = wallContactY;
   transform.rotationRadians = Math.PI / 2;
-  world.movements.delete(entityId);
 }

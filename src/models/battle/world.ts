@@ -17,6 +17,15 @@ export interface MonsterMovementModifiers {
   swayMultiplier: number;
 }
 
+export interface WallZoneEffects {
+  pushBackDistance: number;
+  pushBacksPerSecond: number;
+  pushBackEffectZoneSize: number;
+  zoneDotDamage: number;
+  zoneDotTicksPerSecond: number;
+  zoneDotZoneSize: number;
+}
+
 export interface ProjectileInfo {
   damage: number;
   projectileRadius: number;
@@ -42,6 +51,7 @@ export interface WorldConfig {
   wallResilience: number;
   wallIgnoredThreat: number;
   monsterMovementModifiers: MonsterMovementModifiers;
+  wallZoneEffects: WallZoneEffects;
   onBattleMetrics?: (metrics: BattleMetrics) => void;
   onBattleEnded?: (result: BattleResult) => void;
 }
@@ -87,6 +97,9 @@ export interface World {
   currentThreat: number;
   battleEnded: boolean;
   towerReloadRemainingSeconds: Map<EntityId, number>;
+  enemyPushBackCooldownRemainingSeconds: Map<EntityId, number>;
+  enemyPushBackRemainingSeconds: Map<EntityId, number>;
+  enemyZoneDotProgress: Map<EntityId, number>;
 
   projectileInfo: Map<EntityId, ProjectileInfo>;
 }
