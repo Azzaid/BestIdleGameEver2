@@ -58,7 +58,7 @@ const natureBuildingsRaw: {[key: string]: Building} = {
         requires.technologyUnlocked(technologies.nature.plantCultivation),
       ]},
     ),
-    homogeneousAdjacency: [
+    effects: [
       {
         radius: 1,
         requiredBuildingKeywords: ["production"],

@@ -39,12 +39,14 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
   [buildings.medieval.stalkerHut]: superstructure(
     buildings.medieval.stalkerHut,
     "Stalker Hut",
-    "A shelter and scrap collection point combined into a base for stalkers.",
+    "Hut of an experienced stalker that can go further and bring more than just scraps.",
     5,
     {[UPKEEP_TYPES.people]: 5, [UPKEEP_TYPES.gold]: 3},
     {},
     ["production", "people", "gold", "scavenger"],
-    {requiredBuildingIds: [
+    {
+        hint: "Basically a shelter and some place to drop scavenged supplies.",
+        requiredBuildingIds: [
       buildings.medieval.shelter,
       buildings.medieval.scrapCollectionPoint,
     ],
@@ -75,7 +77,8 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 5},
     {},
     ["production", "people", "gold", "wood", "timberwork"],
-    {requiredBuildingIds: [
+    {hint: "Stalker could gather some quality wood with good tools.",
+        requiredBuildingIds: [
       buildings.medieval.toolShed,
       buildings.medieval.stalkerHut,
     ],
@@ -92,7 +95,8 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.gold]: 10 },
     {[UPKEEP_TYPES.people]: 3,},
     ["production", "people", "plants", "gold", "farm"],
-    {requiredBuildingIds: [
+    {hint: "What if we add some space to grow plants?",
+        requiredBuildingIds: [
       buildings.medieval.woodenHouse,
       buildings.nature.field,
     ],
@@ -123,7 +127,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.people]: 8, [UPKEEP_TYPES.gold]: 5},
     {},
     ["production", "people", "gold", "craft", "woodWorking", "stoneWorking"],
-    {requiredBuildingIds: [
+    {
+        hint: "What if we add some tools to work with?",
+        requiredBuildingIds: [
       buildings.medieval.woodenHouse,
       buildings.medieval.toolShed,
     ],
@@ -158,18 +164,25 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       ]},
     ),
   },
-  [buildings.medieval.university]: building(
-    buildings.medieval.university,
-    "University",
-    "A civic center for natural philosophy once enough stone housing exists.",
-    26,
-    {},
-    {[UPKEEP_TYPES.people]: 4, [UPKEEP_TYPES.gold]: 5},
-    ["infrastructure", "craft"],
-    {requirements: [
-      requires.technologyUnlocked(technologies.medieval.stoneworking),
-      requires.buildingExists(buildings.medieval.stoneHouse),
-    ]},
+  [buildings.medieval.university]: superstructure(
+      buildings.medieval.craftsmansHouse,
+      "University",
+      "A civic center for science",
+      26,
+      {},
+      {[UPKEEP_TYPES.people]: 15, [UPKEEP_TYPES.gold]: 15},
+      ["science", "naturalSciences"],
+      {
+          hint: "What if we gather rich people with good housing together?",
+          requiredBuildingIds: [
+              buildings.medieval.stoneHouse,
+              buildings.medieval.stoneHouse,
+              buildings.medieval.stoneHouse,
+          ],
+          requirements: [
+              requires.technologyUnlocked(technologies.medieval.stoneworking),
+              requires.buildingExists(buildings.medieval.stoneHouse),
+          ]},
   ),
   [buildings.medieval.workshop]: {
     ...building(

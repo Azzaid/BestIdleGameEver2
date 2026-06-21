@@ -1,7 +1,7 @@
 import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
 import type {BuildingTypesValue} from "./BuildingTypes.ts";
 import type {BuildingKeyword} from "./Keywords.ts";
-import type {AdjacencyRule, HexResolvedStats} from "./Adjancency.ts";
+import type {HexResolvedStats} from "./Adjancency.ts";
 import type {AxialCoordinate} from "./HexGrid.ts";
 import type {MultiHexStructureRule} from "./MultiHexStructure.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../homogeneousValues.ts";
@@ -16,9 +16,8 @@ export interface Building extends RequirementGate {
     isMultiHex: boolean;
     isMultistructure: boolean;
     vector: DevelopmentVectorValue;
-    homogeneousValueEffects?: HomogeneousValueEffect[];
-    homogeneousAdjacency?: HomogeneousAdjacencyRule[];
-    adjacency: AdjacencyRule[];
+    values?: HomogeneousValueEffect[];
+    effects?: HomogeneousAdjacencyRule[];
     adjacencyDescription: string;
     keywords: BuildingKeyword[];
     description: string;

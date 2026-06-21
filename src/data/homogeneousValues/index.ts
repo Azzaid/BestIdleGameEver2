@@ -1,4 +1,5 @@
 import type {
+    HomogeneousValueDerivedResolutionConfig,
     HomogeneousValueDefinition,
     HomogeneousValueId,
     HomogeneousValueResolutionConfig,
@@ -16,6 +17,10 @@ export const HOMOGENEOUS_VALUE_IDS = {
     resourceFungi: "resource.fungi",
     resourcePlants: "resource.plants",
     resourceAnimals: "resource.animals",
+    naturePlantsDomination: "nature.plantsDomination",
+    natureShroomsDomination: "nature.shroomsDomination",
+    natureAnimalsDomination: "nature.animalsDomination",
+    natureBioComplexity: "nature.bioComplexity",
     citySignature: "city.signature",
     cityControlledTerritory: "city.controlledTerritory",
     cityControlledTerritoryGrowthStep: "city.controlledTerritoryGrowthStep",
@@ -114,6 +119,30 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         id: HOMOGENEOUS_VALUE_IDS.resourceAnimals,
         label: "Animals",
         keywords: ["resource", "support", "output", "spendable", "display_bar", "nature", "animals", "display.integer"],
+        initialValue: 0,
+    },
+    [HOMOGENEOUS_VALUE_IDS.naturePlantsDomination]: {
+        id: HOMOGENEOUS_VALUE_IDS.naturePlantsDomination,
+        label: "Plants Domination",
+        keywords: ["nature", "derived", "plants", "domination", "display.integer"],
+        initialValue: 0,
+    },
+    [HOMOGENEOUS_VALUE_IDS.natureShroomsDomination]: {
+        id: HOMOGENEOUS_VALUE_IDS.natureShroomsDomination,
+        label: "Shrooms Domination",
+        keywords: ["nature", "derived", "shrooms", "fungi", "domination", "display.integer"],
+        initialValue: 0,
+    },
+    [HOMOGENEOUS_VALUE_IDS.natureAnimalsDomination]: {
+        id: HOMOGENEOUS_VALUE_IDS.natureAnimalsDomination,
+        label: "Animals Domination",
+        keywords: ["nature", "derived", "animals", "domination", "display.integer"],
+        initialValue: 0,
+    },
+    [HOMOGENEOUS_VALUE_IDS.natureBioComplexity]: {
+        id: HOMOGENEOUS_VALUE_IDS.natureBioComplexity,
+        label: "Bio Complexity",
+        keywords: ["nature", "derived", "bioComplexity", "display.integer"],
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.citySignature]: {
@@ -352,12 +381,37 @@ export const HOMOGENEOUS_VALUE_RESOLUTION_CONFIG: Partial<Record<HomogeneousValu
     },
 };
 
+const natureBalanceSourceValueIds = [
+    HOMOGENEOUS_VALUE_IDS.resourcePlants,
+    HOMOGENEOUS_VALUE_IDS.resourceFungi,
+    HOMOGENEOUS_VALUE_IDS.resourceAnimals,
+] as const;
+
+export const HOMOGENEOUS_VALUE_DERIVED_RESOLUTION_CONFIG: Partial<Record<HomogeneousValueId, HomogeneousValueDerivedResolutionConfig>> = {
+    [HOMOGENEOUS_VALUE_IDS.naturePlantsDomination]: {
+        sourceValueIds: natureBalanceSourceValueIds,
+        resolveValue: (sourceValues) => getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourcePlants) - getNatureBalanceMinimum(sourceValues),
+    },
+    [HOMOGENEOUS_VALUE_IDS.natureShroomsDomination]: {
+        sourceValueIds: natureBalanceSourceValueIds,
+        resolveValue: (sourceValues) => getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourceFungi) - getNatureBalanceMinimum(sourceValues),
+    },
+    [HOMOGENEOUS_VALUE_IDS.natureAnimalsDomination]: {
+        sourceValueIds: natureBalanceSourceValueIds,
+        resolveValue: (sourceValues) => getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourceAnimals) - getNatureBalanceMinimum(sourceValues),
+    },
+    [HOMOGENEOUS_VALUE_IDS.natureBioComplexity]: {
+        sourceValueIds: natureBalanceSourceValueIds,
+        resolveValue: getNatureBalanceMinimum,
+    },
+};
+
 export const HOMOGENEOUS_VALUE_DEFINITION_LIST = Object.values(HOMOGENEOUS_VALUE_DEFINITIONS);
 
 validateHomogeneousValueDefinitions(HOMOGENEOUS_VALUE_DEFINITION_LIST);
 
 export function getHomogeneousValueDefinition(valueId: HomogeneousValueId): HomogeneousValueDefinition {
-    return HOMOGENEOUS_VALUE_DEFINITIONS[valueId];
+    return (HOMOGENEOUS_VALUE_DEFINITIONS as Record<HomogeneousValueId, HomogeneousValueDefinition>)[valueId];
 }
 
 function validateHomogeneousValueDefinitions(definitions: readonly HomogeneousValueDefinition[]): void {
@@ -367,4 +421,16 @@ function validateHomogeneousValueDefinitions(definitions: readonly HomogeneousVa
             throw new Error(`Homogeneous value ${definition.id} has multiple display keywords: ${displayKeywords.join(", ")}`);
         }
     }
+}
+
+function getNatureBalanceMinimum(sourceValues: Record<HomogeneousValueId, number>): number {
+    return Math.min(
+        getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourcePlants),
+        getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourceFungi),
+        getNatureBalanceValue(sourceValues, HOMOGENEOUS_VALUE_IDS.resourceAnimals),
+    );
+}
+
+function getNatureBalanceValue(sourceValues: Record<HomogeneousValueId, number>, valueId: HomogeneousValueId): number {
+    return sourceValues[valueId] ?? 0;
 }

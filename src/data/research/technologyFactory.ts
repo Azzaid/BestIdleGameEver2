@@ -11,11 +11,11 @@ type TechnologyOptions = {
   alsoRequires?: string[];
   keywords?: string[];
   requirements?: Requirement[];
-  homogeneousValues?: HomogeneousValueEffect[];
-  homogeneousModifiers?: HomogeneousAdjacencyRule[];
   unlocks?: string[];
   requiredBuildings?: string[];
   requiredStructures?: string[];
+  values?: HomogeneousValueEffect[];
+  effects?: HomogeneousAdjacencyRule[];
   requiredFreeUpkeep?: ResearchNodeData["requiredFreeUpkeep"];
   requiredAetherAtmosphere?: ResearchNodeData["requiredAetherAtmosphere"];
   requiredBiodiversity?: number;
@@ -55,10 +55,10 @@ export function createTechnologyFactory({defaultKeywords = []}: TechnologyFactor
           .map(technologyId => requires.technologyUnlocked(technologyId)),
         ...existingRequirements,
       ],
-      homogeneousValues: options.homogeneousValues,
-      homogeneousModifiers: options.homogeneousModifiers?.map(modifier => ({
+      values: options.values,
+      effects: options.effects?.map(modifier => ({
         ...modifier,
-        keywords: [...new Set([...(modifier.keywords ?? []), "global"])],
+        radius: Infinity,
       })),
       requiredBuildings: options.requiredBuildings,
       requiredStructures: options.requiredStructures,

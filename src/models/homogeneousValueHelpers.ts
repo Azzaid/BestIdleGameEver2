@@ -3,8 +3,7 @@ import type {HomogeneousValueEffect, HomogeneousValueRoleKeyword} from "./homoge
 import {getContributionRoleKeyword, getEffectKeywords} from "./homogeneousValueResolution.ts";
 
 type HomogeneousContributionEntity = {
-    homogeneousValueEffects?: readonly HomogeneousValueEffect[];
-    homogeneousContributions?: readonly HomogeneousValueEffect[];
+    values?: readonly HomogeneousValueEffect[];
 };
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
@@ -91,5 +90,5 @@ function getHomogeneousContributionsByRole(
 }
 
 function getEntityHomogeneousContributions(entity: HomogeneousContributionEntity): readonly HomogeneousValueEffect[] {
-    return entity.homogeneousValueEffects ?? entity.homogeneousContributions ?? [];
+    return entity.values ?? [];
 }

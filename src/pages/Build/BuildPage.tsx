@@ -38,7 +38,7 @@ function getPartKeywords(part: GunPart) {
 
 function formatModifierList(part: GunPart) {
   const effects = getHomogeneousProductionContributions({
-    homogeneousValueEffects: part.gunHomogeneousValueEffects,
+    values: part.values,
   }).filter((effect) => (
     effect.valueId !== HOMOGENEOUS_VALUE_IDS.towerWeight
   ));
@@ -55,13 +55,13 @@ function formatModifierList(part: GunPart) {
 
 function getPartSupportCost(part: GunPart): UpkeepAmount {
   return homogeneousValueTotalsToUpkeepAmount(
-    getUpkeepValues(resolveHomogeneousValueContributions(part.cityHomogeneousValueEffects ?? [])),
+    getUpkeepValues(resolveHomogeneousValueContributions(part.values ?? [])),
   );
 }
 
 function getPartWeight(part: GunPart): number {
   return getHomogeneousProductionContributions({
-    homogeneousValueEffects: part.gunHomogeneousValueEffects,
+    values: part.values,
   })
     .filter((effect) => effect.valueId === HOMOGENEOUS_VALUE_IDS.towerWeight)
     .reduce((total, effect) => total + resolveEffectValue(effect), 0);

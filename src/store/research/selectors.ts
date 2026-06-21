@@ -21,8 +21,8 @@ export const selectTechnologyHomogeneousEntities = createSelector(
     contentId: technology.id,
     entityType: "technology",
     keywords: technology.keywords,
-    contributions: technology.homogeneousValues,
-    modifiers: technology.homogeneousModifiers,
+    values: technology.values,
+    effects: technology.effects,
   })),
 );
 

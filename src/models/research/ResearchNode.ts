@@ -13,8 +13,8 @@ export type ResearchNodeData = {
     summary?: string;
     unlocks?: string[];
     requirements?: Requirement[];
-    homogeneousValues?: HomogeneousValueEffect[];
-    homogeneousModifiers?: HomogeneousAdjacencyRule[];
+    values?: HomogeneousValueEffect[];
+    effects?: HomogeneousAdjacencyRule[];
     requiredBuildings?: string[];
     requiredStructures?: string[];
     requiredFreeUpkeep?: UpkeepAmount;

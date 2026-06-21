@@ -335,8 +335,9 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 [UPKEEP_TYPES.people]: 1,
                 [UPKEEP_TYPES.gold]: 5,
             },
-            gunHomogeneousModifiers: [
+            effects: [
                 {
+                    radius: 0,
                     requiredValueKeywords: ["projectileDamage"],
                     multiplier: 1.2,
                 },

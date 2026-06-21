@@ -18,7 +18,6 @@ import {
     getUpkeepValues,
     resolveCity,
     resolveHomogeneousValueContributions,
-    resolveTower,
 } from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
@@ -119,8 +118,14 @@ function resolveEffectiveCityResolution(
     resolvedTowers: readonly ResolvedAvailableTower[],
     technologyEntities: readonly HomogeneousValueEntitySource[],
 ): CityResolution {
+    const baseCityEntities: HomogeneousValueEntitySource[] = cityResolution.resolvedHexes
+        .filter((entity) => entity.entityType !== "tower")
+        .map((entity) => ({
+            ...entity,
+            values: entity.resolvedContributions,
+        }));
     const resolvedCity = resolveCity([
-        ...cityResolution.resolvedHexes.filter((entity) => entity.entityType !== "tower"),
+        ...baseCityEntities,
         ...technologyEntities,
         ...createTowerEntities(cityResolution, resolvedTowers),
     ]);
@@ -176,10 +181,8 @@ function createTowerEntities(
             column: wallTowerEntity?.column,
             row: wallTowerEntity?.row,
             keywords: [...resolved.keywords],
-            contributions: resolved.cityHomogeneousValueEffects,
-            modifiers: resolved.cityHomogeneousModifiers,
-            mountedGunContributions: wallTowerEntity?.mountedGunContributions,
-            mountedGunModifiers: wallTowerEntity?.mountedGunModifiers,
+            values: resolved.values,
+            effects: resolved.effects,
         };
     });
 }
@@ -194,24 +197,7 @@ function applyEffectiveTowerEntity(
 ): TowerAssemblyResolved {
     if (!effectiveTowerEntity) return resolvedTower;
 
-    const effectiveGunEntity = resolveTower({
-        id: `${effectiveTowerEntity.id}:gun`,
-        entityType: "tower",
-        cellKey: effectiveTowerEntity.cellKey,
-        column: effectiveTowerEntity.column,
-        row: effectiveTowerEntity.row,
-        keywords: [...resolvedTower.keywords],
-        contributions: [
-            ...resolvedTower.gunHomogeneousValueEffects,
-            ...(effectiveTowerEntity.mountedGunContributions ?? []),
-        ],
-        modifiers: [
-            ...resolvedTower.gunHomogeneousModifiers,
-            ...(effectiveTowerEntity.mountedGunModifiers ?? []),
-        ],
-    });
     const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(
-        effectiveGunEntity.resolvedValues,
         effectiveTowerEntity.resolvedValues,
         resolvedTower.keywords,
     );
@@ -220,8 +206,7 @@ function applyEffectiveTowerEntity(
         ...resolvedTower,
         stats,
         supportCost,
-        gunHomogeneousResolvedValues: effectiveGunEntity.resolvedValues,
-        cityHomogeneousResolvedValues: effectiveTowerEntity.resolvedValues,
+        homogeneousResolvedValues: effectiveTowerEntity.resolvedValues,
     };
 }
 

@@ -148,6 +148,7 @@ const CityPage = () => {
 
     const handleBuildStructure = (structureId: string, coreCellKey: string) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
+        if (!unlockedBuildingIdSet.has(structureId)) return;
         dispatch(buildMultistructure({ coreCellKey, structureId }));
     };
 
@@ -155,7 +156,10 @@ const CityPage = () => {
     const selectedWallBuilding = selectedHex?.wallKey ? ALL_WALL_BUILDINGS[selectedHex.wallKey] : undefined;
     const selectedWallTopBuilding = selectedHex?.wallTopKey ? ALL_WALL_BUILDINGS[selectedHex.wallTopKey] : undefined;
     const selectedStructureCandidates = selectedHex
-        ? structureCandidates.filter(candidate => isHexPartOfStructureCandidate(selectedHex.cellKey, candidate))
+        ? structureCandidates.filter(candidate => (
+            isHexPartOfStructureCandidate(selectedHex.cellKey, candidate)
+            && isStructureCandidateUnlockedOrBuilt(candidate, unlockedBuildingIdSet)
+        ))
         : [];
     const selectedHexIsPartOfCompleteStructure = selectedHex
         ? Boolean(selectedHex.partOfStructureId)
@@ -239,17 +243,16 @@ function SelectedHexPanel({
                         <HomogeneousContributionGroup
                             title="Resolved production"
                             effects={getHomogeneousProductionContributions({
-                                homogeneousValueEffects: selectedBuilding.effectiveHomogeneousValueEffects,
+                                values: selectedBuilding.effectiveHomogeneousValueEffects,
                             })}
                         />
                         <HomogeneousContributionGroup
                             title="Resolved upkeep"
                             effects={getHomogeneousRequirementContributions({
-                                homogeneousValueEffects: selectedBuilding.effectiveHomogeneousValueEffects,
+                                values: selectedBuilding.effectiveHomogeneousValueEffects,
                             })}
                         />
                     </div>
-                    <AdjacencyEffectSummary building={selectedBuilding} />
                     <MultistructureStatus
                         structureCandidates={structureCandidates}
                         onBuildStructure={onBuildStructure}
@@ -370,6 +373,7 @@ function MultistructureStatus({
                         {candidate.structure.description && (
                             <p className={s.panelDescription}>{candidate.structure.description}</p>
                         )}
+                        <p className={s.panelDescription}>{candidate.structure.hint}</p>
                         {candidate.matchedSatellites.length > 0 && (
                             <StructureBuildingList
                                 title="Connected"
@@ -459,25 +463,18 @@ function HomogeneousContributionGroup({title, effects}: {title: string; effects:
 }
 
 function WallStats({wallBuilding}: {wallBuilding: WallBuilding}) {
-    const cityEffects = {homogeneousValueEffects: wallBuilding.cityHomogeneousValueEffects};
-    const mountedGunEffects = {homogeneousValueEffects: wallBuilding.mountedGunHomogeneousValueEffects};
+    const wallValues = {values: wallBuilding.values};
 
     return (
         <>
             <HomogeneousContributionGroup
                 title="Upkeep"
-                effects={getHomogeneousRequirementContributions(cityEffects)}
+                effects={getHomogeneousRequirementContributions(wallValues)}
             />
             <HomogeneousContributionGroup
                 title="Stats"
-                effects={getHomogeneousProductionContributions(cityEffects)}
+                effects={getHomogeneousProductionContributions(wallValues)}
             />
-            {wallBuilding.mountedGunHomogeneousValueEffects?.length ? (
-                <HomogeneousContributionGroup
-                    title="Mounted gun"
-                    effects={getHomogeneousProductionContributions(mountedGunEffects)}
-                />
-            ) : null}
             {wallBuilding.specialEffects.length > 0 && (
                 <ul className={s.effectList}>
                     {wallBuilding.specialEffects.map((effect) => (
@@ -489,45 +486,6 @@ function WallStats({wallBuilding}: {wallBuilding: WallBuilding}) {
             )}
         </>
     );
-}
-
-function AdjacencyEffectSummary({building}: {building: PlacedBuilding}) {
-    const hasRequiredAdd = hasUpkeepValues(building.requiredUpkeepAdd);
-    const hasProvidedAdd = hasUpkeepValues(building.providedUpkeepAdd);
-    const hasRequiredMul = hasUpkeepValues(building.requiredUpkeepMul);
-    const hasProvidedMul = hasUpkeepValues(building.providedUpkeepMul);
-    const hasSignatureEffect = Boolean(building.signatureAdd) || (building.signatureMul ?? 1) !== 1;
-    const hasAnyEffect = hasRequiredAdd || hasProvidedAdd || hasRequiredMul || hasProvidedMul || hasSignatureEffect;
-
-    if (!hasAnyEffect) {
-        return <p className={s.emptyStats}>No adjacent modifiers applied.</p>;
-    }
-
-    return (
-        <div>
-            <h4 className={s.metricTitle}>Adjacent modifiers</h4>
-            {hasRequiredAdd && <MetricGroup title="Cost added" values={building.requiredUpkeepAdd ?? {}} />}
-            {hasProvidedAdd && <MetricGroup title="Output added" values={building.providedUpkeepAdd ?? {}} />}
-            {hasRequiredMul && <MetricGroup title="Cost multiplier" values={building.requiredUpkeepMul ?? {}} />}
-            {hasProvidedMul && <MetricGroup title="Output multiplier" values={building.providedUpkeepMul ?? {}} />}
-            {hasSignatureEffect && (
-                <dl className={s.metricList}>
-                    <div className={s.metricRow}>
-                        <dt>Signature add</dt>
-                        <dd>{building.signatureAdd ?? 0}</dd>
-                    </div>
-                    <div className={s.metricRow}>
-                        <dt>Signature multiplier</dt>
-                        <dd>{building.signatureMul ?? 1}</dd>
-                    </div>
-                </dl>
-            )}
-        </div>
-    );
-}
-
-function hasUpkeepValues(values?: UpkeepAmount) {
-    return Boolean(values && Object.values(values).some((value) => value !== undefined && value !== 0));
 }
 
 function getResolvedRequiredUpkeepForBuild(
@@ -551,11 +509,11 @@ function getResolvedRequiredUpkeepForBuild(
         ?? {};
 }
 
-function getBuildingRequiredUpkeep(building?: {homogeneousValueEffects?: HomogeneousValueEffect[]}): UpkeepAmount {
+function getBuildingRequiredUpkeep(building?: {values?: HomogeneousValueEffect[]}): UpkeepAmount {
     if (!building) return {};
 
     return homogeneousValueTotalsToUpkeepAmount(
-        getUpkeepValues(resolveHomogeneousValueContributions(building.homogeneousValueEffects ?? [])),
+        getUpkeepValues(resolveHomogeneousValueContributions(building.values ?? [])),
     );
 }
 
@@ -584,6 +542,17 @@ function getBuildingName(buildingId: string): string {
 function isHexPartOfStructureCandidate(cellKey: string, candidate: StructureDetectionResult): boolean {
     return candidate.coreHex.cellKey === cellKey
         || candidate.matchedSatellites.some(match => match.hex.cellKey === cellKey);
+}
+
+function isStructureCandidateUnlockedOrBuilt(
+    candidate: StructureDetectionResult,
+    unlockedBuildingIds: ReadonlySet<string>,
+): boolean {
+    return unlockedBuildingIds.has(candidate.structure.id)
+        || (
+            candidate.coreHex.kind === "city"
+            && candidate.coreHex.partOfStructureId === candidate.structure.id
+        );
 }
 
 function WallBuildingSelector({

@@ -75,7 +75,7 @@ export function BuildingSelector({
                     const unavailableReason = unavailableBuildingReasons[building.id];
                     const buildBlockedReason = blocked ? blockedReason : unavailableReason;
                     const buildBlocked = blocked || Boolean(unavailableReason);
-                    const hasAdjacencyRules = building.adjacency.length > 0 || Boolean(building.homogeneousAdjacency?.length);
+                    const hasAdjacencyRules = Boolean(building.effects?.length);
 
                     return (
                         <article key={building.id} role="listitem" className={s.card} aria-labelledby={`${building.id}-name`}>

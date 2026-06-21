@@ -44,10 +44,8 @@ export interface GunPart extends RequirementGate {
   sprite: SpriteInfo;
   keywords: Set<string>;
   aimKeywords?: string[];
-  gunHomogeneousValueEffects?: HomogeneousValueEffect[];
-  cityHomogeneousValueEffects?: HomogeneousValueEffect[];
-  gunHomogeneousModifiers?: HomogeneousAdjacencyRule[];
-  cityHomogeneousModifiers?: HomogeneousAdjacencyRule[];
+  values?: HomogeneousValueEffect[];
+  effects?: HomogeneousAdjacencyRule[];
   conflictsWithKeywords?: string[];
   children?: GunPart[]; // chain within a slot
 }
@@ -61,12 +59,10 @@ export interface TowerSynergyRule {
   name: string;
   description: string;
   requiredKeywords: string[];
-  gunHomogeneousValueEffects?: HomogeneousValueEffect[];
-  cityHomogeneousValueEffects?: HomogeneousValueEffect[];
+  values?: HomogeneousValueEffect[];
+  effects?: HomogeneousAdjacencyRule[];
   addKeywords?: string[];
   addAimKeywords?: string[];
-  gunHomogeneousModifiers?: HomogeneousAdjacencyRule[];
-  cityHomogeneousModifiers?: HomogeneousAdjacencyRule[];
 }
 
 export type TowerPartsAtlas = Record<DevelopmentVectorKey, Record<string, GunPart>>;
@@ -108,12 +104,9 @@ export interface TowerAssemblyResolved {
   selectedParts: Partial<Record<TowerPartSlot, GunPart>>;
   stats: TowerStatsResolved;
   supportCost: UpkeepAmount;
-  gunHomogeneousValueEffects: HomogeneousValueEffect[];
-  cityHomogeneousValueEffects: HomogeneousValueEffect[];
-  gunHomogeneousModifiers: HomogeneousAdjacencyRule[];
-  cityHomogeneousModifiers: HomogeneousAdjacencyRule[];
-  gunHomogeneousResolvedValues: HomogeneousResolvedValueMap;
-  cityHomogeneousResolvedValues: HomogeneousResolvedValueMap;
+  values: HomogeneousValueEffect[];
+  effects: HomogeneousAdjacencyRule[];
+  homogeneousResolvedValues: HomogeneousResolvedValueMap;
   keywords: Set<string>;
   aimKeywords: string[];
   synergies: ResolvedTowerSynergy[];

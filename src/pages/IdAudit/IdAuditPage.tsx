@@ -180,7 +180,7 @@ function createRows(): AuditRow[] {
 }
 
 function describeWallBuildingStats(data: WallBuilding): string {
-  const producedValues = getProducedValues(resolveHomogeneousValueContributions(data.cityHomogeneousValueEffects ?? []));
+  const producedValues = getProducedValues(resolveHomogeneousValueContributions(data.values ?? []));
   const resilience = producedValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0;
   const ignoredThreat = producedValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0;
 

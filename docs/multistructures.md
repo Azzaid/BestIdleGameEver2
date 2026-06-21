@@ -608,6 +608,8 @@ A structure definition should contain:
 
 Required Buildings
 
+Player Hint
+
 Threat Modifier
 
 Visual Set

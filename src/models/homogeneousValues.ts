@@ -35,10 +35,17 @@ export type HomogeneousValueResolutionConfig = {
     resolveType: HomogeneousValueResolveType;
 };
 
+export type HomogeneousValueDerivedResolutionConfig = {
+    sourceValueIds: readonly HomogeneousValueId[];
+    resolveValue: (sourceValues: HomogeneousValueTotals) => number;
+};
+
 export type HomogeneousAdjacencyRule = {
     keywords?: string[];
     requiredBuildingKeywords?: string[];
     forbiddenBuildingKeywords?: string[];
+    additionalBuildingKeywords?: string[];
+    removedBuildingKeywords?: string[];
     requiredValueKeywords?: string[];
     forbiddenValueKeywords?: string[];
     multiplier?: number | null;

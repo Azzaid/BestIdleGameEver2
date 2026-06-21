@@ -1,25 +1,18 @@
 // What we resolve per hex
 import type {UpkeepAmount} from "../../../../models/Upkeep.ts";
 import type {
-    AdjacencyRule,
     CityResolution,
-    EffectDelta,
     PlacedCityMap,
-    ResourceOutputModifier,
-    TargetFilter
 } from "../../../../models/city/Adjancency.ts";
 import type {HexCell} from "../../../../models/city/HexGrid.ts";
 import type {Building, PlacedBuilding} from "../../../../models/city/Building.ts";
-import {addUpkeep, applyResourceModifier, deductUpkeep, multiplyUpkeep} from "./upkeepUtils.ts";
+import {deductUpkeep} from "./upkeepUtils.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
 import {ALL_WALL_BUILDINGS} from "../../../../data/wall/index.ts";
-import {hexesWithinRadius} from "./hexUtils.ts";
 import {SIGNATURE_PER_HEX} from "../../../../data/constants.ts";
 import {deepClone} from "../../../../utils/deepClone.ts";
 import {
-    citySignatureToHomogeneousValueEffect,
     homogeneousValueTotalsToUpkeepAmount,
-    upkeepAmountToHomogeneousValueEffects
 } from "../../../../models/homogeneousValueAdapters.ts";
 import {
     getAvailableValues,
@@ -30,88 +23,6 @@ import {
 } from "../../../../models/homogeneousValueResolution.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../../../data/homogeneousValues/index.ts";
 import type {HomogeneousValueEntitySource} from "../../../../models/homogeneousValueResolution.ts";
-
-function matchesFilter(
-    placed?: PlacedBuilding,
-    filter?: TargetFilter
-): boolean {
-    if (!filter) return true;
-    if (!placed) return !!filter.includeEmptyHexes;
-
-    if (filter.buildingTypes && !filter.buildingTypes.includes(placed.type)) return false;
-    if (filter.developmentVectors && !filter.developmentVectors.includes(placed.vector)) return false;
-
-    if (filter.keywords && filter.keywords.length > 0) {
-        const source = new Set(placed.keywords ?? []);
-        const wanted = filter.keywords.some(t => source.has(t));
-        if (!wanted) return false;
-    }
-    return true;
-}
-
-function accumulateEffect(
-    initial: EffectDelta,
-    rule: AdjacencyRule
-): void {
-    const { effect } = rule;
-
-    // additive
-    if (effect.requiredUpkeepAdd) {
-        initial.requiredUpkeepAdd = addUpkeep(
-            initial.requiredUpkeepAdd ?? {},
-            effect.requiredUpkeepAdd
-        );
-    }
-    if (effect.providedUpkeepAdd) {
-        initial.providedUpkeepAdd = addUpkeep(
-            initial.providedUpkeepAdd ?? {},
-            effect.providedUpkeepAdd
-        );
-    }
-    if (typeof effect.signatureAdd === "number") {
-        initial.signatureAdd = (initial.signatureAdd ?? 0) + effect.signatureAdd;
-    }
-
-    // multiplicative
-    if (effect.requiredUpkeepMul) {
-        initial.requiredUpkeepMul = multiplyUpkeep(
-            initial.requiredUpkeepMul ?? {},
-            effect.requiredUpkeepMul
-        );
-    }
-
-    if (effect.providedUpkeepMul) {
-        initial.providedUpkeepMul = multiplyUpkeep(
-            initial.providedUpkeepMul ?? {},
-            effect.providedUpkeepMul
-        );
-    }
-
-    if (effect.outputMul) {
-        initial.outputMul = [
-            ...toOutputModifiers(initial.outputMul),
-            ...toOutputModifiers(effect.outputMul),
-        ];
-    }
-
-    if (typeof effect.signatureMul === "number") {
-        initial.signatureMul = (initial.signatureMul ?? 1) * effect.signatureMul;
-    }
-
-    if (effect.homogeneousValueEffects) {
-        initial.homogeneousValueEffects = [
-            ...(initial.homogeneousValueEffects ?? []),
-            ...effect.homogeneousValueEffects,
-        ];
-    }
-}
-
-function toOutputModifiers(
-    modifier: ResourceOutputModifier | ResourceOutputModifier[] | undefined,
-): ResourceOutputModifier[] {
-    if (!modifier) return [];
-    return Array.isArray(modifier) ? modifier : [modifier];
-}
 
 /**
  * Main resolver:
@@ -124,9 +35,6 @@ export const placeCityBuildings = (
 ): PlacedCityMap => {
     // 1) Base pass
     const placedCity = new Map<string, PlacedBuilding>();
-    const getResolvedCellKey = (hexCell: HexCell) => hexCell.partOfStructureId
-        ? hexCell.structureCoreCellKey ?? hexCell.cellKey
-        : hexCell.cellKey;
 
     hexes.forEach((hexCell: HexCell) => {
         const { column, row, cellKey, buildingKey, developmentVector } = hexCell;
@@ -137,71 +45,17 @@ export const placeCityBuildings = (
             ...deepClone(building),
             column,
             row,
-            providedUpkeepAdd: {},
-            requiredUpkeepAdd: {},
-            signatureAdd: 0,
-            providedUpkeepMul: {},
-            requiredUpkeepMul: {},
-            signatureMul: 1,
             effectiveProvidedUpkeep: {},
             effectiveRequiredUpkeep: {},
             effectiveSignature: 0,
-            effectiveHomogeneousValueEffects: [...(building.homogeneousValueEffects ?? [])]
+            effectiveHomogeneousValueEffects: [...(building.values ?? [])]
         } : undefined;
         if (placed) placedCity.set(cellKey, placed);
     })
 
-    //2) Emit & aggregate effects
-    hexes.forEach((hexCell: HexCell) => {
-        const { cellKey, buildingKey } = hexCell;
-        if (hexCell.partOfStructureId && (hexCell.structureCoreCellKey ?? cellKey) !== cellKey) return;
-
-        const affectorBuilding:PlacedBuilding | undefined = buildingKey ? placedCity.get(getResolvedCellKey(hexCell)) : undefined;
-
-        //for each hex with building and adjacency rules
-        if (affectorBuilding && affectorBuilding.adjacency.length) {
-
-            //for each rule
-            affectorBuilding.adjacency.forEach((adjacencyRule: AdjacencyRule) => {
-                const affectedKeys = new Set<string>();
-
-                //for each hex within a rule radius
-                hexesWithinRadius(
-                    {column: affectorBuilding.column, row: affectorBuilding.row},
-                    adjacencyRule.radiusInHexes,
-                    hexes,
-                    {excludeCenter: true, onlyNonEmpty: true}
-                ).forEach((affectedHex: HexCell) => {
-                    const affectedKey = getResolvedCellKey(affectedHex);
-                    const affectedBuilding: PlacedBuilding | undefined = placedCity.get(affectedKey);
-                    if (affectedKeys.has(affectedKey)) return;
-                    affectedKeys.add(affectedKey);
-
-                    //if the hex has a building and matches the filter
-                    if (affectedBuilding && matchesFilter(affectedBuilding, adjacencyRule.targetFilter)) {
-                        accumulateEffect(affectedBuilding, adjacencyRule);
-                    }
-                })
-            })
-        }
-    })
-
-    //3) Apply aggregated effects
+    // 2) Resolve direct building values. Homogeneous effects are applied later by resolveCity.
     placedCity.forEach((building) => {
-        const { requiredUpkeepAdd, requiredUpkeepMul, providedUpkeepAdd, providedUpkeepMul, outputMul, signatureAdd, signatureMul } = building;
-        const exactProvidedUpkeep = multiplyUpkeep(providedUpkeepAdd ?? {}, providedUpkeepMul!);
-        const legacyProvidedUpkeep = toOutputModifiers(outputMul).reduce(
-            (current, modifier) => applyResourceModifier(current, modifier),
-            exactProvidedUpkeep,
-        );
-        const legacyRequiredUpkeep = multiplyUpkeep(requiredUpkeepAdd ?? {}, requiredUpkeepMul!);
-        const legacySignature = (signatureAdd ?? 0) * (signatureMul ?? 1);
-        building.effectiveHomogeneousValueEffects = [
-            ...(building.homogeneousValueEffects ?? []),
-            ...upkeepAmountToHomogeneousValueEffects(legacyProvidedUpkeep, "production"),
-            ...upkeepAmountToHomogeneousValueEffects(legacyRequiredUpkeep, "upkeep"),
-            ...citySignatureToHomogeneousValueEffect(legacySignature),
-        ];
+        building.effectiveHomogeneousValueEffects = [...(building.values ?? [])];
 
         const resolvedBuildingValues = resolveHomogeneousValueContributions(building.effectiveHomogeneousValueEffects);
         building.effectiveProvidedUpkeep = homogeneousValueTotalsToUpkeepAmount(getProducedValues(resolvedBuildingValues));
@@ -247,8 +101,8 @@ export function resolveCityUpkeepAndSignature(
             column: building.column,
             row: building.row,
             keywords: building.keywords,
-            contributions: building.effectiveHomogeneousValueEffects,
-            modifiers: building.homogeneousAdjacency,
+            values: building.effectiveHomogeneousValueEffects,
+            effects: building.effects,
         }));
     const wallEntities: HomogeneousValueEntitySource[] = hexes.flatMap((hexCell) => {
         if (hexCell.kind !== "wall") return [];
@@ -269,10 +123,8 @@ export function resolveCityUpkeepAndSignature(
                 column: hexCell.column,
                 row: hexCell.row,
                 keywords: [String(wallBuilding.type), ...(wallBuilding.keywords ?? [])],
-                contributions: wallBuilding.cityHomogeneousValueEffects ?? [],
-                modifiers: wallBuilding.cityHomogeneousAdjacency,
-                mountedGunContributions: wallBuilding.mountedGunHomogeneousValueEffects,
-                mountedGunModifiers: wallBuilding.mountedGunHomogeneousAdjacency,
+                values: wallBuilding.values ?? [],
+                effects: wallBuilding.effects,
             }];
         });
     });

@@ -1,4 +1,3 @@
-import type {TowerModifiers} from "../../models/battle/towerParts.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import type {BuildingKeyword} from "../../models/city/Keywords.ts";
 import type {WallBuilding, WallSpecialEffect} from "../../models/city/Wall.ts";
@@ -14,8 +13,6 @@ type WallStats = {
     threatSuppression?: number;
 };
 
-type MountedGunStats = Partial<TowerModifiers>;
-
 type WallFactoryOptions = {
     vector: DevelopmentVectorValue;
     defaultKeywords?: BuildingKeyword[];
@@ -25,35 +22,14 @@ type WallBuildingOptions = {
     keywords?: BuildingKeyword[];
     supportCost?: UpkeepAmount;
     requirements?: Requirement[];
-    cityHomogeneousValueEffects?: HomogeneousValueEffect[];
-    cityHomogeneousAdjacency?: HomogeneousAdjacencyRule[];
-    mountedGunStats?: MountedGunStats;
-    mountedGunHomogeneousValueEffects?: HomogeneousValueEffect[];
-    mountedGunHomogeneousAdjacency?: HomogeneousAdjacencyRule[];
+    values?: HomogeneousValueEffect[];
+    effects?: HomogeneousAdjacencyRule[];
     specialEffects?: WallSpecialEffect[];
 };
 
 const wallStatValueIds: Record<keyof WallStats, string> = {
     resilience: HOMOGENEOUS_VALUE_IDS.wallResilience,
     threatSuppression: HOMOGENEOUS_VALUE_IDS.wallThreatSuppression,
-};
-
-const mountedGunStatValueIds: Record<keyof TowerModifiers, string> = {
-    rotationSpeed: HOMOGENEOUS_VALUE_IDS.towerRotationSpeed,
-    shotsPerSecond: HOMOGENEOUS_VALUE_IDS.towerShotsPerSecond,
-    burstCount: HOMOGENEOUS_VALUE_IDS.towerBurstCount,
-    projectileDamage: HOMOGENEOUS_VALUE_IDS.towerProjectileDamage,
-    projectileSpeed: HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed,
-    projectileRadius: HOMOGENEOUS_VALUE_IDS.towerProjectileRadius,
-    projectileSpread: HOMOGENEOUS_VALUE_IDS.towerProjectileSpread,
-    aoeRadius: HOMOGENEOUS_VALUE_IDS.towerAoeRadius,
-    targetingDistanceLimit: HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit,
-    maximumRange: HOMOGENEOUS_VALUE_IDS.towerMaximumRange,
-    minimumRange: HOMOGENEOUS_VALUE_IDS.towerMinimumRange,
-    maximumRotationAngle: HOMOGENEOUS_VALUE_IDS.towerMaximumRotationAngle,
-    retargetCooldownSeconds: HOMOGENEOUS_VALUE_IDS.towerRetargetCooldownSeconds,
-    triggerTolerance: HOMOGENEOUS_VALUE_IDS.towerTriggerTolerance,
-    weight: HOMOGENEOUS_VALUE_IDS.towerWeight,
 };
 
 export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOptions) {
@@ -85,6 +61,12 @@ export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOpt
         stats: WallStats,
         options: WallBuildingOptions,
     ): WallBuilding {
+        const values = [
+            ...upkeepAmountToHomogeneousValueEffects(options.supportCost ?? {}, "upkeep"),
+            ...wallStatsToHomogeneousValueEffects(stats),
+            ...(options.values ?? []),
+        ];
+
         return {
             id,
             name,
@@ -92,17 +74,8 @@ export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOpt
             vector,
             keywords: [...defaultKeywords, ...(options.keywords ?? [])],
             requirements: options.requirements,
-            cityHomogeneousValueEffects: [
-                ...upkeepAmountToHomogeneousValueEffects(options.supportCost ?? {}, "upkeep"),
-                ...wallStatsToHomogeneousValueEffects(stats),
-                ...(options.cityHomogeneousValueEffects ?? []),
-            ],
-            cityHomogeneousAdjacency: options.cityHomogeneousAdjacency,
-            mountedGunHomogeneousValueEffects: [
-                ...mountedGunStatsToHomogeneousValueEffects(options.mountedGunStats ?? {}),
-                ...(options.mountedGunHomogeneousValueEffects ?? []),
-            ],
-            mountedGunHomogeneousAdjacency: options.mountedGunHomogeneousAdjacency,
+            values,
+            effects: options.effects,
             specialEffects: options.specialEffects ?? [],
             description,
         };
@@ -117,11 +90,6 @@ export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOpt
 function wallStatsToHomogeneousValueEffects(stats: WallStats): HomogeneousValueEffect[] {
     return (Object.entries(stats) as Array<[keyof WallStats, number | undefined]>)
         .flatMap(([stat, additive]) => statToHomogeneousValueEffect(wallStatValueIds[stat], additive));
-}
-
-function mountedGunStatsToHomogeneousValueEffects(stats: MountedGunStats): HomogeneousValueEffect[] {
-    return (Object.entries(stats) as Array<[keyof TowerModifiers, number | undefined]>)
-        .flatMap(([stat, additive]) => statToHomogeneousValueEffect(mountedGunStatValueIds[stat], additive));
 }
 
 function statToHomogeneousValueEffect(valueId: string, additive: number | undefined): HomogeneousValueEffect[] {

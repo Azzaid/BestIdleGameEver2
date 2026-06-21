@@ -210,11 +210,11 @@ Support is produced by city infrastructure and consumed by:
 Resources are stored through one keyworded resource map under the hood. UI and derived selectors decide whether a resource is shown as ordinary support, an Aether orb component, or another specialized display.
 The current implementation routes resources, city metrics, monster modifiers, siege modifiers, wall stats, tower stats, and future derived game values through the homogeneous value registry in `src/data/homogeneousValues`. Content contributes `HomogeneousValueEffect` entries to registered values, and gameplay/UI code should read final values through selectors instead of reading those effects directly. Every contribution must carry exactly one role keyword: `production`, `upkeep`, or `unlock`. Production creates the resolved value, upkeep reduces available value, and unlock checks against produced value without spending it.
 
-Tower part homogeneous effects are split by scope. `gunHomogeneousValueEffects` are internal to the mounted gun and resolve that gun's stats only. `cityHomogeneousValueEffects` are the only tower-part effects contributed to the city resolution, usually support upkeep or explicit city-facing effects. Wall towers follow the same split with city-facing wall values and mounted-gun effects that apply only to the gun mounted on that wall tower.
+Tower parts use the same `values` and `effects` fields as other homogeneous entities. Tower stats, support upkeep, and tower-scoped modifiers all resolve from the assembled tower's single homogeneous value set. Tower-scoped modifiers use `radius: 0`, which affects only the assembled tower entity.
 
-Unlocked technologies may contribute city-wide homogeneous values and modifiers. Technology modifiers are treated as global modifiers by the technology factory, and technology homogeneous sources are included in effective city resolution alongside buildings, walls, and towers.
+Unlocked technologies may contribute city-wide homogeneous values and effects. Technology effects are assigned `radius: Infinity` by the technology factory, and technology homogeneous sources are included in effective city resolution alongside buildings, walls, and towers.
 
-Homogeneous value resolution is a deterministic two-pass pipeline. First, each city hex entity collects active modifiers from its local hex, adjacency, and city-global effects. Global modifiers are identified by the `global` keyword on the modifier. Radius modifiers are adjacency modifiers. Modifiers without radius are local modifiers unless they contain `global`. Second, active modifiers are applied to contributions and final homogeneous values are resolved. Modifiers may affect contributions, but they do not affect other modifiers and do not depend on resolved city values.
+Homogeneous value resolution is a deterministic pipeline. Content entities use `values` for direct homogeneous value contributions and `effects` for `HomogeneousAdjacencyRule` modifiers. A modifier with `radius: 0` affects only the source entity, a finite positive radius affects nearby entities, and `radius: Infinity` affects every matching entity. There is no special keyword for city-wide effects. First, each entity collects active self, radius, and city-wide effects. Then active effects are applied to direct values and final direct homogeneous values are resolved. Configured derived homogeneous values are calculated after direct values, and effects targeting derived values are applied after their base derived value exists. Effects may affect contributions, but they do not affect other effects.
 
 Current resources by vector:
 
@@ -308,7 +308,7 @@ Building categories:
 Building data convention:
 
 - Building and superstructure unlock requirements live inline on the building definition as `requirements`, matching tower part data.
-- Superstructure transform recipes live inline on the superstructure definition as `requiredBuildingIds`.
+- Superstructure transform recipes live inline on the superstructure definition as `requiredBuildingIds` and can include a player-facing `hint`.
 
 City view implementation:
 

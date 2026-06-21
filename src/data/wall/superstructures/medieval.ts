@@ -16,8 +16,6 @@ export const medievalWallSuperstructures: Record<string, WallBuilding> = {
         {
             supportCost: {
             },
-            mountedGunStats: {
-            },
             specialEffects: [
             ],
         },

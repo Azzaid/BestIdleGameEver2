@@ -21,10 +21,8 @@ type TowerPartOptions = {
   spriteTextureKey?: string;
   aimKeywords?: string[];
   conflictsWithKeywords?: string[];
-  gunHomogeneousValueEffects?: HomogeneousValueEffect[];
-  cityHomogeneousValueEffects?: HomogeneousValueEffect[];
-  gunHomogeneousModifiers?: HomogeneousAdjacencyRule[];
-  cityHomogeneousModifiers?: HomogeneousAdjacencyRule[];
+  values?: HomogeneousValueEffect[];
+  effects?: HomogeneousAdjacencyRule[];
   children?: GunPart[];
 };
 
@@ -56,6 +54,12 @@ export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPart
     stats: TowerPartStats = {},
     options: TowerPartOptions = {},
   ): GunPart {
+    const values = [
+      ...towerStatsToHomogeneousValueEffects(stats),
+      ...upkeepAmountToHomogeneousValueEffects(options.supportCost ?? {}, "upkeep"),
+      ...(options.values ?? []),
+    ];
+
     return {
       id,
       slot,
@@ -68,16 +72,8 @@ export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPart
       aimKeywords: options.aimKeywords,
       conflictsWithKeywords: options.conflictsWithKeywords,
       children: options.children,
-      gunHomogeneousModifiers: options.gunHomogeneousModifiers,
-      cityHomogeneousModifiers: options.cityHomogeneousModifiers,
-      gunHomogeneousValueEffects: [
-        ...towerStatsToHomogeneousValueEffects(stats),
-        ...(options.gunHomogeneousValueEffects ?? []),
-      ],
-      cityHomogeneousValueEffects: [
-        ...upkeepAmountToHomogeneousValueEffects(options.supportCost ?? {}, "upkeep"),
-        ...(options.cityHomogeneousValueEffects ?? []),
-      ],
+      values,
+      effects: options.effects,
     };
   }
 

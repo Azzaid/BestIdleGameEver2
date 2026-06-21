@@ -4,17 +4,21 @@ import type {BuildingKeyword} from "../../models/city/Keywords.ts";
 import type {DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 import type {UpkeepAmount} from "../../models/Upkeep.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import {
   citySignatureToHomogeneousValueEffect,
   upkeepAmountToHomogeneousValueEffects,
 } from "../../models/homogeneousValueAdapters.ts";
 
 type BuildingOptions = {
-  requirements?: Requirement[];
+    requirements?: Requirement[];
+    values?: HomogeneousValueEffect[];
+    effects?: HomogeneousAdjacencyRule[];
 };
 
 type SuperstructureOptions = BuildingOptions & {
   requiredBuildingIds?: string[];
+  hint?: string;
 };
 
 type BuildingFactoryOptions = {
@@ -33,6 +37,13 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
     keywords: BuildingKeyword[] = [],
     options: BuildingOptions = {},
   ): Building {
+    const values = [
+      ...upkeepAmountToHomogeneousValueEffects(providedUpkeep, "production"),
+      ...upkeepAmountToHomogeneousValueEffects(requiredUpkeep, "upkeep"),
+      ...citySignatureToHomogeneousValueEffect(signature),
+      ...(options.values ?? []),
+    ];
+
     return {
       id,
       name,
@@ -41,12 +52,8 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
       isMultiHex: false,
       isMultistructure: false,
       vector,
-      homogeneousValueEffects: [
-        ...upkeepAmountToHomogeneousValueEffects(providedUpkeep, "production"),
-        ...upkeepAmountToHomogeneousValueEffects(requiredUpkeep, "upkeep"),
-        ...citySignatureToHomogeneousValueEffect(signature),
-      ],
-      adjacency: [],
+      values,
+      effects: options.effects,
       adjacencyDescription: "Not affected",
       description,
       keywords: [...defaultKeywords, ...keywords],
@@ -69,7 +76,7 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
       isMultiHex: true,
       isMultistructure: true,
       multiHexStructure: options.requiredBuildingIds
-        ? [{requiredBuildingIds: options.requiredBuildingIds}]
+        ? [{requiredBuildingIds: options.requiredBuildingIds, hint: options.hint}]
         : undefined,
     };
   }

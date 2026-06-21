@@ -56,10 +56,8 @@ export const selectWallResolution = createSelector(
                     column: hex.column,
                     row: hex.row,
                     keywords: [String(wallBuilding.type), ...(wallBuilding.keywords ?? [])],
-                    contributions: wallBuilding.cityHomogeneousValueEffects ?? [],
-                    modifiers: wallBuilding.cityHomogeneousAdjacency,
-                    mountedGunContributions: wallBuilding.mountedGunHomogeneousValueEffects,
-                    mountedGunModifiers: wallBuilding.mountedGunHomogeneousAdjacency,
+                    values: wallBuilding.values ?? [],
+                    effects: wallBuilding.effects,
                 });
             });
         });
