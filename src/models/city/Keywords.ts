@@ -42,7 +42,8 @@ export const SYNERGY_KEYWORDS = [
     "woodWorking",
     "stoneWorking",
     "science",
-    "naturalSciences"
+    "naturalSciences",
+    "boost"
 ] as const;
 export type SynergyKeyword = typeof SYNERGY_KEYWORDS[number];
 

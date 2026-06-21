@@ -18,11 +18,11 @@ const natureBuildingsRaw: {[key: string]: Building} = {
     ...bioBuilding(
       buildings.nature.wildGarden,
       "Wild Garden",
-      "A small garden with wild edible, medicinal, and strange plants.",
-      8,
-      {[UPKEEP_TYPES.plants]: 5},
-      {[UPKEEP_TYPES.people]: 1},
-      ["production", "plants", "garden", "herbs"],
+      "A small garden with wild inedible and strange plants.",
+      2,
+      {},
+      {},
+      ["plants"],
       {requirements: [
         requires.technologyUnlocked(technologies.nature.seedGathering),
       ]},
@@ -31,11 +31,11 @@ const natureBuildingsRaw: {[key: string]: Building} = {
   [buildings.nature.herbalistHut]: bioSuperstructure(
     buildings.nature.herbalistHut,
     "Herbalist Hut",
-    "A stalker hut and wild garden combined into a place for cultivating and preparing gathered plants.",
-    12,
-    {[UPKEEP_TYPES.plants]: 7},
+    "A stalker hut and wild garden combined into a place study gathered plants.",
+    5,
+    {[UPKEEP_TYPES.people]: 3},
     {},
-    ["production", "plants", "herbs"],
+    ["production", "plants"],
     {requiredBuildingIds: [
       buildings.nature.wildGarden,
       buildings.medieval.stalkerHut,
@@ -50,10 +50,10 @@ const natureBuildingsRaw: {[key: string]: Building} = {
       buildings.nature.field,
       "Field",
       "A planned growing field for deliberate plant cultivation.",
-      14,
-      {[UPKEEP_TYPES.plants]: 4},
-      {[UPKEEP_TYPES.people]: 2},
-      ["production", "plants", "farm"],
+      4,
+      {},
+      {[UPKEEP_TYPES.people]: 1},
+      ["farm", "boost"],
       {requirements: [
         requires.technologyUnlocked(technologies.nature.plantCultivation),
       ]},
@@ -61,13 +61,82 @@ const natureBuildingsRaw: {[key: string]: Building} = {
     effects: [
       {
         radius: 1,
-        requiredBuildingKeywords: ["production"],
-        requiredValueKeywords: ["output", "production"],
+        requiredBuildingKeywords: [],
+        requiredValueKeywords: ["resource", "people"],
         multiplier: 1.25,
       },
     ],
-    adjacencyDescription: "Neighboring producers gain 25% output.",
+    adjacencyDescription: "Neighboring buildings can sustain 25% more people.",
   },
+    [buildings.nature.mycelium]: {
+        ...bioBuilding(
+            buildings.nature.mycelium,
+            "Mycelium",
+            "Part of wild mycelium. Interesting what it can grow into.",
+            4,
+            {[UPKEEP_TYPES.fungi]: 1},
+            {},
+            ["fungi", "boost"],
+            {requirements: [
+                    requires.technologyUnlocked(technologies.nature.mushrooms),
+                ]},
+        ),
+        effects: [
+            {
+                radius: 1,
+                requiredBuildingKeywords: ["fungi"],
+                requiredValueKeywords: ["fungi"],
+                multiplier: 1.25,
+            },
+        ],
+        adjacencyDescription: "Neighboring fungi get stronger",
+    },
+    [buildings.nature.saplings]: {
+        ...bioBuilding(
+            buildings.nature.saplings,
+            "Saplings",
+            "Field of saplings growing in the wild. They are not very tall, but they are very strong.",
+            4,
+            {},
+            {},
+            ["plants", "boost"],
+            {requirements: [
+                    requires.technologyUnlocked(technologies.nature.threes),
+                ]},
+        ),
+        effects: [
+            {
+                radius: 1,
+                requiredBuildingKeywords: ["plants"],
+                requiredValueKeywords: ["plants"],
+                multiplier: 1.25,
+            },
+        ],
+        adjacencyDescription: "Neighboring plants get stronger",
+    },
+    [buildings.nature.meadow]: {
+        ...bioBuilding(
+            buildings.nature.meadow,
+            "Meadow",
+            "A small meadow full of small wild animals.",
+            4,
+            {},
+            {},
+            ["animals", "boost"],
+            {requirements: [
+                    requires.technologyUnlocked(technologies.nature.animals),
+                ]},
+        ),
+        effects: [
+            {
+                radius: 1,
+                requiredBuildingKeywords: ["animals"],
+                requiredValueKeywords: ["animals"],
+                multiplier: 1.25,
+            },
+        ],
+        adjacencyDescription: "Neighboring animals get stronger",
+    },
 };
 
 export const natureBuildings: {[key: string]: Building} = Object.fromEntries(

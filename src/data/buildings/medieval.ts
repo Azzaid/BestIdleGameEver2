@@ -90,10 +90,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
   [buildings.medieval.farm]: superstructure(
     buildings.medieval.farm,
     "Farm",
-    "A field and wooden house combined into the first major economic apex of the early game.",
+    "A house with a fields around. Peacefull and happy.",
     7,
-    {[UPKEEP_TYPES.gold]: 10 },
-    {[UPKEEP_TYPES.people]: 3,},
+    {[UPKEEP_TYPES.people]: 10,[UPKEEP_TYPES.gold]: 3 },
+    {},
     ["production", "people", "plants", "gold", "farm"],
     {hint: "What if we add some space to grow plants?",
         requiredBuildingIds: [
@@ -111,7 +111,7 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       "Wooden House",
       "Real walls, a dry roof, and enough stability to grow the population.",
       10,
-      {[UPKEEP_TYPES.people]: 10, [UPKEEP_TYPES.gold]: 3},
+      {[UPKEEP_TYPES.people]: 7},
       {},
       ["production", "people", "wood", "housing"],
       {requirements: [
@@ -124,7 +124,7 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     "Craftsman's House",
     "A wooden house and tool shed that support woodworking and stoneworking.",
     10,
-    {[UPKEEP_TYPES.people]: 8, [UPKEEP_TYPES.gold]: 5},
+    {[UPKEEP_TYPES.people]: 5, [UPKEEP_TYPES.gold]: 2},
     {},
     ["production", "people", "gold", "craft", "woodWorking", "stoneWorking"],
     {
@@ -155,9 +155,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       buildings.medieval.stoneHouse,
       "Stone House",
       "Durable housing that supports people and gold while keeping city signature lower than wood.",
-      8,
-      {[UPKEEP_TYPES.people]: 10, [UPKEEP_TYPES.gold]: 5},
-      {},
+      7,
+      {[UPKEEP_TYPES.people]: 10,},
+      {[UPKEEP_TYPES.gold]: 1},
       ["production", "people", "gold", "housing"],
       {requirements: [
         requires.technologyUnlocked(technologies.medieval.stoneworking),
@@ -184,6 +184,11 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
               requires.buildingExists(buildings.medieval.stoneHouse),
           ]},
   ),
+
+
+    //After this line buildings are not yet refined and mostly are placeholders
+
+
   [buildings.medieval.workshop]: {
     ...building(
       buildings.medieval.workshop,
