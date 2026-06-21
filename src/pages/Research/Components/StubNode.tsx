@@ -2,7 +2,7 @@ import {themeMap} from "../../../theme/theme.css.ts";
 import type {StubData} from "../../../models/research/researchView.ts";
 
 export function StubNode({data}: { data: StubData }) {
-    const vectorTheme = themeMap[data.vector];
+    const vectorTheme = themeMap[data.themeName];
 
     return (
         <g>

@@ -1,7 +1,7 @@
 import {useEffect, useRef} from "react";
 import {researchTree} from "../../data/research/index.ts";
 import {sendNotification} from "../../lib/notifications/eventBus.ts";
-import {getResearchNodeVector} from "../../models/research/ResearchNode.ts";
+import {getResearchNodeThemeName} from "../../models/research/ResearchNode.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {selectCitySignatureStatus} from "../../store/upkeep/selectors.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
@@ -33,7 +33,7 @@ export function useResearchAutoUnlock(): void {
             sendNotification({
                 title: node.name,
                 message: node.summary ?? `${node.name} technology unlocked.`,
-                scheme: getResearchNodeVector(node),
+                scheme: getResearchNodeThemeName(node),
             });
         }
     }, [

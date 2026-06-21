@@ -1,4 +1,4 @@
-import {getResearchNodeVector, type ResearchNodeData} from "./ResearchNode.ts";
+import {getResearchNodeThemeName, getResearchNodeVectorMatches, type ResearchNodeData} from "./ResearchNode.ts";
 import type {ResearchDB} from "./researchDB.ts";
 import type {FlatEdge, FlatNode, StubData} from "./researchView.ts";
 import type {UpkeepAmount} from "../Upkeep.ts";
@@ -146,7 +146,7 @@ export function buildResearchPreviewGraph(
                 missingOf: missingId,
                 target: id,
                 progressText,
-                vector: getResearchNodeVector(node),
+                themeName: getResearchNodeThemeName(node),
             };
 
             nodes.push({
@@ -183,6 +183,11 @@ export function validateResearchGraph(
             if (!ids.has(prerequisiteId)) {
                 errors.push(`${node.id} requires unknown research "${prerequisiteId}".`);
             }
+        }
+
+        const vectorMatches = getResearchNodeVectorMatches(node);
+        if (vectorMatches.length !== 1) {
+            errors.push(`${node.id} must have exactly one technology vector keyword: found ${vectorMatches.join(', ') || 'none'}.`);
         }
 
         const graphPrerequisites = [...new Set(getResearchPrerequisites(node))].sort();

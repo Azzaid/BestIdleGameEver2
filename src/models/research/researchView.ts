@@ -1,5 +1,5 @@
-import type {DevelopmentVectorKey} from "../DevlopmentVector.ts";
 import type {ResearchNodeData} from './ResearchNode.ts';
+import type {ThemeName} from "../Theme.ts";
 
 export type RequirementStatus = {
     requiredBuildings: {id: string; name: string; met: boolean}[];
@@ -14,7 +14,7 @@ export type StubData = {
     missingOf: string;
     target: string;
     progressText: string;
-    vector: DevelopmentVectorKey;
+    themeName: ThemeName;
 };
 
 export type FlatNode = {

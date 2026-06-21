@@ -1,5 +1,5 @@
 import {themeMap} from "../../../theme/theme.css.ts";
-import {getResearchNodeVector} from "../../../models/research/ResearchNode.ts";
+import {getResearchNodeThemeName} from "../../../models/research/ResearchNode.ts";
 import type {NodeCardProps} from "../../../models/research/researchView.ts";
 
 function getTitleLines(title: string, nodeWidth: number, maxLines: number): string[] {
@@ -46,7 +46,7 @@ export function NodeCard({
                              isResearched,
                              canResearch,
                          }: NodeCardProps) {
-    const vectorTheme = themeMap[getResearchNodeVector(data)];
+    const vectorTheme = themeMap[getResearchNodeThemeName(data)];
     const showDetails = isResearched || canResearch;
     const titleLines = getTitleLines(data.name, nodeWidth, showDetails ? 1 : 2);
     const titleY = showDetails

@@ -96,7 +96,7 @@ export const medievalResearch: ResearchDB = {
     technologies.medieval.naturalPhilosophy,
     technologies.medieval.craftsmanship,
     "Natural Philosophy",
-    "University study opens engineering, animal husbandry, and alchemy.",
+    "We now know how to make things. It is time to ask yourself why the world is the way it is.",
     {
       requirements: [
         requires.buildingExists(buildings.medieval.university),
@@ -184,7 +184,7 @@ export const medievalResearch: ResearchDB = {
     technologies.medieval.alchemy,
     technologies.medieval.naturalPhilosophy,
     "Alchemy",
-    "Chemical storage and laboratory practice prepare the way for gunpowder.",
+    "Chemical storage and laboratory practices",
     {
       requirements: [
         requires.buildingExists(buildings.medieval.university),
