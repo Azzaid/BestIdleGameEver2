@@ -10,6 +10,22 @@ import type { WaveSchedulerConfig, WaveSchedulerState } from './wave.ts';
 import type { WaveSpawner } from './waveSpawner.ts';
 import type { EnemyBlueprint } from './enemyBlueprints.ts';
 
+export interface MonsterMovementModifiers {
+  speedFlat: number;
+  speedMultiplier: number;
+  swayFlat: number;
+  swayMultiplier: number;
+}
+
+export interface ProjectileInfo {
+  damage: number;
+  projectileRadius: number;
+  aoeRadius: number;
+  keywords: Set<string>;
+  speedPixelsPerSecond: number;
+  directionRadians: number;
+}
+
 export interface WorldConfig {
   battlefieldWidth: number;
   battlefieldHeight: number;
@@ -25,6 +41,7 @@ export interface WorldConfig {
   completesWhenThreatTargetReached: boolean;
   wallResilience: number;
   wallIgnoredThreat: number;
+  monsterMovementModifiers: MonsterMovementModifiers;
   onBattleMetrics?: (metrics: BattleMetrics) => void;
   onBattleEnded?: (result: BattleResult) => void;
 }
@@ -71,5 +88,5 @@ export interface World {
   battleEnded: boolean;
   towerReloadRemainingSeconds: Map<EntityId, number>;
 
-  projectileInfo: Map<EntityId, { damage: number; projectileRadius: number; aoeRadius: number; keywords: Set<string> }>;
+  projectileInfo: Map<EntityId, ProjectileInfo>;
 }

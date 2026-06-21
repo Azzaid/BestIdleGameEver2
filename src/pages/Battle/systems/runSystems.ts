@@ -2,7 +2,8 @@ import type { World } from '../../../models/battle/world.ts';
 import { TargetingSystem } from './targeting';
 import { AimingSystem } from './aiming';
 import { FiringSystem } from './firing';
-import { MovementSystem } from './movementSystem';
+import { MonsterMovementSystem } from './monsterMovementSystem.ts';
+import { ProjectileMovementSystem } from './projectileMovementSystem.ts';
 import { LifespanSystem } from './lifespan';
 import { ProjectilesSystem } from './projectiles';
 import { HealthBarSystem } from './uiHealthBars';
@@ -19,7 +20,8 @@ export function runSystems(world: World, dt: number) {
   AimingSystem(world, dt);
   FiringSystem(world, dt);
 
-  MovementSystem(world, dt);
+  MonsterMovementSystem(world, dt);
+  ProjectileMovementSystem(world, dt);
   LifespanSystem(world, dt);
   ProjectilesSystem(world);
   HealthSystem(world);

@@ -131,6 +131,8 @@ export const selectMonsterModifierValues = createSelector(
         hpMultiplier: totals[HOMOGENEOUS_VALUE_IDS.monsterHpMultiplier] ?? 1,
         speedFlat: totals[HOMOGENEOUS_VALUE_IDS.monsterSpeedFlat] ?? 0,
         speedMultiplier: totals[HOMOGENEOUS_VALUE_IDS.monsterSpeedMultiplier] ?? 1,
+        swayFlat: totals[HOMOGENEOUS_VALUE_IDS.monsterSwayFlat] ?? 0,
+        swayMultiplier: totals[HOMOGENEOUS_VALUE_IDS.monsterSwayMultiplier] ?? 1,
         threatDistanceFlat: totals[HOMOGENEOUS_VALUE_IDS.monsterThreatDistanceFlat] ?? 0,
         threatDistanceMultiplier: totals[HOMOGENEOUS_VALUE_IDS.monsterThreatDistanceMultiplier] ?? 1,
         regenAmountFlat: totals[HOMOGENEOUS_VALUE_IDS.monsterRegenAmountFlat] ?? 0,

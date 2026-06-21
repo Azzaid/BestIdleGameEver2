@@ -156,8 +156,8 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       "Stone House",
       "Durable housing that supports people and gold while keeping city signature lower than wood.",
       8,
-      {[UPKEEP_TYPES.people]: 12, [UPKEEP_TYPES.gold]: 3},
-      {[UPKEEP_TYPES.gold]: 2},
+      {[UPKEEP_TYPES.people]: 10, [UPKEEP_TYPES.gold]: 5},
+      {},
       ["production", "people", "gold", "housing"],
       {requirements: [
         requires.technologyUnlocked(technologies.medieval.stoneworking),
@@ -170,7 +170,7 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       "A civic center for science",
       26,
       {},
-      {[UPKEEP_TYPES.people]: 15, [UPKEEP_TYPES.gold]: 15},
+      {[UPKEEP_TYPES.people]: 15, [UPKEEP_TYPES.gold]: 50},
       ["science", "naturalSciences"],
       {
           hint: "What if we gather rich people with good housing together?",

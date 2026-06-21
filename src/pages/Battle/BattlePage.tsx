@@ -26,7 +26,10 @@ import {
     SIEGE_THREAT_START_RATIO,
     SIEGE_WAVE_INTERVAL_SECONDS,
 } from "../../data/constants.ts";
-import {selectControlledTerritoryGrowthStep} from "../../store/homogeneousValues/selectors.ts";
+import {
+    selectControlledTerritoryGrowthStep,
+    selectMonsterModifierValues,
+} from "../../store/homogeneousValues/selectors.ts";
 
 type BattleMode = "siege" | "pressure";
 
@@ -53,6 +56,18 @@ const BattlePage = () => {
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const wallResolution = useTypedSelector(selectEffectiveWallResolution);
     const controlledTerritoryGrowthStep = useTypedSelector(selectControlledTerritoryGrowthStep);
+    const monsterModifierValues = useTypedSelector(selectMonsterModifierValues);
+    const monsterMovementModifiers = useMemo(() => ({
+        speedFlat: monsterModifierValues.speedFlat,
+        speedMultiplier: monsterModifierValues.speedMultiplier,
+        swayFlat: monsterModifierValues.swayFlat,
+        swayMultiplier: monsterModifierValues.swayMultiplier,
+    }), [
+        monsterModifierValues.speedFlat,
+        monsterModifierValues.speedMultiplier,
+        monsterModifierValues.swayFlat,
+        monsterModifierValues.swayMultiplier,
+    ]);
     const battleWallSegments = useMemo<BattleWallSegment[]>(() => {
         return cityHexes
             .filter(hex => hex.kind === "wall")
@@ -103,6 +118,10 @@ const BattlePage = () => {
         isSiege,
         wallResolution.resilience,
         wallResolution.ignoredThreat,
+        monsterMovementModifiers.speedFlat,
+        monsterMovementModifiers.speedMultiplier,
+        monsterMovementModifiers.swayFlat,
+        monsterMovementModifiers.swayMultiplier,
         wallLogicalWidth,
         battlefieldHeight,
         battleWallSegments
@@ -122,6 +141,10 @@ const BattlePage = () => {
         isSiege,
         wallResolution.resilience,
         wallResolution.ignoredThreat,
+        monsterMovementModifiers.speedFlat,
+        monsterMovementModifiers.speedMultiplier,
+        monsterMovementModifiers.swayFlat,
+        monsterMovementModifiers.swayMultiplier,
         wallLogicalWidth,
         battlefieldHeight,
         battleWallSegments,
@@ -232,6 +255,7 @@ const BattlePage = () => {
                         completesWhenThreatTargetReached={isSiege}
                         wallResilience={wallResolution.resilience}
                         wallIgnoredThreat={wallResolution.ignoredThreat}
+                        monsterMovementModifiers={monsterMovementModifiers}
                         showDebugOutlines={isDebugModeEnabled}
                         showSiegeOutline={isSiege}
                         onBattleMetrics={handleBattleMetrics}

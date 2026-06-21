@@ -15,7 +15,7 @@ import type { BattleBackgroundId } from '../../../data/battle/backgrounds.ts';
 import type { TowerAssemblyResolved } from '../../../models/battle/towerParts.ts';
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
 import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/towers/visuals.ts';
-import type { BattleMetrics, BattleResult } from '../../../models/battle/world.ts';
+import type { BattleMetrics, BattleResult, MonsterMovementModifiers } from '../../../models/battle/world.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX, CITY_HEX_SIZE } from '../../../data/constants.ts';
 import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
@@ -40,6 +40,7 @@ export function BattleStage(props: {
     completesWhenThreatTargetReached: boolean;
     wallResilience: number;
     wallIgnoredThreat: number;
+    monsterMovementModifiers: MonsterMovementModifiers;
     showDebugOutlines: boolean;
     showSiegeOutline: boolean;
     onBattleMetrics?: (metrics: BattleMetrics) => void;
@@ -148,6 +149,7 @@ export function BattleStage(props: {
                 completesWhenThreatTargetReached: props.completesWhenThreatTargetReached,
                 wallResilience: props.wallResilience,
                 wallIgnoredThreat: props.wallIgnoredThreat,
+                monsterMovementModifiers: props.monsterMovementModifiers,
                 onBattleMetrics: props.onBattleMetrics,
                 onBattleEnded: props.onBattleEnded,
             });
@@ -347,6 +349,7 @@ export function BattleStage(props: {
         props.completesWhenThreatTargetReached,
         props.wallResilience,
         props.wallIgnoredThreat,
+        props.monsterMovementModifiers,
         props.showDebugOutlines,
         props.showSiegeOutline,
         props.onBattleMetrics,

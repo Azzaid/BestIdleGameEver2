@@ -30,6 +30,8 @@ export const HOMOGENEOUS_VALUE_IDS = {
     monsterHpMultiplier: "monster.hpMultiplier",
     monsterSpeedFlat: "monster.speedFlat",
     monsterSpeedMultiplier: "monster.speedMultiplier",
+    monsterSwayFlat: "monster.swayFlat",
+    monsterSwayMultiplier: "monster.swayMultiplier",
     monsterThreatDistanceFlat: "monster.threatDistanceFlat",
     monsterThreatDistanceMultiplier: "monster.threatDistanceMultiplier",
     monsterRegenAmountFlat: "monster.regenAmountFlat",
@@ -198,6 +200,18 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         id: HOMOGENEOUS_VALUE_IDS.monsterSpeedMultiplier,
         label: "Monster Speed Multiplier",
         keywords: ["monster", "speed", "multiplier", "display.multiplier"],
+        initialValue: 1,
+    },
+    [HOMOGENEOUS_VALUE_IDS.monsterSwayFlat]: {
+        id: HOMOGENEOUS_VALUE_IDS.monsterSwayFlat,
+        label: "Monster Sway",
+        keywords: ["monster", "sway", "flat", "display.distance"],
+        initialValue: 0,
+    },
+    [HOMOGENEOUS_VALUE_IDS.monsterSwayMultiplier]: {
+        id: HOMOGENEOUS_VALUE_IDS.monsterSwayMultiplier,
+        label: "Monster Sway Multiplier",
+        keywords: ["monster", "sway", "multiplier", "display.multiplier"],
         initialValue: 1,
     },
     [HOMOGENEOUS_VALUE_IDS.monsterThreatDistanceFlat]: {

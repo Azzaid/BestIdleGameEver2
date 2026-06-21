@@ -3,7 +3,12 @@ import type { Vector2 } from './common.ts';
 /** Generic movement controller (attach ONE per entity). */
 export type MovementKind = 'wobble' | 'polyline' | 'wander' | 'flee' | 'blink' | 'linear';
 
-export interface MovementBase { kind: MovementKind; }
+export interface MovementBase {
+  kind: MovementKind;
+  swayElapsedSeconds?: number;
+  previousSwayOffsetPixels?: number;
+  swaySeedRadians?: number;
+}
 
 export interface MovementWobble extends MovementBase {
   kind: 'wobble';

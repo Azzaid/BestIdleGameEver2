@@ -36,9 +36,15 @@ export function FiringSystem(world: World, dt: number) {
       const spawnPosition = getProjectileSpawnPosition(baseTf.position, center, tower.projectileSpawnOffset);
       const id = createEntityId(world);
       world.transforms.set(id, { position: spawnPosition, rotationRadians: angle });
-      world.movements.set(id, { kind: 'linear', velocityPixelsPerSecond: { x: Math.cos(angle) * tower.projectileSpeed, y: Math.sin(angle) * tower.projectileSpeed } });
       world.lifespans.set(id, { remainingSeconds: 2.0 });
-      world.projectileInfo.set(id, { damage: tower.projectileDamage, projectileRadius: tower.projectileRadius, aoeRadius: tower.aoeRadius, keywords: tower.keywords });
+      world.projectileInfo.set(id, {
+        damage: tower.projectileDamage,
+        projectileRadius: tower.projectileRadius,
+        aoeRadius: tower.aoeRadius,
+        keywords: tower.keywords,
+        speedPixelsPerSecond: tower.projectileSpeed,
+        directionRadians: angle,
+      });
 
       const projectile = new PIXI.Graphics();
       projectile.circle(0, 0, Math.max(1, tower.projectileRadius)).fill(tower.aoeRadius > 0 ? 0xffb347 : 0xeaf2ff);
