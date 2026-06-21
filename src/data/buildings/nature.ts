@@ -9,8 +9,6 @@ import {createBuildingFactory} from "./buildingFactory.ts";
 const {
   building: bioBuilding,
   superstructure: bioSuperstructure,
-  structureRule,
-  multiHexStructure,
 } = createBuildingFactory({
   vector: DEVELOPMENT_VECTORS.nature,
   defaultKeywords: ["nature"],
@@ -27,11 +25,6 @@ const natureBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 1},
       ["production", "plants", "garden", "herbs"],
     ),
-    multiHexStructure: multiHexStructure(buildings.nature.wildGarden, [
-      structureRule(buildings.nature.herbalistHut, [
-        buildings.medieval.stalkerHut,
-      ]),
-    ]),
   },
   [buildings.nature.herbalistHut]: bioSuperstructure(
     buildings.nature.herbalistHut,
@@ -41,6 +34,10 @@ const natureBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.plants]: 7},
     {},
     ["production", "plants", "herbs"],
+    {requiredBuildingIds: [
+      buildings.nature.wildGarden,
+      buildings.medieval.stalkerHut,
+    ]},
   ),
   [buildings.nature.field]: {
     ...bioBuilding(
@@ -61,11 +58,6 @@ const natureBuildingsRaw: {[key: string]: Building} = {
       },
     ],
     adjacencyDescription: "Neighboring producers gain 25% output.",
-    multiHexStructure: multiHexStructure(buildings.nature.field, [
-      structureRule(buildings.medieval.farm, [
-        buildings.medieval.woodenHouse,
-      ]),
-    ]),
   },
 };
 

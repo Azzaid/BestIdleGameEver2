@@ -438,16 +438,16 @@ Future categories include infrastructure, military, science, society, and specia
 
 ## 15. Multistructures
 
-Multistructures are manual district upgrades created from a core building plus adjacent satellite buildings.
+Multistructures are manual district upgrades created from a connected set of required buildings.
 
 Core rules:
 
 - Multistructures never appear automatically.
-- The player selects the core and explicitly confirms the upgrade.
-- The City page lists ready and incomplete multistructure candidates for the selected core. Ready candidates expose a Transform action unless the city is besieged.
-- Confirming a transform links the core and matched satellites into one multistructure. Each part stores the multistructure id and the core hex key, while the core owns the gameplay identity used by selection, adjacency, economy, signature, and research checks.
+- The player selects any participating building and explicitly confirms the upgrade.
+- The City page lists ready and incomplete multistructure candidates for the selected participant. Ready candidates expose a Transform action unless the city is besieged.
+- Confirming a transform links the matched buildings into one multistructure. Each part stores the multistructure id and an internal representative core hex key used for selection, adjacency, economy, signature, and research checks.
 - Structure parts may store their own sprite id, allowing future multistructure art to vary by hex without changing gameplay calculations.
-- Required satellites must be adjacent to the core, not arranged in fixed shapes.
+- Required buildings must form a connected blob, not a fixed shape. A superstructure may require repeated copies of the same building id.
 - Blob-shaped layouts are allowed.
 - Normal buildings remain mechanically understandable, while the district may visually integrate into one larger structure.
 

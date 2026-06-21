@@ -10,8 +10,6 @@ import {createBuildingFactory} from "./buildingFactory.ts";
 const {
   building: magicBuilding,
   superstructure: magicSuperstructure,
-  structureRule,
-  multiHexStructure,
 } = createBuildingFactory({
   vector: DEVELOPMENT_VECTORS.aether,
   defaultKeywords: ["aether"],
@@ -28,14 +26,6 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 2},
       ["ritual"],
     ),
-    multiHexStructure: multiHexStructure(buildings.aether.dolmen, [
-      structureRule(buildings.aether.shamanHut, [
-        buildings.medieval.stalkerHut,
-      ]),
-      structureRule(buildings.aether.runedHouse, [
-        buildings.aether.wardedHome,
-      ]),
-    ]),
   },
   [buildings.aether.shamanHut]: magicSuperstructure(
     buildings.aether.shamanHut,
@@ -45,6 +35,10 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.veil]: 18, [UPKEEP_TYPES.manaFlows]: 10},
     {},
     ["production", "manaFlows", "ritual"],
+    {requiredBuildingIds: [
+      buildings.aether.dolmen,
+      buildings.medieval.stalkerHut,
+    ]},
   ),
   [buildings.aether.wardedHome]: {
     ...magicBuilding(
@@ -56,11 +50,6 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.gold]: 2},
       ["production", "people", "manaFlows", "housing", "ritual"],
     ),
-    multiHexStructure: multiHexStructure(buildings.aether.wardedHome, [
-      structureRule(buildings.aether.runedHouse, [
-        buildings.aether.dolmen,
-      ]),
-    ]),
   },
   [buildings.aether.runedHouse]: {
     ...magicSuperstructure(
@@ -71,12 +60,11 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 14, [UPKEEP_TYPES.manaFlows]: 12, [UPKEEP_TYPES.veil]: 18},
       {[UPKEEP_TYPES.gold]: 2},
       ["production", "people", "manaFlows", "housing", "ritual"],
+      {requiredBuildingIds: [
+        buildings.aether.wardedHome,
+        buildings.aether.dolmen,
+      ]},
     ),
-    multiHexStructure: multiHexStructure(buildings.aether.runedHouse, [
-      structureRule(buildings.aether.coven, [
-        buildings.aether.runedHouse,
-      ]),
-    ]),
   },
   [buildings.aether.coven]: magicSuperstructure(
     buildings.aether.coven,
@@ -86,6 +74,10 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.manaFlows]: 28, [UPKEEP_TYPES.veil]: 24, [UPKEEP_TYPES.death]: 4},
     {},
     ["production", "manaFlows", "ritual"],
+    {requiredBuildingIds: [
+      buildings.aether.runedHouse,
+      buildings.aether.runedHouse,
+    ]},
   ),
   [buildings.aether.obelisk]: {
     ...magicBuilding(
@@ -97,11 +89,6 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.gold]: 3},
       ["production", "manaFlows"],
     ),
-    multiHexStructure: multiHexStructure(buildings.aether.obelisk, [
-      structureRule(buildings.aether.embodimentStone, [
-        buildings.aether.spiritHut,
-      ]),
-    ]),
   },
   [buildings.aether.spiritHut]: {
     ...magicBuilding(
@@ -113,18 +100,6 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.manaFlows]: 2},
       ["support", "ritual"],
     ),
-    multiHexStructure: multiHexStructure(buildings.aether.spiritHut, [
-      structureRule(buildings.aether.houseOfSpirits, [
-        buildings.aether.spiritHut,
-        buildings.aether.spiritHut,
-      ]),
-      structureRule(buildings.aether.embodimentStone, [
-        buildings.aether.obelisk,
-      ]),
-      structureRule(buildings.aether.spiritTrap, [
-        buildings.aether.suppressionTotem,
-      ]),
-    ]),
   },
   [buildings.aether.houseOfSpirits]: magicSuperstructure(
     buildings.aether.houseOfSpirits,
@@ -134,6 +109,11 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.veil]: 42, [UPKEEP_TYPES.death]: 8},
     {[UPKEEP_TYPES.manaFlows]: 4},
     ["support", "ritual"],
+    {requiredBuildingIds: [
+      buildings.aether.spiritHut,
+      buildings.aether.spiritHut,
+      buildings.aether.spiritHut,
+    ]},
   ),
   [buildings.aether.veilThinning]: magicBuilding(
     buildings.aether.veilThinning,
@@ -152,6 +132,10 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.veil]: 18, [UPKEEP_TYPES.manaFlows]: 24, [UPKEEP_TYPES.death]: 8},
     {},
     ["support", "arcane"],
+    {requiredBuildingIds: [
+      buildings.aether.obelisk,
+      buildings.aether.spiritHut,
+    ]},
   ),
   [buildings.aether.golemBuilder]: magicBuilding(
     buildings.aether.golemBuilder,
@@ -172,11 +156,6 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.manaFlows]: 5},
       ["visibility", "ritual"],
     ),
-    multiHexStructure: multiHexStructure(buildings.aether.suppressionTotem, [
-      structureRule(buildings.aether.spiritTrap, [
-        buildings.aether.spiritHut,
-      ]),
-    ]),
   },
   [buildings.aether.spiritTrap]: magicSuperstructure(
     buildings.aether.spiritTrap,
@@ -186,6 +165,10 @@ const aetherBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.manaFlows]: 30, [UPKEEP_TYPES.death]: 36},
     {},
     ["production", "manaFlows", "ritual"],
+    {requiredBuildingIds: [
+      buildings.aether.spiritHut,
+      buildings.aether.suppressionTotem,
+    ]},
   ),
 };
 

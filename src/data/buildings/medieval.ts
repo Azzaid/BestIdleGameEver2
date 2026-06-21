@@ -6,7 +6,7 @@ import {buildings, technologies} from "../identificators/index.ts";
 import {requires} from "../requirements.ts";
 import {createBuildingFactory} from "./buildingFactory.ts";
 
-const {building, superstructure, structureRule, multiHexStructure} = createBuildingFactory({
+const {building, superstructure} = createBuildingFactory({
   vector: DEVELOPMENT_VECTORS.medieval,
   defaultKeywords: ["medieval"],
 });
@@ -22,11 +22,6 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {},
       ["production", "people", "housing"],
     ),
-    multiHexStructure: multiHexStructure(buildings.medieval.shelter, [
-      structureRule(buildings.medieval.stalkerHut, [
-        buildings.medieval.scrapCollectionPoint,
-      ]),
-    ]),
   },
   [buildings.medieval.scrapCollectionPoint]: {
     ...building(
@@ -38,11 +33,6 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 2},
       ["production", "gold", "scavenger"],
     ),
-    multiHexStructure: multiHexStructure(buildings.medieval.scrapCollectionPoint, [
-      structureRule(buildings.medieval.stalkerHut, [
-        buildings.medieval.shelter,
-      ]),
-    ]),
   },
   [buildings.medieval.stalkerHut]: superstructure(
     buildings.medieval.stalkerHut,
@@ -52,6 +42,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.people]: 5, [UPKEEP_TYPES.gold]: 3},
     {},
     ["production", "people", "gold", "scavenger"],
+    {requiredBuildingIds: [
+      buildings.medieval.shelter,
+      buildings.medieval.scrapCollectionPoint,
+    ]},
   ),
   [buildings.medieval.toolShed]: {
     ...building(
@@ -63,14 +57,6 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 1},
       ["production", "gold", "tools"],
     ),
-    multiHexStructure: multiHexStructure(buildings.medieval.toolShed, [
-      structureRule(buildings.medieval.lumberjackHouse, [
-        buildings.medieval.stalkerHut,
-      ]),
-      structureRule(buildings.medieval.craftsmansHouse, [
-        buildings.medieval.woodenHouse,
-      ]),
-    ]),
   },
   [buildings.medieval.lumberjackHouse]: superstructure(
     buildings.medieval.lumberjackHouse,
@@ -80,6 +66,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 5},
     {},
     ["production", "people", "gold", "wood", "timberwork"],
+    {requiredBuildingIds: [
+      buildings.medieval.toolShed,
+      buildings.medieval.stalkerHut,
+    ]},
   ),
   [buildings.medieval.farm]: superstructure(
     buildings.medieval.farm,
@@ -89,6 +79,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.gold]: 10 },
     {[UPKEEP_TYPES.people]: 3,},
     ["production", "people", "plants", "gold", "farm"],
+    {requiredBuildingIds: [
+      buildings.medieval.woodenHouse,
+      buildings.nature.field,
+    ]},
   ),
   [buildings.medieval.woodenHouse]: {
     ...building(
@@ -100,14 +94,6 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {},
       ["production", "people", "wood", "housing"],
     ),
-    multiHexStructure: multiHexStructure(buildings.medieval.woodenHouse, [
-      structureRule(buildings.medieval.farm, [
-        buildings.nature.field,
-      ]),
-      structureRule(buildings.medieval.craftsmansHouse, [
-        buildings.medieval.toolShed,
-      ]),
-    ]),
   },
   [buildings.medieval.craftsmansHouse]: superstructure(
     buildings.medieval.craftsmansHouse,
@@ -117,6 +103,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.people]: 8, [UPKEEP_TYPES.gold]: 5},
     {},
     ["production", "people", "gold", "craft", "woodWorking", "stoneWorking"],
+    {requiredBuildingIds: [
+      buildings.medieval.woodenHouse,
+      buildings.medieval.toolShed,
+    ]},
   ),
   [buildings.medieval.market]: building(
     buildings.medieval.market,
@@ -137,14 +127,6 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.gold]: 2},
       ["production", "people", "gold", "housing"],
     ),
-    multiHexStructure: multiHexStructure(buildings.medieval.stoneHouse, [
-      structureRule(buildings.medieval.engineersHouse, [
-        buildings.medieval.workshop,
-      ]),
-      structureRule(buildings.medieval.alchemicalLaboratory, [
-        buildings.medieval.chemicalStorage,
-      ]),
-    ]),
   },
   [buildings.medieval.university]: building(
     buildings.medieval.university,
@@ -166,11 +148,6 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       ["production", "gold", "craft"],
     ),
     adjacencyDescription: "+25% production in adjacent buildings; -25% Aether production in adjacent buildings.",
-    multiHexStructure: multiHexStructure(buildings.medieval.workshop, [
-      structureRule(buildings.medieval.engineersHouse, [
-        buildings.medieval.stoneHouse,
-      ]),
-    ]),
   },
   [buildings.medieval.engineersHouse]: superstructure(
     buildings.medieval.engineersHouse,
@@ -180,6 +157,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.people]: 3, [UPKEEP_TYPES.gold]: 10},
     {},
     ["production", "people", "gold", "craft"],
+    {requiredBuildingIds: [
+      buildings.medieval.stoneHouse,
+      buildings.medieval.workshop,
+    ]},
   ),
   [buildings.medieval.barracks]: building(
     buildings.medieval.barracks,
@@ -201,11 +182,6 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       ["support", "farm"],
     ),
     adjacencyDescription: "Adjacent buildings require fewer People.",
-    multiHexStructure: multiHexStructure(buildings.medieval.barn, [
-      structureRule(buildings.medieval.stable, [
-        buildings.medieval.farm,
-      ]),
-    ]),
   },
   [buildings.medieval.tradeStation]: {
     ...building(
@@ -218,11 +194,6 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       ["support", "market"],
     ),
     adjacencyDescription: "Adjacency bonuses affect buildings at +1 range.",
-    multiHexStructure: multiHexStructure(buildings.medieval.tradeStation, [
-      structureRule(buildings.medieval.tradingStation, [
-        buildings.medieval.shop,
-      ]),
-    ]),
   },
   [buildings.medieval.stable]: superstructure(
     buildings.medieval.stable,
@@ -232,6 +203,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {},
     {},
     ["support", "farm"],
+    {requiredBuildingIds: [
+      buildings.medieval.barn,
+      buildings.medieval.farm,
+    ]},
   ),
   [buildings.medieval.shop]: {
     ...building(
@@ -243,11 +218,6 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 3},
       ["production", "gold", "market"],
     ),
-    multiHexStructure: multiHexStructure(buildings.medieval.shop, [
-      structureRule(buildings.medieval.tradingStation, [
-        buildings.medieval.tradeStation,
-      ]),
-    ]),
   },
   [buildings.medieval.tradingStation]: superstructure(
     buildings.medieval.tradingStation,
@@ -257,6 +227,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.gold]: 8},
     {},
     ["production", "gold", "market"],
+    {requiredBuildingIds: [
+      buildings.medieval.tradeStation,
+      buildings.medieval.shop,
+    ]},
   ),
   [buildings.medieval.chemicalStorage]: {
     ...building(
@@ -268,11 +242,6 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 4},
       ["infrastructure", "laboratory"],
     ),
-    multiHexStructure: multiHexStructure(buildings.medieval.chemicalStorage, [
-      structureRule(buildings.medieval.alchemicalLaboratory, [
-        buildings.medieval.stoneHouse,
-      ]),
-    ]),
   },
   [buildings.medieval.alchemicalLaboratory]: superstructure(
     buildings.medieval.alchemicalLaboratory,
@@ -282,6 +251,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {},
     {[UPKEEP_TYPES.people]: 4, [UPKEEP_TYPES.gold]: 5},
     ["infrastructure", "laboratory"],
+    {requiredBuildingIds: [
+      buildings.medieval.stoneHouse,
+      buildings.medieval.chemicalStorage,
+    ]},
   ),
 };
 

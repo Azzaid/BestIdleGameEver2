@@ -99,9 +99,9 @@ The player always understands what happened.
 
 ---
 
-# Structure Core
+# Structure Components
 
-Every multistructure has a Core.
+Every multistructure has required component buildings.
 
 Examples:
 
@@ -111,7 +111,7 @@ Factory
 Temple
 Town Hall
 
-The Core determines:
+The resulting superstructure definition determines:
 
 - visual identity;
 - upgrade path;
@@ -120,22 +120,21 @@ The Core determines:
 
 ---
 
-# Satellite Buildings
+# Component Buildings
 
-The Core requires nearby support structures.
+A superstructure requires nearby component buildings.
 
 Example:
 
-Warehouse
+Agricultural Hub
 
 requires:
 
+- Warehouse
 - Farm
 - Mill
 
-to become
-
-Agricultural Hub.
+The required list may include the same building more than once.
 
 ---
 
@@ -155,9 +154,9 @@ The city becomes a puzzle.
 
 # Adjacency Requirement
 
-Buildings must be adjacent to the Core.
+Buildings must form a connected group.
 
-Not adjacent to each other.
+Each added component must touch at least one already matched component.
 
 This rule is extremely important.
 
@@ -189,7 +188,7 @@ Players spend more time fighting geometry than making decisions.
 
 Multistructures should allow "blobs."
 
-As long as required buildings touch the Core:
+As long as the required buildings form one connected group:
 
 the structure works.
 
@@ -229,9 +228,9 @@ visually they become one structure.
 
 Implementation direction:
 
-- the core hex owns the multistructure gameplay identity;
-- every part stores the multistructure id and a pointer to the core hex;
-- selection, adjacency, economy, signature, and research checks resolve structure parts through the core;
+- an internal representative hex owns the multistructure gameplay identity;
+- every part stores the multistructure id and a pointer to the representative hex;
+- selection, adjacency, economy, signature, and research checks resolve structure parts through the representative;
 - each part may store its own sprite id so the structure can become visually integrated without duplicating gameplay effects.
 
 The player sees:
@@ -276,7 +275,7 @@ Build Mill.
 
 Step 4
 
-Select Warehouse.
+Select any participating building.
 
 Step 5
 
@@ -292,11 +291,11 @@ Multistructure created.
 
 Current prototype behavior:
 
-- selecting a core tile shows possible multistructure candidates;
+- selecting any participating tile shows possible multistructure candidates;
 - complete candidates show a Transform action;
 - incomplete candidates show connected and missing adjacent buildings;
 - transformation is blocked during sieges;
-- after transformation, the core and matched satellites store the multistructure id and the core hex key;
+- after transformation, all matched parts store the multistructure id and representative hex key;
 - research checks the built multistructure id from the linked structure rather than merely possible layouts.
 
 ---
@@ -587,8 +586,8 @@ The actual implementation should remain simple.
 
 Recommended logic:
 
-1. Select Core.
-2. Check adjacent buildings.
+1. Select any participating building.
+2. Check connected required buildings.
 3. Compare requirements.
 4. Show available upgrades.
 5. Upgrade if player confirms.
@@ -607,9 +606,7 @@ New multistructures should be easy to add.
 
 A structure definition should contain:
 
-Core Building
-
-Required Satellites
+Required Buildings
 
 Threat Modifier
 

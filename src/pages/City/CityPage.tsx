@@ -146,16 +146,16 @@ const CityPage = () => {
         setSelectedHex(null);
     };
 
-    const handleBuildStructure = (structureId: string) => {
+    const handleBuildStructure = (structureId: string, coreCellKey: string) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
-        dispatch(buildMultistructure({ coreCellKey: selectedHex.cellKey, structureId }));
+        dispatch(buildMultistructure({ coreCellKey, structureId }));
     };
 
     const selectedBuilding = selectedHex ? cityBuildings.get(selectedHex.cellKey) : undefined;
     const selectedWallBuilding = selectedHex?.wallKey ? ALL_WALL_BUILDINGS[selectedHex.wallKey] : undefined;
     const selectedWallTopBuilding = selectedHex?.wallTopKey ? ALL_WALL_BUILDINGS[selectedHex.wallTopKey] : undefined;
     const selectedStructureCandidates = selectedHex
-        ? structureCandidates.filter(candidate => candidate.coreHex.cellKey === selectedHex.cellKey)
+        ? structureCandidates.filter(candidate => isHexPartOfStructureCandidate(selectedHex.cellKey, candidate))
         : [];
     const selectedHexIsPartOfCompleteStructure = selectedHex
         ? Boolean(selectedHex.partOfStructureId)
@@ -334,7 +334,7 @@ function MultistructureStatus({
     blockedReason,
 }: {
     structureCandidates: StructureDetectionResult[];
-    onBuildStructure: (structureId: string) => void;
+    onBuildStructure: (structureId: string, coreCellKey: string) => void;
     blocked: boolean;
     blockedReason: string;
 }) {
@@ -361,7 +361,7 @@ function MultistructureStatus({
                                     type="button"
                                     disabled={blocked}
                                     title={blocked ? blockedReason : undefined}
-                                    onClick={() => onBuildStructure(candidate.structure.id)}
+                                    onClick={() => onBuildStructure(candidate.structure.id, candidate.coreHex.cellKey)}
                                 >
                                     Transform
                                 </button>
@@ -579,6 +579,11 @@ function getBuildingName(buildingId: string): string {
     }
 
     return buildingId;
+}
+
+function isHexPartOfStructureCandidate(cellKey: string, candidate: StructureDetectionResult): boolean {
+    return candidate.coreHex.cellKey === cellKey
+        || candidate.matchedSatellites.some(match => match.hex.cellKey === cellKey);
 }
 
 function WallBuildingSelector({

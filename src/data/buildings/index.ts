@@ -3,14 +3,13 @@ import { natureBuildings } from "./nature";
 import { medievalBuildings } from "./medieval";
 import { aetherBuildings } from "./aether";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
-import type {Building, BuildingAtlas} from "../../models/city/Building.ts";
+import type {BuildingAtlas} from "../../models/city/Building.ts";
 
 export type StructureDefinition = {
   id: string;
   name: string;
   vector: DevelopmentVectorKey;
-  coreBuildingId: string;
-  requiredAdjacentBuildingIds: string[];
+  requiredBuildingIds: string[];
   description?: string;
 };
 
@@ -24,16 +23,14 @@ export const BUILDINGS_ATLAS: BuildingAtlas = {
 export const STRUCTURES: StructureDefinition[] = Object.values(DEVELOPMENT_VECTORS).flatMap(vector => (
     Object.values(BUILDINGS_ATLAS[vector]).flatMap(building => (
         building.multiHexStructure?.flatMap(rule => {
-            const resultingBuilding = getBuildingById(rule.resultingBuildingId);
-            if (!resultingBuilding) return [];
+            if (!rule.requiredBuildingIds.length) return [];
 
             return [{
-                id: resultingBuilding.id,
-                name: resultingBuilding.name,
-                vector: getDevelopmentVectorKey(resultingBuilding.vector),
-                coreBuildingId: rule.requiredBuildingIds[0],
-                requiredAdjacentBuildingIds: rule.requiredBuildingIds.slice(1),
-                description: resultingBuilding.description,
+                id: building.id,
+                name: building.name,
+                vector: getDevelopmentVectorKey(building.vector),
+                requiredBuildingIds: rule.requiredBuildingIds,
+                description: building.description,
             }];
         }) ?? []
     ))
@@ -42,15 +39,6 @@ export const STRUCTURES: StructureDefinition[] = Object.values(DEVELOPMENT_VECTO
 export const STRUCTURES_BY_ID = Object.fromEntries(
     STRUCTURES.map(structure => [structure.id, structure]),
 ) as Record<string, StructureDefinition>;
-
-function getBuildingById(buildingId: string): Building | undefined {
-    for (const vector of Object.values(DEVELOPMENT_VECTORS)) {
-        const building = BUILDINGS_ATLAS[vector][buildingId];
-        if (building) return building;
-    }
-
-    return undefined;
-}
 
 function getDevelopmentVectorKey(vector: DevelopmentVectorValue): DevelopmentVectorKey {
     const entry = Object.entries(DEVELOPMENT_VECTORS).find(([, value]) => value === vector);

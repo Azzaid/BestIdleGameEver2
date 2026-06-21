@@ -37,7 +37,7 @@ export function detectMultistructures(
         let addedCompleteStructure = false;
 
         for (const structure of structures) {
-            const coreCandidates = components.filter(component => component.buildingId === structure.coreBuildingId);
+            const coreCandidates = components.filter(component => structure.requiredBuildingIds.includes(component.buildingId));
 
             for (const coreCandidate of coreCandidates) {
                 const result = detectStructureAtCore(components, structure, coreCandidate);
@@ -130,27 +130,42 @@ function detectStructureAtCore(
     coreCandidate: StructureComponentCandidate,
 ): StructureDetectionResult {
     const usedHexKeys = new Set(coreCandidate.hexes.map(hex => hex.cellKey));
+    const matchedComponents: StructureComponentCandidate[] = [coreCandidate];
     const matchedSatellites: StructureRequirementMatch[] = coreCandidate.hexes
         .filter(hex => hex.cellKey !== coreCandidate.representativeHex.cellKey)
-        .map(hex => ({buildingId: structure.coreBuildingId, hex}));
-    const missingBuildingIds: string[] = [];
+        .map(hex => ({buildingId: coreCandidate.buildingId, hex}));
+    const missingBuildingIds = [...structure.requiredBuildingIds];
+    const consumedCoreIndex = missingBuildingIds.indexOf(coreCandidate.buildingId);
 
-    for (const buildingId of structure.requiredAdjacentBuildingIds) {
+    if (consumedCoreIndex === -1) {
+        return {
+            structure,
+            coreHex: coreCandidate.representativeHex,
+            matchedSatellites,
+            missingBuildingIds,
+            isComplete: false,
+        };
+    }
+
+    missingBuildingIds.splice(consumedCoreIndex, 1);
+
+    for (let index = 0; index < missingBuildingIds.length; index++) {
+        const buildingId = missingBuildingIds[index];
         const match = components.find(component => {
             return component.buildingId === buildingId
                 && !component.hexes.some(hex => usedHexKeys.has(hex.cellKey))
-                && areComponentsAdjacent(coreCandidate, component);
+                && matchedComponents.some(matchedComponent => areComponentsAdjacent(matchedComponent, component));
         });
 
-        if (!match) {
-            missingBuildingIds.push(buildingId);
-            continue;
-        }
+        if (!match) continue;
 
         for (const hex of match.hexes) {
             usedHexKeys.add(hex.cellKey);
             matchedSatellites.push({buildingId, hex});
         }
+        matchedComponents.push(match);
+        missingBuildingIds.splice(index, 1);
+        index--;
     }
 
     return {
