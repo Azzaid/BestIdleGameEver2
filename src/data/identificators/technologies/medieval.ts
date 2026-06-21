@@ -4,6 +4,7 @@ export const medievalTechnologies = {
   scrapTools: "scrap-tools",
   timberProcessing: "timber-processing",
   money: "money",
+    craftsmanship: "technology_medieval_craftsmanship",
   woodworking: "woodworking",
   stoneworking: "stoneworking",
   naturalPhilosophy: "natural-philosophy",

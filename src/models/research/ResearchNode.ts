@@ -1,16 +1,19 @@
 import type {DevelopmentVectorKey} from "../DevlopmentVector.ts";
 import type {UpkeepAmount} from "../Upkeep.ts";
 import type {AetherAtmosphere, AetherAtmosphereLevel} from "../city/AetherAtmosphere.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../homogeneousValues.ts";
 import type {Requirement} from "../progression/requirements.ts";
 
 export type ResearchNodeData = {
     id: string;
     parentId: string | null;             // canonical parent for collapse/navigation
     name: string;
-    vector: DevelopmentVectorKey;
+    keywords: string[];
     summary?: string;
     unlocks?: string[];
     requirements?: Requirement[];
+    homogeneousValues?: HomogeneousValueEffect[];
+    homogeneousModifiers?: HomogeneousAdjacencyRule[];
     requiredBuildings?: string[];
     requiredStructures?: string[];
     requiredFreeUpkeep?: UpkeepAmount;
@@ -20,3 +23,9 @@ export type ResearchNodeData = {
     /** Additional prerequisites (multi-parent DAG edges) */
     alsoRequires?: string[];             // other node IDs required
 };
+
+const TECHNOLOGY_VECTOR_KEYWORDS: DevelopmentVectorKey[] = ["tech", "nature", "medieval", "aether"];
+
+export function getResearchNodeVector(node: Pick<ResearchNodeData, "keywords">): DevelopmentVectorKey {
+    return TECHNOLOGY_VECTOR_KEYWORDS.find(vector => node.keywords.includes(vector)) ?? "medieval";
+}

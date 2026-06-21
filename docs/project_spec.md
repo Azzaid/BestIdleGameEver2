@@ -1,6 +1,6 @@
 # Project Specification: Best Idle Game Ever 2
 
-Last updated: 2026-06-20 (local)
+Last updated: 2026-06-21 (local)
 
 This document is the repository's single project specification. It summarizes the implemented prototype and the current design direction from the rest of the `docs` folder. The focused design documents remain the deeper references for individual systems.
 
@@ -88,7 +88,7 @@ Content data layout:
 - `src/data/buildings` uses vector-keyed atlas modules.
 - `src/data/wall` uses the same atlas pattern, keyed by development vector and flattened for wall lookup. Wall segment content lives under `segments`, wall-top superstructure content lives under `superstructures`, and wall hexes store those two layers separately.
 - `src/data/towers` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
-- `src/data/research` exposes a vector-keyed research atlas and flattened helpers for the research tree.
+- `src/data/research` uses a technology factory with keyworded definitions, then exposes a vector-keyed research atlas and flattened helpers for the research tree. Research visual grouping is derived from vector keywords such as `medieval`, `nature`, `aether`, and `tech`.
 - `src/data/progression` contains progression catalog data, shared progression types, and vector-split rules under `src/data/progression/rules`.
 - `src/data/enemies` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
 - `src/data/identificators` is the single source of truth for content ids. Category folders collect ids by vector or biome and expose structured paths such as `buildings.aether.leylineWell` and `gunparts.barrels.medieval.crudeWood`.
@@ -211,6 +211,8 @@ Resources are stored through one keyworded resource map under the hood. UI and d
 The current implementation routes resources, city metrics, monster modifiers, siege modifiers, wall stats, tower stats, and future derived game values through the homogeneous value registry in `src/data/homogeneousValues`. Content contributes `HomogeneousValueEffect` entries to registered values, and gameplay/UI code should read final values through selectors instead of reading those effects directly. Every contribution must carry exactly one role keyword: `production`, `upkeep`, or `unlock`. Production creates the resolved value, upkeep reduces available value, and unlock checks against produced value without spending it.
 
 Tower part homogeneous effects are split by scope. `gunHomogeneousValueEffects` are internal to the mounted gun and resolve that gun's stats only. `cityHomogeneousValueEffects` are the only tower-part effects contributed to the city resolution, usually support upkeep or explicit city-facing effects. Wall towers follow the same split with city-facing wall values and mounted-gun effects that apply only to the gun mounted on that wall tower.
+
+Unlocked technologies may contribute city-wide homogeneous values and modifiers. Technology modifiers are treated as global modifiers by the technology factory, and technology homogeneous sources are included in effective city resolution alongside buildings, walls, and towers.
 
 Homogeneous value resolution is a deterministic two-pass pipeline. First, each city hex entity collects active modifiers from its local hex, adjacency, and city-global effects. Global modifiers are identified by the `global` keyword on the modifier. Radius modifiers are adjacency modifiers. Modifiers without radius are local modifiers unless they contain `global`. Second, active modifiers are applied to contributions and final homogeneous values are resolved. Modifiers may affect contributions, but they do not affect other modifiers and do not depend on resolved city values.
 
@@ -592,7 +594,7 @@ Current content layout:
 - `src/data/wall/` uses the same atlas pattern, keyed by development vector and flattened for wall lookup. Wall segment content lives under `segments`, wall-top superstructure content lives under `superstructures`, and wall hexes store those two layers separately.
 - `src/data/enemies/` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
 - `src/data/towers/` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
-- `src/data/research/` exposes a vector-keyed research atlas and flattened helpers for the research tree.
+- `src/data/research/` uses `createTechnologyFactory(...)` for keyworded technology definitions and exposes a vector-keyed research atlas plus flattened helpers for the research tree.
 - `src/data/progression/` contains progression catalog data, shared progression types, and vector-split rules under `src/data/progression/rules`.
 - `src/data/identificators/` owns content ids for buildings, technologies, tower parts, enemies, wall segments, and wall superstructures. Add ids there first, then consume those constants from data, progression, state defaults, and asset registries.
 - `/ids` is the content audit screen for checking missing definitions, progression rules, and assets by id.

@@ -1,4 +1,4 @@
-import type {ResearchNodeData} from "./ResearchNode.ts";
+import {getResearchNodeVector, type ResearchNodeData} from "./ResearchNode.ts";
 import type {ResearchDB} from "./researchDB.ts";
 import type {FlatEdge, FlatNode, StubData} from "./researchView.ts";
 import type {UpkeepAmount} from "../Upkeep.ts";
@@ -146,7 +146,7 @@ export function buildResearchPreviewGraph(
                 missingOf: missingId,
                 target: id,
                 progressText,
-                vector: node.vector,
+                vector: getResearchNodeVector(node),
             };
 
             nodes.push({

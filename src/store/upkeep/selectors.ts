@@ -29,15 +29,16 @@ import {resolveTowerAssembly, resolveTowerAssemblyStatsAndSupport} from "../../m
 import type {TowerAssemblyResolved} from "../../models/battle/towerParts.ts";
 import type {WallResolution} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../wall/selectors.ts";
+import {selectTechnologyHomogeneousEntities} from "../research/selectors.ts";
 
 export {selectCityResolution};
 
 type ResolvedAvailableTower = ReturnType<typeof selectResolvedAvailableTowers>[number];
 
 export const selectTowerAwareCityResolution = createSelector(
-    [selectCityResolution, selectResolvedAvailableTowers],
-    (cityResolution, resolvedTowers): CityResolution => {
-        return resolveEffectiveCityResolution(cityResolution, resolvedTowers);
+    [selectCityResolution, selectResolvedAvailableTowers, selectTechnologyHomogeneousEntities],
+    (cityResolution, resolvedTowers, technologyEntities): CityResolution => {
+        return resolveEffectiveCityResolution(cityResolution, resolvedTowers, technologyEntities);
     }
 );
 
@@ -61,6 +62,7 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
         selectActiveTowerDraftAssembly,
         selectResolvedActiveTowerDraft,
         selectUnlockedTowerPartIds,
+        selectTechnologyHomogeneousEntities,
     ],
     (
         cityResolution,
@@ -70,6 +72,7 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
         activeTowerDraftAssembly,
         resolvedActiveTowerDraft,
         unlockedTowerPartIds,
+        technologyEntities,
     ): TowerAssemblyResolved => {
         const activeTowerIndex = availableTowers.findIndex((tower) => tower.id === activeTower?.id);
         if (activeTowerIndex < 0) return resolvedActiveTowerDraft;
@@ -82,7 +85,7 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
                 resolved: resolveTowerAssembly(activeTowerDraftAssembly, unlockedTowerPartIds),
             };
         });
-        const effectiveCityResolution = resolveEffectiveCityResolution(cityResolution, substitutedResolvedTowers);
+        const effectiveCityResolution = resolveEffectiveCityResolution(cityResolution, substitutedResolvedTowers, technologyEntities);
         const effectiveTowerEntity = effectiveCityResolution.resolvedTowers.find((entity) => (
             entity.id === getTowerEntityId(activeTower?.id ?? "")
         ));
@@ -114,9 +117,11 @@ export const selectEffectiveWallResolution = createSelector(
 function resolveEffectiveCityResolution(
     cityResolution: CityResolution,
     resolvedTowers: readonly ResolvedAvailableTower[],
+    technologyEntities: readonly HomogeneousValueEntitySource[],
 ): CityResolution {
     const resolvedCity = resolveCity([
         ...cityResolution.resolvedHexes.filter((entity) => entity.entityType !== "tower"),
+        ...technologyEntities,
         ...createTowerEntities(cityResolution, resolvedTowers),
     ]);
     const producedHomogeneousValues = getProducedValues(resolvedCity.resolvedValues);
@@ -139,6 +144,7 @@ function resolveEffectiveCityResolution(
         resolvedHexes: resolvedCity.resolvedHexes,
         resolvedTowers: resolvedCity.resolvedTowers,
         resolvedWallSegments: resolvedCity.resolvedWallSegments,
+        resolvedTechnologies: resolvedCity.resolvedTechnologies,
         homogeneousValues: resolvedCity.values,
         homogeneousResolvedValues: resolvedCity.resolvedValues,
         producedHomogeneousValues,

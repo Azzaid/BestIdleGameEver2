@@ -17,7 +17,7 @@ import {HOMOGENEOUS_VALUE_ROLE_KEYWORDS} from "./homogeneousValues.ts";
 
 const GLOBAL_MODIFIER_KEYWORD = "global";
 
-export type HomogeneousCityEntityType = "building" | "tower" | "wallSegment" | "wallSuperstructure";
+export type HomogeneousCityEntityType = "building" | "tower" | "wallSegment" | "wallSuperstructure" | "technology";
 
 export type HomogeneousValueEntitySource = {
     id: string;
@@ -48,6 +48,7 @@ export type HomogeneousCityResolution = {
     resolvedHexes: readonly HomogeneousResolvedEntity[];
     resolvedTowers: readonly HomogeneousResolvedEntity[];
     resolvedWallSegments: readonly HomogeneousResolvedEntity[];
+    resolvedTechnologies: readonly HomogeneousResolvedEntity[];
 };
 
 type EffectSource = {
@@ -174,11 +175,12 @@ export function resolveCity(
         ),
         values: getAvailableValues(resolvedValues),
         resolvedValues,
-        resolvedHexes: resolvedEntities,
+        resolvedHexes: resolvedEntities.filter((entity) => entity.entityType !== "technology"),
         resolvedTowers: resolvedEntities.filter((entity) => entity.entityType === "tower"),
         resolvedWallSegments: resolvedEntities.filter((entity) => (
             entity.entityType === "wallSegment" || entity.entityType === "wallSuperstructure"
         )),
+        resolvedTechnologies: resolvedEntities.filter((entity) => entity.entityType === "technology"),
     };
 }
 

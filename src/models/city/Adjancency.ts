@@ -75,6 +75,7 @@ export interface CityResolution {
     resolvedHexes: readonly HomogeneousResolvedEntity[];
     resolvedTowers: readonly HomogeneousResolvedEntity[];
     resolvedWallSegments: readonly HomogeneousResolvedEntity[];
+    resolvedTechnologies: readonly HomogeneousResolvedEntity[];
     homogeneousValues: Record<string, number>;
     homogeneousResolvedValues: HomogeneousResolvedValueMap;
     producedHomogeneousValues: Record<string, number>;

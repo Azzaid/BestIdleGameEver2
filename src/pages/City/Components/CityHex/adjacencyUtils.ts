@@ -229,6 +229,7 @@ export function resolveCityUpkeepAndSignature(
         resolvedHexes: [],
         resolvedTowers: [],
         resolvedWallSegments: [],
+        resolvedTechnologies: [],
         producedHomogeneousValues: {},
         upkeepHomogeneousValues: {},
         buildingsSignature: 0,
@@ -284,6 +285,7 @@ export function resolveCityUpkeepAndSignature(
     resolvedCity.resolvedHexes = homogeneousCityResolution.resolvedHexes;
     resolvedCity.resolvedTowers = homogeneousCityResolution.resolvedTowers;
     resolvedCity.resolvedWallSegments = homogeneousCityResolution.resolvedWallSegments;
+    resolvedCity.resolvedTechnologies = homogeneousCityResolution.resolvedTechnologies;
     resolvedCity.homogeneousResolvedValues = homogeneousCityResolution.resolvedValues;
     resolvedCity.homogeneousValues = getAvailableValues(resolvedCity.homogeneousResolvedValues);
     resolvedCity.producedHomogeneousValues = getProducedValues(resolvedCity.homogeneousResolvedValues);

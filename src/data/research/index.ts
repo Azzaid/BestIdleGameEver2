@@ -1,4 +1,4 @@
-import type {ResearchNodeData} from "../../models/research/ResearchNode.ts";
+import {getResearchNodeVector, type ResearchNodeData} from "../../models/research/ResearchNode.ts";
 import type {ResearchAtlas, ResearchDB} from "../../models/research/researchDB.ts";
 import {validateResearchGraph} from "../../models/research/researchGraph.ts";
 import {aetherResearch} from "./aether.ts";
@@ -43,6 +43,6 @@ const createEmptyResearchAtlas = (): ResearchAtlas => ({
 });
 
 export const RESEARCH_ATLAS = Object.values(researchTree).reduce<ResearchAtlas>((atlas, node) => {
-  atlas[node.vector][node.id] = node;
+  atlas[getResearchNodeVector(node)][node.id] = node;
   return atlas;
 }, createEmptyResearchAtlas());
