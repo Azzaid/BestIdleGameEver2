@@ -6,6 +6,7 @@ import {BuildingSelector} from "./Components/BuildingSelector/BuildingSelector.t
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {
+    selectBuiltStructureIds,
     selectCityBuildings,
     selectCityHexes,
     selectCityStructureCandidates,
@@ -46,6 +47,7 @@ const CityPage = () => {
     const dispatch = useTypedDispatch();
     const hexes = useTypedSelector(selectCityHexes);
     const cityBuildings = useTypedSelector(selectCityBuildings);
+    const builtStructureIds = useTypedSelector(selectBuiltStructureIds);
     const structureCandidates = useTypedSelector(selectCityStructureCandidates);
     const wallResolution = useTypedSelector(selectWallResolution);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
@@ -86,6 +88,7 @@ const CityPage = () => {
     const visibleWallSegmentIdSet = useMemo(() => new Set(visibleWallSegmentIds), [visibleWallSegmentIds]);
     const unlockedWallSuperstructureIdSet = useMemo(() => new Set(unlockedWallSuperstructureIds), [unlockedWallSuperstructureIds]);
     const visibleWallSuperstructureIdSet = useMemo(() => new Set(visibleWallSuperstructureIds), [visibleWallSuperstructureIds]);
+    const builtStructureIdSet = useMemo(() => new Set(builtStructureIds), [builtStructureIds]);
     const unavailableBuildingReasons = useMemo(() => {
         if (!selectedHex || selectedHex.kind !== "city" || selectedHex.buildingKey || selectedHex.partOfStructureId) {
             return {};
@@ -178,6 +181,7 @@ const CityPage = () => {
                         selectedWallBuilding={selectedWallBuilding}
                         selectedWallTopBuilding={selectedWallTopBuilding}
                         structureCandidates={selectedStructureCandidates}
+                        builtStructureIds={builtStructureIdSet}
                         isPartOfCompleteStructure={selectedHexIsPartOfCompleteStructure}
                         wallResolution={wallResolution}
                         blocked={signatureStatus.isBesieged}
@@ -220,6 +224,7 @@ function SelectedHexPanel({
     selectedWallBuilding,
     selectedWallTopBuilding,
     structureCandidates,
+    builtStructureIds,
     isPartOfCompleteStructure,
     wallResolution,
     blocked,
@@ -245,16 +250,19 @@ function SelectedHexPanel({
                             effects={getHomogeneousProductionContributions({
                                 values: selectedBuilding.effectiveHomogeneousValueEffects,
                             })}
+                            baseEffects={getHomogeneousProductionContributions(selectedBuilding)}
                         />
                         <HomogeneousContributionGroup
                             title="Resolved upkeep"
                             effects={getHomogeneousRequirementContributions({
                                 values: selectedBuilding.effectiveHomogeneousValueEffects,
                             })}
+                            baseEffects={getHomogeneousRequirementContributions(selectedBuilding)}
                         />
                     </div>
                     <MultistructureStatus
                         structureCandidates={structureCandidates}
+                        builtStructureIds={builtStructureIds}
                         onBuildStructure={onBuildStructure}
                         blocked={blocked}
                         blockedReason={blockedReason}
@@ -332,11 +340,13 @@ function getSelectionTitle(
 
 function MultistructureStatus({
     structureCandidates,
+    builtStructureIds,
     onBuildStructure,
     blocked,
     blockedReason,
 }: {
     structureCandidates: StructureDetectionResult[];
+    builtStructureIds: ReadonlySet<string>;
     onBuildStructure: (structureId: string, coreCellKey: string) => void;
     blocked: boolean;
     blockedReason: string;
@@ -352,12 +362,16 @@ function MultistructureStatus({
                 const isAlreadyTransformed =
                     candidate.coreHex.kind === "city" &&
                     candidate.coreHex.partOfStructureId === candidate.structure.id;
+                const hasBeenBuiltBefore = builtStructureIds.has(candidate.structure.id);
+                const structureBuilding = getStructureBuilding(candidate.structure.id);
 
                 return (
                     <div key={`${candidate.structure.id}-${candidate.coreHex.cellKey}`} className={s.multistructureCandidate}>
                         <div className={s.metricRow}>
                             <span>{candidate.structure.name}</span>
-                            <strong>{candidate.isComplete ? (isAlreadyTransformed ? "Built" : "Ready") : "Missing satellites"}</strong>
+                            {hasBeenBuiltBefore && (
+                                <strong>{candidate.isComplete ? (isAlreadyTransformed ? "Built" : "Ready") : "Missing satellites"}</strong>
+                            )}
                             {candidate.isComplete && !isAlreadyTransformed && (
                                 <button
                                     className={s.demolishButton}
@@ -370,17 +384,32 @@ function MultistructureStatus({
                                 </button>
                             )}
                         </div>
-                        {candidate.structure.description && (
-                            <p className={s.panelDescription}>{candidate.structure.description}</p>
+                        {hasBeenBuiltBefore ? (
+                            <>
+                                {candidate.structure.description && (
+                                    <p className={s.panelDescription}>{candidate.structure.description}</p>
+                                )}
+                                {structureBuilding && (
+                                    <div className={s.sideBySideStats}>
+                                        <HomogeneousContributionGroup
+                                            title="Provides"
+                                            effects={getHomogeneousProductionContributions(structureBuilding)}
+                                        />
+                                        <HomogeneousContributionGroup
+                                            title="Requires"
+                                            effects={getHomogeneousRequirementContributions(structureBuilding)}
+                                        />
+                                    </div>
+                                )}
+                                <StructureBuildingList
+                                    title="Combined from"
+                                    buildingIds={candidate.structure.requiredBuildingIds}
+                                />
+                            </>
+                        ) : (
+                            <p className={s.panelDescription}>{candidate.structure.hint}</p>
                         )}
-                        <p className={s.panelDescription}>{candidate.structure.hint}</p>
-                        {candidate.matchedSatellites.length > 0 && (
-                            <StructureBuildingList
-                                title="Connected"
-                                buildingIds={candidate.matchedSatellites.map(match => match.buildingId)}
-                            />
-                        )}
-                        {candidate.missingBuildingIds.length > 0 && (
+                        {hasBeenBuiltBefore && candidate.missingBuildingIds.length > 0 && (
                             <StructureBuildingList
                                 title="Needed adjacent"
                                 buildingIds={candidate.missingBuildingIds}
@@ -431,12 +460,28 @@ function MetricGroup({title, values}: {title: string; values: UpkeepAmount}) {
     );
 }
 
-function HomogeneousContributionGroup({title, effects}: {title: string; effects: HomogeneousValueEffect[]}) {
+function HomogeneousContributionGroup({
+    title,
+    effects,
+    baseEffects,
+}: {
+    title: string;
+    effects: HomogeneousValueEffect[];
+    baseEffects?: HomogeneousValueEffect[];
+}) {
+    const baseAmounts = useMemo(() => (
+        baseEffects ? buildEffectAmountMap(baseEffects) : undefined
+    ), [baseEffects]);
     const entries = effects.flatMap((effect, index) => {
         const amount = (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
         if (!amount) return [];
 
-        return [{effect, amount, key: `${effect.valueId}-${index}`}];
+        return [{
+            effect,
+            amount,
+            baseAmount: baseAmounts?.get(getEffectComparisonKey(effect)) ?? 0,
+            key: `${effect.valueId}-${index}`,
+        }];
     });
 
     return (
@@ -444,13 +489,18 @@ function HomogeneousContributionGroup({title, effects}: {title: string; effects:
             <h4 className={s.metricTitle}>{title}</h4>
             {entries.length ? (
                 <dl className={s.metricList}>
-                    {entries.map(({effect, amount, key}) => {
+                    {entries.map(({effect, amount, baseAmount, key}) => {
                         const definition = getHomogeneousValueDefinition(effect.valueId);
+                        const formattedAmount = formatHomogeneousValue(effect.valueId, amount, effect.additionalKeywords);
+                        const formattedBaseAmount = formatHomogeneousValue(effect.valueId, baseAmount, effect.additionalKeywords);
 
                         return (
                             <div key={key} className={s.metricRow}>
                                 <dt>{definition.label}</dt>
-                                <dd>{formatHomogeneousValue(effect.valueId, amount, effect.additionalKeywords)}</dd>
+                                <dd>
+                                    {formattedAmount}
+                                    {baseAmounts && amount !== baseAmount && ` (${formattedBaseAmount})`}
+                                </dd>
                             </div>
                         );
                     })}
@@ -460,6 +510,26 @@ function HomogeneousContributionGroup({title, effects}: {title: string; effects:
             )}
         </div>
     );
+}
+
+function buildEffectAmountMap(effects: HomogeneousValueEffect[]): Map<string, number> {
+    const amounts = new Map<string, number>();
+
+    for (const effect of effects) {
+        const key = getEffectComparisonKey(effect);
+        const amount = (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
+        amounts.set(key, (amounts.get(key) ?? 0) + amount);
+    }
+
+    return amounts;
+}
+
+function getEffectComparisonKey(effect: HomogeneousValueEffect): string {
+    return [
+        effect.valueId,
+        [...(effect.additionalKeywords ?? [])].sort().join(","),
+        [...(effect.removedKeywords ?? [])].sort().join(","),
+    ].join("|");
 }
 
 function WallStats({wallBuilding}: {wallBuilding: WallBuilding}) {
@@ -537,6 +607,15 @@ function getBuildingName(buildingId: string): string {
     }
 
     return buildingId;
+}
+
+function getStructureBuilding(structureId: string) {
+    for (const vector of Object.values(DEVELOPMENT_VECTORS)) {
+        const building = BUILDINGS_ATLAS[vector][structureId];
+        if (building) return building;
+    }
+
+    return undefined;
 }
 
 function isHexPartOfStructureCandidate(cellKey: string, candidate: StructureDetectionResult): boolean {

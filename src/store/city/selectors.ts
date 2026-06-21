@@ -11,6 +11,8 @@ export const selectCityCellRadius = (state: RootState) => state.city.cellRadius;
 
 export const selectCityFootprint = (state: RootState) => state.city.cityFootprint;
 
+export const selectBuiltStructureIds = (state: RootState) => state.city.builtStructureIds ?? [];
+
 export const selectCityBattlefield = (state: RootState) => state.city.battlefield;
 
 export const selectCitySideHexes = createSelector(

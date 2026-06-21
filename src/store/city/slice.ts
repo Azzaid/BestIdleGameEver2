@@ -79,6 +79,7 @@ const initialState: CityState = {
     hexes: getInitialHexes(),
     cellRadius: INITIAL_CITY_CELL_RADIUS,
     cityFootprint: 0,
+    builtStructureIds: [],
     battlefield: {
         backgroundId: DEFAULT_BATTLE_BACKGROUND_ID,
         detailSeed: 1,
@@ -149,6 +150,10 @@ export const citySlice = createSlice({
                 hex.structureCoreCellKey = coreCellKey;
                 hex.spriteKey = `${structureId}:${partKeys.indexOf(hex.cellKey)}`;
             });
+
+            if (!state.builtStructureIds.includes(structureId)) {
+                state.builtStructureIds.push(structureId);
+            }
         },
         retreatCityRadius: (state) => {
             const nextRadius = Math.max(1, state.cellRadius - 1);

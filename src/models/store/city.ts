@@ -10,6 +10,7 @@ export interface CityState {
     hexes: HexCell[],
     cellRadius: number,
     cityFootprint: number,
+    builtStructureIds: string[],
     selectedHex?: AxialCoordinate,
     battlefield: CityBattlefieldState,
 }

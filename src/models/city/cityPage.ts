@@ -9,6 +9,7 @@ export type SelectedHexPanelProps = {
     selectedWallBuilding?: WallBuilding;
     selectedWallTopBuilding?: WallBuilding;
     structureCandidates: StructureDetectionResult[];
+    builtStructureIds: ReadonlySet<string>;
     isPartOfCompleteStructure: boolean;
     wallResolution: WallResolution;
     blocked: boolean;

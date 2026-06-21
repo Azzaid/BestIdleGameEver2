@@ -165,7 +165,7 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     ),
   },
   [buildings.medieval.university]: superstructure(
-      buildings.medieval.craftsmansHouse,
+      buildings.medieval.university,
       "University",
       "A civic center for science",
       26,
