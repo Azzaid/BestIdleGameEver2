@@ -1,5 +1,4 @@
 import type {Building} from "../../models/city/Building.ts";
-import type {Requirement} from "../../models/progression/requirements.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
 import {buildings, technologies} from "../identificators/index.ts";
@@ -32,6 +31,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.gold]: 1},
       {[UPKEEP_TYPES.people]: 2},
       ["production", "gold", "scavenger"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.medieval.foraging),
+      ]},
     ),
   },
   [buildings.medieval.stalkerHut]: superstructure(
@@ -45,6 +47,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {requiredBuildingIds: [
       buildings.medieval.shelter,
       buildings.medieval.scrapCollectionPoint,
+    ],
+    requirements: [
+      requires.buildingExists(buildings.medieval.shelter),
+      requires.buildingExists(buildings.medieval.scrapCollectionPoint),
     ]},
   ),
   [buildings.medieval.toolShed]: {
@@ -56,6 +62,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {},
       {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 1},
       ["production", "gold", "tools"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.medieval.scrapTools),
+      ]},
     ),
   },
   [buildings.medieval.lumberjackHouse]: superstructure(
@@ -69,6 +78,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {requiredBuildingIds: [
       buildings.medieval.toolShed,
       buildings.medieval.stalkerHut,
+    ],
+    requirements: [
+      requires.buildingExists(buildings.medieval.toolShed),
+      requires.buildingExists(buildings.medieval.stalkerHut),
     ]},
   ),
   [buildings.medieval.farm]: superstructure(
@@ -82,6 +95,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {requiredBuildingIds: [
       buildings.medieval.woodenHouse,
       buildings.nature.field,
+    ],
+    requirements: [
+      requires.buildingExists(buildings.nature.field),
+      requires.buildingExists(buildings.medieval.woodenHouse),
     ]},
   ),
   [buildings.medieval.woodenHouse]: {
@@ -93,6 +110,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 10, [UPKEEP_TYPES.gold]: 3},
       {},
       ["production", "people", "wood", "housing"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.medieval.timberProcessing),
+      ]},
     ),
   },
   [buildings.medieval.craftsmansHouse]: superstructure(
@@ -106,6 +126,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {requiredBuildingIds: [
       buildings.medieval.woodenHouse,
       buildings.medieval.toolShed,
+    ],
+    requirements: [
+      requires.buildingExists(buildings.medieval.woodenHouse),
+      requires.buildingExists(buildings.medieval.toolShed),
     ]},
   ),
   [buildings.medieval.market]: building(
@@ -116,6 +140,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {[UPKEEP_TYPES.gold]: 25},
     {[UPKEEP_TYPES.people]: 10},
     ["production", "gold", "market"],
+    {requirements: [
+      requires.buildingExists(buildings.medieval.farm),
+    ]},
   ),
   [buildings.medieval.stoneHouse]: {
     ...building(
@@ -126,6 +153,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.people]: 12, [UPKEEP_TYPES.gold]: 3},
       {[UPKEEP_TYPES.gold]: 2},
       ["production", "people", "gold", "housing"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.medieval.stoneworking),
+      ]},
     ),
   },
   [buildings.medieval.university]: building(
@@ -136,6 +166,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {},
     {[UPKEEP_TYPES.people]: 4, [UPKEEP_TYPES.gold]: 5},
     ["infrastructure", "craft"],
+    {requirements: [
+      requires.technologyUnlocked(technologies.medieval.stoneworking),
+      requires.buildingExists(buildings.medieval.stoneHouse),
+    ]},
   ),
   [buildings.medieval.workshop]: {
     ...building(
@@ -146,6 +180,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.gold]: 7},
       {[UPKEEP_TYPES.people]: 3, [UPKEEP_TYPES.gold]: 3},
       ["production", "gold", "craft"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.medieval.engineering),
+      ]},
     ),
     adjacencyDescription: "+25% production in adjacent buildings; -25% Aether production in adjacent buildings.",
   },
@@ -160,6 +197,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {requiredBuildingIds: [
       buildings.medieval.stoneHouse,
       buildings.medieval.workshop,
+    ],
+    requirements: [
+      requires.buildingExists(buildings.medieval.workshop),
+      requires.buildingExists(buildings.medieval.stoneHouse),
     ]},
   ),
   [buildings.medieval.barracks]: building(
@@ -170,6 +211,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {},
     {[UPKEEP_TYPES.gold]: 4},
     ["defense", "visibility"],
+    {requirements: [
+      requires.technologyUnlocked(technologies.medieval.fortification),
+    ]},
   ),
   [buildings.medieval.barn]: {
     ...building(
@@ -180,6 +224,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {},
       {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 1},
       ["support", "farm"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.medieval.animalHusbandry),
+      ]},
     ),
     adjacencyDescription: "Adjacent buildings require fewer People.",
   },
@@ -192,6 +239,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {},
       {[UPKEEP_TYPES.people]: 3, [UPKEEP_TYPES.gold]: 3},
       ["support", "market"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.medieval.horses),
+      ]},
     ),
     adjacencyDescription: "Adjacency bonuses affect buildings at +1 range.",
   },
@@ -206,6 +256,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {requiredBuildingIds: [
       buildings.medieval.barn,
       buildings.medieval.farm,
+    ],
+    requirements: [
+      requires.buildingExists(buildings.medieval.barn),
+      requires.buildingExists(buildings.medieval.farm),
     ]},
   ),
   [buildings.medieval.shop]: {
@@ -217,6 +271,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.gold]: 6},
       {[UPKEEP_TYPES.people]: 3},
       ["production", "gold", "market"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.medieval.trade),
+      ]},
     ),
   },
   [buildings.medieval.tradingStation]: superstructure(
@@ -230,6 +287,10 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {requiredBuildingIds: [
       buildings.medieval.tradeStation,
       buildings.medieval.shop,
+    ],
+    requirements: [
+      requires.buildingExists(buildings.medieval.shop),
+      requires.buildingExists(buildings.medieval.tradeStation),
     ]},
   ),
   [buildings.medieval.chemicalStorage]: {
@@ -241,6 +302,9 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
       {},
       {[UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 4},
       ["infrastructure", "laboratory"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.medieval.naturalPhilosophy),
+      ]},
     ),
   },
   [buildings.medieval.alchemicalLaboratory]: superstructure(
@@ -254,88 +318,14 @@ const medievalBuildingsRaw: {[key: string]: Building} = {
     {requiredBuildingIds: [
       buildings.medieval.stoneHouse,
       buildings.medieval.chemicalStorage,
+    ],
+    requirements: [
+      requires.buildingExists(buildings.medieval.chemicalStorage),
+      requires.buildingExists(buildings.medieval.stoneHouse),
     ]},
   ),
 };
 
-const medievalBuildingRequirements: Record<string, Requirement[]> = {
-  [buildings.medieval.scrapCollectionPoint]: [
-    requires.technologyUnlocked(technologies.medieval.foraging),
-  ],
-  [buildings.medieval.stalkerHut]: [
-    requires.buildingExists(buildings.medieval.shelter),
-    requires.buildingExists(buildings.medieval.scrapCollectionPoint),
-  ],
-  [buildings.medieval.toolShed]: [
-    requires.technologyUnlocked(technologies.medieval.scrapTools),
-  ],
-  [buildings.medieval.lumberjackHouse]: [
-    requires.buildingExists(buildings.medieval.toolShed),
-    requires.buildingExists(buildings.medieval.stalkerHut),
-  ],
-  [buildings.medieval.woodenHouse]: [
-    requires.technologyUnlocked(technologies.medieval.timberProcessing),
-  ],
-  [buildings.medieval.farm]: [
-    requires.buildingExists(buildings.nature.field),
-    requires.buildingExists(buildings.medieval.woodenHouse),
-  ],
-  [buildings.medieval.market]: [
-    requires.buildingExists(buildings.medieval.farm),
-  ],
-  [buildings.medieval.craftsmansHouse]: [
-    requires.buildingExists(buildings.medieval.woodenHouse),
-    requires.buildingExists(buildings.medieval.toolShed),
-  ],
-  [buildings.medieval.stoneHouse]: [
-    requires.technologyUnlocked(technologies.medieval.stoneworking),
-  ],
-  [buildings.medieval.university]: [
-    requires.technologyUnlocked(technologies.medieval.stoneworking),
-    requires.buildingExists(buildings.medieval.stoneHouse),
-  ],
-  [buildings.medieval.workshop]: [
-    requires.technologyUnlocked(technologies.medieval.engineering),
-  ],
-  [buildings.medieval.engineersHouse]: [
-    requires.buildingExists(buildings.medieval.workshop),
-    requires.buildingExists(buildings.medieval.stoneHouse),
-  ],
-  [buildings.medieval.barracks]: [
-    requires.technologyUnlocked(technologies.medieval.fortification),
-  ],
-  [buildings.medieval.barn]: [
-    requires.technologyUnlocked(technologies.medieval.animalHusbandry),
-  ],
-  [buildings.medieval.stable]: [
-    requires.buildingExists(buildings.medieval.barn),
-    requires.buildingExists(buildings.medieval.farm),
-  ],
-  [buildings.medieval.tradeStation]: [
-    requires.technologyUnlocked(technologies.medieval.horses),
-  ],
-  [buildings.medieval.shop]: [
-    requires.technologyUnlocked(technologies.medieval.trade),
-  ],
-  [buildings.medieval.tradingStation]: [
-    requires.buildingExists(buildings.medieval.shop),
-    requires.buildingExists(buildings.medieval.tradeStation),
-  ],
-  [buildings.medieval.chemicalStorage]: [
-    requires.technologyUnlocked(technologies.medieval.naturalPhilosophy),
-  ],
-  [buildings.medieval.alchemicalLaboratory]: [
-    requires.buildingExists(buildings.medieval.chemicalStorage),
-    requires.buildingExists(buildings.medieval.stoneHouse),
-  ],
-};
-
 export const medievalBuildings: {[key: string]: Building} = Object.fromEntries(
-  Object.values(medievalBuildingsRaw).map(building => [
-    building.id,
-    {
-      ...building,
-      requirements: medievalBuildingRequirements[building.id] ?? [],
-    },
-  ]),
+  Object.values(medievalBuildingsRaw).map(building => [building.id, building]),
 );

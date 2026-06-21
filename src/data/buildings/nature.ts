@@ -1,5 +1,4 @@
 import type {Building} from "../../models/city/Building.ts";
-import type {Requirement} from "../../models/progression/requirements.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_TYPES} from "../../models/Upkeep.ts";
 import {buildings, technologies} from "../identificators/index.ts";
@@ -24,6 +23,9 @@ const natureBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.plants]: 5},
       {[UPKEEP_TYPES.people]: 1},
       ["production", "plants", "garden", "herbs"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.nature.seedGathering),
+      ]},
     ),
   },
   [buildings.nature.herbalistHut]: bioSuperstructure(
@@ -37,6 +39,10 @@ const natureBuildingsRaw: {[key: string]: Building} = {
     {requiredBuildingIds: [
       buildings.nature.wildGarden,
       buildings.medieval.stalkerHut,
+    ],
+    requirements: [
+      requires.buildingExists(buildings.nature.wildGarden),
+      requires.buildingExists(buildings.medieval.stalkerHut),
     ]},
   ),
   [buildings.nature.field]: {
@@ -48,6 +54,9 @@ const natureBuildingsRaw: {[key: string]: Building} = {
       {[UPKEEP_TYPES.plants]: 4},
       {[UPKEEP_TYPES.people]: 2},
       ["production", "plants", "farm"],
+      {requirements: [
+        requires.technologyUnlocked(technologies.nature.plantCultivation),
+      ]},
     ),
     homogeneousAdjacency: [
       {
@@ -61,25 +70,6 @@ const natureBuildingsRaw: {[key: string]: Building} = {
   },
 };
 
-const natureBuildingRequirements: Record<string, Requirement[]> = {
-  [buildings.nature.wildGarden]: [
-    requires.technologyUnlocked(technologies.nature.seedGathering),
-  ],
-  [buildings.nature.herbalistHut]: [
-    requires.buildingExists(buildings.nature.wildGarden),
-    requires.buildingExists(buildings.medieval.stalkerHut),
-  ],
-  [buildings.nature.field]: [
-    requires.technologyUnlocked(technologies.nature.plantCultivation),
-  ],
-};
-
 export const natureBuildings: {[key: string]: Building} = Object.fromEntries(
-  Object.values(natureBuildingsRaw).map(building => [
-    building.id,
-    {
-      ...building,
-      requirements: natureBuildingRequirements[building.id] ?? [],
-    },
-  ]),
+  Object.values(natureBuildingsRaw).map(building => [building.id, building]),
 );

@@ -305,6 +305,11 @@ Building categories:
 - Threat management buildings.
 - Special buildings and megaproject cores.
 
+Building data convention:
+
+- Building and superstructure unlock requirements live inline on the building definition as `requirements`, matching tower part data.
+- Superstructure transform recipes live inline on the superstructure definition as `requiredBuildingIds`.
+
 City view implementation:
 
 - The City page renders an SVG hex map.

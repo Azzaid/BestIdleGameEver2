@@ -2,13 +2,18 @@ import type {Building} from "../../models/city/Building.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import type {BuildingKeyword} from "../../models/city/Keywords.ts";
 import type {DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
+import type {Requirement} from "../../models/progression/requirements.ts";
 import type {UpkeepAmount} from "../../models/Upkeep.ts";
 import {
   citySignatureToHomogeneousValueEffect,
   upkeepAmountToHomogeneousValueEffects,
 } from "../../models/homogeneousValueAdapters.ts";
 
-type SuperstructureOptions = {
+type BuildingOptions = {
+  requirements?: Requirement[];
+};
+
+type SuperstructureOptions = BuildingOptions & {
   requiredBuildingIds?: string[];
 };
 
@@ -26,6 +31,7 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
     providedUpkeep: UpkeepAmount = {},
     requiredUpkeep: UpkeepAmount = {},
     keywords: BuildingKeyword[] = [],
+    options: BuildingOptions = {},
   ): Building {
     return {
       id,
@@ -44,6 +50,7 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
       adjacencyDescription: "Not affected",
       description,
       keywords: [...defaultKeywords, ...keywords],
+      requirements: options.requirements,
     };
   }
 
@@ -58,7 +65,7 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
     options: SuperstructureOptions = {},
   ): Building {
     return {
-      ...building(id, name, description, signature, providedUpkeep, requiredUpkeep, keywords),
+      ...building(id, name, description, signature, providedUpkeep, requiredUpkeep, keywords, options),
       isMultiHex: true,
       isMultistructure: true,
       multiHexStructure: options.requiredBuildingIds
