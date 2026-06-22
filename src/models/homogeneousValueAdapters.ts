@@ -1,6 +1,6 @@
 import {HOMOGENEOUS_VALUE_IDS} from "../data/homogeneousValues/index.ts";
 import {UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "./Upkeep.ts";
-import type {HomogeneousValueEffect, HomogeneousValueId, HomogeneousValueRoleKeyword} from "./homogeneousValues.ts";
+import type {HomogeneousValueId} from "./homogeneousValues.ts";
 import type {TowerStatsResolved} from "./battle/towerParts.ts";
 
 const resourceValueIdsByUpkeepType: Record<UpkeepTypesValue, HomogeneousValueId> = {
@@ -16,22 +16,6 @@ const resourceValueIdsByUpkeepType: Record<UpkeepTypesValue, HomogeneousValueId>
     [UPKEEP_TYPES.animals]: HOMOGENEOUS_VALUE_IDS.resourceAnimals,
 };
 
-export function upkeepAmountToHomogeneousValueEffects(
-    amount: UpkeepAmount,
-    roleKeyword: HomogeneousValueRoleKeyword,
-): HomogeneousValueEffect[] {
-    return (Object.keys(amount) as UpkeepTypesValue[]).flatMap((resource) => {
-        const additive = amount[resource] ?? 0;
-        if (additive === 0) return [];
-
-        return [{
-            valueId: resourceValueIdsByUpkeepType[resource],
-            additionalKeywords: [roleKeyword],
-            additive,
-        }];
-    });
-}
-
 export function homogeneousValueTotalsToUpkeepAmount(totals: Record<HomogeneousValueId, number>): UpkeepAmount {
     return (Object.keys(resourceValueIdsByUpkeepType) as UpkeepTypesValue[]).reduce<UpkeepAmount>(
         (amount, resource) => {
@@ -44,16 +28,6 @@ export function homogeneousValueTotalsToUpkeepAmount(totals: Record<HomogeneousV
         },
         {},
     );
-}
-
-export function citySignatureToHomogeneousValueEffect(signature: number): HomogeneousValueEffect[] {
-    if (signature === 0) return [];
-
-    return [{
-        valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
-        additionalKeywords: ["production"],
-        additive: signature,
-    }];
 }
 
 export function homogeneousValueTotalsToTowerStats(

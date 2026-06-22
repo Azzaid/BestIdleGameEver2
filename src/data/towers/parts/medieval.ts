@@ -3,7 +3,6 @@ import { gunparts, technologies } from '../../identificators/index.ts';
 import { requires } from "../../requirements.ts";
 import { UPKEEP_TYPES } from "../../../models/Upkeep.ts";
 import { createTowerPartFactory } from "./towerPartFactory.ts";
-import { upkeepAmountToHomogeneousValueEffects } from "../../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../homogeneousValues/index.ts";
 const { part } = createTowerPartFactory({
     vector: "medieval",
@@ -93,7 +92,11 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: -0.15
             },
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 1 }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 1,
+            }
         ]
     }),
     [gunparts.ammo.medieval.stoneBasket]: part(gunparts.ammo.medieval.stoneBasket, "ammo", "Stone Basket", "A basket stones.", {
@@ -148,7 +151,11 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: 2
             },
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 1 }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 1,
+            }
         ]
     }),
     [gunparts.barrels.medieval.carvedLog]: part(gunparts.barrels.medieval.carvedLog, "barrel", "Carved out log", "Fresh log carefully hollowed by hands and crude tools.", {
@@ -184,10 +191,16 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: -0.25
             },
-            ...upkeepAmountToHomogeneousValueEffects({
-                [UPKEEP_TYPES.people]: 2,
-                [UPKEEP_TYPES.gold]: 1,
-            }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 2,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 1,
+            }
         ]
     }),
     [gunparts.launchSystems.medieval.handTrebuchet]: part(gunparts.launchSystems.medieval.handTrebuchet, "launchSystem", "Hand drawn trebuchet", "Flexible planks and a bit of rope. Basically a big bow attached to a gun platform.", {
@@ -243,7 +256,11 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: 1.5
             },
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 2 }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 2,
+            }
         ]
     }),
     [gunparts.ammo.medieval.sharpenedStakes]: part(gunparts.ammo.medieval.sharpenedStakes, "ammo", "Sharpened stakes", "Bunch or thick sticks sharpened by axe", {
@@ -284,10 +301,16 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: 0.1
             },
-            ...upkeepAmountToHomogeneousValueEffects({
-                [UPKEEP_TYPES.people]: 2,
-                [UPKEEP_TYPES.gold]: 1,
-            }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 2,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 1,
+            }
         ]
     }),
     [gunparts.barrels.medieval.boredTimberBarrel]: part(gunparts.barrels.medieval.boredTimberBarrel, "barrel", "Bored timber barrel", "Whole three bored and sanded from inside", {
@@ -323,10 +346,16 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: -0.5
             },
-            ...upkeepAmountToHomogeneousValueEffects({
-                [UPKEEP_TYPES.people]: 4,
-                [UPKEEP_TYPES.gold]: 3,
-            }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 4,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 3,
+            }
         ]
     }),
     [gunparts.ammo.medieval.baseWoodArrow]: part(gunparts.ammo.medieval.baseWoodArrow, "ammo", "Wooden arrows", "Simple but carefully crafted", {
@@ -362,10 +391,16 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: 200
             },
-            ...upkeepAmountToHomogeneousValueEffects({
-                [UPKEEP_TYPES.people]: 3,
-                [UPKEEP_TYPES.gold]: 2,
-            }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 3,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 2,
+            }
         ]
     }),
     [gunparts.bases.medieval.woodenRails]: part(gunparts.bases.medieval.woodenRails, "platform", "Wooden rails", "Set of rails to aid in tower rotation", {
@@ -381,10 +416,16 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: 0.25
             },
-            ...upkeepAmountToHomogeneousValueEffects({
-                [UPKEEP_TYPES.people]: 3,
-                [UPKEEP_TYPES.gold]: 2,
-            }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 3,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 2,
+            }
         ]
     }),
     [gunparts.loadingSystems.medieval.leverLoader]: part(gunparts.loadingSystems.medieval.leverLoader, "loadingSystem", "Lever loader", "Clever lever loading mechanism allows to load ammo faster", {
@@ -400,10 +441,16 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: 1
             },
-            ...upkeepAmountToHomogeneousValueEffects({
-                [UPKEEP_TYPES.people]: 1,
-                [UPKEEP_TYPES.gold]: 5,
-            }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 1,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 5,
+            }
         ]
     }),
     [gunparts.barrels.medieval.stoneRails]: part(gunparts.barrels.medieval.stoneRails, "barrel", "Stone rails", "Set of stone rails to guide projectile.", {
@@ -439,10 +486,16 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: -0.3
             },
-            ...upkeepAmountToHomogeneousValueEffects({
-                [UPKEEP_TYPES.people]: 2,
-                [UPKEEP_TYPES.gold]: 3,
-            }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 2,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 3,
+            }
         ]
     }),
     [gunparts.aimSystems.medieval.makeshiftWoodenAim]: part(gunparts.aimSystems.medieval.makeshiftWoodenAim, "aimSystem", "Makeshift wooden aim", "Few planks with holes in them but it still helps to land a shot", {
@@ -468,10 +521,16 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: -0.5
             },
-            ...upkeepAmountToHomogeneousValueEffects({
-                [UPKEEP_TYPES.people]: 2,
-                [UPKEEP_TYPES.gold]: 3,
-            }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 2,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 3,
+            }
         ]
     }),
     [gunparts.bases.medieval.stoneRails]: part(gunparts.bases.medieval.stoneRails, "platform", "Stone rails", "Set of stone rails to aid in tower rotation", {
@@ -492,10 +551,16 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: -0.1
             },
-            ...upkeepAmountToHomogeneousValueEffects({
-                [UPKEEP_TYPES.people]: 2,
-                [UPKEEP_TYPES.gold]: 3,
-            }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 2,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 3,
+            }
         ]
     }),
     [gunparts.loadingSystems.medieval.counterweightLoader]: part(gunparts.loadingSystems.medieval.counterweightLoader, "loadingSystem", "Counterweight loader", "Loader with a handy stone counterweight. Allows to handle bigger projectiles just as quick", {
@@ -518,10 +583,16 @@ const medievalTowerPartsRaw: Record<string, GunPart> = {
                 additionalKeywords: ["production"],
                 additive: 4
             },
-            ...upkeepAmountToHomogeneousValueEffects({
-                [UPKEEP_TYPES.people]: 1,
-                [UPKEEP_TYPES.gold]: 5,
-            }, "upkeep")
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 1,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 5,
+            }
         ]
     }),
 };

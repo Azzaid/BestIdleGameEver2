@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "saveId": "local-dev-sample",
+  "resources": {
+    "gold": 0,
+    "stone": 0,
+    "wood": 0
+  },
+  "unlockedSystems": []
+}

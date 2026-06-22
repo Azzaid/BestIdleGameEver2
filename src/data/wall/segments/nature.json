@@ -1,0 +1,27 @@
+[
+  {
+    "id": "wall_nature_livingWoodPalisade",
+    "name": "Living wood palisade",
+    "description": "Tight row of a strong young trees. Can heal itself and require no maintenance. But fragile to ecosystem changes.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "technology.nature.livingWood"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueLessThan",
+        "valueId": "nature.bioDisbalance",
+        "amount": 3
+      }
+    ],
+    "values": [
+      {
+        "valueId": "wall.resilience",
+        "additionalKeywords": ["production"],
+        "additive": 10
+      }
+    ]
+  }
+]

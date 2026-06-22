@@ -5,7 +5,6 @@ import { HOMOGENEOUS_VALUE_IDS } from "../homogeneousValues/index.ts";
 import { buildings, technologies } from "../identificators/index.ts";
 import { requires } from "../requirements.ts";
 import { createBuildingFactory } from "./buildingFactory.ts";
-import {citySignatureToHomogeneousValueEffect, upkeepAmountToHomogeneousValueEffects} from "../../models/homogeneousValueAdapters.ts";
 const { building: magicBuilding, superstructure: magicSuperstructure, } = createBuildingFactory({
     vector: DEVELOPMENT_VECTORS.aether,
     defaultKeywords: ["aether"],
@@ -20,9 +19,26 @@ const aetherBuildingsRaw: {
                 requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 1),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.veil]: 8 }, "production"),
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 2 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(20)
+                {
+                    valueId: UPKEEP_TYPES.veil,
+                    additionalKeywords: ["production"],
+                    additive: 8,
+                },
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["upkeep"],
+                    additive: 2,
+                },
+            {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["upkeep"],
+                    additive: 2,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 20,
+                }
             ]
         }),
     },
@@ -37,8 +53,21 @@ const aetherBuildingsRaw: {
             requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 2),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.veil]: 18, [UPKEEP_TYPES.manaFlows]: 10 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(26)
+            {
+                valueId: UPKEEP_TYPES.veil,
+                additionalKeywords: ["production"],
+                additive: 18,
+            },
+            {
+                valueId: UPKEEP_TYPES.manaFlows,
+                additionalKeywords: ["production"],
+                additive: 10,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 26,
+            }
         ]
     }),
     [buildings.aether.wardedHome]: {
@@ -48,9 +77,31 @@ const aetherBuildingsRaw: {
                 requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 2),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 12, [UPKEEP_TYPES.manaFlows]: 2, [UPKEEP_TYPES.veil]: 10 }, "production"),
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.gold]: 2 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(8)
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["production"],
+                    additive: 12,
+                },
+            {
+                    valueId: UPKEEP_TYPES.manaFlows,
+                    additionalKeywords: ["production"],
+                    additive: 2,
+                },
+            {
+                    valueId: UPKEEP_TYPES.veil,
+                    additionalKeywords: ["production"],
+                    additive: 10,
+                },
+                {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["upkeep"],
+                    additive: 2,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 8,
+                }
             ]
         }),
     },
@@ -67,9 +118,31 @@ const aetherBuildingsRaw: {
                 requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 1),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 14, [UPKEEP_TYPES.manaFlows]: 12, [UPKEEP_TYPES.veil]: 18 }, "production"),
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.gold]: 2 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(24)
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["production"],
+                    additive: 14,
+                },
+            {
+                    valueId: UPKEEP_TYPES.manaFlows,
+                    additionalKeywords: ["production"],
+                    additive: 12,
+                },
+            {
+                    valueId: UPKEEP_TYPES.veil,
+                    additionalKeywords: ["production"],
+                    additive: 18,
+                },
+                {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["upkeep"],
+                    additive: 2,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 24,
+                }
             ]
         }),
     },
@@ -84,8 +157,26 @@ const aetherBuildingsRaw: {
             requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 2),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.manaFlows]: 28, [UPKEEP_TYPES.veil]: 24, [UPKEEP_TYPES.death]: 4 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(38)
+            {
+                valueId: UPKEEP_TYPES.manaFlows,
+                additionalKeywords: ["production"],
+                additive: 28,
+            },
+            {
+                valueId: UPKEEP_TYPES.veil,
+                additionalKeywords: ["production"],
+                additive: 24,
+            },
+            {
+                valueId: UPKEEP_TYPES.death,
+                additionalKeywords: ["production"],
+                additive: 4,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 38,
+            }
         ]
     }),
     [buildings.aether.obelisk]: {
@@ -95,9 +186,21 @@ const aetherBuildingsRaw: {
                 requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 2),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.manaFlows]: 18 }, "production"),
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.gold]: 3 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(18)
+                {
+                    valueId: UPKEEP_TYPES.manaFlows,
+                    additionalKeywords: ["production"],
+                    additive: 18,
+                },
+                {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["upkeep"],
+                    additive: 3,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 18,
+                }
             ]
         }),
     },
@@ -108,9 +211,26 @@ const aetherBuildingsRaw: {
                 requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 3),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.veil]: 16 }, "production"),
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.manaFlows]: 2 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(24)
+                {
+                    valueId: UPKEEP_TYPES.veil,
+                    additionalKeywords: ["production"],
+                    additive: 16,
+                },
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["upkeep"],
+                    additive: 2,
+                },
+            {
+                    valueId: UPKEEP_TYPES.manaFlows,
+                    additionalKeywords: ["upkeep"],
+                    additive: 2,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 24,
+                }
             ]
         }),
     },
@@ -125,9 +245,26 @@ const aetherBuildingsRaw: {
             requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 4),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.veil]: 42, [UPKEEP_TYPES.death]: 8 }, "production"),
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.manaFlows]: 4 }, "upkeep"),
-            ...citySignatureToHomogeneousValueEffect(52)
+            {
+                valueId: UPKEEP_TYPES.veil,
+                additionalKeywords: ["production"],
+                additive: 42,
+            },
+            {
+                valueId: UPKEEP_TYPES.death,
+                additionalKeywords: ["production"],
+                additive: 8,
+            },
+            {
+                valueId: UPKEEP_TYPES.manaFlows,
+                additionalKeywords: ["upkeep"],
+                additive: 4,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 52,
+            }
         ]
     }),
     [buildings.aether.veilThinning]: magicBuilding(buildings.aether.veilThinning, "Veil Thinning", "A weak point where the spirit world leaks into reality, producing large mana and a large signature.", ["production", "manaFlows", "visibility"], {
@@ -136,8 +273,26 @@ const aetherBuildingsRaw: {
             requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceVeil, 4),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.manaFlows]: 28, [UPKEEP_TYPES.veil]: 48, [UPKEEP_TYPES.death]: 6 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(42)
+            {
+                valueId: UPKEEP_TYPES.manaFlows,
+                additionalKeywords: ["production"],
+                additive: 28,
+            },
+            {
+                valueId: UPKEEP_TYPES.veil,
+                additionalKeywords: ["production"],
+                additive: 48,
+            },
+            {
+                valueId: UPKEEP_TYPES.death,
+                additionalKeywords: ["production"],
+                additive: 6,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 42,
+            }
         ]
     }),
     [buildings.aether.embodimentStone]: magicSuperstructure(buildings.aether.embodimentStone, "Embodiment Stone", "An obelisk and spirit hut combined to bind spirits into matter.", ["support", "arcane"], {
@@ -152,8 +307,26 @@ const aetherBuildingsRaw: {
             requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 3),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.veil]: 18, [UPKEEP_TYPES.manaFlows]: 24, [UPKEEP_TYPES.death]: 8 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(34)
+            {
+                valueId: UPKEEP_TYPES.veil,
+                additionalKeywords: ["production"],
+                additive: 18,
+            },
+            {
+                valueId: UPKEEP_TYPES.manaFlows,
+                additionalKeywords: ["production"],
+                additive: 24,
+            },
+            {
+                valueId: UPKEEP_TYPES.death,
+                additionalKeywords: ["production"],
+                additive: 8,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 34,
+            }
         ]
     }),
     [buildings.aether.golemBuilder]: magicBuilding(buildings.aether.golemBuilder, "Golem Builder", "Replaces all people requirements in radius with mana requirements.", ["support", "arcane"], {
@@ -162,9 +335,26 @@ const aetherBuildingsRaw: {
             requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 3),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.manaFlows]: 26 }, "production"),
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.manaFlows]: 5, [UPKEEP_TYPES.gold]: 3 }, "upkeep"),
-            ...citySignatureToHomogeneousValueEffect(32)
+            {
+                valueId: UPKEEP_TYPES.manaFlows,
+                additionalKeywords: ["production"],
+                additive: 26,
+            },
+            {
+                valueId: UPKEEP_TYPES.manaFlows,
+                additionalKeywords: ["upkeep"],
+                additive: 5,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 3,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 32,
+            }
         ]
     }),
     [buildings.aether.suppressionTotem]: {
@@ -175,9 +365,26 @@ const aetherBuildingsRaw: {
                 requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceManaFlows, 1),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.manaFlows]: 8, [UPKEEP_TYPES.death]: 22 }, "production"),
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.manaFlows]: 5 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(10)
+                {
+                    valueId: UPKEEP_TYPES.manaFlows,
+                    additionalKeywords: ["production"],
+                    additive: 8,
+                },
+            {
+                    valueId: UPKEEP_TYPES.death,
+                    additionalKeywords: ["production"],
+                    additive: 22,
+                },
+                {
+                    valueId: UPKEEP_TYPES.manaFlows,
+                    additionalKeywords: ["upkeep"],
+                    additive: 5,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 10,
+                }
             ]
         }),
     },
@@ -192,8 +399,21 @@ const aetherBuildingsRaw: {
             requires.homogeneousValueAtLeast(HOMOGENEOUS_VALUE_IDS.resourceDeath, 3),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.manaFlows]: 30, [UPKEEP_TYPES.death]: 36 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(30)
+            {
+                valueId: UPKEEP_TYPES.manaFlows,
+                additionalKeywords: ["production"],
+                additive: 30,
+            },
+            {
+                valueId: UPKEEP_TYPES.death,
+                additionalKeywords: ["production"],
+                additive: 36,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 30,
+            }
         ]
     }),
 };

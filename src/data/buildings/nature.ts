@@ -1,10 +1,10 @@
 import type { Building } from "../../models/city/Building.ts";
 import { DEVELOPMENT_VECTORS } from "../../models/DevlopmentVector.ts";
 import { UPKEEP_TYPES } from "../../models/Upkeep.ts";
+import { HOMOGENEOUS_VALUE_IDS } from "../homogeneousValues/index.ts";
 import { buildings, technologies } from "../identificators/index.ts";
 import { requires } from "../requirements.ts";
 import { createBuildingFactory } from "./buildingFactory.ts";
-import {citySignatureToHomogeneousValueEffect, upkeepAmountToHomogeneousValueEffects} from "../../models/homogeneousValueAdapters.ts";
 const { building: bioBuilding, superstructure: bioSuperstructure, } = createBuildingFactory({
     vector: DEVELOPMENT_VECTORS.nature,
     defaultKeywords: ["nature"],
@@ -18,7 +18,11 @@ const natureBuildingsRaw: {
                 requires.technologyUnlocked(technologies.nature.seedGathering),
             ],
             values: [
-                ...citySignatureToHomogeneousValueEffect(2)
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 2,
+                }
             ]
         }),
     },
@@ -32,8 +36,16 @@ const natureBuildingsRaw: {
             requires.buildingExists(buildings.medieval.stalkerHut),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 3 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(5)
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["production"],
+                additive: 3,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 5,
+            }
         ]
     }),
     [buildings.nature.field]: {
@@ -42,8 +54,16 @@ const natureBuildingsRaw: {
                 requires.technologyUnlocked(technologies.nature.plantCultivation),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 1 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(4)
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["upkeep"],
+                    additive: 1,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 4,
+                }
             ]
         }),
         effects: [
@@ -62,8 +82,16 @@ const natureBuildingsRaw: {
                 requires.technologyUnlocked(technologies.nature.mushrooms),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.fungi]: 1 }, "production"),
-                ...citySignatureToHomogeneousValueEffect(4)
+                {
+                    valueId: UPKEEP_TYPES.fungi,
+                    additionalKeywords: ["production"],
+                    additive: 1,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 4,
+                }
             ]
         }),
         effects: [
@@ -82,7 +110,11 @@ const natureBuildingsRaw: {
                 requires.technologyUnlocked(technologies.nature.threes),
             ],
             values: [
-                ...citySignatureToHomogeneousValueEffect(4)
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 4,
+                }
             ]
         }),
         effects: [
@@ -101,7 +133,11 @@ const natureBuildingsRaw: {
                 requires.technologyUnlocked(technologies.nature.animals),
             ],
             values: [
-                ...citySignatureToHomogeneousValueEffect(4)
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 4,
+                }
             ]
         }),
         effects: [

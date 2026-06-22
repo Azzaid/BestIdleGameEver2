@@ -1,0 +1,41 @@
+[
+  {
+    "id": "scrapBarricade",
+    "name": "Scrap barricade",
+    "description": "Just a pile of scrap an rubbish to fen off attackers",
+    "values": [
+      {
+        "valueId": "wall.resilience",
+        "additionalKeywords": ["production"],
+        "additive": 6
+      }
+    ]
+  },
+  {
+    "id": "medieval_wall_palisade",
+    "name": "Palisade",
+    "description": "Row of sharpened wood trunks. Strong but require a lot of maintenance",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "technology.medieval.timberProcessing"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "timberwork"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "wall.resilience",
+        "additionalKeywords": ["production"],
+        "additive": 10
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": ["upkeep"],
+        "additive": 4
+      }
+    ]
+  }
+]

@@ -1,10 +1,10 @@
 import type { Building } from "../../models/city/Building.ts";
 import { DEVELOPMENT_VECTORS } from "../../models/DevlopmentVector.ts";
 import { UPKEEP_TYPES } from "../../models/Upkeep.ts";
+import { HOMOGENEOUS_VALUE_IDS } from "../homogeneousValues/index.ts";
 import { buildings, technologies } from "../identificators/index.ts";
 import { requires } from "../requirements.ts";
 import { createBuildingFactory } from "./buildingFactory.ts";
-import {citySignatureToHomogeneousValueEffect, upkeepAmountToHomogeneousValueEffects} from "../../models/homogeneousValueAdapters.ts";
 const { building, superstructure } = createBuildingFactory({
     vector: DEVELOPMENT_VECTORS.medieval,
     defaultKeywords: ["medieval"],
@@ -15,8 +15,16 @@ const medievalBuildingsRaw: {
     [buildings.medieval.shelter]: {
         ...building(buildings.medieval.shelter, "Shelter", "A rough first home that makes organized foraging possible.", ["production", "people", "housing"], {
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 3 }, "production"),
-                ...citySignatureToHomogeneousValueEffect(4)
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["production"],
+                    additive: 3,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 4,
+                }
             ]
         }),
     },
@@ -26,9 +34,21 @@ const medievalBuildingsRaw: {
                 requires.technologyUnlocked(technologies.medieval.foraging),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.gold]: 1 }, "production"),
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 2 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(2)
+                {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["production"],
+                    additive: 1,
+                },
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["upkeep"],
+                    additive: 2,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 2,
+                }
             ]
         }),
     },
@@ -43,8 +63,21 @@ const medievalBuildingsRaw: {
             requires.buildingExists(buildings.medieval.scrapCollectionPoint),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 5, [UPKEEP_TYPES.gold]: 3 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(5)
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["production"],
+                additive: 5,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["production"],
+                additive: 3,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 5,
+            }
         ]
     }),
     [buildings.medieval.toolShed]: {
@@ -53,8 +86,21 @@ const medievalBuildingsRaw: {
                 requires.technologyUnlocked(technologies.medieval.scrapTools),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 1 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(3)
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["upkeep"],
+                    additive: 2,
+                },
+            {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["upkeep"],
+                    additive: 1,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 3,
+                }
             ]
         }),
     },
@@ -69,8 +115,21 @@ const medievalBuildingsRaw: {
             requires.buildingExists(buildings.medieval.stalkerHut),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 5 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(10)
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["production"],
+                additive: 2,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["production"],
+                additive: 5,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 10,
+            }
         ]
     }),
     [buildings.medieval.farm]: superstructure(buildings.medieval.farm, "Farm", "A house with a fields around. Peacefull and happy.", ["production", "people", "plants", "gold", "farm"], {
@@ -84,8 +143,21 @@ const medievalBuildingsRaw: {
             requires.buildingExists(buildings.medieval.woodenHouse),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 10, [UPKEEP_TYPES.gold]: 3 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(7)
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["production"],
+                additive: 10,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["production"],
+                additive: 3,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 7,
+            }
         ]
     }),
     [buildings.medieval.woodenHouse]: {
@@ -94,8 +166,16 @@ const medievalBuildingsRaw: {
                 requires.technologyUnlocked(technologies.medieval.timberProcessing),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 7 }, "production"),
-                ...citySignatureToHomogeneousValueEffect(10)
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["production"],
+                    additive: 7,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 10,
+                }
             ]
         }),
     },
@@ -110,8 +190,21 @@ const medievalBuildingsRaw: {
             requires.buildingExists(buildings.medieval.toolShed),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 5, [UPKEEP_TYPES.gold]: 2 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(10)
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["production"],
+                additive: 5,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["production"],
+                additive: 2,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 10,
+            }
         ]
     }),
     [buildings.medieval.market]: building(buildings.medieval.market, "Market", "A trading and social center where merchants, labor, favors, salvage, and coin become one economy.", ["production", "gold", "market"], {
@@ -119,9 +212,21 @@ const medievalBuildingsRaw: {
             requires.buildingExists(buildings.medieval.farm),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.gold]: 25 }, "production"),
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 10 }, "upkeep"),
-            ...citySignatureToHomogeneousValueEffect(16)
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["production"],
+                additive: 25,
+            },
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 10,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 16,
+            }
         ]
     }),
     [buildings.medieval.stoneHouse]: {
@@ -130,9 +235,21 @@ const medievalBuildingsRaw: {
                 requires.technologyUnlocked(technologies.medieval.stoneworking),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 10, }, "production"),
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.gold]: 1 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(7)
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["production"],
+                    additive: 10,
+                },
+                {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["upkeep"],
+                    additive: 1,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 7,
+                }
             ]
         }),
     },
@@ -148,8 +265,21 @@ const medievalBuildingsRaw: {
             requires.buildingExists(buildings.medieval.stoneHouse),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 15, [UPKEEP_TYPES.gold]: 50 }, "upkeep"),
-            ...citySignatureToHomogeneousValueEffect(26)
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 15,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 50,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 26,
+            }
         ]
     }),
     //After this line buildings are not yet refined and mostly are placeholders
@@ -159,9 +289,26 @@ const medievalBuildingsRaw: {
                 requires.technologyUnlocked(technologies.medieval.engineering),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.gold]: 7 }, "production"),
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 3, [UPKEEP_TYPES.gold]: 3 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(22)
+                {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["production"],
+                    additive: 7,
+                },
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["upkeep"],
+                    additive: 3,
+                },
+            {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["upkeep"],
+                    additive: 3,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 22,
+                }
             ]
         }),
         adjacencyDescription: "+25% production in adjacent buildings; -25% Aether production in adjacent buildings.",
@@ -176,8 +323,21 @@ const medievalBuildingsRaw: {
             requires.buildingExists(buildings.medieval.stoneHouse),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 3, [UPKEEP_TYPES.gold]: 10 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(24)
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["production"],
+                additive: 3,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["production"],
+                additive: 10,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 24,
+            }
         ]
     }),
     [buildings.medieval.barracks]: building(buildings.medieval.barracks, "Barracks", "Consumes gold to send patrols outside the city and reduce city signature.", ["defense", "visibility"], {
@@ -185,8 +345,16 @@ const medievalBuildingsRaw: {
             requires.technologyUnlocked(technologies.medieval.fortification),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.gold]: 4 }, "upkeep"),
-            ...citySignatureToHomogeneousValueEffect(20)
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 4,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 20,
+            }
         ]
     }),
     [buildings.medieval.barn]: {
@@ -195,8 +363,21 @@ const medievalBuildingsRaw: {
                 requires.technologyUnlocked(technologies.medieval.animalHusbandry),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 1 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(12)
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["upkeep"],
+                    additive: 2,
+                },
+            {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["upkeep"],
+                    additive: 1,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 12,
+                }
             ]
         }),
         adjacencyDescription: "Adjacent buildings require fewer People.",
@@ -207,8 +388,21 @@ const medievalBuildingsRaw: {
                 requires.technologyUnlocked(technologies.medieval.horses),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 3, [UPKEEP_TYPES.gold]: 3 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(18)
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["upkeep"],
+                    additive: 3,
+                },
+            {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["upkeep"],
+                    additive: 3,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 18,
+                }
             ]
         }),
         adjacencyDescription: "Adjacency bonuses affect buildings at +1 range.",
@@ -223,7 +417,11 @@ const medievalBuildingsRaw: {
             requires.buildingExists(buildings.medieval.farm),
         ],
         values: [
-            ...citySignatureToHomogeneousValueEffect(18)
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 18,
+            }
         ]
     }),
     [buildings.medieval.shop]: {
@@ -232,9 +430,21 @@ const medievalBuildingsRaw: {
                 requires.technologyUnlocked(technologies.medieval.trade),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.gold]: 6 }, "production"),
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 3 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(16)
+                {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["production"],
+                    additive: 6,
+                },
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["upkeep"],
+                    additive: 3,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 16,
+                }
             ]
         }),
     },
@@ -248,8 +458,16 @@ const medievalBuildingsRaw: {
             requires.buildingExists(buildings.medieval.tradeStation),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.gold]: 8 }, "production"),
-            ...citySignatureToHomogeneousValueEffect(24)
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["production"],
+                additive: 8,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 24,
+            }
         ]
     }),
     [buildings.medieval.chemicalStorage]: {
@@ -258,8 +476,21 @@ const medievalBuildingsRaw: {
                 requires.technologyUnlocked(technologies.medieval.naturalPhilosophy),
             ],
             values: [
-                ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 2, [UPKEEP_TYPES.gold]: 4 }, "upkeep"),
-                ...citySignatureToHomogeneousValueEffect(24)
+                {
+                    valueId: UPKEEP_TYPES.people,
+                    additionalKeywords: ["upkeep"],
+                    additive: 2,
+                },
+            {
+                    valueId: UPKEEP_TYPES.gold,
+                    additionalKeywords: ["upkeep"],
+                    additive: 4,
+                },
+                {
+                    valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                    additionalKeywords: ["production"],
+                    additive: 24,
+                }
             ]
         }),
     },
@@ -273,8 +504,21 @@ const medievalBuildingsRaw: {
             requires.buildingExists(buildings.medieval.stoneHouse),
         ],
         values: [
-            ...upkeepAmountToHomogeneousValueEffects({ [UPKEEP_TYPES.people]: 4, [UPKEEP_TYPES.gold]: 5 }, "upkeep"),
-            ...citySignatureToHomogeneousValueEffect(28)
+            {
+                valueId: UPKEEP_TYPES.people,
+                additionalKeywords: ["upkeep"],
+                additive: 4,
+            },
+            {
+                valueId: UPKEEP_TYPES.gold,
+                additionalKeywords: ["upkeep"],
+                additive: 5,
+            },
+            {
+                valueId: HOMOGENEOUS_VALUE_IDS.citySignature,
+                additionalKeywords: ["production"],
+                additive: 28,
+            }
         ]
     }),
 };
