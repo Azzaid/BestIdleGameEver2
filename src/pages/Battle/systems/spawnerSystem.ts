@@ -45,6 +45,9 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
 
     // Time to spawn a new wave?
     if (sched.state.timeUntilNextWaveSeconds <= 0) {
+        const remainingMonsterSlots = world.config.simultaneousMonstersLimit - world.enemiesData.size;
+        if (remainingMonsterSlots <= 0) return;
+
         const requiredStrength = Math.max(
             1,
             world.currentThreat * world.config.waveThreatToCityThreatRatio
@@ -56,8 +59,15 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
         const plan = planWaveComposition(enemyIds, blueprints, requiredStrength, {
             underfillTolerance: 0.1,
             overfillTolerance: 0.05,
-            maxUnits: 500, // sanity cap
+            maxUnits: Math.min(500, remainingMonsterSlots),
         });
+        const cappedPicks = plan.picks.slice(0, remainingMonsterSlots);
+        const cappedPlan = {
+            picks: cappedPicks,
+            totalStrength: cappedPicks
+                .reduce((totalStrength, pick) => totalStrength + (blueprints[pick.enemyId]?.strengthCost ?? 0), 0),
+        };
+        if (cappedPlan.picks.length === 0) return;
 
         // SPAWNER
         const spawner = new WaveSpawner(blueprints, {
@@ -69,7 +79,7 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
             swarmSpatialSpreadPx: 16,
             swarmTemporalSpreadSec: 0.1,
         });
-        spawner.enqueuePlan(plan);
+        spawner.enqueuePlan(cappedPlan);
         world.spawners.push(spawner);
 
         // Bookkeeping for next wave

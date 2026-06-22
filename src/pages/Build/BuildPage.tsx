@@ -14,7 +14,7 @@ import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
 import { selectActiveTower, selectActiveTowerDraftAssembly, selectAvailableTowerList, selectHasAnyTowerBuild } from '../../store/towers/selectors.ts';
 import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTower, selectTowerDraftPart } from '../../store/towers/slice.ts';
 import { selectCityResolution, selectCitySignatureStatus, selectResolvedEffectiveActiveTowerDraft } from '../../store/upkeep/selectors.ts';
-import {selectUnlockedTowerPartIds, selectVisibleTowerPartIds} from "../../store/unlocks/selectors.ts";
+import {selectRequirementResolutionData, selectUnlockedTowerPartIds, selectVisibleTowerPartIds} from "../../store/unlocks/selectors.ts";
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
 import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
 import { TowerAssemblyPreview } from './TowerAssemblyPreview.tsx';
@@ -31,6 +31,7 @@ import {
 } from '../../models/homogeneousValueResolution.ts';
 import {homogeneousValueTotalsToUpkeepAmount} from '../../models/homogeneousValueAdapters.ts';
 import {HOMOGENEOUS_VALUE_IDS, getHomogeneousValueDefinition} from '../../data/homogeneousValues/index.ts';
+import {areRequirementsMet, getUnmetRequirements, type Requirement} from '../../models/progression/requirements.ts';
 
 function getPartKeywords(part: GunPart) {
   return Array.from(part.keywords);
@@ -100,6 +101,45 @@ function hasEnoughUpkeep(required: UpkeepAmount, available: UpkeepAmount) {
   return getSupportStatus(required, available).every((item) => item.missingAmount === 0);
 }
 
+function formatUnmetBuildRequirements(
+  requirements: readonly Requirement[],
+  requirementResolutionData: ReturnType<typeof selectRequirementResolutionData>,
+): string {
+  return requirements.map(requirement => formatUnmetBuildRequirement(requirement, requirementResolutionData)).join('; ');
+}
+
+function formatUnmetBuildRequirement(
+  requirement: Requirement,
+  requirementResolutionData: ReturnType<typeof selectRequirementResolutionData>,
+): string {
+  if (requirement.type === 'technologyUnlocked') {
+    return `Requires technology ${requirement.technologyId}`;
+  }
+
+  if (requirement.type === 'buildingExists') {
+    return `Requires building ${requirement.buildingId}`;
+  }
+
+  if (requirement.type === 'buildingKeywordExists') {
+    return `Requires ${requirement.keyword} building`;
+  }
+
+  const definition = getHomogeneousValueDefinition(requirement.valueId);
+  const currentValue = requirementResolutionData.resolvedCityData.homogeneousValues[requirement.valueId] ?? 0;
+  const amount = formatResourceAmount(requirement.amount);
+  const current = formatResourceAmount(currentValue);
+
+  if (requirement.type === 'homogeneousValueAtLeast') {
+    return `Requires ${definition.label} at least ${amount} (current ${current})`;
+  }
+
+  return `Requires ${definition.label} below ${amount} (current ${current})`;
+}
+
+function formatResourceAmount(amount: number): string {
+  return Number.isInteger(amount) ? String(amount) : amount.toFixed(2);
+}
+
 function getAvailableUpkeepForSlot(
   remainingUpkeep: UpkeepAmount,
   currentSlotPartCost: UpkeepAmount
@@ -117,6 +157,7 @@ const BuildPage = () => {
   const visibleTowerPartIds = useTypedSelector(selectVisibleTowerPartIds);
   const unlockedTowerPartIds = useTypedSelector(selectUnlockedTowerPartIds);
   const cityResolution = useTypedSelector(selectCityResolution);
+  const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
   const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>(TOWER_PART_SLOT_ORDER[0].key);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -260,16 +301,20 @@ const BuildPage = () => {
         const part = info.row.original;
         const selected = selectedPartId === part.id;
         const unlocked = unlockedTowerPartIdSet.has(part.id);
+        const buildRequirementsMet = areRequirementsMet(part.buildRequirements, requirementResolutionData);
         const blockedTitle = !canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined;
         const lockedTitle = !unlocked ? 'This part is visible, but not permanently unlocked yet.' : undefined;
+        const buildRequirementsTitle = !buildRequirementsMet
+          ? formatUnmetBuildRequirements(getUnmetRequirements(part.buildRequirements, requirementResolutionData), requirementResolutionData)
+          : undefined;
 
         return (
           <button
             className={selected ? s.removeButton : s.installButton}
-            disabled={!canModifyTower || (!selected && !unlocked)}
-            title={blockedTitle ?? lockedTitle ?? (selected ? 'Remove this part from the draft tower.' : undefined)}
+            disabled={!canModifyTower || (!selected && (!unlocked || !buildRequirementsMet))}
+            title={blockedTitle ?? lockedTitle ?? buildRequirementsTitle ?? (selected ? 'Remove this part from the draft tower.' : undefined)}
             onClick={() => {
-              if (!canModifyTower || (!selected && !unlocked)) return;
+              if (!canModifyTower || (!selected && (!unlocked || !buildRequirementsMet))) return;
               if (selected) {
                 dispatch(clearTowerDraftPart({ slot: activeTab }));
                 return;
@@ -283,7 +328,7 @@ const BuildPage = () => {
         );
       },
     },
-  ], [activeTab, canModifyTower, cityResolution.effectiveUpkeep, dispatch, resolvedTower.selectedParts, resolvedTower.supportCost, selectedPartId, unlockedTowerPartIdSet]);
+  ], [activeTab, canModifyTower, cityResolution.effectiveUpkeep, dispatch, requirementResolutionData, resolvedTower.selectedParts, resolvedTower.supportCost, selectedPartId, unlockedTowerPartIdSet]);
 
   const table = useReactTable({
     data: activeSlotParts,
@@ -299,7 +344,11 @@ const BuildPage = () => {
 
   const supportCost = getSupportStatus(resolvedTower.supportCost, cityResolution.effectiveUpkeep);
   const hasCompleteDraft = resolvedTower.warnings.length === 0;
+  const selectedPartBuildRequirementFailures = Object.values(resolvedTower.selectedParts)
+    .flatMap((part) => part ? getUnmetRequirements(part.buildRequirements, requirementResolutionData) : []);
+  const selectedPartBuildRequirementsMet = selectedPartBuildRequirementFailures.length === 0;
   const canRebuild = hasEnoughUpkeep(resolvedTower.supportCost, cityResolution.effectiveUpkeep)
+    && selectedPartBuildRequirementsMet
     && hasCompleteDraft
     && canModifyTower;
   const draftChanged = JSON.stringify(activeTower?.selectedPartIds ?? {}) !== JSON.stringify(towerDraftAssembly.selectedPartIds);
@@ -430,6 +479,7 @@ const BuildPage = () => {
                 title={!canModifyTower
                   ? 'The city is besieged. Tower rebuilding is blocked.'
                   : !hasCompleteDraft ? 'Select all required tower components before rebuilding.'
+                  : !selectedPartBuildRequirementsMet ? formatUnmetBuildRequirements(selectedPartBuildRequirementFailures, requirementResolutionData)
                   : !canRebuild ? 'City support is too low for this draft tower' : undefined}
                 onClick={() => {
                   if (!canRebuild) return;

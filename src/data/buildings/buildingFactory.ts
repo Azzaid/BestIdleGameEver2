@@ -12,6 +12,7 @@ import {
 
 type BuildingOptions = {
     requirements?: Requirement[];
+    buildRequirements?: Requirement[];
     values?: HomogeneousValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
 };
@@ -58,6 +59,7 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
       description,
       keywords: [...defaultKeywords, ...keywords],
       requirements: options.requirements,
+      buildRequirements: options.buildRequirements,
     };
   }
 

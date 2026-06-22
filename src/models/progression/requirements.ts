@@ -9,6 +9,7 @@ export type Requirement =
 
 export type RequirementGate = {
   requirements?: Requirement[];
+  buildRequirements?: Requirement[];
 };
 
 export type RequirementResolutionData = {
@@ -21,6 +22,13 @@ export function areRequirementsMet(
   data: RequirementResolutionData,
 ): boolean {
   return (requirements ?? []).every((requirement) => isRequirementMet(requirement, data));
+}
+
+export function getUnmetRequirements(
+  requirements: readonly Requirement[] | undefined,
+  data: RequirementResolutionData,
+): Requirement[] {
+  return (requirements ?? []).filter((requirement) => !isRequirementMet(requirement, data));
 }
 
 export function isRequirementMet(

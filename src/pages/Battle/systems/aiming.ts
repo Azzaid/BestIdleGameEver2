@@ -19,6 +19,7 @@ export function AimingSystem(world: World, dt: number) {
       targetTransform,
       targetMovement: world.movements.get(tower.currentTarget),
       projectileSpeed: tower.projectileSpeed,
+      monsterMovementModifiers: world.config.monsterMovementModifiers,
     });
     const constrainedDesired = constrainTowerAimAngle(
       desired,

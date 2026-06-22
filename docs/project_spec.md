@@ -1,6 +1,6 @@
 # Project Specification: Best Idle Game Ever 2
 
-Last updated: 2026-06-21 (local)
+Last updated: 2026-06-22 (local)
 
 This document is the repository's single project specification. It summarizes the implemented prototype and the current design direction from the rest of the `docs` folder. The focused design documents remain the deeper references for individual systems.
 
@@ -310,6 +310,7 @@ Building categories:
 Building data convention:
 
 - Building and superstructure unlock requirements live inline on the building definition as `requirements`, matching tower part data.
+- Buildings, wall segments, wall towers, and tower parts may also define `buildRequirements`. These use the same requirement rule shapes, but only disable the build/install action while keeping already-visible content visible.
 - Superstructure transform recipes live inline on the superstructure definition as `requiredBuildingIds` and can include a player-facing `hint`.
 
 City view implementation:

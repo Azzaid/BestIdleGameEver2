@@ -1,5 +1,6 @@
 import type { Transform } from '../../../models/battle/transform.ts';
 import type { MovementController } from '../../../models/battle/movement.ts';
+import type { MonsterMovementModifiers } from '../../../models/battle/world.ts';
 
 export function shortestAngleDelta(current: number, desired: number): number {
   let d = desired - current;
@@ -23,7 +24,8 @@ function predictAimAngleFromPoint(
   projectileOrigin: { x: number; y: number },
   targetTransform: Transform,
   targetMovement: MovementController | undefined,
-  projectileSpeed: number
+  projectileSpeed: number,
+  monsterMovementModifiers: MonsterMovementModifiers
 ) {
   const rx = targetTransform.position.x - projectileOrigin.x;
   const ry = targetTransform.position.y - projectileOrigin.y;
@@ -32,8 +34,12 @@ function predictAimAngleFromPoint(
     return Math.atan2(ry, rx);
   }
 
-  const vx = targetMovement.velocityPixelsPerSecond.x;
-  const vy = targetMovement.velocityPixelsPerSecond.y;
+  const baseVelocity = targetMovement.velocityPixelsPerSecond;
+  const baseSpeed = Math.hypot(baseVelocity.x, baseVelocity.y);
+  const speed = Math.max(0, (baseSpeed + monsterMovementModifiers.speedFlat) * monsterMovementModifiers.speedMultiplier);
+  const directionRadians = Math.atan2(baseVelocity.y, baseVelocity.x);
+  const vx = Math.cos(directionRadians) * speed;
+  const vy = Math.sin(directionRadians) * speed;
   const v2 = vx * vx + vy * vy;
   const s2 = projectileSpeed * projectileSpeed;
   const a = v2 - s2;
@@ -68,6 +74,7 @@ export function predictProjectileAimAngle(args: {
   targetTransform: Transform;
   targetMovement: MovementController | undefined;
   projectileSpeed: number;
+  monsterMovementModifiers: MonsterMovementModifiers;
 }) {
   let angle = args.currentAngleRadians;
 
@@ -81,7 +88,8 @@ export function predictProjectileAimAngle(args: {
       projectileOrigin,
       args.targetTransform,
       args.targetMovement,
-      args.projectileSpeed
+      args.projectileSpeed,
+      args.monsterMovementModifiers
     );
   }
 

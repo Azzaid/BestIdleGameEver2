@@ -33,6 +33,7 @@ import type {HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import {getUpkeepValues, normalizeMultiplier, resolveHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {
+    selectRequirementResolutionData,
     selectUnlockedBuildingIds,
     selectUnlockedWallSegmentIds,
     selectUnlockedWallSuperstructureIds,
@@ -40,6 +41,7 @@ import {
     selectVisibleWallSegmentIds,
     selectVisibleWallSuperstructureIds,
 } from "../../store/unlocks/selectors.ts";
+import {areRequirementsMet, getUnmetRequirements, type Requirement} from "../../models/progression/requirements.ts";
 
 const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise controlled territory in battle before building.";
 
@@ -58,6 +60,7 @@ const CityPage = () => {
     const visibleWallSegmentIds = useTypedSelector(selectVisibleWallSegmentIds);
     const unlockedWallSuperstructureIds = useTypedSelector(selectUnlockedWallSuperstructureIds);
     const visibleWallSuperstructureIds = useTypedSelector(selectVisibleWallSuperstructureIds);
+    const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
     const [selectedHex, setSelectedHex] = useState<HexCell | null>(null);
     const selectHex = (hex: HexCell) => {
         const selectedCoreHex = hex.partOfStructureId
@@ -105,6 +108,12 @@ const CityPage = () => {
                     continue;
                 }
 
+                const unmetBuildRequirements = getUnmetRequirements(building.buildRequirements, requirementResolutionData);
+                if (unmetBuildRequirements.length) {
+                    reasons[building.id] = formatUnmetBuildRequirements(unmetBuildRequirements, requirementResolutionData);
+                    continue;
+                }
+
                 const requiredUpkeep = getResolvedRequiredUpkeepForBuild(hexes, selectedHex, building.id, vector);
                 const shortfalls = getUpkeepShortfalls(requiredUpkeep, effectiveUpkeep);
                 const missingResources = formatMissingUpkeep(shortfalls);
@@ -116,12 +125,21 @@ const CityPage = () => {
         }
 
         return reasons;
-    }, [effectiveUpkeep, hexes, selectedHex, unlockedBuildingIdSet, visibleBuildingIdSet]);
+    }, [effectiveUpkeep, hexes, requirementResolutionData, selectedHex, unlockedBuildingIdSet, visibleBuildingIdSet]);
+    const unavailableWallSegmentReasons = useMemo(
+        () => getUnavailableWallBuildingReasons(WALL_SEGMENT_BUILDINGS, unlockedWallSegmentIdSet, requirementResolutionData),
+        [requirementResolutionData, unlockedWallSegmentIdSet],
+    );
+    const unavailableWallSuperstructureReasons = useMemo(
+        () => getUnavailableWallBuildingReasons(WALL_TOWER_BUILDINGS, unlockedWallSuperstructureIdSet, requirementResolutionData),
+        [requirementResolutionData, unlockedWallSuperstructureIdSet],
+    );
 
     const handleBuildingSelect = (buildingKey: string, developmentVector: DevelopmentVectorValue) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
         if (selectedHex.kind !== "city" || selectedHex.buildingKey || selectedHex.partOfStructureId) return;
         if (!unlockedBuildingIdSet.has(buildingKey)) return;
+        if (!areRequirementsMet(BUILDINGS_ATLAS[developmentVector][buildingKey]?.buildRequirements, requirementResolutionData)) return;
 
         const requiredUpkeep = getResolvedRequiredUpkeepForBuild(hexes, selectedHex, buildingKey, developmentVector);
         if (!hasEnoughUpkeep(requiredUpkeep, effectiveUpkeep)) return;
@@ -134,12 +152,14 @@ const CityPage = () => {
     const handleWallBuildingSelect = (buildingKey: string) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
         if (!unlockedWallSegmentIdSet.has(buildingKey)) return;
+        if (!areRequirementsMet(WALL_SEGMENT_BUILDINGS[buildingKey]?.buildRequirements, requirementResolutionData)) return;
         dispatch(buildWall({cellKey: selectedHex.cellKey, wallKey: buildingKey}))
     };
 
     const handleWallTopBuildingSelect = (buildingKey: string) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
         if (!unlockedWallSuperstructureIdSet.has(buildingKey)) return;
+        if (!areRequirementsMet(WALL_TOWER_BUILDINGS[buildingKey]?.buildRequirements, requirementResolutionData)) return;
         dispatch(buildWallTop({cellKey: selectedHex.cellKey, wallTopKey: buildingKey}))
     };
 
@@ -195,8 +215,8 @@ const CityPage = () => {
                             onBuildWallTop={handleWallTopBuildingSelect}
                             visibleWallSegmentIds={visibleWallSegmentIdSet}
                             visibleWallSuperstructureIds={visibleWallSuperstructureIdSet}
-                            unlockedWallSegmentIds={unlockedWallSegmentIdSet}
-                            unlockedWallSuperstructureIds={unlockedWallSuperstructureIdSet}
+                            unavailableWallSegmentReasons={unavailableWallSegmentReasons}
+                            unavailableWallSuperstructureReasons={unavailableWallSuperstructureReasons}
                             blocked={signatureStatus.isBesieged}
                             blockedReason={BESIEGED_BUILD_BLOCK_REASON}
                         />
@@ -600,6 +620,63 @@ function formatResourceAmount(amount: number): string {
     return Number.isInteger(amount) ? String(amount) : amount.toFixed(2);
 }
 
+function getUnavailableWallBuildingReasons(
+    buildings: Record<string, WallBuilding>,
+    unlockedBuildingIds: ReadonlySet<string>,
+    requirementResolutionData: ReturnType<typeof selectRequirementResolutionData>,
+): Record<string, string> {
+    const reasons: Record<string, string> = {};
+
+    for (const building of Object.values(buildings)) {
+        if (!unlockedBuildingIds.has(building.id)) {
+            reasons[building.id] = "Not permanently unlocked yet";
+            continue;
+        }
+
+        const unmetBuildRequirements = getUnmetRequirements(building.buildRequirements, requirementResolutionData);
+        if (unmetBuildRequirements.length) {
+            reasons[building.id] = formatUnmetBuildRequirements(unmetBuildRequirements, requirementResolutionData);
+        }
+    }
+
+    return reasons;
+}
+
+function formatUnmetBuildRequirements(
+    requirements: readonly Requirement[],
+    requirementResolutionData: ReturnType<typeof selectRequirementResolutionData>,
+): string {
+    return requirements.map(requirement => formatUnmetBuildRequirement(requirement, requirementResolutionData)).join("; ");
+}
+
+function formatUnmetBuildRequirement(
+    requirement: Requirement,
+    requirementResolutionData: ReturnType<typeof selectRequirementResolutionData>,
+): string {
+    if (requirement.type === "technologyUnlocked") {
+        return `Requires technology ${requirement.technologyId}`;
+    }
+
+    if (requirement.type === "buildingExists") {
+        return `Requires ${getBuildingName(requirement.buildingId)}`;
+    }
+
+    if (requirement.type === "buildingKeywordExists") {
+        return `Requires ${requirement.keyword} building`;
+    }
+
+    const definition = getHomogeneousValueDefinition(requirement.valueId);
+    const currentValue = requirementResolutionData.resolvedCityData.homogeneousValues[requirement.valueId] ?? 0;
+    const amount = formatResourceAmount(requirement.amount);
+    const current = formatResourceAmount(currentValue);
+
+    if (requirement.type === "homogeneousValueAtLeast") {
+        return `Requires ${definition.label} at least ${amount} (current ${current})`;
+    }
+
+    return `Requires ${definition.label} below ${amount} (current ${current})`;
+}
+
 function getBuildingName(buildingId: string): string {
     for (const vector of Object.values(DEVELOPMENT_VECTORS)) {
         const building = BUILDINGS_ATLAS[vector][buildingId];
@@ -639,8 +716,8 @@ function WallBuildingSelector({
     onBuildWallTop,
     visibleWallSegmentIds,
     visibleWallSuperstructureIds,
-    unlockedWallSegmentIds,
-    unlockedWallSuperstructureIds,
+    unavailableWallSegmentReasons,
+    unavailableWallSuperstructureReasons,
     blocked,
     blockedReason,
 }: {
@@ -648,8 +725,8 @@ function WallBuildingSelector({
     onBuildWallTop: (buildingId: string) => void;
     visibleWallSegmentIds: ReadonlySet<string>;
     visibleWallSuperstructureIds: ReadonlySet<string>;
-    unlockedWallSegmentIds: ReadonlySet<string>;
-    unlockedWallSuperstructureIds: ReadonlySet<string>;
+    unavailableWallSegmentReasons: Readonly<Record<string, string>>;
+    unavailableWallSuperstructureReasons: Readonly<Record<string, string>>;
     blocked: boolean;
     blockedReason: string;
 }) {
@@ -660,8 +737,8 @@ function WallBuildingSelector({
 
     return (
         <div className={s.wallSelector}>
-            <WallBuildingList title="Wall" buildings={visibleWallSegments} unlockedBuildingIds={unlockedWallSegmentIds} onBuild={onBuildWall} blocked={blocked} blockedReason={blockedReason} />
-            <WallBuildingList title="Tower" buildings={visibleWallSuperstructures} unlockedBuildingIds={unlockedWallSuperstructureIds} onBuild={onBuildWallTop} blocked={blocked} blockedReason={blockedReason} />
+            <WallBuildingList title="Wall" buildings={visibleWallSegments} unavailableBuildingReasons={unavailableWallSegmentReasons} onBuild={onBuildWall} blocked={blocked} blockedReason={blockedReason} />
+            <WallBuildingList title="Tower" buildings={visibleWallSuperstructures} unavailableBuildingReasons={unavailableWallSuperstructureReasons} onBuild={onBuildWallTop} blocked={blocked} blockedReason={blockedReason} />
         </div>
     );
 }
@@ -669,14 +746,14 @@ function WallBuildingSelector({
 function WallBuildingList({
     title,
     buildings,
-    unlockedBuildingIds,
+    unavailableBuildingReasons,
     onBuild,
     blocked,
     blockedReason,
 }: {
     title: string;
     buildings: WallBuilding[];
-    unlockedBuildingIds: ReadonlySet<string>;
+    unavailableBuildingReasons: Readonly<Record<string, string>>;
     onBuild: (buildingId: string) => void;
     blocked: boolean;
     blockedReason: string;
@@ -686,7 +763,9 @@ function WallBuildingList({
             <h3 className={s.wallCategoryTitle}>{title}</h3>
             <div className={s.wallCardList}>
                 {buildings.map((building) => {
-                    const unlocked = unlockedBuildingIds.has(building.id);
+                    const unavailableReason = unavailableBuildingReasons[building.id];
+                    const buildBlockedReason = blocked ? blockedReason : unavailableReason;
+                    const buildBlocked = blocked || Boolean(unavailableReason);
 
                     return (
                         <article key={building.id} className={s.wallCard}>
@@ -697,8 +776,8 @@ function WallBuildingList({
                             <button
                                 className={s.wallBuildButton}
                                 type="button"
-                                disabled={blocked || !unlocked}
-                                title={blocked ? blockedReason : !unlocked ? "Not permanently unlocked yet" : undefined}
+                                disabled={buildBlocked}
+                                title={buildBlockedReason}
                                 onClick={() => onBuild(building.id)}
                             >
                                 Build

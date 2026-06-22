@@ -94,6 +94,8 @@ export class WaveSpawner {
     }
 
     private instantEnemySpawn(world: World, bp: EnemyBlueprint, spawnX: number, spawnY: number) {
+        if (world.enemiesData.size >= world.config.simultaneousMonstersLimit) return;
+
         const id = createEntityId(world);
 
         world.transforms.set(id, { position: { x: spawnX, y: spawnY }, rotationRadians: Math.PI / 2 });

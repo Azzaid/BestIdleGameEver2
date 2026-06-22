@@ -18,6 +18,7 @@ type TowerPartOptions = {
   keywords?: string[];
   supportCost?: UpkeepAmount;
   requirements?: Requirement[];
+  buildRequirements?: Requirement[];
   spriteTextureKey?: string;
   aimKeywords?: string[];
   conflictsWithKeywords?: string[];
@@ -69,6 +70,7 @@ export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPart
       sprite: {textureKey: options.spriteTextureKey ?? id},
       keywords: new Set([...defaultKeywords, slot, ...(options.keywords ?? [])]),
       requirements: options.requirements,
+      buildRequirements: options.buildRequirements,
       aimKeywords: options.aimKeywords,
       conflictsWithKeywords: options.conflictsWithKeywords,
       children: options.children,

@@ -21,6 +21,7 @@ import {
     BATTLEFIELD_RANGE_MULTIPLIER,
     BATTLE_WALL_APRON_HEIGHT,
     BATTLE_WAVE_THREAT_TO_CITY_THREAT_RATIO,
+    BASE_SIMULTANEOUS_MONSTERS_LIMIT,
     PRESSURE_WAVE_INTERVAL_SECONDS,
     SIEGE_DURATION_SECONDS,
     SIEGE_THREAT_START_RATIO,
@@ -29,6 +30,7 @@ import {
 import {
     selectControlledTerritoryGrowthStep,
     selectMonsterModifierValues,
+    selectSiegeModifierValues,
 } from "../../store/homogeneousValues/selectors.ts";
 
 type BattleMode = "siege" | "pressure";
@@ -57,6 +59,7 @@ const BattlePage = () => {
     const wallResolution = useTypedSelector(selectEffectiveWallResolution);
     const controlledTerritoryGrowthStep = useTypedSelector(selectControlledTerritoryGrowthStep);
     const monsterModifierValues = useTypedSelector(selectMonsterModifierValues);
+    const siegeModifierValues = useTypedSelector(selectSiegeModifierValues);
     const wallZoneEffects = useMemo(() => ({
         pushBackDistance: wallResolution.pushBackDistance,
         pushBacksPerSecond: wallResolution.pushBacksPerSecond,
@@ -108,6 +111,10 @@ const BattlePage = () => {
     const timeBetweenWavesSeconds = isSiege
         ? SIEGE_WAVE_INTERVAL_SECONDS
         : PRESSURE_WAVE_INTERVAL_SECONDS;
+    const simultaneousMonstersLimit = Math.max(0, Math.floor(
+        (BASE_SIMULTANEOUS_MONSTERS_LIMIT + siegeModifierValues.simultaneousMonstersLimitFlat)
+        * siegeModifierValues.simultaneousMonstersLimitMultiplier
+    ));
     const [metrics, setMetrics] = useState<BattleMetrics>(() => ({
         threat: initialThreat,
         targetThreat,
@@ -143,6 +150,7 @@ const BattlePage = () => {
         monsterMovementModifiers.speedMultiplier,
         monsterMovementModifiers.swayFlat,
         monsterMovementModifiers.swayMultiplier,
+        simultaneousMonstersLimit,
         wallLogicalWidth,
         battlefieldHeight,
         battleWallSegments
@@ -172,6 +180,7 @@ const BattlePage = () => {
         monsterMovementModifiers.speedMultiplier,
         monsterMovementModifiers.swayFlat,
         monsterMovementModifiers.swayMultiplier,
+        simultaneousMonstersLimit,
         wallLogicalWidth,
         battlefieldHeight,
         battleWallSegments,
@@ -277,6 +286,7 @@ const BattlePage = () => {
                         targetThreat={targetThreat}
                         threatGrowthPerSecond={threatGrowthPerSecond}
                         waveThreatToCityThreatRatio={BATTLE_WAVE_THREAT_TO_CITY_THREAT_RATIO}
+                        simultaneousMonstersLimit={simultaneousMonstersLimit}
                         timeBetweenWavesSeconds={timeBetweenWavesSeconds}
                         fastForwardWavesWhenCleared={isSiege}
                         completesWhenThreatTargetReached={isSiege}

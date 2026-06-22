@@ -35,6 +35,7 @@ export function BattleStage(props: {
     targetThreat: number;
     threatGrowthPerSecond: number;
     waveThreatToCityThreatRatio: number;
+    simultaneousMonstersLimit: number;
     timeBetweenWavesSeconds: number;
     fastForwardWavesWhenCleared: boolean;
     completesWhenThreatTargetReached: boolean;
@@ -145,6 +146,7 @@ export function BattleStage(props: {
                 targetThreat: props.targetThreat,
                 threatGrowthPerSecond: props.threatGrowthPerSecond,
                 waveThreatToCityThreatRatio: props.waveThreatToCityThreatRatio,
+                simultaneousMonstersLimit: props.simultaneousMonstersLimit,
                 timeBetweenWavesSeconds: props.timeBetweenWavesSeconds,
                 fastForwardWavesWhenCleared: props.fastForwardWavesWhenCleared,
                 completesWhenThreatTargetReached: props.completesWhenThreatTargetReached,
@@ -346,6 +348,7 @@ export function BattleStage(props: {
         props.targetThreat,
         props.threatGrowthPerSecond,
         props.waveThreatToCityThreatRatio,
+        props.simultaneousMonstersLimit,
         props.timeBetweenWavesSeconds,
         props.fastForwardWavesWhenCleared,
         props.completesWhenThreatTargetReached,

@@ -28,6 +28,7 @@ type WallBuildingOptions = {
     keywords?: BuildingKeyword[];
     supportCost?: UpkeepAmount;
     requirements?: Requirement[];
+    buildRequirements?: Requirement[];
     values?: HomogeneousValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
     specialEffects?: WallSpecialEffect[];
@@ -86,6 +87,7 @@ export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOpt
             vector,
             keywords: [...defaultKeywords, ...(options.keywords ?? [])],
             requirements: options.requirements,
+            buildRequirements: options.buildRequirements,
             values,
             effects: options.effects,
             specialEffects: options.specialEffects ?? [],

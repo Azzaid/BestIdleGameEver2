@@ -45,6 +45,7 @@ export interface WorldConfig {
   targetThreat: number;
   threatGrowthPerSecond: number;
   waveThreatToCityThreatRatio: number;
+  simultaneousMonstersLimit: number;
   timeBetweenWavesSeconds: number;
   fastForwardWavesWhenCleared: boolean;
   completesWhenThreatTargetReached: boolean;
