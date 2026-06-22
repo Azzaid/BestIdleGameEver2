@@ -3,16 +3,16 @@ import {Canvas, CanvasPosition, Edge, type CanvasDirection, type CanvasRef, type
 import {
   PROGRESSION_GRAPH,
   PROGRESSION_VALIDATION_ERRORS,
-} from "../../data/progression/catalog.ts";
+} from "./data/catalog.ts";
 import type {
   ProgressionEdge,
   ProgressionGraphNode,
   ProgressionNodeKind,
-} from "../../data/progression/types.ts";
+} from "./data/types.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
 import {researchTree} from "../../data/research/index.ts";
-import {TOWER_PARTS_BY_ID} from "../../data/towers/index.ts";
+import {TOWER_PARTS_BY_ID} from "../../data/gunParts/index.ts";
 import {ALL_WALL_BUILDINGS} from "../../data/wall/index.ts";
 import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";

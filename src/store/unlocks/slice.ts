@@ -1,7 +1,7 @@
 import {createSlice, type PayloadAction} from "@reduxjs/toolkit";
 import type {UnlocksState} from "../../models/store/unlocks.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
-import {TOWER_PARTS} from "../../data/towers/index.ts";
+import {TOWER_PARTS} from "../../data/gunParts/index.ts";
 import {WALL_TOWER_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 

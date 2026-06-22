@@ -1,7 +1,7 @@
 import { Application, Container, Sprite, Texture, TilingSprite } from 'pixi.js';
 import { useEffect, useMemo, useRef } from 'react';
 import type { TowerAssemblyPreviewProps } from '../../models/build/towerAssemblyPreview.ts';
-import { createTowerVisualDefinitionFromAssembly } from '../../data/towers/visuals.ts';
+import { createTowerVisualDefinitionFromAssembly } from '../../data/gunParts/visuals.ts';
 import { loadBattleAssets } from '../Battle/assets/assetLoader.ts';
 import { buildTowerVisualContainer } from '../Battle/factories/towerVisualRenderer.ts';
 import { INITIAL_TOWER_AIM_RADIANS } from '../../models/battle/tower.ts';
@@ -11,7 +11,8 @@ import { wallTopSpriteMetadataAtlas } from '../../models/sprites/wallTops/wallTo
 import { superstructures, walls } from '../../data/identificators/index.ts';
 import type { BattleWallSegment } from '../../models/battle/wallSegment.ts';
 import { CITY_HEX_SIZE } from '../../data/constants.ts';
-import { BATTLE_BACKGROUNDS, DEFAULT_BATTLE_BACKGROUND_ID } from '../../data/battle/backgrounds.ts';
+import { DEFAULT_BATTLE_BACKGROUND_ID } from '../../models/battle/backgrounds.ts';
+import { BATTLE_BACKGROUNDS } from '../Battle/assets/backgrounds.ts';
 
 const previewWallSegment: BattleWallSegment = {
   cellKey: 'tower-preview-wall',

@@ -1,8 +1,8 @@
 import { Assets } from 'pixi.js';
-import { BATTLE_BACKGROUNDS } from '../../../data/battle/backgrounds.ts';
-import type { BattleBackgroundId } from '../../../data/battle/backgrounds.ts';
-import { TOWER_PARTS } from '../../../data/towers/index.ts';
-import { TOWER_PART_VISUAL_ASSETS } from '../../../data/towers/partVisualMetadata.ts';
+import { BATTLE_BACKGROUNDS } from './backgrounds.ts';
+import type { BattleBackgroundId } from '../../../models/battle/backgrounds.ts';
+import { TOWER_PARTS } from '../../../data/gunParts/index.ts';
+import { TOWER_PART_VISUAL_ASSETS } from '../../../data/gunParts/partVisualMetadata.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import { wallSpriteMetadataAtlas, wallSpritesAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 import { wallTopSpriteMetadataAtlas, wallTopSpritesAtlas } from '../../../models/sprites/wallTops/wallTopSpriteAtlas.ts';

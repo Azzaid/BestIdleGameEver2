@@ -1,5 +1,5 @@
 import type { AxialCoordinate, HexCell } from '../city/HexGrid.ts';
-import type { BattleBackgroundId } from '../../data/battle/backgrounds.ts';
+import type { BattleBackgroundId } from '../battle/backgrounds.ts';
 
 export interface CityBattlefieldState {
     backgroundId: BattleBackgroundId;

@@ -10,11 +10,11 @@ import {
     setCameraScale,
 } from '../core/camera';
 import { loadBattleAssets } from '../assets/assetLoader';
-import { BATTLE_BACKGROUNDS } from '../../../data/battle/backgrounds.ts';
-import type { BattleBackgroundId } from '../../../data/battle/backgrounds.ts';
+import { BATTLE_BACKGROUNDS } from '../assets/backgrounds.ts';
+import type { BattleBackgroundId } from '../../../models/battle/backgrounds.ts';
 import type { TowerAssemblyResolved } from '../../../models/battle/towerParts.ts';
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
-import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/towers/visuals.ts';
+import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/gunParts/visuals.ts';
 import type { BattleMetrics, BattleResult, MonsterMovementModifiers, WallZoneEffects } from '../../../models/battle/world.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX, CITY_HEX_SIZE } from '../../../data/constants.ts';

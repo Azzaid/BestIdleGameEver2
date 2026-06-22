@@ -1,4 +1,4 @@
-import { TOWER_PARTS_BY_ID, TOWER_PART_SLOT_ORDER, TOWER_SYNERGY_RULES, REQUIRED_TOWER_PART_SLOTS } from '../../data/towers/index.ts';
+import { TOWER_PARTS_BY_ID, TOWER_PART_SLOT_ORDER, TOWER_SYNERGY_RULES, REQUIRED_TOWER_PART_SLOTS } from '../../data/gunParts/index.ts';
 import { TOWER_WEIGHT_ROTATION_PENALTY } from '../../data/constants.ts';
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../Upkeep.ts';
 import type { GunPart, TowerAssembly, TowerAssemblyResolved, TowerPartSlot } from './towerParts.ts';

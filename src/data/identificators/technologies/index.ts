@@ -16,7 +16,7 @@ export const technologyIds = Object.values(technologies).flatMap(group => Object
 Checklist when adding a technology id:
 1. Add the id here, in the vector file that owns it.
 2. Add the research node under src/data/research/<vector>.ts using this identifier.
-3. Add its progression rule in src/data/progression/rules/<vector>.ts.
+3. Add or update its unlock requirements in the research data, then check src/pages/Progression/data/rules.ts.
 4. Add unlock rules for buildings, tower parts, structures, or later systems it enables.
 5. Keep parentId / alsoRequires aligned with progression requirements.
 6. Open /progression and /ids to check graph and registry validation.

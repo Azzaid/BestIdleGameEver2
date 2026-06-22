@@ -3,7 +3,7 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {INITIAL_CITY_CELL_RADIUS, FOOTPRINT_PER_DEMOLISHED_HEX, FOOTPRINT_PER_SURVIVED_SIEGE} from "../../data/constants.ts";
-import { DEFAULT_BATTLE_BACKGROUND_ID } from "../../data/battle/backgrounds.ts";
+import { DEFAULT_BATTLE_BACKGROUND_ID } from "../../models/battle/backgrounds.ts";
 import {coordKey} from "../../pages/City/Components/CityHex/hexUtils.ts";
 import type {CityState} from "../../models/store/city.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";

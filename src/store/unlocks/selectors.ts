@@ -1,6 +1,6 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
-import {TOWER_PARTS} from "../../data/towers/index.ts";
+import {TOWER_PARTS} from "../../data/gunParts/index.ts";
 import {WALL_SEGMENT_BUILDINGS, WALL_TOWER_BUILDINGS} from "../../data/wall/index.ts";
 import {researchTree} from "../../data/research/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";

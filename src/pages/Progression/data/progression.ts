@@ -8,8 +8,8 @@ import type {
   ProgressionRequirements,
   ProgressionRule,
 } from "./types.ts";
-import type {UpkeepAmount, UpkeepTypesValue} from "../../models/Upkeep.ts";
-import type {AetherAtmosphereLevels} from "../../models/city/AetherAtmosphere.ts";
+import type {UpkeepAmount, UpkeepTypesValue} from "../../../models/Upkeep.ts";
+import type {AetherAtmosphereLevels} from "../../../models/city/AetherAtmosphere.ts";
 
 export type ProgressionUnlockContext = {
   researchIds: ReadonlySet<string>;

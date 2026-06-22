@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
-import { TOWER_PARTS } from '../../data/towers/index.ts';
-import { TOWER_PART_SLOT_ORDER } from '../../data/towers/parts/index.ts';
+import { TOWER_PARTS } from '../../data/gunParts/index.ts';
+import { TOWER_PART_SLOT_ORDER } from '../../data/gunParts/index.ts';
 import { gunpartIdRows } from '../../data/identificators/index.ts';
 import type { TowerPartVisualMetadata } from '../../models/battle/towerPartVisualMetadata.ts';
 import type { TowerPartSlot } from '../../models/battle/towerParts.ts';

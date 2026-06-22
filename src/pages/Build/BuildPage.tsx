@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import * as s from './BuildPage.css.ts';
-import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/towers/index.ts';
+import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/gunParts/index.ts';
 import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
 import { selectActiveTower, selectActiveTowerDraftAssembly, selectAvailableTowerList, selectHasAnyTowerBuild } from '../../store/towers/selectors.ts';

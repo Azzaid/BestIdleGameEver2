@@ -1,6 +1,6 @@
-import type {UpkeepAmount} from "../../models/Upkeep.ts";
-import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
-import type {AetherAtmosphere, AetherAtmosphereLevel} from "../../models/city/AetherAtmosphere.ts";
+import type {UpkeepAmount} from "../../../models/Upkeep.ts";
+import type {DevelopmentVectorKey} from "../../../models/DevlopmentVector.ts";
+import type {AetherAtmosphere, AetherAtmosphereLevel} from "../../../models/city/AetherAtmosphere.ts";
 
 export type ProgressionNodeKind = "research" | "building" | "towerPart" | "structure";
 

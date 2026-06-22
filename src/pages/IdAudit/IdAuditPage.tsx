@@ -1,7 +1,7 @@
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
 import {useMemo, useState} from "react";
-import {PROGRESSION_RULES} from "../../data/progression/rules.ts";
-import {getRuleForTarget} from "../../data/progression/progression.ts";
+import {PROGRESSION_RULES} from "../Progression/data/rules.ts";
+import {getRuleForTarget} from "../Progression/data/progression.ts";
 import {BATTLE_ENEMY_BLUEPRINTS} from "../../data/enemies/index.ts";
 import {
   buildings,
@@ -12,13 +12,13 @@ import {
   walls,
 } from "../../data/identificators/index.ts";
 import {researchTree} from "../../data/research/index.ts";
-import {TOWER_PARTS_BY_ID} from "../../data/towers/index.ts";
-import {TOWER_PART_VISUAL_ASSETS} from "../../data/towers/partVisualMetadata.ts";
+import {TOWER_PARTS_BY_ID} from "../../data/gunParts/index.ts";
+import {TOWER_PART_VISUAL_ASSETS} from "../../data/gunParts/partVisualMetadata.ts";
 import {WALL_SEGMENT_BUILDINGS, WALL_TOWER_BUILDINGS} from "../../data/wall/index.ts";
 import {buildingsSpriteAtlas} from "../../models/sprites/buildings/buildingsSpriteAtlas.ts";
 import {wallSpritesAtlas} from "../../models/sprites/walls/wallsSpriteAtlas.ts";
 import {wallTopSpritesAtlas} from "../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
-import type {ProgressionNodeKind} from "../../data/progression/types.ts";
+import type {ProgressionNodeKind} from "../Progression/data/types.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {Building} from "../../models/city/Building.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";

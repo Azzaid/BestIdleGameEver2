@@ -1,10 +1,10 @@
-import {BUILDINGS_ATLAS} from "../buildings/index.ts";
-import {researchTree} from "../research/index.ts";
-import {TOWER_PARTS} from "../towers/index.ts";
-import {WALL_TOWER_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../wall/index.ts";
-import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
+import {BUILDINGS_ATLAS} from "../../../data/buildings/index.ts";
+import {researchTree} from "../../../data/research/index.ts";
+import {TOWER_PARTS} from "../../../data/gunParts/index.ts";
+import {WALL_TOWER_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../../data/wall/index.ts";
+import {DEVELOPMENT_VECTORS} from "../../../models/DevlopmentVector.ts";
 import {defineProgression} from "./progression.ts";
-import type {Requirement} from "../../models/progression/requirements.ts";
+import type {Requirement} from "../../../models/progression/requirements.ts";
 import type {ProgressionNodeKind, ProgressionRequirements, ProgressionRule} from "./types.ts";
 
 type RuleSource = {

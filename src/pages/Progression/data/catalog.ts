@@ -1,12 +1,12 @@
-import {BUILDINGS_ATLAS} from "../buildings/index.ts";
-import {ALL_WALL_BUILDINGS} from "../wall/index.ts";
-import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
-import {researchGraphValidationErrors, researchTree} from "../research/index.ts";
-import {TOWER_PARTS} from "../towers/index.ts";
+import {BUILDINGS_ATLAS} from "../../../data/buildings/index.ts";
+import {ALL_WALL_BUILDINGS} from "../../../data/wall/index.ts";
+import {DEVELOPMENT_VECTORS} from "../../../models/DevlopmentVector.ts";
+import {researchGraphValidationErrors, researchTree} from "../../../data/research/index.ts";
+import {TOWER_PARTS} from "../../../data/gunParts/index.ts";
 import {buildProgressionGraph, validateProgressionGraph} from "./progression.ts";
 import {PROGRESSION_RULES} from "./rules.ts";
 import type {ProgressionRegistry, ProgressionRegistryEntry} from "./types.ts";
-import type {DevelopmentVectorKey, DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
+import type {DevelopmentVectorKey, DevelopmentVectorValue} from "../../../models/DevlopmentVector.ts";
 
 const buildingEntries = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string, ProgressionRegistryEntry>>(
   (entries, vector) => {
