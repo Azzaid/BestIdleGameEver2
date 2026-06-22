@@ -86,7 +86,7 @@ Important directories:
 Content data layout:
 
 - `src/data/buildings` uses vector-keyed atlas modules.
-- `src/data/wall` uses the same atlas pattern, keyed by development vector and flattened for wall lookup. Wall segment content lives under `segments`, wall-top superstructure content lives under `superstructures`, and wall hexes store those two layers separately.
+- `src/data/wallSegments` and `src/data/wallSuperstructures` use independent atlas patterns keyed by development vector. Wall hexes store those two layers separately.
 - `src/data/towers` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research` uses a technology factory with keyworded definitions, then exposes a vector-keyed research atlas and flattened helpers for the research tree. Research visual grouping is derived from vector keywords such as `medieval`, `nature`, `aether`, and `tech`.
 - `src/pages/Progression/data` contains the derived progression catalog, graph helpers, and page-local progression types used by `/progression` and the `/ids` audit coverage view.
@@ -602,7 +602,7 @@ Future statistics should focus on understanding:
 Current content layout:
 
 - `src/data/buildings/` uses vector-keyed atlas modules.
-- `src/data/wall/` uses the same atlas pattern, keyed by development vector and flattened for wall lookup. Wall segment content lives under `segments`, wall-top superstructure content lives under `superstructures`, and wall hexes store those two layers separately.
+- `src/data/wallSegments/` and `src/data/wallSuperstructures/` use independent atlas patterns keyed by development vector. Wall hexes store those two layers separately.
 - `src/data/enemies/` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
 - `src/data/towers/` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research/` uses `createTechnologyFactory(...)` for keyworded technology definitions and exposes a vector-keyed research atlas plus flattened helpers for the research tree.

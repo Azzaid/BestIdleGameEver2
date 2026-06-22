@@ -1,10 +1,10 @@
-import type {WallBuilding} from "../../../models/city/Wall.ts";
-import {DEVELOPMENT_VECTORS} from "../../../models/DevlopmentVector.ts";
-import {HOMOGENEOUS_VALUE_IDS} from "../../homogeneousValues/index.ts";
-import {superstructures} from "../../identificators/index.ts";
-import {createWallFactory} from "../wallFactory.ts";
+import type {WallBuilding} from "../../models/city/Wall.ts";
+import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../homogeneousValues/index.ts";
+import {superstructures} from "../identificators/index.ts";
+import {createWallSuperstructureFactory} from "./wallSuperstructureFactory.ts";
 
-const {tower} = createWallFactory({
+const tower = createWallSuperstructureFactory({
     vector: DEVELOPMENT_VECTORS.nature,
 });
 

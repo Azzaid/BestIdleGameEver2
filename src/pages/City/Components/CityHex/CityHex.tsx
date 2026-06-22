@@ -11,7 +11,8 @@ import {
     coordKey
 } from "./hexUtils.ts";
 import cityBackground from '../../../../assets/city/background/Top-down_map_view_circular_lan.jpeg'
-import {ALL_WALL_BUILDINGS} from "../../../../data/wall/index.ts";
+import {WALL_SEGMENT_BUILDINGS} from "../../../../data/wallSegments/index.ts";
+import {WALL_TOWER_BUILDINGS} from "../../../../data/wallSuperstructures/index.ts";
 import {CITY_HEX_SIZE} from "../../../../data/constants.ts";
 
 const HEX_RADIUS_PX = CITY_HEX_SIZE / Math.sqrt(3);
@@ -318,8 +319,8 @@ export default function CityHex({
                     const wallTopSpriteWidth = wallTopSpriteMetadata?.targetSpriteSize.width ?? SPRITE_WIDTH;
                     const wallTopSpriteHeight = wallTopSpriteMetadata?.targetSpriteSize.height ?? SPRITE_HEIGHT;
                     const hasTexture = Boolean(spriteUrl || wallSpriteUrl || wallTopSpriteUrl);
-                    const wallName = wallKey ? ALL_WALL_BUILDINGS[wallKey]?.name ?? wallKey : undefined;
-                    const wallTopName = wallTopKey ? ALL_WALL_BUILDINGS[wallTopKey]?.name ?? wallTopKey : undefined;
+                    const wallName = wallKey ? WALL_SEGMENT_BUILDINGS[wallKey]?.name ?? wallKey : undefined;
+                    const wallTopName = wallTopKey ? WALL_TOWER_BUILDINGS[wallTopKey]?.name ?? wallTopKey : undefined;
                     const fallbackName = kind === "wall"
                         ? [wallName, wallTopName].filter(Boolean).join(" + ")
                         : buildingKey;

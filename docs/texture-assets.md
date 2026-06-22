@@ -28,7 +28,7 @@ Use the development vector folder names from `src/models/DevlopmentVector.ts`: `
 ## Add A Wall Segment Texture
 
 1. Add the id in `src/data/identificators/walls/<vector>.ts` if it does not exist.
-2. Add or confirm the segment definition in `src/data/wall/segments/<vector>.ts`.
+2. Add or confirm the segment definition in `src/data/wallSegments/<vector>.json`.
 3. Put the PNG and JSON metadata in `src/assets/city/walls/<vector>/`.
 4. Import and map both files in `src/models/sprites/walls/<vector>.ts` as a sprite asset keyed by the wall id from `src/data/identificators/walls/<vector>.ts`: `{ src, metadata }`.
 5. Keep wall metadata JSON limited to image sizing/bounds. Do not duplicate `id`, `spriteId`, or `wallId` in the JSON; the registry key is the wall id and battle texture alias.
@@ -39,7 +39,7 @@ Use the development vector folder names from `src/models/DevlopmentVector.ts`: `
 ## Add A Wall-Top/Superstructure Texture
 
 1. Add the id in `src/data/identificators/superstructures/<vector>.ts` if it does not exist.
-2. Add or confirm the superstructure definition in `src/data/wall/superstructures/<vector>.ts`.
+2. Add or confirm the superstructure definition in `src/data/wallSuperstructures/<vector>.ts`.
 3. Put the PNG and JSON metadata in `src/assets/city/wallTops/<vector>/`.
 4. Import and map both files in `src/models/sprites/wallTops/<vector>.ts` as a sprite asset keyed by the superstructure id: `{ src, metadata }`.
 5. Keep wall-top metadata JSON limited to image sizing/bounds. Do not duplicate `id`, `spriteId`, or `superstructureId` in the JSON; the registry key is the superstructure id and battle texture alias.

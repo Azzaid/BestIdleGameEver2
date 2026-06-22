@@ -1,8 +1,8 @@
 import {createSelector} from "@reduxjs/toolkit";
-import {ALL_WALL_BUILDINGS} from "../../data/wall/index.ts";
+import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
+import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
 import {selectCityHexes} from "../city/selectors.ts";
 import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
-import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import {getUpkeepValues, resolveCity} from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
@@ -16,7 +16,10 @@ export const selectUnlockedWallBuildingIds = createSelector(
 
 export const selectUnlockedWallBuildings = createSelector(
     [selectUnlockedWallBuildingIds],
-    (ids): WallBuilding[] => ids.flatMap((id) => ALL_WALL_BUILDINGS[id] ? [ALL_WALL_BUILDINGS[id]] : [])
+    (ids): WallBuilding[] => ids.flatMap((id) => {
+        const wallBuilding = WALL_SEGMENT_BUILDINGS[id] ?? WALL_TOWER_BUILDINGS[id];
+        return wallBuilding ? [wallBuilding] : [];
+    })
 );
 
 export const selectWallResolution = createSelector(
@@ -50,7 +53,9 @@ export const selectWallResolution = createSelector(
             }) => {
                 if (!wallBuildingKey) return;
 
-                const wallBuilding = ALL_WALL_BUILDINGS[wallBuildingKey];
+                const wallBuilding = entityType === "wallSegment"
+                    ? WALL_SEGMENT_BUILDINGS[wallBuildingKey]
+                    : WALL_TOWER_BUILDINGS[wallBuildingKey];
                 if (!wallBuilding) return;
 
                 wallEntities.push({
@@ -98,6 +103,6 @@ export const selectBuiltWallTowerCount = createSelector(
     (hexes): number => hexes.filter((hex) => {
         if (hex.kind !== "wall" || !hex.wallTopKey) return false;
 
-        return ALL_WALL_BUILDINGS[hex.wallTopKey]?.type === BUILDING_TYPES.tower;
+        return Boolean(WALL_TOWER_BUILDINGS[hex.wallTopKey]);
     }).length
 );

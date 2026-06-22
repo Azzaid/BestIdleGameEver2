@@ -1,5 +1,5 @@
-import {DEVELOPMENT_VECTORS} from "../../../models/DevlopmentVector.ts";
-import type {WallBuilding, WallBuildingAtlas} from "../../../models/city/Wall.ts";
+import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
+import type {WallBuilding, WallBuildingAtlas} from "../../models/city/Wall.ts";
 import {aetherWallSuperstructures} from "./aether.ts";
 import {medievalWallSuperstructures} from "./medieval.ts";
 import {natureWallSuperstructures} from "./nature.ts";
@@ -19,3 +19,5 @@ export const WALL_SUPERSTRUCTURE_BUILDINGS: Record<string, WallBuilding> = Objec
     }),
     {},
 );
+
+export {WALL_SUPERSTRUCTURE_BUILDINGS as WALL_TOWER_BUILDINGS};

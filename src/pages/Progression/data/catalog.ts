@@ -1,5 +1,6 @@
 import {BUILDINGS_ATLAS} from "../../../data/buildings/index.ts";
-import {ALL_WALL_BUILDINGS} from "../../../data/wall/index.ts";
+import {WALL_SEGMENT_BUILDINGS} from "../../../data/wallSegments/index.ts";
+import {WALL_TOWER_BUILDINGS} from "../../../data/wallSuperstructures/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../../models/DevlopmentVector.ts";
 import {researchGraphValidationErrors, researchTree} from "../../../data/research/index.ts";
 import {TOWER_PARTS} from "../../../data/gunParts/index.ts";
@@ -21,7 +22,10 @@ const buildingEntries = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string,
   {},
 );
 
-for (const wallBuilding of Object.values(ALL_WALL_BUILDINGS)) {
+for (const wallBuilding of [
+  ...Object.values(WALL_SEGMENT_BUILDINGS),
+  ...Object.values(WALL_TOWER_BUILDINGS),
+]) {
   buildingEntries[wallBuilding.id] = {
     name: wallBuilding.name,
   };

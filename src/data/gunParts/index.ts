@@ -1,9 +1,9 @@
 import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {GunPart, TowerPartsAtlas, TowerPartSlot, TowerSynergyRule} from "../../models/battle/towerParts.ts";
-import {aetherTowerParts} from "./parts/aether.ts";
-import {medievalTowerParts} from "./parts/medieval.ts";
-import {natureTowerParts} from "./parts/nature.ts";
-import {techTowerParts} from "./parts/tech.ts";
+import {aetherTowerParts} from "./aether.ts";
+import {medievalTowerParts} from "./medieval.ts";
+import {natureTowerParts} from "./nature.ts";
+import {techTowerParts} from "./tech.ts";
 
 export const TOWER_PART_SLOT_ORDER: { key: TowerPartSlot; label: string }[] = [
   { key: 'launchSystem', label: 'Launch System' },

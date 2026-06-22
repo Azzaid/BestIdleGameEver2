@@ -1,9 +1,9 @@
-import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../../models/DevlopmentVector.ts";
-import type {BuildingKeyword} from "../../../models/city/Keywords.ts";
-import type {WallBuilding, WallBuildingAtlas} from "../../../models/city/Wall.ts";
-import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../../models/homogeneousValues.ts";
-import type {Requirement} from "../../../models/progression/requirements.ts";
-import {createWallFactory} from "../wallFactory.ts";
+import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
+import type {BuildingKeyword} from "../../models/city/Keywords.ts";
+import type {WallBuilding, WallBuildingAtlas} from "../../models/city/Wall.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {Requirement} from "../../models/progression/requirements.ts";
+import {createWallSegmentFactory} from "./wallSegmentFactory.ts";
 import aetherWallSegmentDefinitions from "./aether.json";
 import medievalWallSegmentDefinitions from "./medieval.json";
 import natureWallSegmentDefinitions from "./nature.json";
@@ -43,7 +43,7 @@ export const WALL_SEGMENT_BUILDINGS: Record<string, WallBuilding> = Object.value
 );
 
 function buildWallSegments(vector: DevelopmentVectorKey): Record<string, WallBuilding> {
-    const {segment} = createWallFactory({
+    const segment = createWallSegmentFactory({
         vector: DEVELOPMENT_VECTORS[vector],
     });
 

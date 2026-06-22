@@ -13,7 +13,8 @@ import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/Devlo
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
 import {researchTree} from "../../data/research/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/gunParts/index.ts";
-import {ALL_WALL_BUILDINGS} from "../../data/wall/index.ts";
+import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
+import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
 import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 import * as s from "./ProgressionPage.css.ts";
@@ -537,7 +538,9 @@ function findContentRequirements(node: ProgressionGraphNode): readonly Requireme
       .map(vector => BUILDINGS_ATLAS[vector][node.id])
       .find(Boolean);
 
-    return building?.requirements ?? ALL_WALL_BUILDINGS[node.id]?.requirements;
+    return building?.requirements
+      ?? WALL_SEGMENT_BUILDINGS[node.id]?.requirements
+      ?? WALL_TOWER_BUILDINGS[node.id]?.requirements;
   }
 
   if (node.kind === "research") return researchTree[node.id]?.requirements;

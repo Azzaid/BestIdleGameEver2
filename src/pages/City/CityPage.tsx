@@ -13,7 +13,8 @@ import {
 } from "../../store/city/selectors.ts";
 import {buildHex, buildWall, buildWallTop, demolishHex, buildMultistructure} from "../../store/city/slice.ts";
 import {UPKEEP_SPRITES, UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
-import {ALL_WALL_BUILDINGS, WALL_TOWER_BUILDINGS, WALL_SEGMENT_BUILDINGS} from "../../data/wall/index.ts";
+import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
+import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
 import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
@@ -176,8 +177,8 @@ const CityPage = () => {
     };
 
     const selectedBuilding = selectedHex ? cityBuildings.get(selectedHex.cellKey) : undefined;
-    const selectedWallBuilding = selectedHex?.wallKey ? ALL_WALL_BUILDINGS[selectedHex.wallKey] : undefined;
-    const selectedWallTopBuilding = selectedHex?.wallTopKey ? ALL_WALL_BUILDINGS[selectedHex.wallTopKey] : undefined;
+    const selectedWallBuilding = selectedHex?.wallKey ? WALL_SEGMENT_BUILDINGS[selectedHex.wallKey] : undefined;
+    const selectedWallTopBuilding = selectedHex?.wallTopKey ? WALL_TOWER_BUILDINGS[selectedHex.wallTopKey] : undefined;
     const selectedStructureCandidates = selectedHex
         ? structureCandidates.filter(candidate => (
             isHexPartOfStructureCandidate(selectedHex.cellKey, candidate)

@@ -14,7 +14,8 @@ import {
 import {researchTree} from "../../data/research/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/gunParts/index.ts";
 import {TOWER_PART_VISUAL_ASSETS} from "../../data/gunParts/partVisualMetadata.ts";
-import {WALL_SEGMENT_BUILDINGS, WALL_TOWER_BUILDINGS} from "../../data/wall/index.ts";
+import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
+import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
 import {buildingsSpriteAtlas} from "../../models/sprites/buildings/buildingsSpriteAtlas.ts";
 import {wallSpritesAtlas} from "../../models/sprites/walls/wallsSpriteAtlas.ts";
 import {wallTopSpritesAtlas} from "../../models/sprites/wallTops/wallTopSpriteAtlas.ts";

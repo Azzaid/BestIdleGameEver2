@@ -5,12 +5,12 @@ import type {DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 
-type WallFactoryOptions = {
+type WallSuperstructureFactoryOptions = {
     vector: DevelopmentVectorValue;
     defaultKeywords?: BuildingKeyword[];
 };
 
-type WallBuildingOptions = {
+type WallSuperstructureOptions = {
     keywords?: BuildingKeyword[];
     requirements?: Requirement[];
     buildRequirements?: Requirement[];
@@ -18,36 +18,17 @@ type WallBuildingOptions = {
     effects?: HomogeneousAdjacencyRule[];
 };
 
-export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOptions) {
-    function segment(
+export function createWallSuperstructureFactory({vector, defaultKeywords = []}: WallSuperstructureFactoryOptions) {
+    return function tower(
         id: string,
         name: string,
         description: string,
-        options: WallBuildingOptions = {},
-    ): WallBuilding {
-        return wallBuilding(id, name, description, BUILDING_TYPES.wallSegment, options);
-    }
-
-    function tower(
-        id: string,
-        name: string,
-        description: string,
-        options: WallBuildingOptions = {},
-    ): WallBuilding {
-        return wallBuilding(id, name, description, BUILDING_TYPES.tower, options);
-    }
-
-    function wallBuilding(
-        id: string,
-        name: string,
-        description: string,
-        type: WallBuilding["type"],
-        options: WallBuildingOptions,
+        options: WallSuperstructureOptions = {},
     ): WallBuilding {
         return {
             id,
             name,
-            type,
+            type: BUILDING_TYPES.tower,
             vector,
             keywords: [...defaultKeywords, ...(options.keywords ?? [])],
             requirements: options.requirements,
@@ -56,10 +37,5 @@ export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOpt
             effects: options.effects,
             description,
         };
-    }
-
-    return {
-        segment,
-        tower,
     };
 }
