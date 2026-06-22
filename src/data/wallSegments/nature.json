@@ -6,7 +6,7 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "technology.nature.livingWood"
+        "technologyId": "research.nature.livingWood"
       }
     ],
     "buildRequirements": [

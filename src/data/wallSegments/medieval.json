@@ -20,7 +20,7 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "technology.medieval.timberProcessing"
+        "technologyId": "research.medieval.timberProcessing"
       },
       {
         "type": "buildingKeywordExists",
