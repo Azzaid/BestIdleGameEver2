@@ -108,13 +108,6 @@ export const panelDescription = style({
     lineHeight: 1.45,
 });
 
-export const effectList = style({
-    display: 'grid',
-    gap: '6px',
-    margin: 0,
-    paddingLeft: '18px',
-});
-
 export const multistructureStatus = style({
     display: 'grid',
     gap: '8px',

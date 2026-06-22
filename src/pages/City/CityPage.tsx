@@ -565,15 +565,6 @@ function WallStats({wallBuilding}: {wallBuilding: WallBuilding}) {
                 title="Stats"
                 effects={getHomogeneousProductionContributions(wallValues)}
             />
-            {wallBuilding.specialEffects.length > 0 && (
-                <ul className={s.effectList}>
-                    {wallBuilding.specialEffects.map((effect) => (
-                        <li key={`${effect.keyword}-${effect.value}`}>
-                            <strong>{effect.keyword}</strong> {effect.value}: {effect.description}
-                        </li>
-                    ))}
-                </ul>
-            )}
         </>
     );
 }

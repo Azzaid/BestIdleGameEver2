@@ -172,7 +172,7 @@ function createRows(): AuditRow[] {
       dataStatus: data ? "ok" : "missing",
       progressionStatus: "none",
       assetStatus: hasAsset ? "ok" : "none",
-      notes: data ? `${describeWallBuildingStats(data)} / effects ${data.specialEffects.length} / asset ${hasAsset ? "yes" : "no"}` : "No wall superstructure definition",
+      notes: data ? `${describeWallBuildingStats(data)} / asset ${hasAsset ? "yes" : "no"}` : "No wall superstructure definition",
     });
   }
 

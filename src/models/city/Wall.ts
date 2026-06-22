@@ -6,14 +6,6 @@ import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../homogene
 import type {HomogeneousResolvedValueMap} from "../homogeneousValues.ts";
 import type {RequirementGate} from "../progression/requirements.ts";
 
-export type WallEffectKeyword = Extract<BuildingKeyword, "slow" | "harm" | "push" | "visibility">;
-
-export type WallSpecialEffect = {
-    keyword: WallEffectKeyword;
-    value: number;
-    description: string;
-};
-
 export interface WallBuilding extends RequirementGate {
     id: string;
     name: string;
@@ -22,7 +14,6 @@ export interface WallBuilding extends RequirementGate {
     keywords?: BuildingKeyword[];
     values?: HomogeneousValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
-    specialEffects: WallSpecialEffect[];
     description: string;
 }
 
@@ -41,5 +32,4 @@ export type WallResolution = {
     zoneDotZoneSize: number;
     homogeneousValues: Record<string, number>;
     homogeneousResolvedValues: HomogeneousResolvedValueMap;
-    specialEffects: WallBuilding["specialEffects"];
 };

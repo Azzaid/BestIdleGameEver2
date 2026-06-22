@@ -35,7 +35,6 @@ export const selectWallResolution = createSelector(
             zoneDotZoneSize: 0,
             homogeneousValues: {},
             homogeneousResolvedValues: {},
-            specialEffects: [],
         };
         const wallEntities: HomogeneousValueEntitySource[] = [];
 
@@ -54,7 +53,6 @@ export const selectWallResolution = createSelector(
                 const wallBuilding = ALL_WALL_BUILDINGS[wallBuildingKey];
                 if (!wallBuilding) return;
 
-                resolution.specialEffects.push(...wallBuilding.specialEffects);
                 wallEntities.push({
                     id: `${hex.cellKey}:${wallBuilding.id}`,
                     entityType,

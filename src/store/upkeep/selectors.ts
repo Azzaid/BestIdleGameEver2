@@ -114,7 +114,6 @@ export const selectEffectiveWallResolution = createSelector(
             zoneDotZoneSize: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0,
             homogeneousValues,
             homogeneousResolvedValues: resolvedWallValues,
-            specialEffects: wallResolution.specialEffects,
         };
     },
 );

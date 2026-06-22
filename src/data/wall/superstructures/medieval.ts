@@ -12,12 +12,5 @@ export const medievalWallSuperstructures: Record<string, WallBuilding> = {
         superstructures.medieval.oldStump,
         "Old stump",
         "An old stump provides some flat space to mount gun on",
-        {resilience: 0},
-        {
-            supportCost: {
-            },
-            specialEffects: [
-            ],
-        },
     ),
 };

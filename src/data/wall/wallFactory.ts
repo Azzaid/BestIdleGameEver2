@@ -1,23 +1,9 @@
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import type {BuildingKeyword} from "../../models/city/Keywords.ts";
-import type {WallBuilding, WallSpecialEffect} from "../../models/city/Wall.ts";
+import type {WallBuilding} from "../../models/city/Wall.ts";
 import type {DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
-import type {UpkeepAmount} from "../../models/Upkeep.ts";
-import {upkeepAmountToHomogeneousValueEffects} from "../../models/homogeneousValueAdapters.ts";
-import {HOMOGENEOUS_VALUE_IDS} from "../homogeneousValues/index.ts";
-
-type WallStats = {
-    resilience?: number;
-    threatSuppression?: number;
-    pushBackDistance?: number;
-    pushBacksPerSecond?: number;
-    pushBackEffectZoneSize?: number;
-    zoneDotDamage?: number;
-    zoneDotTicksPerSecond?: number;
-    zoneDotZoneSize?: number;
-};
 
 type WallFactoryOptions = {
     vector: DevelopmentVectorValue;
@@ -26,23 +12,10 @@ type WallFactoryOptions = {
 
 type WallBuildingOptions = {
     keywords?: BuildingKeyword[];
-    supportCost?: UpkeepAmount;
     requirements?: Requirement[];
     buildRequirements?: Requirement[];
     values?: HomogeneousValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
-    specialEffects?: WallSpecialEffect[];
-};
-
-const wallStatValueIds: Record<keyof WallStats, string> = {
-    resilience: HOMOGENEOUS_VALUE_IDS.wallResilience,
-    threatSuppression: HOMOGENEOUS_VALUE_IDS.wallThreatSuppression,
-    pushBackDistance: HOMOGENEOUS_VALUE_IDS.wallPushBackDistance,
-    pushBacksPerSecond: HOMOGENEOUS_VALUE_IDS.wallPushBacksPerSecond,
-    pushBackEffectZoneSize: HOMOGENEOUS_VALUE_IDS.wallPushBackEffectZoneSize,
-    zoneDotDamage: HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage,
-    zoneDotTicksPerSecond: HOMOGENEOUS_VALUE_IDS.wallZoneDotTicksPerSecond,
-    zoneDotZoneSize: HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize,
 };
 
 export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOptions) {
@@ -50,20 +23,18 @@ export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOpt
         id: string,
         name: string,
         description: string,
-        stats: WallStats = {},
         options: WallBuildingOptions = {},
     ): WallBuilding {
-        return wallBuilding(id, name, description, BUILDING_TYPES.wallSegment, stats, options);
+        return wallBuilding(id, name, description, BUILDING_TYPES.wallSegment, options);
     }
 
     function tower(
         id: string,
         name: string,
         description: string,
-        stats: WallStats = {},
         options: WallBuildingOptions = {},
     ): WallBuilding {
-        return wallBuilding(id, name, description, BUILDING_TYPES.tower, stats, options);
+        return wallBuilding(id, name, description, BUILDING_TYPES.tower, options);
     }
 
     function wallBuilding(
@@ -71,15 +42,8 @@ export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOpt
         name: string,
         description: string,
         type: WallBuilding["type"],
-        stats: WallStats,
         options: WallBuildingOptions,
     ): WallBuilding {
-        const values = [
-            ...upkeepAmountToHomogeneousValueEffects(options.supportCost ?? {}, "upkeep"),
-            ...wallStatsToHomogeneousValueEffects(stats),
-            ...(options.values ?? []),
-        ];
-
         return {
             id,
             name,
@@ -88,9 +52,8 @@ export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOpt
             keywords: [...defaultKeywords, ...(options.keywords ?? [])],
             requirements: options.requirements,
             buildRequirements: options.buildRequirements,
-            values,
+            values: options.values,
             effects: options.effects,
-            specialEffects: options.specialEffects ?? [],
             description,
         };
     }
@@ -99,19 +62,4 @@ export function createWallFactory({vector, defaultKeywords = []}: WallFactoryOpt
         segment,
         tower,
     };
-}
-
-function wallStatsToHomogeneousValueEffects(stats: WallStats): HomogeneousValueEffect[] {
-    return (Object.entries(stats) as Array<[keyof WallStats, number | undefined]>)
-        .flatMap(([stat, additive]) => statToHomogeneousValueEffect(wallStatValueIds[stat], additive));
-}
-
-function statToHomogeneousValueEffect(valueId: string, additive: number | undefined): HomogeneousValueEffect[] {
-    if (additive === undefined || additive === 0) return [];
-
-    return [{
-        valueId,
-        additionalKeywords: ["production"],
-        additive,
-    }];
 }

@@ -3,12 +3,7 @@ import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import type {BuildingKeyword} from "../../models/city/Keywords.ts";
 import type {DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
-import type {UpkeepAmount} from "../../models/Upkeep.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
-import {
-  citySignatureToHomogeneousValueEffect,
-  upkeepAmountToHomogeneousValueEffects,
-} from "../../models/homogeneousValueAdapters.ts";
 
 type BuildingOptions = {
     requirements?: Requirement[];
@@ -32,19 +27,9 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
     id: string,
     name: string,
     description: string,
-    signature: number,
-    providedUpkeep: UpkeepAmount = {},
-    requiredUpkeep: UpkeepAmount = {},
     keywords: BuildingKeyword[] = [],
     options: BuildingOptions = {},
   ): Building {
-    const values = [
-      ...upkeepAmountToHomogeneousValueEffects(providedUpkeep, "production"),
-      ...upkeepAmountToHomogeneousValueEffects(requiredUpkeep, "upkeep"),
-      ...citySignatureToHomogeneousValueEffect(signature),
-      ...(options.values ?? []),
-    ];
-
     return {
       id,
       name,
@@ -53,7 +38,7 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
       isMultiHex: false,
       isMultistructure: false,
       vector,
-      values,
+      values: options.values,
       effects: options.effects,
       adjacencyDescription: "Not affected",
       description,
@@ -67,14 +52,11 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
     id: string,
     name: string,
     description: string,
-    signature: number,
-    providedUpkeep: UpkeepAmount = {},
-    requiredUpkeep: UpkeepAmount = {},
     keywords: BuildingKeyword[] = [],
     options: SuperstructureOptions = {},
   ): Building {
     return {
-      ...building(id, name, description, signature, providedUpkeep, requiredUpkeep, keywords, options),
+      ...building(id, name, description, keywords, options),
       isMultiHex: true,
       isMultistructure: true,
       multiHexStructure: options.requiredBuildingIds
