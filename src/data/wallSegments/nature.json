@@ -1,6 +1,6 @@
 [
   {
-    "id": "wall_nature_livingWoodPalisade",
+    "id": "wall.nature.livingWoodPalisade",
     "name": "Living wood palisade",
     "description": "Tight row of a strong young trees. Can heal itself and require no maintenance. But fragile to ecosystem changes.",
     "requirements": [

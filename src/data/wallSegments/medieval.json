@@ -1,6 +1,6 @@
 [
   {
-    "id": "scrapBarricade",
+    "id": "wall.medieval.scrapBarricade",
     "name": "Scrap barricade",
     "description": "Just a pile of scrap an rubbish to fen off attackers",
     "values": [
@@ -12,7 +12,7 @@
     ]
   },
   {
-    "id": "medieval_wall_palisade",
+    "id": "wall.medieval.palisade",
     "name": "Palisade",
     "description": "Row of sharpened wood trunks. Strong but require a lot of maintenance",
     "requirements": [
