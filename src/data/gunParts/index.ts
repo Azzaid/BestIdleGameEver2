@@ -1,9 +1,39 @@
 import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
-import type {GunPart, TowerPartsAtlas, TowerPartSlot, TowerSynergyRule} from "../../models/battle/towerParts.ts";
-import {aetherTowerParts} from "./aether.ts";
-import {medievalTowerParts} from "./medieval.ts";
-import {natureTowerParts} from "./nature.ts";
-import {techTowerParts} from "./tech.ts";
+import type {
+  GunPart,
+  TowerPartsAtlas,
+  TowerPartSlot,
+  TowerSynergyRule,
+} from "../../models/battle/towerParts.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {Requirement} from "../../models/progression/requirements.ts";
+import aetherTowerPartDefinitions from "./aether.json";
+import medievalTowerPartDefinitions from "./medieval.json";
+import natureTowerPartDefinitions from "./nature.json";
+import techTowerPartDefinitions from "./tech.json";
+import {createTowerPartFactory} from "./towerPartFactory.ts";
+
+type GunPartDefinition = {
+  id: string;
+  slot: TowerPartSlot;
+  name: string;
+  description?: string;
+  keywords?: string[];
+  requirements?: Requirement[];
+  buildRequirements?: Requirement[];
+  spriteTextureKey?: string;
+  aimKeywords?: string[];
+  conflictsWithKeywords?: string[];
+  values?: HomogeneousValueEffect[];
+  effects?: HomogeneousAdjacencyRule[];
+};
+
+const definitionsByVector: Record<DevelopmentVectorKey, readonly GunPartDefinition[]> = {
+  tech: techTowerPartDefinitions as readonly GunPartDefinition[],
+  nature: natureTowerPartDefinitions as readonly GunPartDefinition[],
+  medieval: medievalTowerPartDefinitions as readonly GunPartDefinition[],
+  aether: aetherTowerPartDefinitions as readonly GunPartDefinition[],
+};
 
 export const TOWER_PART_SLOT_ORDER: { key: TowerPartSlot; label: string }[] = [
   { key: 'launchSystem', label: 'Launch System' },
@@ -21,10 +51,10 @@ export const REQUIRED_TOWER_PART_SLOTS: TowerPartSlot[] = [
 ];
 
 export const TOWER_PART_DEFINITIONS: GunPart[] = [
-  ...techTowerParts,
-  ...natureTowerParts,
-  ...medievalTowerParts,
-  ...aetherTowerParts,
+  ...buildTowerParts("tech"),
+  ...buildTowerParts("nature"),
+  ...buildTowerParts("medieval"),
+  ...buildTowerParts("aether"),
 ];
 
 export const TOWER_SYNERGY_RULES: TowerSynergyRule[] = [
@@ -49,3 +79,27 @@ export const TOWER_PARTS_BY_ID = Object.values(TOWER_PARTS_ATLAS).reduce<Record<
   (allParts, partsById) => ({...allParts, ...partsById}),
   {},
 );
+
+function buildTowerParts(vector: DevelopmentVectorKey): GunPart[] {
+  const {part} = createTowerPartFactory({
+    vector,
+    defaultKeywords: [vector],
+  });
+
+  return definitionsByVector[vector].map(definition => part(
+    definition.id,
+    definition.slot,
+    definition.name,
+    definition.description ?? "",
+    {
+      keywords: definition.keywords,
+      requirements: definition.requirements,
+      buildRequirements: definition.buildRequirements,
+      spriteTextureKey: definition.spriteTextureKey,
+      aimKeywords: definition.aimKeywords,
+      conflictsWithKeywords: definition.conflictsWithKeywords,
+      values: definition.values,
+      effects: definition.effects,
+    },
+  ));
+}

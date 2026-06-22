@@ -1,7 +1,7 @@
-import type {DevelopmentVectorKey} from "../../../models/DevlopmentVector.ts";
-import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../../models/homogeneousValues.ts";
-import type {Requirement} from "../../../models/progression/requirements.ts";
-import type {GunPart, TowerPartSlot} from "../../../models/battle/towerParts.ts";
+import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {Requirement} from "../../models/progression/requirements.ts";
+import type {GunPart, TowerPartSlot} from "../../models/battle/towerParts.ts";
 
 type TowerPartFactoryOptions = {
   vector: DevelopmentVectorKey;

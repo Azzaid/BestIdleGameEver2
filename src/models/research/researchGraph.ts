@@ -82,7 +82,7 @@ export function buildResearchPreviewGraph(
 
     for (const id of allIds) {
         const node = db[id];
-        if (id === 'root') continue;
+        if (id === 'research.medieval.root') continue;
         if (isResearchUnlocked(node, purchased)) {
             unlockedIds.add(id);
         } else if (hasAnyResearchPrerequisiteMet(node, purchased)) {
@@ -90,7 +90,7 @@ export function buildResearchPreviewGraph(
         }
     }
 
-    const visibleIds = new Set<string>(['root']);
+    const visibleIds = new Set<string>(['research.medieval.root']);
 
     for (const id of allIds) {
         if (purchased.has(id) || unlockedIds.has(id) || previewIds.has(id)) {
@@ -199,7 +199,7 @@ export function validateResearchGraph(
             errors.push(`${node.id} has progression research requirements missing from the visual graph: ${missingFromGraph.join(', ')}.`);
         }
 
-        if (missingFromRules.length && node.id !== 'root') {
+        if (missingFromRules.length && node.id !== 'research.medieval.root') {
             errors.push(`${node.id} has visual graph prerequisites missing from progression rules: ${missingFromRules.join(', ')}.`);
         }
     }
@@ -233,8 +233,8 @@ export function validateResearchGraph(
         }
     }
 
-    if (!ids.has('root')) {
-        errors.push('Research graph is missing the "root" node.');
+    if (!ids.has('research.medieval.root')) {
+        errors.push('Research graph is missing the "research.medieval.root" node.');
     }
 
     return [...new Set(errors)];

@@ -8,7 +8,7 @@ import {coordKey} from "../../pages/City/Components/CityHex/hexUtils.ts";
 import type {CityState} from "../../models/store/city.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
 import {STRUCTURES, STRUCTURES_BY_ID} from "../../data/buildings/index.ts";
-import {superstructures, walls} from "../../data/identificators/index.ts";
+import {superstructures, walls} from "../../data/ids.ts";
 
 const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS) => {
     const generatedCells: HexCell[] = [];

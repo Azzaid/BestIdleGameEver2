@@ -1,0 +1,886 @@
+[
+  {
+    "id": "buildings.medieval.shelter",
+    "name": "Shelter",
+    "kind": "building",
+    "description": "A rough first home that makes organized foraging possible.",
+    "keywords": [
+      "production",
+      "people",
+      "housing"
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.scrapCollectionPoint",
+    "name": "Scrap Collection Point",
+    "kind": "building",
+    "description": "A sorting yard for salvaged tools, hollow trunks, fittings, and other early supplies.",
+    "keywords": [
+      "production",
+      "gold",
+      "scavenger"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.foraging"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.stalkerHut",
+    "name": "Stalker Hut",
+    "kind": "superstructure",
+    "description": "Hut of an experienced stalker that can go further and bring more than just scraps.",
+    "keywords": [
+      "production",
+      "people",
+      "gold",
+      "scavenger"
+    ],
+    "requiredBuildingIds": [
+      "buildings.medieval.shelter",
+      "buildings.medieval.scrapCollectionPoint"
+    ],
+    "hint": "Basically a shelter and some place to drop scavenged supplies.",
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.shelter"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.scrapCollectionPoint"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.toolShed",
+    "name": "Tool Shed",
+    "kind": "building",
+    "description": "A cramped rack of repaired scrap tools sturdy enough for repeat work.",
+    "keywords": [
+      "production",
+      "gold",
+      "tools"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.scrapTools"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.lumberjackHouse",
+    "name": "Lumberjack House",
+    "kind": "superstructure",
+    "description": "A stalker hut and tool shed combined for reliable timber work.",
+    "keywords": [
+      "production",
+      "people",
+      "gold",
+      "wood",
+      "timberwork"
+    ],
+    "requiredBuildingIds": [
+      "buildings.medieval.toolShed",
+      "buildings.medieval.stalkerHut"
+    ],
+    "hint": "Stalker could gather some quality wood with good tools.",
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.toolShed"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stalkerHut"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.farm",
+    "name": "Farm",
+    "kind": "superstructure",
+    "description": "A house with a fields around. Peacefull and happy.",
+    "keywords": [
+      "production",
+      "people",
+      "plants",
+      "gold",
+      "farm"
+    ],
+    "requiredBuildingIds": [
+      "buildings.medieval.woodenHouse",
+      "buildings.nature.field"
+    ],
+    "hint": "What if we add some space to grow plants?",
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.field"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.woodenHouse"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 7
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.woodenHouse",
+    "name": "Wooden House",
+    "kind": "building",
+    "description": "Real walls, a dry roof, and enough stability to grow the population.",
+    "keywords": [
+      "production",
+      "people",
+      "wood",
+      "housing"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.timberProcessing"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 7
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.craftsmansHouse",
+    "name": "Craftsman's House",
+    "kind": "superstructure",
+    "description": "A wooden house and tool shed that support woodworking and stoneworking.",
+    "keywords": [
+      "production",
+      "people",
+      "gold",
+      "craft",
+      "woodWorking",
+      "stoneWorking"
+    ],
+    "requiredBuildingIds": [
+      "buildings.medieval.woodenHouse",
+      "buildings.medieval.toolShed"
+    ],
+    "hint": "What if we add some tools to work with?",
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.woodenHouse"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.toolShed"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.market",
+    "name": "Market",
+    "kind": "building",
+    "description": "A trading and social center where merchants, labor, favors, salvage, and coin become one economy.",
+    "keywords": [
+      "production",
+      "gold",
+      "market"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.farm"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 25
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 10
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 16
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.stoneHouse",
+    "name": "Stone House",
+    "kind": "building",
+    "description": "Durable housing that supports people and gold while keeping city signature lower than wood.",
+    "keywords": [
+      "production",
+      "people",
+      "gold",
+      "housing"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.stoneworking"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 7
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.university",
+    "name": "University",
+    "kind": "superstructure",
+    "description": "A civic center for science",
+    "keywords": [
+      "science",
+      "naturalSciences"
+    ],
+    "requiredBuildingIds": [
+      "buildings.medieval.stoneHouse",
+      "buildings.medieval.stoneHouse",
+      "buildings.medieval.stoneHouse"
+    ],
+    "hint": "What if we gather rich people with good housing together?",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.stoneworking"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stoneHouse"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 15
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 50
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 26
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.workshop",
+    "name": "Workshop",
+    "kind": "building",
+    "description": "A focused craft building that improves nearby production but disrupts Aether work.",
+    "keywords": [
+      "production",
+      "gold",
+      "craft"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.engineering"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 7
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 22
+      }
+    ],
+    "adjacencyDescription": "+25% production in adjacent buildings; -25% Aether production in adjacent buildings."
+  },
+  {
+    "id": "buildings.medieval.engineersHouse",
+    "name": "Engineer's House",
+    "kind": "superstructure",
+    "description": "A workshop and stone house combined into an engineering household.",
+    "keywords": [
+      "production",
+      "people",
+      "gold",
+      "craft"
+    ],
+    "requiredBuildingIds": [
+      "buildings.medieval.stoneHouse",
+      "buildings.medieval.workshop"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.workshop"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stoneHouse"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 24
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.barracks",
+    "name": "Barracks",
+    "kind": "building",
+    "description": "Consumes gold to send patrols outside the city and reduce city signature.",
+    "keywords": [
+      "defense",
+      "visibility"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.fortification"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 20
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.barn",
+    "name": "Barn",
+    "kind": "building",
+    "description": "Reduces people requirements of adjacent buildings.",
+    "keywords": [
+      "support",
+      "farm"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.animalHusbandry"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 12
+      }
+    ],
+    "adjacencyDescription": "Adjacent buildings require fewer People."
+  },
+  {
+    "id": "buildings.medieval.tradeStation",
+    "name": "Trade Station",
+    "kind": "building",
+    "description": "Extends the reach of adjacency bonuses and opens the way to organized trade.",
+    "keywords": [
+      "support",
+      "market"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.horses"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 18
+      }
+    ],
+    "adjacencyDescription": "Adjacency bonuses affect buildings at +1 range."
+  },
+  {
+    "id": "buildings.medieval.stable",
+    "name": "Stable",
+    "kind": "superstructure",
+    "description": "A barn and farm organized around horses.",
+    "keywords": [
+      "support",
+      "farm"
+    ],
+    "requiredBuildingIds": [
+      "buildings.medieval.barn",
+      "buildings.medieval.farm"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.barn"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.farm"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 18
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.shop",
+    "name": "Shop",
+    "kind": "building",
+    "description": "A dedicated commercial building that produces gold.",
+    "keywords": [
+      "production",
+      "gold",
+      "market"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.trade"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 6
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 16
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.tradingStation",
+    "name": "Trading Station",
+    "kind": "superstructure",
+    "description": "A shop and trade station combined into caravan infrastructure.",
+    "keywords": [
+      "production",
+      "gold",
+      "market"
+    ],
+    "requiredBuildingIds": [
+      "buildings.medieval.tradeStation",
+      "buildings.medieval.shop"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.shop"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.tradeStation"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 8
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 24
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.chemicalStorage",
+    "name": "Chemical Storage",
+    "kind": "building",
+    "description": "A careful stockpile for reactive ingredients needed by alchemy.",
+    "keywords": [
+      "infrastructure",
+      "laboratory"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.naturalPhilosophy"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 24
+      }
+    ]
+  },
+  {
+    "id": "buildings.medieval.alchemicalLaboratory",
+    "name": "Alchemical Laboratory",
+    "kind": "superstructure",
+    "description": "Chemical storage and stone housing arranged for gunpowder work.",
+    "keywords": [
+      "infrastructure",
+      "laboratory"
+    ],
+    "requiredBuildingIds": [
+      "buildings.medieval.stoneHouse",
+      "buildings.medieval.chemicalStorage"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.chemicalStorage"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stoneHouse"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 28
+      }
+    ]
+  }
+]

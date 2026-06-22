@@ -19,7 +19,9 @@
     "values": [
       {
         "valueId": "wall.resilience",
-        "additionalKeywords": ["production"],
+        "additionalKeywords": [
+          "production"
+        ],
         "additive": 10
       }
     ]

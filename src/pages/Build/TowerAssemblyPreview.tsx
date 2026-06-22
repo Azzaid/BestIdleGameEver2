@@ -8,7 +8,7 @@ import { INITIAL_TOWER_AIM_RADIANS } from '../../models/battle/tower.ts';
 import { DEVELOPMENT_VECTORS } from '../../models/DevlopmentVector.ts';
 import { wallSpriteMetadataAtlas } from '../../models/sprites/walls/wallsSpriteAtlas.ts';
 import { wallTopSpriteMetadataAtlas } from '../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
-import { superstructures, walls } from '../../data/identificators/index.ts';
+import { superstructures, walls } from '../../data/ids.ts';
 import type { BattleWallSegment } from '../../models/battle/wallSegment.ts';
 import { CITY_HEX_SIZE } from '../../data/constants.ts';
 import { DEFAULT_BATTLE_BACKGROUND_ID } from '../../models/battle/backgrounds.ts';

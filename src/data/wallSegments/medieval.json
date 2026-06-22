@@ -1,18 +1,20 @@
 [
   {
-    "id": "wall.medieval.scrapBarricade",
+    "id": "wallSegments.medieval.scrapBarricade",
     "name": "Scrap barricade",
     "description": "Just a pile of scrap an rubbish to fen off attackers",
     "values": [
       {
         "valueId": "wall.resilience",
-        "additionalKeywords": ["production"],
+        "additionalKeywords": [
+          "production"
+        ],
         "additive": 6
       }
     ]
   },
   {
-    "id": "wall.medieval.palisade",
+    "id": "wallSegments.medieval.palisade",
     "name": "Palisade",
     "description": "Row of sharpened wood trunks. Strong but require a lot of maintenance",
     "requirements": [
@@ -28,12 +30,16 @@
     "values": [
       {
         "valueId": "wall.resilience",
-        "additionalKeywords": ["production"],
+        "additionalKeywords": [
+          "production"
+        ],
         "additive": 10
       },
       {
         "valueId": "resource.people",
-        "additionalKeywords": ["upkeep"],
+        "additionalKeywords": [
+          "upkeep"
+        ],
         "additive": 4
       }
     ]

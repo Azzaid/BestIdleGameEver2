@@ -1,0 +1,197 @@
+[
+  {
+    "id": "research.aether.wickedItems",
+    "parentId": "research.medieval.foraging",
+    "name": "Wicked Items",
+    "summary": "Strange scavenged objects make early ritual stonework possible.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.foraging"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stalkerHut"
+      }
+    ]
+  },
+  {
+    "id": "research.aether.mysticism",
+    "parentId": "research.aether.wickedItems",
+    "name": "Mysticism",
+    "summary": "Early omens and ritual specialists emerge from the first shaman hut.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.wickedItems"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.shamanHut"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "research.aether.magicStones",
+    "parentId": "research.aether.mysticism",
+    "name": "Magic Stones",
+    "summary": "A shaman hut turns early ritual stones into useful floating wall towers.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.mysticism"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "research.aether.mysticalCommand",
+    "parentId": "research.aether.mysticism",
+    "name": "Mana Flow Command",
+    "summary": "Guiding stones and obelisks shape mana flows into deliberate magical direction.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.mysticism"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.coven"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.manaFlows",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "research.aether.mysticalFriendship",
+    "parentId": "research.aether.mysticism",
+    "name": "Veil Communion",
+    "summary": "Spirit huts and whispering spirits turn a thinning veil into cooperation with nearby spirits.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.mysticism"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.coven"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 3
+      }
+    ]
+  },
+  {
+    "id": "research.aether.ancestorSpirits",
+    "parentId": "research.aether.mysticalFriendship",
+    "name": "Ancestor Spirits",
+    "summary": "Poltergeists and veil thinning deepen the spirit economy.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.mysticalFriendship"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.houseOfSpirits"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 4
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.death",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "research.aether.livingClay",
+    "parentId": "research.aether.ancestorSpirits",
+    "name": "Living Clay",
+    "summary": "Predatory clay, living platforms, and golem workshops animate magical matter.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.ancestorSpirits"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.embodimentStone"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 4
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.manaFlows",
+        "amount": 3
+      }
+    ]
+  },
+  {
+    "id": "research.aether.mysticalHostility",
+    "parentId": "research.aether.mysticism",
+    "name": "Mystical Hostility",
+    "summary": "Totems suppress the city or punish monsters near the walls.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.mysticism"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.coven"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.death",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "research.aether.deathEnergy",
+    "parentId": "research.aether.mysticalHostility",
+    "name": "Death Energy",
+    "summary": "Hostile spirit work culminates in death-triggered explosions.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.mysticalHostility"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.spiritTrap"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.death",
+        "amount": 3
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.manaFlows",
+        "amount": 2
+      }
+    ]
+  }
+]

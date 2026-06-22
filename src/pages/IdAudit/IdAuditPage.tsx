@@ -10,7 +10,7 @@ import {
   superstructures,
   technologies,
   walls,
-} from "../../data/identificators/index.ts";
+} from "../../data/ids.ts";
 import {researchTree} from "../../data/research/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/gunParts/index.ts";
 import {TOWER_PART_VISUAL_ASSETS} from "../../data/gunParts/partVisualMetadata.ts";
@@ -218,7 +218,7 @@ function getUnregisteredRows(rows: readonly AuditRow[]): AuditRow[] {
       dataStatus: TOWER_PARTS_BY_ID[id] ? "ok" : "missing",
       progressionStatus: "none",
       assetStatus: "ok",
-      notes: "Asset file exists but id is not in src/data/identificators",
+      notes: "Asset file exists but id is not in derived data ids",
     });
   }
 
@@ -249,7 +249,7 @@ function createUnregisteredRow(category: string, id: string, name?: string): Aud
     dataStatus: "ok",
     progressionStatus: "none",
     assetStatus: "none",
-    notes: "Definition exists but id is not in src/data/identificators",
+    notes: "Definition exists but id is not in derived data ids",
   };
 }
 

@@ -1,0 +1,45 @@
+[
+  {
+    "id": "wallSuperstructures.nature.graspingRoots",
+    "name": "Grasping roots",
+    "description": "Living roots wind over the wall, dragging attackers down and shoving them back from the city.",
+    "keywords": [
+      "slow",
+      "push"
+    ],
+    "values": [
+      {
+        "valueId": "monster.speedMultiplier",
+        "additionalKeywords": [
+          "production",
+          "slow"
+        ],
+        "additive": -0.2
+      },
+      {
+        "valueId": "wall.pushBackDistance",
+        "additionalKeywords": [
+          "production",
+          "push"
+        ],
+        "additive": 24
+      },
+      {
+        "valueId": "wall.pushBacksPerSecond",
+        "additionalKeywords": [
+          "production",
+          "push"
+        ],
+        "additive": 0.5
+      },
+      {
+        "valueId": "wall.pushBackEffectZoneSize",
+        "additionalKeywords": [
+          "production",
+          "push"
+        ],
+        "additive": 96
+      }
+    ]
+  }
+]

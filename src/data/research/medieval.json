@@ -1,0 +1,287 @@
+[
+  {
+    "id": "research.medieval.root",
+    "parentId": null,
+    "name": "Shelter",
+    "summary": "A first foothold inside the walls."
+  },
+  {
+    "id": "research.medieval.foraging",
+    "parentId": "research.medieval.root",
+    "name": "Foraging",
+    "summary": "Organize safe trips outside the shelter to find food, salvage, and useful hollow wood.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.root"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.shelter"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.scrapTools",
+    "parentId": "research.medieval.foraging",
+    "name": "Scrap Tools",
+    "summary": "Turn scavenged metal, lashings, wedges, and handles into repeatable tools.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.foraging"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stalkerHut"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.timberProcessing",
+    "parentId": "research.medieval.scrapTools",
+    "name": "Timber Processing",
+    "summary": "Shape reliable wood for houses and early wooden launchers.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.scrapTools"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.lumberjackHouse"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.money",
+    "parentId": "research.nature.plantCultivation",
+    "name": "Money",
+    "summary": "Exchange value, payment, and early economic specialization grow from the first farm economy.",
+    "alsoRequires": [
+      "research.medieval.timberProcessing"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.plantCultivation"
+      },
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.timberProcessing"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.farm"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.craftsmanship",
+    "parentId": "research.medieval.scrapTools",
+    "name": "Craftsmanship",
+    "summary": "We ara no longer need to stare in ave at things from the old world. We can now craft.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.scrapTools"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.craftsmansHouse"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.woodworking",
+    "parentId": "research.medieval.craftsmanship",
+    "name": "Woodworking",
+    "summary": "Workshop practice for crossbows, wheeled platforms, and palisades.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.craftsmanship"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.craftsmansHouse"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.stoneworking",
+    "parentId": "research.medieval.craftsmanship",
+    "name": "Stoneworking",
+    "summary": "Repeatable stone cutting, fitting, housing, and wall repair.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.craftsmanship"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.craftsmansHouse"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.naturalPhilosophy",
+    "parentId": "research.medieval.craftsmanship",
+    "name": "Natural Philosophy",
+    "summary": "We now know how to make things. It is time to ask yourself why the world is the way it is.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.craftsmanship"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.university"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.engineering",
+    "parentId": "research.medieval.naturalPhilosophy",
+    "name": "Engineering",
+    "summary": "Practical building knowledge focused through the workshop.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.naturalPhilosophy"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.university"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.fortification",
+    "parentId": "research.medieval.engineering",
+    "name": "Fortification",
+    "summary": "Bastions, fortress walls, and patrol infrastructure.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.engineering"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.engineersHouse"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.ballistics",
+    "parentId": "research.medieval.engineering",
+    "name": "Ballistics",
+    "summary": "A future branch for advanced launchers and siege weapons.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.engineering"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.engineersHouse"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.animalHusbandry",
+    "parentId": "research.medieval.naturalPhilosophy",
+    "name": "Animal Husbandry",
+    "summary": "Barns, stables, horses, and the support economy around them.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.naturalPhilosophy"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.university"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.horses",
+    "parentId": "research.medieval.animalHusbandry",
+    "name": "Horses",
+    "summary": "Horse drives and trade stations improve movement and logistics.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.animalHusbandry"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stable"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.trade",
+    "parentId": "research.medieval.horses",
+    "name": "Trade",
+    "summary": "Shops and dedicated loaders emerge from organized trade.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.horses"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.tradeStation"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.caravans",
+    "parentId": "research.medieval.trade",
+    "name": "Caravans",
+    "summary": "Migration transfers part of free support.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.trade"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.tradingStation"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.alchemy",
+    "parentId": "research.medieval.naturalPhilosophy",
+    "name": "Alchemy",
+    "summary": "Chemical storage and laboratory practices",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.naturalPhilosophy"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.university"
+      }
+    ]
+  },
+  {
+    "id": "research.medieval.gunpowder",
+    "parentId": "research.medieval.alchemy",
+    "name": "Gunpowder",
+    "summary": "Explosive chambers and bombs enter the tower arsenal when matching art exists.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.alchemy"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.alchemicalLaboratory"
+      }
+    ]
+  }
+]

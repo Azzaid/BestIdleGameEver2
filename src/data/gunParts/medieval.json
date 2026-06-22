@@ -1,0 +1,922 @@
+[
+  {
+    "id": "gunParts.medieval.crudeSling",
+    "slot": "launchSystem",
+    "name": "Primitive Launcher",
+    "description": "Crude slingshot. It is a bit rough, but it works.",
+    "keywords": [
+      "rough",
+      "wood"
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 300
+      },
+      {
+        "valueId": "tower.shotsPerSecond",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.burstCount",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 300
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 0.7
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "tower.retargetCooldownSeconds",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.rotationSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1.5
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.hollowedTrunk",
+    "slot": "barrel",
+    "name": "Hollow trunk",
+    "description": "Old hollow trunk found near the city walls.",
+    "keywords": [
+      "rough",
+      "wood"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.foraging"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "scavenger"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -0.15
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.stoneBasket",
+    "slot": "ammo",
+    "name": "Stone Basket",
+    "description": "A basket stones.",
+    "keywords": [
+      "stone"
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -100
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -100
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "tower.projectileRadius",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.pickedStones",
+    "slot": "ammo",
+    "name": "Hand picked stones",
+    "description": "A basket of carefully picked stones heavy stones with sharp edges",
+    "keywords": [
+      "stone"
+    ],
+    "requirements": [
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "scavenger"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 8
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -100
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.carvedLog",
+    "slot": "barrel",
+    "name": "Carved out log",
+    "description": "Fresh log carefully hollowed by hands and crude tools.",
+    "keywords": [
+      "rough",
+      "wood"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.timberProcessing"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "timberwork"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 200
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -0.25
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.handTrebuchet",
+    "slot": "launchSystem",
+    "name": "Hand drawn trebuchet",
+    "description": "Flexible planks and a bit of rope. Basically a big bow attached to a gun platform.",
+    "keywords": [
+      "rough",
+      "wood"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.timberProcessing"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "timberwork"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 7
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 400
+      },
+      {
+        "valueId": "tower.shotsPerSecond",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.burstCount",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 0.5
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 400
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "tower.retargetCooldownSeconds",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.rotationSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1.5
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.sharpenedStakes",
+    "slot": "ammo",
+    "name": "Sharpened stakes",
+    "description": "Bunch or thick sticks sharpened by axe",
+    "keywords": [
+      "stone"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.timberProcessing"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "timberwork"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.shotsPerSecond",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 0.1
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.boredTimberBarrel",
+    "slot": "barrel",
+    "name": "Bored timber barrel",
+    "description": "Whole three bored and sanded from inside",
+    "keywords": [
+      "wood"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.woodworking"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "woodWorking"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 200
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 300
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -0.5
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.baseWoodArrow",
+    "slot": "ammo",
+    "name": "Wooden arrows",
+    "description": "Simple but carefully crafted",
+    "keywords": [
+      "wood"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.woodworking"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "woodWorking"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 200
+      },
+      {
+        "valueId": "tower.shotsPerSecond",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 200
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.woodenRails",
+    "slot": "platform",
+    "name": "Wooden rails",
+    "description": "Set of rails to aid in tower rotation",
+    "keywords": [
+      "wood"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.woodworking"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "woodWorking"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.rotationSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 0.25
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.leverLoader",
+    "slot": "loadingSystem",
+    "name": "Lever loader",
+    "description": "Clever lever loading mechanism allows to load ammo faster",
+    "keywords": [
+      "wood"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.woodworking"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "woodWorking"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.shotsPerSecond",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 5
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.barrelStoneRails",
+    "slot": "barrel",
+    "name": "Stone rails",
+    "description": "Set of stone rails to guide projectile.",
+    "keywords": [
+      "stone"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.stoneworking"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "stoneWorking"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 7
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -0.3
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.makeshiftWoodenAim",
+    "slot": "aimSystem",
+    "name": "Makeshift wooden aim",
+    "description": "Few planks with holes in them but it still helps to land a shot",
+    "keywords": [
+      "stone"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.stoneworking"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "stoneWorking"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -0.1
+      },
+      {
+        "valueId": "tower.retargetCooldownSeconds",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -0.5
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.baseStoneRails",
+    "slot": "platform",
+    "name": "Stone rails",
+    "description": "Set of stone rails to aid in tower rotation",
+    "keywords": [
+      "stone"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.stoneworking"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "stoneWorking"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.rotationSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 0.45
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -0.1
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.counterweightLoader",
+    "slot": "loadingSystem",
+    "name": "Counterweight loader",
+    "description": "Loader with a handy stone counterweight. Allows to handle bigger projectiles just as quick",
+    "keywords": [
+      "stone"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.stoneworking"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "stoneWorking"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileRadius",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 5
+      }
+    ],
+    "effects": [
+      {
+        "radius": 0,
+        "requiredValueKeywords": [
+          "projectileDamage"
+        ],
+        "multiplier": 1.2
+      }
+    ]
+  }
+]

@@ -1,0 +1,728 @@
+[
+  {
+    "id": "buildings.aether.dolmen",
+    "name": "Dolmen",
+    "kind": "building",
+    "description": "A raised stone place where early mysticism becomes a city practice.",
+    "keywords": [
+      "ritual"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.wickedItems"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 1
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.veil",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 8
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 20
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.shamanHut",
+    "name": "Shaman Hut",
+    "kind": "superstructure",
+    "description": "A dolmen and stalker hut combined into an early magical specialist dwelling.",
+    "keywords": [
+      "production",
+      "manaFlows",
+      "ritual"
+    ],
+    "requiredBuildingIds": [
+      "buildings.aether.dolmen",
+      "buildings.medieval.stalkerHut"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.dolmen"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stalkerHut"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 2
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.veil",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 18
+      },
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 26
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.wardedHome",
+    "name": "Warded Home",
+    "kind": "building",
+    "description": "A dwelling protected by charms, talismans, and simple magical rituals. The inhabitants often cannot explain why it feels safer and more comfortable, only that it does.",
+    "keywords": [
+      "production",
+      "people",
+      "manaFlows",
+      "housing",
+      "ritual"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.magicStones"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 2
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 12
+      },
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.veil",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 8
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.runedHouse",
+    "name": "Runed House",
+    "kind": "superstructure",
+    "description": "A warded home and dolmen combined into a house marked with protective runes.",
+    "keywords": [
+      "production",
+      "people",
+      "manaFlows",
+      "housing",
+      "ritual"
+    ],
+    "requiredBuildingIds": [
+      "buildings.aether.wardedHome",
+      "buildings.aether.dolmen"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.wardedHome"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.dolmen"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 2
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.manaFlows",
+        "amount": 1
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 14
+      },
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 12
+      },
+      {
+        "valueId": "resource.veil",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 18
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 24
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.coven",
+    "name": "Coven",
+    "kind": "superstructure",
+    "description": "Two runed houses joined into a small organized magical community.",
+    "keywords": [
+      "production",
+      "manaFlows",
+      "ritual"
+    ],
+    "requiredBuildingIds": [
+      "buildings.aether.runedHouse",
+      "buildings.aether.runedHouse"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.runedHouse"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 3
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.manaFlows",
+        "amount": 2
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 28
+      },
+      {
+        "valueId": "resource.veil",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 24
+      },
+      {
+        "valueId": "resource.death",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 38
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.obelisk",
+    "name": "Obelisk",
+    "kind": "building",
+    "description": "A focused mana producer with lower signature than early ritual houses.",
+    "keywords": [
+      "production",
+      "manaFlows"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.mysticalCommand"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.manaFlows",
+        "amount": 2
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 18
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 18
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.spiritHut",
+    "name": "Spirit Hut",
+    "kind": "building",
+    "description": "Converts part of nearby people requirements into mana requirements.",
+    "keywords": [
+      "support",
+      "ritual"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.mysticalFriendship"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 3
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.veil",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 16
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 24
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.houseOfSpirits",
+    "name": "House of Spirits",
+    "kind": "superstructure",
+    "description": "Three spirit huts combined into a stronger mana-for-people conversion center.",
+    "keywords": [
+      "support",
+      "ritual"
+    ],
+    "requiredBuildingIds": [
+      "buildings.aether.spiritHut",
+      "buildings.aether.spiritHut",
+      "buildings.aether.spiritHut"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.spiritHut"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 4
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.veil",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 42
+      },
+      {
+        "valueId": "resource.death",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 8
+      },
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 52
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.veilThinning",
+    "name": "Veil Thinning",
+    "kind": "building",
+    "description": "A weak point where the spirit world leaks into reality, producing large mana and a large signature.",
+    "keywords": [
+      "production",
+      "manaFlows",
+      "visibility"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.ancestorSpirits"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 4
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 28
+      },
+      {
+        "valueId": "resource.veil",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 48
+      },
+      {
+        "valueId": "resource.death",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 6
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 42
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.embodimentStone",
+    "name": "Embodiment Stone",
+    "kind": "superstructure",
+    "description": "An obelisk and spirit hut combined to bind spirits into matter.",
+    "keywords": [
+      "support",
+      "arcane"
+    ],
+    "requiredBuildingIds": [
+      "buildings.aether.obelisk",
+      "buildings.aether.spiritHut"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.obelisk"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.spiritHut"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.veil",
+        "amount": 4
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.manaFlows",
+        "amount": 3
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.veil",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 18
+      },
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 24
+      },
+      {
+        "valueId": "resource.death",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 8
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 34
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.golemBuilder",
+    "name": "Golem Builder",
+    "kind": "building",
+    "description": "Replaces all people requirements in radius with mana requirements.",
+    "keywords": [
+      "support",
+      "arcane"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.livingClay"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.manaFlows",
+        "amount": 3
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 26
+      },
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 32
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.suppressionTotem",
+    "name": "Suppression Totem",
+    "kind": "building",
+    "description": "Consumes mana to strongly reduce city signature while suppressing nearby production.",
+    "keywords": [
+      "visibility",
+      "ritual"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.aether.mysticalHostility"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.death",
+        "amount": 2
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.manaFlows",
+        "amount": 1
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 8
+      },
+      {
+        "valueId": "resource.death",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 22
+      },
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      }
+    ]
+  },
+  {
+    "id": "buildings.aether.spiritTrap",
+    "name": "Spirit Trap",
+    "kind": "superstructure",
+    "description": "A spirit hut and suppression totem combined into a dangerous mana trap.",
+    "keywords": [
+      "production",
+      "manaFlows",
+      "ritual"
+    ],
+    "requiredBuildingIds": [
+      "buildings.aether.spiritHut",
+      "buildings.aether.suppressionTotem"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.spiritHut"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.aether.suppressionTotem"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.death",
+        "amount": 3
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.manaFlows",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 30
+      },
+      {
+        "valueId": "resource.death",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 36
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 30
+      }
+    ]
+  }
+]

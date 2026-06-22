@@ -1,0 +1,231 @@
+[
+  {
+    "id": "buildings.nature.wildGarden",
+    "name": "Wild Garden",
+    "kind": "building",
+    "description": "A small garden with wild inedible and strange plants.",
+    "keywords": [
+      "plants"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.seedGathering"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.herbalistHut",
+    "name": "Herbalist Hut",
+    "kind": "superstructure",
+    "description": "A stalker hut and wild garden combined into a place study gathered plants.",
+    "keywords": [
+      "production",
+      "plants"
+    ],
+    "requiredBuildingIds": [
+      "buildings.nature.wildGarden",
+      "buildings.medieval.stalkerHut"
+    ],
+    "requirements": [
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.wildGarden"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stalkerHut"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.field",
+    "name": "Field",
+    "kind": "building",
+    "description": "A planned growing field for deliberate plant cultivation.",
+    "keywords": [
+      "farm",
+      "boost"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.plantCultivation"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      }
+    ],
+    "effects": [
+      {
+        "radius": 1,
+        "requiredBuildingKeywords": [],
+        "requiredValueKeywords": [
+          "resource",
+          "people"
+        ],
+        "multiplier": 1.25
+      }
+    ],
+    "adjacencyDescription": "Neighboring buildings can sustain 25% more people."
+  },
+  {
+    "id": "buildings.nature.mycelium",
+    "name": "Mycelium",
+    "kind": "building",
+    "description": "Part of wild mycelium. Interesting what it can grow into.",
+    "keywords": [
+      "fungi",
+      "boost"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.mushrooms"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      }
+    ],
+    "effects": [
+      {
+        "radius": 1,
+        "requiredBuildingKeywords": [
+          "fungi"
+        ],
+        "requiredValueKeywords": [
+          "fungi"
+        ],
+        "multiplier": 1.25
+      }
+    ],
+    "adjacencyDescription": "Neighboring fungi get stronger"
+  },
+  {
+    "id": "buildings.nature.saplings",
+    "name": "Saplings",
+    "kind": "building",
+    "description": "Field of saplings growing in the wild. They are not very tall, but they are very strong.",
+    "keywords": [
+      "plants",
+      "boost"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.threes"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      }
+    ],
+    "effects": [
+      {
+        "radius": 1,
+        "requiredBuildingKeywords": [
+          "plants"
+        ],
+        "requiredValueKeywords": [
+          "plants"
+        ],
+        "multiplier": 1.25
+      }
+    ],
+    "adjacencyDescription": "Neighboring plants get stronger"
+  },
+  {
+    "id": "buildings.nature.meadow",
+    "name": "Meadow",
+    "kind": "building",
+    "description": "A small meadow full of small wild animals.",
+    "keywords": [
+      "animals",
+      "boost"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.animals"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      }
+    ],
+    "effects": [
+      {
+        "radius": 1,
+        "requiredBuildingKeywords": [
+          "animals"
+        ],
+        "requiredValueKeywords": [
+          "animals"
+        ],
+        "multiplier": 1.25
+      }
+    ],
+    "adjacencyDescription": "Neighboring animals get stronger"
+  }
+]

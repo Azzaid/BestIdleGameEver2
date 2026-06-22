@@ -5,7 +5,6 @@ import medievalLauncherCrudeSlingUrl from '../../assets/battle/towerParts/mediev
 import type { TowerPartVisualMetadata } from '../../models/battle/towerPartVisualMetadata.ts';
 import type { TowerVisualPoint, TowerVisualSize } from '../../models/battle/towerVisual.ts';
 import type { SpriteAsset } from '../../models/sprites/SpriteAtlas.ts';
-import { gunparts } from '../identificators/index.ts';
 
 export type TowerPartVisualAsset = SpriteAsset<TowerPartVisualMetadata> & {
   metadata: TowerPartVisualMetadata;
@@ -63,11 +62,11 @@ function normalizeMetadata(metadata: TowerPartVisualMetadata): TowerPartVisualMe
 }
 
 export const TOWER_PART_VISUAL_ASSETS: Record<string, TowerPartVisualAsset> = {
-  [gunparts.ammo.medieval.stoneBasket]: {
+  ["gunParts.medieval.stoneBasket"]: {
     metadata: normalizeMetadata(medievalAmmoCrudeStoneMetadata),
     src: medievalAmmoCrudeStoneUrl,
   },
-  [gunparts.launchSystems.medieval.crudeSling]: {
+  ["gunParts.medieval.crudeSling"]: {
     metadata: normalizeMetadata(medievalLauncherCrudeSlingMetadata),
     src: medievalLauncherCrudeSlingUrl,
   },

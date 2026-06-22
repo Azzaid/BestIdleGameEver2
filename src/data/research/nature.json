@@ -1,0 +1,133 @@
+[
+  {
+    "id": "research.nature.seedGathering",
+    "parentId": "research.medieval.foraging",
+    "name": "Seed Gathering",
+    "summary": "Stalker hut routes begin preserving useful wild seeds for the future bio branch.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.foraging"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stalkerHut"
+      }
+    ]
+  },
+  {
+    "id": "research.nature.plantCultivation",
+    "parentId": "research.nature.seedGathering",
+    "name": "Plant Cultivation",
+    "summary": "The settlement learns to deliberately grow and use plants.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.seedGathering"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.herbalistHut"
+      }
+    ]
+  },
+  {
+    "id": "research.nature.mushrooms",
+    "parentId": "research.nature.seedGathering",
+    "name": "Mushrooms",
+    "summary": "After the fall mushrooms became much more aggressive and sinister",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.seedGathering"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.herbalistHut"
+      }
+    ]
+  },
+  {
+    "id": "research.nature.threes",
+    "parentId": "research.nature.seedGathering",
+    "name": "Threes",
+    "summary": "Some threes are no longer what they seem to be. Some of them even bleed.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.seedGathering"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.herbalistHut"
+      }
+    ]
+  },
+  {
+    "id": "research.nature.animals",
+    "parentId": "research.nature.seedGathering",
+    "name": "Animals",
+    "summary": "Most of them where turned into monsters. But some can still be domesticated.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.seedGathering"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.herbalistHut"
+      }
+    ]
+  },
+  {
+    "id": "research.nature.spores",
+    "parentId": "research.nature.mushrooms",
+    "name": "Spores",
+    "summary": "Certain mushrooms can emit clouds of spores and wind carry them for a great distances",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.mushrooms"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.fungi",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "research.nature.livingWood",
+    "parentId": "research.nature.threes",
+    "name": "Living wood",
+    "summary": "Certain sorts of trees grow incredibly fast and it feels like they follow commands.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.threes"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.plants",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "research.nature.tentacles",
+    "parentId": "research.nature.animals",
+    "name": "Tentacles",
+    "summary": "Some animals are malformed beyond recognition and use tentacles to attack everything they see. But they still can be used if you place them on the wall why they a still young.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.animals"
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.animals",
+        "amount": 2
+      }
+    ]
+  }
+]

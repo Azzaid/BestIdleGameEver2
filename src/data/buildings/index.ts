@@ -1,9 +1,35 @@
-import { techBuildings } from "./tech";
-import { natureBuildings } from "./nature";
-import { medievalBuildings } from "./medieval";
-import { aetherBuildings } from "./aether";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
-import type {BuildingAtlas} from "../../models/city/Building.ts";
+import type {Building, BuildingAtlas} from "../../models/city/Building.ts";
+import type {BuildingKeyword} from "../../models/city/Keywords.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {Requirement} from "../../models/progression/requirements.ts";
+import {createBuildingFactory} from "./buildingFactory.ts";
+import aetherBuildingDefinitions from "./aether.json";
+import medievalBuildingDefinitions from "./medieval.json";
+import natureBuildingDefinitions from "./nature.json";
+import techBuildingDefinitions from "./tech.json";
+
+type BuildingDefinition = {
+  id: string;
+  name: string;
+  kind: "building" | "superstructure";
+  description: string;
+  keywords?: BuildingKeyword[];
+  requiredBuildingIds?: string[];
+  hint?: string;
+  requirements?: Requirement[];
+  buildRequirements?: Requirement[];
+  values?: HomogeneousValueEffect[];
+  effects?: HomogeneousAdjacencyRule[];
+  adjacencyDescription?: string;
+};
+
+const definitionsByVector: Record<DevelopmentVectorKey, readonly BuildingDefinition[]> = {
+  tech: techBuildingDefinitions as readonly BuildingDefinition[],
+  nature: natureBuildingDefinitions as readonly BuildingDefinition[],
+  medieval: medievalBuildingDefinitions as readonly BuildingDefinition[],
+  aether: aetherBuildingDefinitions as readonly BuildingDefinition[],
+};
 
 export type StructureDefinition = {
   id: string;
@@ -15,66 +41,101 @@ export type StructureDefinition = {
 };
 
 export const BUILDINGS_ATLAS: BuildingAtlas = {
-    [DEVELOPMENT_VECTORS.tech]: techBuildings,
-    [DEVELOPMENT_VECTORS.nature]: natureBuildings,
-    [DEVELOPMENT_VECTORS.medieval]: medievalBuildings,
-    [DEVELOPMENT_VECTORS.aether]: aetherBuildings,
+  [DEVELOPMENT_VECTORS.tech]: buildBuildings("tech"),
+  [DEVELOPMENT_VECTORS.nature]: buildBuildings("nature"),
+  [DEVELOPMENT_VECTORS.medieval]: buildBuildings("medieval"),
+  [DEVELOPMENT_VECTORS.aether]: buildBuildings("aether"),
 };
 
 export const STRUCTURES: StructureDefinition[] = Object.values(DEVELOPMENT_VECTORS).flatMap(vector => (
-    Object.values(BUILDINGS_ATLAS[vector]).flatMap(building => (
-        building.multiHexStructure?.flatMap(rule => {
-            if (!rule.requiredBuildingIds.length) return [];
+  Object.values(BUILDINGS_ATLAS[vector]).flatMap(building => (
+    building.multiHexStructure?.flatMap(rule => {
+      if (!rule.requiredBuildingIds.length) return [];
 
-            return [{
-                id: building.id,
-                name: building.name,
-                vector: getDevelopmentVectorKey(building.vector),
-                requiredBuildingIds: rule.requiredBuildingIds,
-                description: building.description,
-                hint: rule.hint ?? getDefaultStructureHint(rule.requiredBuildingIds),
-            }];
-        }) ?? []
-    ))
+      return [{
+        id: building.id,
+        name: building.name,
+        vector: getDevelopmentVectorKey(building.vector),
+        requiredBuildingIds: rule.requiredBuildingIds,
+        description: building.description,
+        hint: rule.hint ?? getDefaultStructureHint(rule.requiredBuildingIds),
+      }];
+    }) ?? []
+  ))
 ));
 
 export const STRUCTURES_BY_ID = Object.fromEntries(
-    STRUCTURES.map(structure => [structure.id, structure]),
+  STRUCTURES.map(structure => [structure.id, structure]),
 ) as Record<string, StructureDefinition>;
 
+function buildBuildings(vector: DevelopmentVectorKey): Record<string, Building> {
+  const {building, superstructure} = createBuildingFactory({
+    vector: DEVELOPMENT_VECTORS[vector],
+    defaultKeywords: [vector],
+  });
+
+  return Object.fromEntries(
+    definitionsByVector[vector].map(definition => {
+      const create = definition.kind === "superstructure" ? superstructure : building;
+      const built = create(
+        definition.id,
+        definition.name,
+        definition.description,
+        definition.keywords ?? [],
+        {
+          requiredBuildingIds: definition.requiredBuildingIds,
+          hint: definition.hint,
+          requirements: definition.requirements,
+          buildRequirements: definition.buildRequirements,
+          values: definition.values,
+          effects: definition.effects,
+        },
+      );
+
+      return [
+        built.id,
+        {
+          ...built,
+          adjacencyDescription: definition.adjacencyDescription ?? built.adjacencyDescription,
+        },
+      ];
+    }),
+  );
+}
+
 function getDevelopmentVectorKey(vector: DevelopmentVectorValue): DevelopmentVectorKey {
-    const entry = Object.entries(DEVELOPMENT_VECTORS).find(([, value]) => value === vector);
-    return entry?.[0] as DevelopmentVectorKey;
+  const entry = Object.entries(DEVELOPMENT_VECTORS).find(([, value]) => value === vector);
+  return entry?.[0] as DevelopmentVectorKey;
 }
 
 function getDefaultStructureHint(requiredBuildingIds: readonly string[]): string {
-    const countsByName = new Map<string, number>();
+  const countsByName = new Map<string, number>();
 
-    for (const buildingId of requiredBuildingIds) {
-        const building = getBuildingById(buildingId);
-        const name = building?.name ?? buildingId;
-        countsByName.set(name, (countsByName.get(name) ?? 0) + 1);
-    }
+  for (const buildingId of requiredBuildingIds) {
+    const building = getBuildingById(buildingId);
+    const name = building?.name ?? buildingId;
+    countsByName.set(name, (countsByName.get(name) ?? 0) + 1);
+  }
 
-    const parts = [...countsByName.entries()].map(([name, count]) => (
-        count === 1 ? name : `${count} ${name}s`
-    ));
+  const parts = [...countsByName.entries()].map(([name, count]) => (
+    count === 1 ? name : `${count} ${name}s`
+  ));
 
-    return `Place ${formatList(parts)} in one connected cluster.`;
+  return `Place ${formatList(parts)} in one connected cluster.`;
 }
 
 function getBuildingById(buildingId: string) {
-    for (const vector of Object.values(DEVELOPMENT_VECTORS)) {
-        const building = BUILDINGS_ATLAS[vector][buildingId];
-        if (building) return building;
-    }
+  for (const vector of Object.values(DEVELOPMENT_VECTORS)) {
+    const building = BUILDINGS_ATLAS[vector][buildingId];
+    if (building) return building;
+  }
 
-    return undefined;
+  return undefined;
 }
 
 function formatList(parts: readonly string[]): string {
-    if (parts.length <= 1) return parts[0] ?? "the required buildings";
-    if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
+  if (parts.length <= 1) return parts[0] ?? "the required buildings";
+  if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
 
-    return `${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]}`;
+  return `${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]}`;
 }

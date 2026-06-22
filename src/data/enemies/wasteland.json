@@ -1,0 +1,72 @@
+[
+  {
+    "id": "enemies.wasteland.scrapling",
+    "displayName": "Scrapling",
+    "strengthCost": 8,
+    "selectionWeight": 5,
+    "kind": "melee",
+    "pressure": 2,
+    "maxHitPoints": 2,
+    "armor": 0,
+    "hitRadius": 12,
+    "keywords": [
+      "small",
+      "swarm"
+    ],
+    "sprite": {
+      "textureKey": "enemy_scrapling"
+    },
+    "swarmSize": 3,
+    "swarmSizeMax": 5,
+    "movement": {
+      "kind": "wallboundWobble",
+      "speedPixelsPerSecond": 58,
+      "wobbleAmplitudePixels": 14
+    }
+  },
+  {
+    "id": "enemies.wasteland.platedCrawler",
+    "displayName": "Plated Crawler",
+    "strengthCost": 22,
+    "selectionWeight": 2,
+    "kind": "melee",
+    "pressure": 8,
+    "maxHitPoints": 10,
+    "armor": 3,
+    "hitRadius": 18,
+    "keywords": [
+      "armored"
+    ],
+    "sprite": {
+      "textureKey": "enemy_plated_crawler"
+    },
+    "movement": {
+      "kind": "wallboundWobble",
+      "speedPixelsPerSecond": 34,
+      "wobbleAmplitudePixels": 6
+    }
+  },
+  {
+    "id": "enemies.wasteland.ridgeSpitter",
+    "displayName": "Ridge Spitter",
+    "strengthCost": 18,
+    "selectionWeight": 2.5,
+    "kind": "ranged",
+    "pressure": 5,
+    "maxHitPoints": 4,
+    "armor": 1,
+    "hitRadius": 15,
+    "keywords": [
+      "ranged"
+    ],
+    "sprite": {
+      "textureKey": "enemy_ridge_spitter"
+    },
+    "shotDistance": 180,
+    "movement": {
+      "kind": "wallboundWobble",
+      "speedPixelsPerSecond": 42,
+      "wobbleAmplitudePixels": 10
+    }
+  }
+]
