@@ -5,21 +5,18 @@ import {WALL_SEGMENT_BUILDINGS} from "../../../data/wallSegments/index.ts";
 import {WALL_TOWER_BUILDINGS} from "../../../data/wallSuperstructures/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../../models/DevlopmentVector.ts";
 import {defineProgression} from "./progression.ts";
+import {getProgressionNodeRefFromId} from "./nodeIdentity.ts";
 import type {Requirement} from "../../../models/progression/requirements.ts";
-import type {ProgressionNodeKind, ProgressionRequirements, ProgressionRule} from "./types.ts";
+import type {ProgressionRequirements, ProgressionRule} from "./types.ts";
 
 type RuleSource = {
-  kind: ProgressionNodeKind;
   id: string;
   requirements?: readonly Requirement[];
 };
 
 export const PROGRESSION_RULES = defineProgression(
   getProgressionRuleSources().map((source): ProgressionRule => ({
-      target: {
-        kind: source.kind,
-        id: source.id,
-      },
+      target: getProgressionNodeRefFromId(source.id),
       requires: requirementsToProgressionRequirements(source.requirements),
   })),
 );
@@ -29,27 +26,22 @@ function getProgressionRuleSources(): RuleSource[] {
     ...Object.values(DEVELOPMENT_VECTORS)
       .flatMap(vector => Object.values(BUILDINGS_ATLAS[vector]))
       .map((building): RuleSource => ({
-        kind: "building",
         id: building.id,
         requirements: building.requirements,
       })),
     ...Object.values(WALL_SEGMENT_BUILDINGS).map((wallSegment): RuleSource => ({
-      kind: "building",
       id: wallSegment.id,
       requirements: wallSegment.requirements,
     })),
     ...Object.values(WALL_TOWER_BUILDINGS).map((wallSuperstructure): RuleSource => ({
-      kind: "building",
       id: wallSuperstructure.id,
       requirements: wallSuperstructure.requirements,
     })),
     ...TOWER_PARTS.map((part): RuleSource => ({
-      kind: "towerPart",
       id: part.id,
       requirements: part.requirements,
     })),
     ...Object.values(researchTree).map((research): RuleSource => ({
-      kind: "research",
       id: research.id,
       requirements: research.requirements,
     })),

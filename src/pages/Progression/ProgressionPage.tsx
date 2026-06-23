@@ -544,6 +544,7 @@ function findContentRequirements(node: ProgressionGraphNode): readonly Requireme
   }
 
   if (node.kind === "research") return researchTree[node.id]?.requirements;
+  if (node.kind === "structure") return WALL_TOWER_BUILDINGS[node.id]?.requirements;
 
   return undefined;
 }

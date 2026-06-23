@@ -10,6 +10,7 @@ import type {
 } from "./types.ts";
 import type {UpkeepAmount, UpkeepTypesValue} from "../../../models/Upkeep.ts";
 import type {AetherAtmosphereLevels} from "../../../models/city/AetherAtmosphere.ts";
+import {getProgressionNodeRefFromId} from "./nodeIdentity.ts";
 
 export type ProgressionUnlockContext = {
   researchIds: ReadonlySet<string>;
@@ -112,19 +113,19 @@ export function buildProgressionGraph(
   }
 
   for (const id of Object.keys(registry.research)) {
-    addNode(contentRef("research", id));
+    addNode(getProgressionNodeRefFromId(id));
   }
 
   for (const id of Object.keys(registry.buildings)) {
-    addNode(contentRef("building", id));
+    addNode(getProgressionNodeRefFromId(id));
   }
 
   for (const id of Object.keys(registry.towerParts)) {
-    addNode(contentRef("towerPart", id));
+    addNode(getProgressionNodeRefFromId(id));
   }
 
   for (const id of Object.keys(registry.structures)) {
-    addNode(contentRef("structure", id));
+    addNode(getProgressionNodeRefFromId(id));
   }
 
   for (const rule of rules) {

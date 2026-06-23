@@ -26,26 +26,27 @@ export type ResearchNodeData = {
 };
 
 const TECHNOLOGY_VECTOR_KEYWORDS: DevelopmentVectorKey[] = ["tech", "nature", "medieval", "aether"];
-const TECHNOLOGY_THEME_KEYWORDS: Record<DevelopmentVectorKey, readonly string[]> = {
-    tech: ["tech", "technology"],
-    nature: ["nature", "bio", "biology"],
-    medieval: ["medieval", "human"],
-    aether: ["aether", "magic"],
-};
 
-export function getResearchNodeVector(node: Pick<ResearchNodeData, "keywords">): DevelopmentVectorKey {
-    return getResearchNodeVectorMatches(node)[0] ?? "medieval";
+export function getResearchNodeVector(node: Pick<ResearchNodeData, "id">): DevelopmentVectorKey {
+    return getResearchNodeVectorFromId(node.id) ?? "medieval";
 }
 
-export function getResearchNodeThemeName(node: Pick<ResearchNodeData, "keywords">): ThemeName {
+export function getResearchNodeThemeName(node: Pick<ResearchNodeData, "id">): ThemeName {
     return getResearchNodeVector(node);
 }
 
-export function getResearchNodeVectorMatches(node: Pick<ResearchNodeData, "keywords">): DevelopmentVectorKey[] {
-    return TECHNOLOGY_VECTOR_KEYWORDS.filter(vector => hasAnyKeyword(node, TECHNOLOGY_THEME_KEYWORDS[vector]));
+export function getResearchNodeVectorMatches(node: Pick<ResearchNodeData, "id">): DevelopmentVectorKey[] {
+    const vector = getResearchNodeVectorFromId(node.id);
+    return vector ? [vector] : [];
 }
 
-function hasAnyKeyword(node: Pick<ResearchNodeData, "keywords">, keywords: readonly string[]): boolean {
-    const nodeKeywords = new Set(node.keywords);
-    return keywords.some(keyword => nodeKeywords.has(keyword));
+export function getResearchNodeVectorFromId(id: string): DevelopmentVectorKey | undefined {
+    const [type, vector] = id.split(".");
+    if (type !== "research") return undefined;
+
+    return isTechnologyVectorKey(vector) ? vector : undefined;
+}
+
+function isTechnologyVectorKey(value: string | undefined): value is DevelopmentVectorKey {
+    return TECHNOLOGY_VECTOR_KEYWORDS.includes(value as DevelopmentVectorKey);
 }
