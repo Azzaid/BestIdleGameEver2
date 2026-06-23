@@ -348,6 +348,97 @@ export const visualAssetGrid = style({
   },
 });
 
+export const spriteCard = style({
+  position: "relative",
+  display: "grid",
+  gridTemplateRows: "96px auto auto",
+  gap: "6px",
+  alignItems: "center",
+  justifyItems: "center",
+  minHeight: "150px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "8px",
+  padding: "8px",
+  background: vars.color.background.app,
+});
+
+export const spriteThumb = style({
+  display: "block",
+  width: "96px",
+  height: "96px",
+  objectFit: "contain",
+  borderRadius: "6px",
+  background: vars.color.background.surface,
+});
+
+export const spriteRemoveButton = style({
+  position: "absolute",
+  top: "6px",
+  right: "6px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "24px",
+  height: "24px",
+  border: `1px solid ${vars.color.state.error}`,
+  borderRadius: "999px",
+  background: vars.color.background.surface,
+  color: vars.color.state.error,
+  cursor: "pointer",
+  fontWeight: 900,
+  lineHeight: 1,
+});
+
+export const spriteCaption = style({
+  width: "100%",
+  overflowWrap: "anywhere",
+  color: vars.color.text.muted,
+  fontSize: "0.74rem",
+  textAlign: "center",
+});
+
+export const spriteReplaceButton = style({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: "28px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "6px",
+  padding: "4px 8px",
+  background: vars.color.background.surface,
+  color: vars.color.text.primary,
+  cursor: "pointer",
+  fontSize: "0.78rem",
+  fontWeight: 800,
+});
+
+export const spriteDropZone = style({
+  display: "grid",
+  placeItems: "center",
+  gap: "4px",
+  minHeight: "150px",
+  border: `1px dashed ${vars.color.border.default}`,
+  borderRadius: "8px",
+  padding: "12px",
+  background: vars.color.background.app,
+  cursor: "pointer",
+  textAlign: "center",
+  selectors: {
+    "&:hover": {
+      borderColor: vars.color.border.focus,
+    },
+  },
+});
+
+export const spriteDropTitle = style({
+  color: vars.color.text.heading,
+  fontWeight: 900,
+});
+
+export const fileInput = style({
+  display: "none",
+});
+
 export const visualPreviewBox = style({
   display: "grid",
   alignContent: "start",

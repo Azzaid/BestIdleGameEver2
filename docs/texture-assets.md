@@ -16,6 +16,7 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - Unused images: `src/assets/unused/...`
 
 Use the development vector folder names from `src/models/DevlopmentVector.ts`: `tech`, `nature`, `medieval`, and `aether`.
+Use kebab-case for the file `<id>` segment. The editor derives game IDs from these filenames, for example `wall_medieval_scrap-barricade.png` maps to `wallSegments.medieval.scrapBarricade`.
 
 ## Add A City Building Texture
 

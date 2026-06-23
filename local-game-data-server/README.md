@@ -37,6 +37,26 @@ The target file is selected from the entity `id`:
 
 The server appends new entities and updates existing entities with the same ID. Set `GAME_DATA_DIR` to point at a different data root for tests.
 
+`POST /entities` also accepts an editor payload with an optional sprite action:
+
+```json
+{
+  "entity": { "id": "wallSegments.medieval.scrapBarricade" },
+  "spriteAction": {
+    "action": "upsert",
+    "kind": "wallSegment",
+    "vector": "medieval",
+    "assetId": "wallSegments.medieval.scrapBarricade",
+    "fileStem": "wall_medieval_scrap-barricade",
+    "mimeType": "image/png",
+    "imageBase64": "...",
+    "metadata": {}
+  }
+}
+```
+
+Sprite actions write or delete PNG files under `src/assets`. Non-building sprites also write or delete paired metadata JSON.
+
 `POST /global-events` writes event definitions to `src/data/globalEvents/events.json`.
 `POST /global-modifiers` writes modifier definitions to `src/data/globalModifiers/modifiers.json`.
 Both endpoints append new definitions and update existing definitions with the same ID.

@@ -1,11 +1,12 @@
 import { createServer } from 'node:http'
-import { readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dataDir = path.join(__dirname, 'data')
 const gameDataDir = path.resolve(process.env.GAME_DATA_DIR ?? path.join(__dirname, '..', 'src', 'data'))
+const gameAssetsDir = path.resolve(process.env.GAME_ASSETS_DIR ?? path.join(gameDataDir, '..', 'assets'))
 const port = Number.parseInt(process.env.PORT ?? '4317', 10)
 const entityCollections = new Set([
   'buildings',
@@ -70,10 +71,13 @@ const server = createServer(async (request, response) => {
 
   if (request.method === 'POST' && url.pathname === '/entities') {
     let entity
+    let spriteAction
 
     try {
       const body = await readRequestBody(request)
-      entity = JSON.parse(body)
+      const payload = JSON.parse(body)
+      entity = payload?.entity && payload?.spriteAction ? payload.entity : payload
+      spriteAction = payload?.entity && payload?.spriteAction ? payload.spriteAction : undefined
     } catch (error) {
       sendJson(response, 400, { error: 'Request body must be valid JSON' })
       return
@@ -104,8 +108,14 @@ const server = createServer(async (request, response) => {
         entities[existingIndex] = entity
       }
 
+      const spriteResult = spriteAction ? await applySpriteAction(spriteAction) : undefined
       await writeFile(target.filePath, `${JSON.stringify(entities, null, 2)}\n`, 'utf8')
-      sendJson(response, existingIndex === -1 ? 201 : 200, { action, entity, file: target.relativePath })
+      sendJson(response, existingIndex === -1 ? 201 : 200, {
+        action,
+        entity,
+        file: target.relativePath,
+        sprite: spriteResult,
+      })
     } catch (error) {
       if (error.code === 'ENOENT') {
         sendJson(response, 404, { error: `Target data file not found for "${entity.id}"` })
@@ -117,7 +127,7 @@ const server = createServer(async (request, response) => {
         return
       }
 
-      sendJson(response, 500, { error: 'Failed to add entity' })
+      sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to add entity' })
     }
     return
   }
@@ -277,6 +287,117 @@ function resolveEntityFile(entity) {
   }
 }
 
+async function applySpriteAction(action) {
+  const target = resolveSpriteTarget(action, action?.fileStem)
+
+  if (!target.ok) {
+    const error = new Error(target.error)
+    error.statusCode = target.statusCode
+    throw error
+  }
+
+  if (action.action === 'delete') {
+    await deleteSpriteFiles(target)
+    return {
+      action: 'removed',
+      file: target.relativeImagePath,
+    }
+  }
+
+  if (action.action !== 'upsert') {
+    throw new Error('Sprite action must be "upsert" or "delete"')
+  }
+
+  if (action.mimeType !== 'image/png' || typeof action.imageBase64 !== 'string' || !action.imageBase64) {
+    throw new Error('Sprite upload must include a PNG image')
+  }
+
+  await mkdir(target.dir, { recursive: true })
+
+  await writeFile(target.imagePath, Buffer.from(action.imageBase64, 'base64'))
+
+  if (target.metadataPath) {
+    if (!action.metadata || Array.isArray(action.metadata) || typeof action.metadata !== 'object') {
+      throw new Error('Sprite metadata is required for this entity type')
+    }
+
+    await writeFile(target.metadataPath, `${JSON.stringify(action.metadata, null, 2)}\n`, 'utf8')
+  }
+
+  if (action.previousFileStem && action.previousFileStem !== action.fileStem) {
+    const previousTarget = resolveSpriteTarget(action, action.previousFileStem)
+    if (previousTarget.ok) {
+      await deleteSpriteFiles(previousTarget)
+    }
+  }
+
+  return {
+    action: 'saved',
+    file: target.relativeImagePath,
+    metadataFile: target.relativeMetadataPath,
+  }
+}
+
+async function deleteSpriteFiles(target) {
+  await rm(target.imagePath, { force: true })
+
+  if (target.metadataPath) {
+    await rm(target.metadataPath, { force: true })
+  }
+}
+
+function resolveSpriteTarget(action, fileStem) {
+  if (!action || Array.isArray(action) || typeof action !== 'object') {
+    return { ok: false, statusCode: 400, error: 'Sprite action must be a JSON object' }
+  }
+
+  const dir = resolveSpriteDir(action.kind, action.vector)
+
+  if (!dir) {
+    return { ok: false, statusCode: 400, error: 'Sprite action must include a supported kind and vector' }
+  }
+
+  if (!fileStem || !isSafePathPart(fileStem)) {
+    return { ok: false, statusCode: 400, error: 'Sprite file stem must be a safe path segment' }
+  }
+
+  const imagePath = path.resolve(dir, `${fileStem}.png`)
+  const metadataPath = action.kind === 'building' ? undefined : path.resolve(dir, `${fileStem}.json`)
+
+  if (!imagePath.startsWith(`${dir}${path.sep}`) || (metadataPath && !metadataPath.startsWith(`${dir}${path.sep}`))) {
+    return { ok: false, statusCode: 400, error: 'Resolved sprite path is outside the asset directory' }
+  }
+
+  return {
+    ok: true,
+    dir,
+    imagePath,
+    metadataPath,
+    relativeImagePath: path.relative(path.join(__dirname, '..'), imagePath).replaceAll(path.sep, '/'),
+    relativeMetadataPath: metadataPath ? path.relative(path.join(__dirname, '..'), metadataPath).replaceAll(path.sep, '/') : undefined,
+  }
+}
+
+function resolveSpriteDir(kind, vector) {
+  if (!isSafePathPart(vector)) return null
+
+  const collection = {
+    building: 'buildings',
+    wallSegment: 'wallSegments',
+    wallSuperstructure: 'wallSuperstructures',
+    gunPart: 'gunParts',
+  }[kind]
+
+  if (!collection) return null
+
+  const dir = path.resolve(gameAssetsDir, collection, vector)
+  const collectionDir = path.resolve(gameAssetsDir, collection)
+
+  if (!dir.startsWith(`${collectionDir}${path.sep}`)) return null
+
+  return dir
+}
+
 function isSafePathPart(value) {
-  return /^[A-Za-z0-9_-]+$/.test(value)
+  return typeof value === 'string' && /^[A-Za-z0-9_-]+$/.test(value)
 }

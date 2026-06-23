@@ -3,21 +3,6 @@ import type {TowerPartSlot} from "../models/battle/towerParts.ts";
 import type {TowerPartVisualMetadata} from "../models/battle/towerPartVisualMetadata.ts";
 import type {WallSpriteMetadata} from "../models/sprites/walls/WallSpriteAtlas.ts";
 import type {WallTopSpriteMetadata} from "../models/sprites/wallTops/WallTopSpriteMetadata.ts";
-import buildingTechFarm1Url from "../assets/buildings/tech/building_tech_farm_1.png";
-import buildingTechFarm2Url from "../assets/buildings/tech/building_tech_farm_2.png";
-import buildingTechFarm4Url from "../assets/buildings/tech/building_tech_farm_4.png";
-import buildingTechFarm5Url from "../assets/buildings/tech/building_tech_farm_5.png";
-import buildingTechFossilFuelPowerPlantUrl from "../assets/buildings/tech/building_tech_fossil-fuel-power-plant.png";
-import medievalWallTimberBulwarkMetadata from "../assets/wallSegments/medieval/wall_medieval_timber-bulwark.json";
-import medievalWallTimberBulwarkUrl from "../assets/wallSegments/medieval/wall_medieval_timber-bulwark.png";
-import medievalWallTopScaffoldTowerBaseMetadata from "../assets/wallSuperstructures/medieval/walltop_medieval_scaffold-tower-base.json";
-import medievalWallTopScaffoldTowerBaseUrl from "../assets/wallSuperstructures/medieval/walltop_medieval_scaffold-tower-base.png";
-import medievalAmmoCrudeStoneMetadata from "../assets/gunParts/medieval/medieval_ammo_crude-stone.json";
-import medievalAmmoCrudeStoneUrl from "../assets/gunParts/medieval/medieval_ammo_crude-stone.png";
-import medievalBaseCrudeWoodMetadata from "../assets/gunParts/medieval/medieval_base_crude-wood.json";
-import medievalBaseCrudeWoodUrl from "../assets/gunParts/medieval/medieval_base_crude-wood.png";
-import medievalLauncherCrudeSlingMetadata from "../assets/gunParts/medieval/medieval_launcher_crude-sling.json";
-import medievalLauncherCrudeSlingUrl from "../assets/gunParts/medieval/medieval_launcher_crude-sling.png";
 
 export type EntityVisualAssetKind = "building" | "wallSegment" | "wallSuperstructure" | "gunPart";
 
@@ -56,86 +41,67 @@ export type EntityVisualAsset =
   | WallSuperstructureVisualAsset
   | GunPartVisualAssetOption;
 
+const vectorKeys = ["tech", "nature", "medieval", "aether"] as const satisfies readonly DevelopmentVectorKey[];
+
+const towerPartSlots = [
+  "platform",
+  "barrel",
+  "ammo",
+  "aimSystem",
+  "barrelAttachment",
+  "loadingSystem",
+  "launchSystem",
+] as const satisfies readonly TowerPartSlot[];
+
+const buildingImages = import.meta.glob("../assets/buildings/**/*.png", {
+  eager: true,
+  query: "?url",
+  import: "default",
+}) as Record<string, string>;
+
+const wallSegmentImages = import.meta.glob("../assets/wallSegments/**/*.png", {
+  eager: true,
+  query: "?url",
+  import: "default",
+}) as Record<string, string>;
+
+const wallSegmentMetadata = import.meta.glob("../assets/wallSegments/**/*.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, WallSpriteMetadata>;
+
+const wallSuperstructureImages = import.meta.glob("../assets/wallSuperstructures/**/*.png", {
+  eager: true,
+  query: "?url",
+  import: "default",
+}) as Record<string, string>;
+
+const wallSuperstructureMetadata = import.meta.glob("../assets/wallSuperstructures/**/*.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, WallTopSpriteMetadata>;
+
+const gunPartImages = import.meta.glob("../assets/gunParts/**/*.png", {
+  eager: true,
+  query: "?url",
+  import: "default",
+}) as Record<string, string>;
+
+const gunPartMetadata = import.meta.glob("../assets/gunParts/**/*.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, TowerPartVisualMetadata>;
+
 export const ENTITY_VISUAL_ASSETS: readonly EntityVisualAsset[] = [
-  {
-    id: "building_tech_farm_1",
-    label: "Tech Farm 1",
-    kind: "building",
-    vector: "tech",
-    src: buildingTechFarm1Url,
-  },
-  {
-    id: "building_tech_farm_2",
-    label: "Tech Farm 2",
-    kind: "building",
-    vector: "tech",
-    src: buildingTechFarm2Url,
-  },
-  {
-    id: "building_tech_farm_4",
-    label: "Tech Farm 4",
-    kind: "building",
-    vector: "tech",
-    src: buildingTechFarm4Url,
-  },
-  {
-    id: "building_tech_farm_5",
-    label: "Tech Farm 5",
-    kind: "building",
-    vector: "tech",
-    src: buildingTechFarm5Url,
-  },
-  {
-    id: "building_tech_fossil-fuel-power-plant",
-    label: "Tech Fossil Fuel Power Plant",
-    kind: "building",
-    vector: "tech",
-    src: buildingTechFossilFuelPowerPlantUrl,
-  },
-  {
-    id: "wall_medieval_timber-bulwark",
-    label: "Medieval Timber Bulwark",
-    kind: "wallSegment",
-    vector: "medieval",
-    src: medievalWallTimberBulwarkUrl,
-    metadata: medievalWallTimberBulwarkMetadata,
-  },
-  {
-    id: "walltop_medieval_scaffold-tower-base",
-    label: "Medieval Scaffold Tower Base",
-    kind: "wallSuperstructure",
-    vector: "medieval",
-    src: medievalWallTopScaffoldTowerBaseUrl,
-    metadata: medievalWallTopScaffoldTowerBaseMetadata,
-  },
-  {
-    id: "gunParts.medieval.ammo.stoneBasket",
-    label: "Medieval Ammo Crude Stone",
-    kind: "gunPart",
-    vector: "medieval",
-    slot: "ammo",
-    src: medievalAmmoCrudeStoneUrl,
-    metadata: medievalAmmoCrudeStoneMetadata,
-  },
-  {
-    id: "medieval_base_crude-wood",
-    label: "Medieval Base Crude Wood",
-    kind: "gunPart",
-    vector: "medieval",
-    slot: "platform",
-    src: medievalBaseCrudeWoodUrl,
-    metadata: medievalBaseCrudeWoodMetadata,
-  },
-  {
-    id: "gunParts.medieval.launchSystem.crudeSling",
-    label: "Medieval Launcher Crude Sling",
-    kind: "gunPart",
-    vector: "medieval",
-    slot: "launchSystem",
-    src: medievalLauncherCrudeSlingUrl,
-    metadata: medievalLauncherCrudeSlingMetadata,
-  },
-];
+  ...createBuildingVisualAssets(),
+  ...createWallSegmentVisualAssets(),
+  ...createWallSuperstructureVisualAssets(),
+  ...createGunPartVisualAssets(),
+].sort((left, right) => (
+  left.kind.localeCompare(right.kind)
+  || left.vector.localeCompare(right.vector)
+  || left.label.localeCompare(right.label)
+));
 
 export const ENTITY_VISUAL_ASSETS_BY_ID = Object.fromEntries(
   ENTITY_VISUAL_ASSETS.map(asset => [asset.id, asset]),
@@ -143,4 +109,126 @@ export const ENTITY_VISUAL_ASSETS_BY_ID = Object.fromEntries(
 
 export function getEntityVisualAssetsForKind(kind: EntityVisualAssetKind): EntityVisualAsset[] {
   return ENTITY_VISUAL_ASSETS.filter(asset => asset.kind === kind);
+}
+
+function createBuildingVisualAssets(): BuildingVisualAsset[] {
+  return Object.entries(buildingImages).flatMap(([path, src]) => {
+    const vector = getVectorFromPath(path);
+    if (!vector) return [];
+    const id = getFileStem(path);
+
+    return [{
+      id,
+      label: titleFromId(id),
+      kind: "building",
+      vector,
+      src,
+    }];
+  });
+}
+
+function createWallSegmentVisualAssets(): WallSegmentVisualAsset[] {
+  return Object.entries(wallSegmentImages).flatMap(([path, src]) => {
+    const vector = getVectorFromPath(path);
+    const metadata = wallSegmentMetadata[replaceExtension(path, "json")];
+    if (!vector || !metadata) return [];
+    const id = getWallSegmentId(getFileStem(path), vector);
+
+    return [{
+      id,
+      label: titleFromId(id),
+      kind: "wallSegment",
+      vector,
+      src,
+      metadata,
+    }];
+  });
+}
+
+function createWallSuperstructureVisualAssets(): WallSuperstructureVisualAsset[] {
+  return Object.entries(wallSuperstructureImages).flatMap(([path, src]) => {
+    const vector = getVectorFromPath(path);
+    const metadata = wallSuperstructureMetadata[replaceExtension(path, "json")];
+    if (!vector || !metadata) return [];
+    const id = getWallSuperstructureId(getFileStem(path), vector);
+
+    return [{
+      id,
+      label: titleFromId(id),
+      kind: "wallSuperstructure",
+      vector,
+      src,
+      metadata,
+    }];
+  });
+}
+
+function createGunPartVisualAssets(): GunPartVisualAssetOption[] {
+  return Object.entries(gunPartImages).flatMap(([path, src]) => {
+    const vector = getVectorFromPath(path);
+    const metadata = gunPartMetadata[replaceExtension(path, "json")];
+    const stem = getFileStem(path);
+    const slot = getGunPartSlot(stem);
+    if (!vector || !metadata || !slot) return [];
+    const id = getGunPartId(stem, vector, slot);
+
+    return [{
+      id,
+      label: titleFromId(stem),
+      kind: "gunPart",
+      vector,
+      slot,
+      src,
+      metadata,
+    }];
+  });
+}
+
+function getGunPartSlot(stem: string): TowerPartSlot | undefined {
+  const [, slot] = stem.split("_");
+  return towerPartSlots.find(option => option === slot);
+}
+
+function getWallSegmentId(stem: string, vector: DevelopmentVectorKey): string {
+  return `wallSegments.${vector}.${getEntityIdPart(stem, `wall_${vector}_`)}`;
+}
+
+function getWallSuperstructureId(stem: string, vector: DevelopmentVectorKey): string {
+  return `wallSuperstructures.${vector}.${getEntityIdPart(stem, `walltop_${vector}_`)}`;
+}
+
+function getGunPartId(stem: string, vector: DevelopmentVectorKey, slot: TowerPartSlot): string {
+  return `gunParts.${vector}.${slot}.${getEntityIdPart(stem, `${vector}_${slot}_`)}`;
+}
+
+function getEntityIdPart(stem: string, prefix: string): string {
+  const idPart = stem.startsWith(prefix) ? stem.slice(prefix.length) : stem.split("_").at(-1) ?? stem;
+  return kebabToCamel(idPart);
+}
+
+function kebabToCamel(value: string): string {
+  return value.replace(/-([a-z0-9])/g, (_, letter: string) => letter.toUpperCase());
+}
+
+function getVectorFromPath(path: string): DevelopmentVectorKey | undefined {
+  return vectorKeys.find(vector => path.includes(`/${vector}/`));
+}
+
+function getFileStem(path: string): string {
+  return path.split("/").at(-1)?.replace(/\.(json|png)$/i, "") ?? path;
+}
+
+function replaceExtension(path: string, extension: "json" | "png"): string {
+  return path.replace(/\.(json|png)$/i, `.${extension}`);
+}
+
+function titleFromId(id: string): string {
+  return id
+    .replace(/^gunParts\./, "")
+    .replace(/[_.-]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .split(" ")
+    .filter(Boolean)
+    .map(part => part[0]?.toUpperCase() ? `${part[0].toUpperCase()}${part.slice(1)}` : part)
+    .join(" ");
 }
