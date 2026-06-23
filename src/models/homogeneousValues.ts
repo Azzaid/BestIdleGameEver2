@@ -16,6 +16,22 @@ export type HomogeneousResolvedValueMap = Record<HomogeneousValueId, Homogeneous
 export const HOMOGENEOUS_VALUE_RESOLVE_TYPES = ["sum", "minimum", "maximum"] as const;
 export type HomogeneousValueResolveType = typeof HOMOGENEOUS_VALUE_RESOLVE_TYPES[number];
 
+export const HOMOGENEOUS_VALUE_DISPLAY_METHODS = [
+    "default",
+    "integer",
+    "percent",
+    "multiplier",
+    "seconds",
+    "distance",
+    "kilometers",
+    "triggerTolerance",
+    "damaged",
+] as const;
+export type HomogeneousValueDisplayMethod = typeof HOMOGENEOUS_VALUE_DISPLAY_METHODS[number];
+
+export const HOMOGENEOUS_VALUE_ROUNDING_METHODS = ["roundUp", "roundDown", "twoDigitsAfterZero"] as const;
+export type HomogeneousValueRoundingMethod = typeof HOMOGENEOUS_VALUE_ROUNDING_METHODS[number];
+
 export type HomogeneousValueEffect = {
     valueId: HomogeneousValueId;
     additionalKeywords?: string[];
@@ -28,11 +44,10 @@ export type HomogeneousValueDefinition = {
     id: HomogeneousValueId;
     label: string;
     keywords: string[];
+    displayMethod: HomogeneousValueDisplayMethod;
+    resolutionMethod?: HomogeneousValueResolveType;
+    roundingMethod?: HomogeneousValueRoundingMethod;
     initialValue: number;
-};
-
-export type HomogeneousValueResolutionConfig = {
-    resolveType: HomogeneousValueResolveType;
 };
 
 export type HomogeneousValueDerivedResolutionConfig = {

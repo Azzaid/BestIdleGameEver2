@@ -2,6 +2,7 @@ import { style } from '@vanilla-extract/css';
 import {vars} from "../../theme/theme.css.ts";
 
 export const cityPage = style({
+    position: 'relative',
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
@@ -11,6 +12,85 @@ export const cityPage = style({
     minHeight: 0,
     overflow: 'hidden',
     backgroundColor: vars.color.background.app
+});
+
+export const globalEffectsShell = style({
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    zIndex: 5,
+    width: 'min(452px, calc(100% - 48px))',
+    height: '100%',
+    display: 'grid',
+    gridTemplateColumns: '32px 1fr',
+    transition: 'transform 180ms ease',
+    selectors: {
+        '&[data-open="false"]': {
+            transform: 'translateX(calc(100% - 32px))',
+        },
+    },
+});
+
+export const globalEffectsToggle = style({
+    width: '32px',
+    height: '44px',
+    alignSelf: 'start',
+    border: `1px solid ${vars.color.border.default}`,
+    borderRight: 0,
+    borderRadius: '8px 0 0 8px',
+    background: vars.color.background.surface,
+    color: vars.color.text.heading,
+    cursor: 'pointer',
+    fontWeight: 700,
+    selectors: {
+        '&:hover': {
+            borderColor: vars.color.border.selected,
+        },
+    },
+});
+
+export const globalEffectsPanel = style({
+    display: 'grid',
+    alignContent: 'start',
+    gap: '12px',
+    height: '100%',
+    minHeight: 0,
+    overflowY: 'auto',
+    padding: '16px',
+    border: `1px solid ${vars.color.border.default}`,
+    background: vars.color.background.surface,
+    color: vars.color.text.primary,
+    borderRadius: '8px 0 0 8px',
+    boxShadow: '0 16px 40px rgba(0, 0, 0, 0.28)',
+    scrollbarGutter: 'stable',
+});
+
+export const globalModifierList = style({
+    display: 'grid',
+    alignContent: 'start',
+    gap: '10px',
+});
+
+export const globalModifierCard = style({
+    display: 'grid',
+    gap: '8px',
+    padding: '10px',
+    border: `1px solid ${vars.color.border.default}`,
+    background: vars.color.background.app,
+    borderRadius: 8,
+});
+
+export const globalModifierHeader = style({
+    display: 'flex',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: '12px',
+});
+
+export const globalModifierTitle = style({
+    margin: 0,
+    color: vars.color.text.heading,
+    fontSize: '0.96rem',
 });
 
 export const cityContainer = style({

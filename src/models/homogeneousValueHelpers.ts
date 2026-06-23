@@ -1,5 +1,5 @@
 import {getHomogeneousValueDefinition} from "../data/homogeneousValues/index.ts";
-import type {HomogeneousValueEffect, HomogeneousValueRoleKeyword} from "./homogeneousValues.ts";
+import type {HomogeneousValueDisplayMethod, HomogeneousValueEffect, HomogeneousValueRoleKeyword} from "./homogeneousValues.ts";
 import {getContributionRoleKeyword, getEffectKeywords} from "./homogeneousValueResolution.ts";
 
 type HomogeneousContributionEntity = {
@@ -32,35 +32,31 @@ export function formatHomogeneousValue(
     contributionKeywords: readonly string[] = [],
 ): string {
     const definition = getHomogeneousValueDefinition(valueId);
-    const allKeywords = new Set([
-        ...(definition?.keywords ?? []),
-        ...contributionKeywords,
-    ]);
-    const displayKeywords = [...allKeywords].filter((keyword) => keyword.startsWith("display."));
+    const displayKeywords = contributionKeywords.filter((keyword) => keyword.startsWith("display."));
 
-    if (displayKeywords.length > 1) {
-        throw new Error(`Homogeneous value ${valueId} has multiple display keywords: ${displayKeywords.join(", ")}`);
+    if (displayKeywords.length > 0) {
+        throw new Error(`Homogeneous value ${valueId} must use displayMethod instead of display keywords: ${displayKeywords.join(", ")}`);
     }
 
-    const displayKeyword = displayKeywords[0] ?? "display.default";
+    const displayMethod: HomogeneousValueDisplayMethod = definition?.displayMethod ?? "default";
 
-    switch (displayKeyword) {
-        case "display.integer":
+    switch (displayMethod) {
+        case "integer":
             return integerFormatter.format(rawValue);
-        case "display.percent":
+        case "percent":
             return `${numberFormatter.format(rawValue * 100)}%`;
-        case "display.multiplier":
+        case "multiplier":
             return `${numberFormatter.format(rawValue)}x`;
-        case "display.seconds":
+        case "seconds":
             return `${numberFormatter.format(rawValue)}s`;
-        case "display.distance":
+        case "distance":
             return `${numberFormatter.format(rawValue)} px`;
-        case "display.kilometers":
+        case "kilometers":
             return `${numberFormatter.format(rawValue)} km`;
-        case "display.triggerTolerance":
+        case "triggerTolerance":
             return formatTriggerTolerance(rawValue);
-        case "display.damaged":
-        case "display.default":
+        case "damaged":
+        case "default":
         default:
             return numberFormatter.format(rawValue);
     }

@@ -33,6 +33,9 @@ import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.
 import type {HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import {getUpkeepValues, normalizeMultiplier, resolveHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
+import {GLOBAL_MODIFIERS} from "../../data/globalModifiers/index.ts";
+import {resolveGlobalModifierEffects} from "../../models/globalEvents.ts";
+import {selectActiveGlobalModifiers} from "../../store/globalEvents/selectors.ts";
 import {
     selectRequirementResolutionData,
     selectUnlockedBuildingIds,
@@ -62,7 +65,9 @@ const CityPage = () => {
     const unlockedWallSuperstructureIds = useTypedSelector(selectUnlockedWallSuperstructureIds);
     const visibleWallSuperstructureIds = useTypedSelector(selectVisibleWallSuperstructureIds);
     const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
+    const activeGlobalModifiers = useTypedSelector(selectActiveGlobalModifiers);
     const [selectedHex, setSelectedHex] = useState<HexCell | null>(null);
+    const [globalEffectsOpen, setGlobalEffectsOpen] = useState(true);
     const selectHex = (hex: HexCell) => {
         const selectedCoreHex = hex.partOfStructureId
             ? hexes.find(candidate => candidate.cellKey === (hex.structureCoreCellKey ?? hex.cellKey)) ?? hex
@@ -194,6 +199,11 @@ const CityPage = () => {
             <div className={s.cityContainer}>
                 <CityHex cells={hexes} onSelect={selectHex}/>
             </div>
+            <GlobalEffectsDrawer
+                activeGlobalModifiers={activeGlobalModifiers}
+                isOpen={globalEffectsOpen}
+                onToggle={() => setGlobalEffectsOpen(isOpen => !isOpen)}
+            />
             {selectedHex &&
                 <div className={s.buildingSelectorContainer}>
                     <SelectedHexPanel
@@ -238,6 +248,96 @@ const CityPage = () => {
         </div>
     );
 };
+
+function GlobalEffectsDrawer({
+    activeGlobalModifiers,
+    isOpen,
+    onToggle,
+}: {
+    activeGlobalModifiers: ReturnType<typeof selectActiveGlobalModifiers>;
+    isOpen: boolean;
+    onToggle: () => void;
+}) {
+    const modifierEntries = Object.values(activeGlobalModifiers)
+        .flatMap(instance => {
+            const definition = GLOBAL_MODIFIERS[instance.modifierId];
+            if (!definition) return [];
+
+            return [{
+                definition,
+                instance,
+                effects: resolveGlobalModifierEffects(definition, instance),
+            }];
+        });
+
+    return (
+        <aside className={s.globalEffectsShell} data-open={isOpen}>
+            <button
+                className={s.globalEffectsToggle}
+                type="button"
+                aria-expanded={isOpen}
+                aria-label={isOpen ? "Hide global effects" : "Show global effects"}
+                title={isOpen ? "Hide global effects" : "Show global effects"}
+                onClick={onToggle}
+            >
+                {isOpen ? ">" : "<"}
+            </button>
+            <div className={s.globalEffectsPanel}>
+                <div className={s.selectionHeader}>
+                    <h2 className={s.selectionTitle}>Global effects</h2>
+                    <span className={s.selectionCoordinates}>{modifierEntries.length}</span>
+                </div>
+
+                {modifierEntries.length ? (
+                    <div className={s.globalModifierList}>
+                        {modifierEntries.map(({definition, instance, effects}) => (
+                            <article key={definition.id} className={s.globalModifierCard}>
+                                <div className={s.globalModifierHeader}>
+                                    <h3 className={s.globalModifierTitle}>{definition.title}</h3>
+                                    <span className={s.selectionCoordinates}>x{instance.appliedCount}</span>
+                                </div>
+                                {definition.description && (
+                                    <p className={s.panelDescription}>{definition.description}</p>
+                                )}
+                                <GlobalEffectList effects={effects} />
+                            </article>
+                        ))}
+                    </div>
+                ) : (
+                    <p className={s.emptyStats}>No global effects are active.</p>
+                )}
+            </div>
+        </aside>
+    );
+}
+
+function GlobalEffectList({effects}: {effects: HomogeneousValueEffect[]}) {
+    const visibleEffects = effects.flatMap((effect, index) => {
+        const amount = (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
+        if (!amount) return [];
+
+        return [{effect, amount, key: `${effect.valueId}-${index}`}];
+    });
+
+    if (!visibleEffects.length) {
+        return <p className={s.emptyStats}>No resolved value changes.</p>;
+    }
+
+    return (
+        <dl className={s.metricList}>
+            {visibleEffects.map(({effect, amount, key}) => {
+                const definition = getHomogeneousValueDefinition(effect.valueId);
+
+                return (
+                    <div key={key} className={s.metricRow}>
+                        <dt>{definition.label}</dt>
+                        <dd>{formatHomogeneousValue(effect.valueId, amount, effect.additionalKeywords)}</dd>
+                    </div>
+                );
+            })}
+        </dl>
+    );
+}
 
 function SelectedHexPanel({
     selectedHex,

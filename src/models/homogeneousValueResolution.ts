@@ -2,7 +2,6 @@ import {
     HOMOGENEOUS_VALUE_DEFINITION_LIST,
     HOMOGENEOUS_VALUE_DEFINITIONS,
     HOMOGENEOUS_VALUE_DERIVED_RESOLUTION_CONFIG,
-    HOMOGENEOUS_VALUE_RESOLUTION_CONFIG,
 } from "../data/homogeneousValues/index.ts";
 import type {
     HomogeneousAdjacencyRule,
@@ -12,6 +11,7 @@ import type {
     HomogeneousValueDefinition,
     HomogeneousValueId,
     HomogeneousValueRoleKeyword,
+    HomogeneousValueRoundingMethod,
     HomogeneousValueResolveType,
     HomogeneousValueTotals,
 } from "./homogeneousValues.ts";
@@ -378,7 +378,7 @@ function resolveEntityValues(entity: ResolvedEntityDraft): HomogeneousResolvedEn
     }
 
     const resolvedContributions = contributionAccumulators.map(toResolvedHomogeneousValueEffect);
-    const resolvedValues = resolveGroupedHomogeneousValueContributions(contributionAccumulators);
+    const resolvedValues = resolveHomogeneousValueContributions(resolvedContributions);
     const {matchedRules, ...resolvedEntitySource} = entity;
 
     return {
@@ -395,7 +395,7 @@ function resolveTechnologySourceValues(source: HomogeneousValueEntitySource): Ho
     const baseValueEffects = [...getEntityValues(source)];
     const contributionAccumulators = groupHomogeneousValueEffects(baseValueEffects);
     const resolvedContributions = contributionAccumulators.map(toResolvedHomogeneousValueEffect);
-    const resolvedValues = resolveGroupedHomogeneousValueContributions(contributionAccumulators);
+    const resolvedValues = resolveHomogeneousValueContributions(resolvedContributions);
 
     return {
         ...source,
@@ -578,7 +578,7 @@ function updateDerivedResolvedValue(resolvedValue: HomogeneousResolvedValue): vo
 }
 
 function getHomogeneousValueResolveType(valueId: HomogeneousValueId): HomogeneousValueResolveType {
-    return HOMOGENEOUS_VALUE_RESOLUTION_CONFIG[valueId]?.resolveType ?? "sum";
+    return homogeneousValueDefinitions[valueId]?.resolutionMethod ?? "sum";
 }
 
 function resolveAccumulatorValue(
@@ -629,15 +629,29 @@ function toResolvedHomogeneousValueEffect(accumulator: EffectAccumulator): Homog
     const resolveType = getHomogeneousValueResolveType(accumulator.valueId);
     const initialValue = homogeneousValueDefinitions[accumulator.valueId]?.initialValue ?? 0;
     const resolvedValue = resolveAccumulatorValue(accumulator, initialValue, resolveType);
+    const roundedResolvedValue = roundHomogeneousValue(accumulator.valueId, resolvedValue);
     const additive = accumulator.roleKeyword === "production" && resolveType === "sum"
-        ? resolvedValue - initialValue
-        : resolvedValue;
+        ? roundedResolvedValue - initialValue
+        : roundedResolvedValue;
 
     return toHomogeneousValueEffect({
         ...accumulator,
         additive,
         multiplier: 1,
     });
+}
+
+function roundHomogeneousValue(valueId: HomogeneousValueId, value: number): number {
+    const roundingMethod = getHomogeneousValueRoundingMethod(valueId);
+
+    if (roundingMethod === "roundUp") return Math.ceil(value);
+    if (roundingMethod === "roundDown") return Math.floor(value);
+
+    return Math.round(value * 100) / 100;
+}
+
+function getHomogeneousValueRoundingMethod(valueId: HomogeneousValueId): HomogeneousValueRoundingMethod {
+    return homogeneousValueDefinitions[valueId]?.roundingMethod ?? "twoDigitsAfterZero";
 }
 
 function toHomogeneousValueEffect(accumulator: EffectAccumulator): HomogeneousValueEffect {
