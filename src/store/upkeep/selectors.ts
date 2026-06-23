@@ -29,15 +29,20 @@ import type {TowerAssemblyResolved} from "../../models/battle/towerParts.ts";
 import type {WallResolution} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../wall/selectors.ts";
 import {selectTechnologyHomogeneousEntities} from "../research/selectors.ts";
+import {selectGlobalModifierHomogeneousEntities} from "../globalEvents/selectors.ts";
+import type {GlobalModifierApplyContext} from "../../models/globalEvents.ts";
 
 export {selectCityResolution};
 
 type ResolvedAvailableTower = ReturnType<typeof selectResolvedAvailableTowers>[number];
 
 export const selectTowerAwareCityResolution = createSelector(
-    [selectCityResolution, selectResolvedAvailableTowers, selectTechnologyHomogeneousEntities],
-    (cityResolution, resolvedTowers, technologyEntities): CityResolution => {
-        return resolveEffectiveCityResolution(cityResolution, resolvedTowers, technologyEntities);
+    [selectCityResolution, selectResolvedAvailableTowers, selectTechnologyHomogeneousEntities, selectGlobalModifierHomogeneousEntities],
+    (cityResolution, resolvedTowers, technologyEntities, globalModifierEntities): CityResolution => {
+        return resolveEffectiveCityResolution(cityResolution, resolvedTowers, [
+            ...technologyEntities,
+            ...globalModifierEntities,
+        ]);
     }
 );
 
@@ -62,6 +67,7 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
         selectResolvedActiveTowerDraft,
         selectUnlockedTowerPartIds,
         selectTechnologyHomogeneousEntities,
+        selectGlobalModifierHomogeneousEntities,
     ],
     (
         cityResolution,
@@ -72,6 +78,7 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
         resolvedActiveTowerDraft,
         unlockedTowerPartIds,
         technologyEntities,
+        globalModifierEntities,
     ): TowerAssemblyResolved => {
         const activeTowerIndex = availableTowers.findIndex((tower) => tower.id === activeTower?.id);
         if (activeTowerIndex < 0) return resolvedActiveTowerDraft;
@@ -84,7 +91,10 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
                 resolved: resolveTowerAssembly(activeTowerDraftAssembly, unlockedTowerPartIds),
             };
         });
-        const effectiveCityResolution = resolveEffectiveCityResolution(cityResolution, substitutedResolvedTowers, technologyEntities);
+        const effectiveCityResolution = resolveEffectiveCityResolution(cityResolution, substitutedResolvedTowers, [
+            ...technologyEntities,
+            ...globalModifierEntities,
+        ]);
         const effectiveTowerEntity = effectiveCityResolution.resolvedTowers.find((entity) => (
             entity.id === getTowerEntityId(activeTower?.id ?? "")
         ));
@@ -116,6 +126,15 @@ export const selectEffectiveWallResolution = createSelector(
             homogeneousResolvedValues: resolvedWallValues,
         };
     },
+);
+
+export const selectGlobalModifierApplyContext = createSelector(
+    [selectTowerAwareCityResolution],
+    (cityResolution): GlobalModifierApplyContext => ({
+        availableValues: cityResolution.homogeneousValues,
+        producedValues: cityResolution.producedHomogeneousValues,
+        upkeepValues: cityResolution.upkeepHomogeneousValues,
+    }),
 );
 
 function resolveEffectiveCityResolution(

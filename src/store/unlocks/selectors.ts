@@ -24,10 +24,11 @@ export const selectUnlockedWallSegmentIds = (state: RootState): string[] => stat
 export const selectUnlockedWallSuperstructureIds = (state: RootState): string[] => state.unlocks.unlockedWallSuperstructureIds;
 
 export const selectRequirementResolutionData = createSelector(
-  [selectCityResolution, selectPurchasedTechsIds],
-  (resolvedCityData, purchasedTechIds): RequirementResolutionData => ({
+  [selectCityResolution, selectPurchasedTechsIds, (state: RootState) => state.globalEvents.flags],
+  (resolvedCityData, purchasedTechIds, globalFlagIds): RequirementResolutionData => ({
     resolvedCityData,
     unlockedTechnologyIds: new Set(purchasedTechIds),
+    globalFlagIds: new Set(globalFlagIds),
   }),
 );
 

@@ -19,8 +19,8 @@ import {HOMOGENEOUS_VALUE_ROLE_KEYWORDS} from "./homogeneousValues.ts";
 
 const homogeneousValueDefinitions = HOMOGENEOUS_VALUE_DEFINITIONS as Record<HomogeneousValueId, HomogeneousValueDefinition>;
 
-export type HomogeneousCityEntityType = "building" | "tower" | "wallSegment" | "wallSuperstructure" | "technology";
-export type HomogeneousRuleSourceEntityType = "hex" | "tower" | "technology";
+export type HomogeneousCityEntityType = "building" | "tower" | "wallSegment" | "wallSuperstructure" | "technology" | "globalModifier";
+export type HomogeneousRuleSourceEntityType = "hex" | "tower" | "technology" | "globalModifier";
 export type HexCoordinates = { column: number; row: number };
 
 export type HomogeneousValueEntitySource = {
@@ -178,13 +178,15 @@ export function resolveCity(
         values: getAvailableValues(resolvedValues),
         resolvedValues,
         resolvedHexes: resolvedEntities.filter((entity) => (
-            entity.entityType !== "technology" && entity.entityType !== "tower"
+            entity.entityType !== "technology" && entity.entityType !== "globalModifier" && entity.entityType !== "tower"
         )),
         resolvedTowers: resolvedEntities.filter((entity) => entity.entityType === "tower"),
         resolvedWallSegments: resolvedEntities.filter((entity) => (
             entity.entityType === "wallSegment" || entity.entityType === "wallSuperstructure"
         )),
-        resolvedTechnologies: resolvedEntities.filter((entity) => entity.entityType === "technology"),
+        resolvedTechnologies: resolvedEntities.filter((entity) => (
+            entity.entityType === "technology" || entity.entityType === "globalModifier"
+        )),
     };
 }
 
@@ -247,7 +249,7 @@ function resolveCityEntities(
     const collectedRules = collectHomogeneousAdjacencyRules(sources);
     const keywordResolvedEntityDrafts = resolveEffectiveEntityKeywords(entityDrafts, collectedRules);
     const resolvedTechnologyEntities = sources
-        .filter((source) => source.entityType === "technology")
+        .filter((source) => source.entityType === "technology" || source.entityType === "globalModifier")
         .map(resolveTechnologySourceValues);
 
     return [
@@ -732,6 +734,7 @@ function normalizeEntityKeywords(entity: HomogeneousValueEntitySource): string[]
 
 function getRuleSourceEntityType(entity: HomogeneousValueEntitySource): HomogeneousRuleSourceEntityType {
     if (entity.entityType === "technology") return "technology";
+    if (entity.entityType === "globalModifier") return "globalModifier";
     if (entity.entityType === "tower") return "tower";
 
     return "hex";
@@ -739,6 +742,7 @@ function getRuleSourceEntityType(entity: HomogeneousValueEntitySource): Homogene
 
 function getEntityPosition(entity: HomogeneousValueEntitySource): HexCoordinates | null {
     if (entity.entityType === "technology") return null;
+    if (entity.entityType === "globalModifier") return null;
     if (entity.column === undefined || entity.row === undefined) return null;
 
     return {

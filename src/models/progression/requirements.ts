@@ -4,6 +4,8 @@ export type Requirement =
   | { type: "buildingKeywordExists"; keyword: string }
   | { type: "buildingExists"; buildingId: string }
   | { type: "technologyUnlocked"; technologyId: string }
+  | { type: "globalFlagExists"; flagId: string }
+  | { type: "globalFlagMissing"; flagId: string }
   | { type: "homogeneousValueAtLeast"; valueId: string; amount: number }
   | { type: "homogeneousValueLessThan"; valueId: string; amount: number };
 
@@ -15,6 +17,7 @@ export type RequirementGate = {
 export type RequirementResolutionData = {
   resolvedCityData: CityResolution;
   unlockedTechnologyIds: ReadonlySet<string>;
+  globalFlagIds?: ReadonlySet<string>;
 };
 
 export function areRequirementsMet(
@@ -45,6 +48,14 @@ export function isRequirementMet(
 
   if (requirement.type === "technologyUnlocked") {
     return data.unlockedTechnologyIds.has(requirement.technologyId);
+  }
+
+  if (requirement.type === "globalFlagExists") {
+    return data.globalFlagIds?.has(requirement.flagId) ?? false;
+  }
+
+  if (requirement.type === "globalFlagMissing") {
+    return !(data.globalFlagIds?.has(requirement.flagId) ?? false);
   }
 
   if (requirement.type === "homogeneousValueAtLeast") {

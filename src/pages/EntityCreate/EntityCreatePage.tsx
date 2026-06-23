@@ -106,6 +106,8 @@ const requirementTypeOptions: {value: RequirementType; label: string}[] = [
   {value: "buildingKeywordExists", label: "Building keyword exists"},
   {value: "buildingExists", label: "Building exists"},
   {value: "technologyUnlocked", label: "Technology unlocked"},
+  {value: "globalFlagExists", label: "Global flag exists"},
+  {value: "globalFlagMissing", label: "Global flag missing"},
   {value: "homogeneousValueAtLeast", label: "Value at least"},
   {value: "homogeneousValueLessThan", label: "Value less than"},
 ];
@@ -808,6 +810,11 @@ function RequirementSection(props: {
                   <input className={s.input} type="number" value={row.amount} onChange={event => props.onUpdate(row.id, {amount: event.target.value})} />
                 </label>
               </>
+            ) : row.type === "globalFlagExists" || row.type === "globalFlagMissing" ? (
+              <label className={s.field}>
+                <span className={s.label}>Flag id</span>
+                <input className={s.input} value={row.target} onChange={event => props.onUpdate(row.id, {target: event.target.value})} />
+              </label>
             ) : (
               <label className={s.field}>
                 <span className={s.label}>{row.type === "buildingExists" ? "Building id" : "Technology id"}</span>
@@ -994,6 +1001,10 @@ function createRequirement(row: RequirementRow): Requirement | null {
     return {type: row.type, technologyId: row.target};
   }
 
+  if (row.type === "globalFlagExists" || row.type === "globalFlagMissing") {
+    return {type: row.type, flagId: row.target};
+  }
+
   const amount = parseOptionalNumber(row.amount);
   if (amount === null) return null;
 
@@ -1094,6 +1105,15 @@ function createRequirementRows(requirements: readonly Requirement[]): Requiremen
         id: nextRowId++,
         type: requirement.type,
         target: requirement.technologyId,
+        amount: "",
+      };
+    }
+
+    if (requirement.type === "globalFlagExists" || requirement.type === "globalFlagMissing") {
+      return {
+        id: nextRowId++,
+        type: requirement.type,
+        target: requirement.flagId,
         amount: "",
       };
     }

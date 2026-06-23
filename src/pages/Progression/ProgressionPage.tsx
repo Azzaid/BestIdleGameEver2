@@ -562,6 +562,14 @@ function formatRequirement(requirement: Requirement): string {
     return `Technology unlocked: ${requirement.technologyId}`;
   }
 
+  if (requirement.type === "globalFlagExists") {
+    return `Flag exists: ${requirement.flagId}`;
+  }
+
+  if (requirement.type === "globalFlagMissing") {
+    return `Flag missing: ${requirement.flagId}`;
+  }
+
   if (requirement.type === "homogeneousValueAtLeast") {
     const definition = getHomogeneousValueDefinition(requirement.valueId);
     return `${definition.label} at least ${requirement.amount}`;

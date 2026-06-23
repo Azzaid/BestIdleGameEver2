@@ -657,6 +657,14 @@ function formatUnmetBuildRequirement(
         return `Requires ${requirement.keyword} building`;
     }
 
+    if (requirement.type === "globalFlagExists") {
+        return `Requires flag ${requirement.flagId}`;
+    }
+
+    if (requirement.type === "globalFlagMissing") {
+        return `Requires missing flag ${requirement.flagId}`;
+    }
+
     const definition = getHomogeneousValueDefinition(requirement.valueId);
     const currentValue = requirementResolutionData.resolvedCityData.homogeneousValues[requirement.valueId] ?? 0;
     const amount = formatResourceAmount(requirement.amount);

@@ -7,6 +7,7 @@ import towersSlice from "./towers/slice.ts";
 import wallSlice from "./wall/slice.ts";
 import debugSlice from "./debug/slice.ts";
 import unlocksSlice from "./unlocks/slice.ts";
+import globalEventsSlice from "./globalEvents/slice.ts";
 
 export const rootReducer = combineSlices(
     cityReducer,
@@ -15,5 +16,6 @@ export const rootReducer = combineSlices(
     towersSlice,
     wallSlice,
     debugSlice,
-    unlocksSlice
+    unlocksSlice,
+    globalEventsSlice
 );

@@ -10,6 +10,12 @@ export const requires = {
   technologyUnlocked(technologyId: string): Requirement {
     return {type: "technologyUnlocked", technologyId};
   },
+  globalFlagExists(flagId: string): Requirement {
+    return {type: "globalFlagExists", flagId};
+  },
+  globalFlagMissing(flagId: string): Requirement {
+    return {type: "globalFlagMissing", flagId};
+  },
   homogeneousValueAtLeast(valueId: string, amount: number): Requirement {
     return {type: "homogeneousValueAtLeast", valueId, amount};
   },
