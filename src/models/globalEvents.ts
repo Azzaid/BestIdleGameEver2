@@ -10,6 +10,7 @@ export type GlobalEventTrigger =
   | {type: "requirementsMet"}
   | {type: "cityAbandoned"}
   | {type: "cityMigrated"}
+  | {type: "migration"}
   | {type: "siegeEnded"}
   | {type: "technologyUnlocked"; technologyId?: string};
 
@@ -26,6 +27,8 @@ export type GlobalEventDefinition = {
   id: string;
   title: string;
   description?: string;
+  imageSrc?: string;
+  imageAlt?: string;
   trigger: GlobalEventTrigger;
   requirements?: Requirement[];
   requirement?: Requirement[];

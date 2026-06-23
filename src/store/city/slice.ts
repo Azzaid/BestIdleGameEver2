@@ -74,8 +74,7 @@ const getDemolishedHexKeys = (hexes: HexCell[], targetHex: HexCell): string[] =>
     return [targetHex.cellKey];
 };
 
-// Define the initial state using that type
-const initialState: CityState = {
+const getInitialState = (): CityState => ({
     hexes: getInitialHexes(),
     cellRadius: INITIAL_CITY_CELL_RADIUS,
     cityFootprint: 0,
@@ -84,7 +83,10 @@ const initialState: CityState = {
         backgroundId: DEFAULT_BATTLE_BACKGROUND_ID,
         detailSeed: 1,
     },
-}
+});
+
+// Define the initial state using that type
+const initialState: CityState = getInitialState();
 
 export const citySlice = createSlice({
     name: 'city',
@@ -183,6 +185,7 @@ export const citySlice = createSlice({
         recordSurvivedSiege: (state) => {
             state.cityFootprint += FOOTPRINT_PER_SURVIVED_SIEGE;
         },
+        resetCityForMigration: () => getInitialState(),
     },
 })
 
@@ -195,6 +198,7 @@ export const {
     retreatCityRadius,
     expandCityRadius,
     recordSurvivedSiege,
+    resetCityForMigration,
 } = citySlice.actions
 
 export default citySlice

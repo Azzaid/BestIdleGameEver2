@@ -27,6 +27,7 @@ import { NotificationCenter } from "./components/Notifications/NotificationCente
 import { useResearchAutoUnlock } from "./pages/Research/useResearchAutoUnlock.ts";
 import {CityExpansionControl} from "./components/CityExpansionControl.tsx";
 import {useContentAutoUnlock} from "./hooks/useContentAutoUnlock.ts";
+import {GlobalEventModal} from "./components/GlobalEvents/GlobalEventModal.tsx";
 
 //this is temporary theme switcher
 function ThemeSwitcher() {
@@ -107,6 +108,7 @@ function AppFrame() {
                       </div>
                   </nav>
                   <NotificationCenter />
+                  <GlobalEventModal />
                   {shouldShowUpkeepBar && (
                       <UpkeepBar rightSlot={shouldShowCityExpansionControl ? <CityExpansionControl /> : undefined}/>
                   )}

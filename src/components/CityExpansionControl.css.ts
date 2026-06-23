@@ -1,6 +1,12 @@
 import {style} from "@vanilla-extract/css";
 import {vars} from "../theme/theme.css.ts";
 
+export const controlGroup = style({
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+});
+
 export const expandButton = style({
     padding: '7px 12px',
     borderRadius: 6,
@@ -16,3 +22,12 @@ export const expandButton = style({
         },
     },
 });
+
+export const exodusButton = style([
+    expandButton,
+    {
+        borderColor: vars.color.state.warning,
+        background: vars.color.background.surface,
+        color: vars.color.text.heading,
+    },
+]);

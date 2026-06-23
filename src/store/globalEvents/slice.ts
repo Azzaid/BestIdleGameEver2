@@ -22,6 +22,7 @@ const initialState: GlobalEventsState = {
   triggeredEndingIds: [],
   shownCutsceneIds: [],
   pendingTechnologyUnlockIds: [],
+  pendingModalEntries: [],
   pendingAbandonCity: false,
 };
 
@@ -40,6 +41,11 @@ export const globalEventsSlice = createSlice({
       for (const eventAction of action.payload.actions) {
         executeGlobalEventAction(state, eventAction, action.payload.modifierContext);
       }
+
+      state.pendingModalEntries.push({
+        eventId: action.payload.eventId,
+        actions: action.payload.actions,
+      });
     },
     applyGlobalModifier: (
       state,
@@ -59,6 +65,9 @@ export const globalEventsSlice = createSlice({
     clearPendingAbandonCity: (state) => {
       state.pendingAbandonCity = false;
     },
+    dismissGlobalEventModalEntries: (state) => {
+      state.pendingModalEntries = [];
+    },
   },
 });
 
@@ -66,6 +75,7 @@ export const {
   addGlobalEventFlag,
   applyGlobalModifier,
   clearPendingAbandonCity,
+  dismissGlobalEventModalEntries,
   executeGlobalEventActions,
   removeGlobalEventFlag,
 } = globalEventsSlice.actions;
@@ -82,6 +92,16 @@ export function executeGlobalEvent(
       if (action.type === "unlockTechnology") {
         dispatch(purchaseTech(action.technologyId));
       }
+    }
+  };
+}
+
+export function executeGlobalEvents(
+  payloads: readonly ExecuteGlobalEventPayload[],
+): ThunkAction<void, RootState, unknown, UnknownAction> {
+  return (dispatch) => {
+    for (const payload of payloads) {
+      dispatch(executeGlobalEvent(payload));
     }
   };
 }

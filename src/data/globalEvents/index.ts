@@ -1,13 +1,15 @@
 import type {GlobalEventDefinition} from "../../models/globalEvents.ts";
+import cityBackgroundImage from "../../assets/city/background/Top-down_map_view_circular_lan.jpeg";
 
 export const GLOBAL_EVENTS: Record<string, GlobalEventDefinition> = {
   fungal_inheritance_migration: {
     id: "fungal_inheritance_migration",
     title: "Fungal Inheritance Migration",
     description: "Preserves a portion of this city's fungal production for future cities.",
+    imageSrc: cityBackgroundImage,
+    imageAlt: "A circular city map surrounded by wilderness.",
     trigger: {
-      type: "manual",
-      triggerId: "migration",
+      type: "migration",
     },
     blockRequirements: [
       {

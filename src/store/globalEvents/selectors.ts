@@ -16,6 +16,7 @@ export const selectTriggeredEndingIds = (state: RootState): string[] => state.gl
 export const selectShownCutsceneIds = (state: RootState): string[] => state.globalEvents.shownCutsceneIds;
 export const selectPendingTechnologyUnlockIds = (state: RootState): string[] => state.globalEvents.pendingTechnologyUnlockIds;
 export const selectPendingAbandonCity = (state: RootState): boolean => state.globalEvents.pendingAbandonCity;
+export const selectPendingGlobalEventModalEntries = (state: RootState) => state.globalEvents.pendingModalEntries;
 
 export const selectGlobalModifierHomogeneousEntities = createSelector(
   [selectActiveGlobalModifiers],
