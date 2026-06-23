@@ -8,6 +8,8 @@ export const cityPage = style({
     justifyContent: 'center',
     gap: '12px',
     height: '100%',
+    minHeight: 0,
+    overflow: 'hidden',
     backgroundColor: vars.color.background.app
 });
 
@@ -15,15 +17,19 @@ export const cityContainer = style({
     flex: '1 1 900px',
     width: '100%',
     maxWidth: '900px',
-    maxHeight: '900px',
+    maxHeight: 'min(100%, 900px)',
     aspectRatio:'1/1'     /* ensures square shape */
 });
 
 export const buildingSelectorContainer = style({
     flex: '1 1 240px',
     minWidth: '240px',
+    maxHeight: '100%',
+    minHeight: 0,
     display: 'grid',
     gap: '12px',
+    overflowY: 'auto',
+    scrollbarGutter: 'stable',
 });
 
 export const selectionPanel = style({

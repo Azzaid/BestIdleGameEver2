@@ -68,6 +68,8 @@ export function CityExpansionControl() {
                 <button
                     className={s.exodusButton}
                     type="button"
+                    disabled={signatureStatus.isBesieged}
+                    title={signatureStatus.isBesieged ? EXPAND_BLOCK_REASON : undefined}
                     onClick={() => setIsConfirmingExodus(true)}
                 >
                     Exodus
