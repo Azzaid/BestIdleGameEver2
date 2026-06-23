@@ -32,10 +32,12 @@ import * as s from "./EntityCreatePage.css.ts";
 
 type EntityType = "research" | "wallSegment" | "wallSuperstructure" | "building" | "gunPart";
 type RequirementType = Requirement["type"];
+type ValueRole = "production" | "upkeep";
 
 type ValueRow = {
   id: number;
   valueId: string;
+  additionalKeywords: string[];
   additive: string;
   multiplier: string;
   base?: HomogeneousValueEffect;
@@ -169,11 +171,13 @@ export default function EntityCreatePage() {
   const [hint, setHint] = useState("");
   const [requiredBuildingRows, setRequiredBuildingRows] = useState<BuildingIdRow[]>([]);
   const [keywords, setKeywords] = useState<string[]>([]);
-  const [valueRows, setValueRows] = useState<ValueRow[]>([]);
+  const [providedValueRows, setProvidedValueRows] = useState<ValueRow[]>([]);
+  const [upkeepValueRows, setUpkeepValueRows] = useState<ValueRow[]>([]);
   const [effectRows, setEffectRows] = useState<EffectRow[]>([]);
   const [requirementRows, setRequirementRows] = useState<RequirementRow[]>([]);
   const [buildRequirementRows, setBuildRequirementRows] = useState<RequirementRow[]>([]);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({kind: "idle", message: ""});
+  const [isPreviewOpen, setIsPreviewOpen] = useState(true);
   const previousAutomaticKeywordsRef = useRef<string[]>([]);
   const loadedEntity = useMemo(() => entityId === "new" ? null : findStoredEntity(entityId), [entityId]);
   const isEditingExisting = Boolean(loadedEntity);
@@ -234,7 +238,8 @@ export default function EntityCreatePage() {
       hint,
       requiredBuildingRows,
       keywords,
-      valueRows,
+      providedValueRows,
+      upkeepValueRows,
       effectRows,
       requirementRows,
       buildRequirementRows,
@@ -251,20 +256,23 @@ export default function EntityCreatePage() {
     isSuperstructure,
     keywords,
     partType,
+    providedValueRows,
     requiredBuildingRows,
     requirementRows,
     loadedEntity,
-    valueRows,
+    upkeepValueRows,
     vector,
   ]);
   const jsonPreview = useMemo(() => JSON.stringify(entityPreview, null, 2), [entityPreview]);
 
-  function addValueRow() {
-    setValueRows(rows => [
+  function addValueRow(role: ValueRole) {
+    const update = role === "production" ? setProvidedValueRows : setUpkeepValueRows;
+    update(rows => [
       ...rows,
       {
         id: nextRowId++,
         valueId: defaultValueId,
+        additionalKeywords: [],
         additive: "",
         multiplier: "",
       },
@@ -314,14 +322,10 @@ export default function EntityCreatePage() {
     <section className={s.page}>
       <div className={s.formPanel}>
         <header className={s.header}>
-          <h1 className={s.title}>{isEditingExisting ? "Entity Edit" : "Entity Create"}</h1>
-          <p className={s.subtitle}>
-            {entityId === "new"
-              ? "Debug content sketcher for copy-ready JSON definitions."
-              : loadedEntity
-                ? `Editing ${entityId}`
-                : `No stored entity found for ${entityId}; using the id as a draft.`}
-          </p>
+          <h1 className={s.title}>{isEditingExisting ? `Edit ${entityId}` : "Create entity"}</h1>
+          {entityId !== "new" && !loadedEntity && (
+            <p className={s.subtitle}>No stored entity found for {entityId}; using the id as a draft.</p>
+          )}
         </header>
 
         <section className={s.section}>
@@ -423,40 +427,23 @@ export default function EntityCreatePage() {
             />
         )}
 
-        <section className={s.section}>
-          <div className={s.sectionHeader}>
-            <h2 className={s.sectionTitle}>Values</h2>
-            <button className={s.button} type="button" onClick={addValueRow} title="Add value">+</button>
-          </div>
-          <div className={s.rowList}>
-            {valueRows.length === 0 && <span className={s.hint}>No value entries yet.</span>}
-            {valueRows.map(row => (
-              <div key={row.id} className={s.row}>
-                <label className={s.field}>
-                  <span className={s.label}>Value type</span>
-                  <select
-                    className={s.input}
-                    value={row.valueId}
-                    onChange={event => updateValueRow(row.id, {valueId: event.target.value})}
-                  >
-                    {HOMOGENEOUS_VALUE_DEFINITION_LIST.map(definition => (
-                      <option key={definition.id} value={definition.id}>{definition.label}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className={s.field}>
-                  <span className={s.label}>Additive</span>
-                  <input className={s.input} type="number" value={row.additive} onChange={event => updateValueRow(row.id, {additive: event.target.value})} />
-                </label>
-                <label className={s.field}>
-                  <span className={s.label}>Multiplier</span>
-                  <input className={s.input} type="number" value={row.multiplier} onChange={event => updateValueRow(row.id, {multiplier: event.target.value})} />
-                </label>
-                <button className={s.dangerButton} type="button" onClick={() => removeValueRow(row.id)} title="Remove value">x</button>
-              </div>
-            ))}
-          </div>
-        </section>
+        <ValueSection
+          title="Provides"
+          emptyText="No provided values yet."
+          rows={providedValueRows}
+          onAdd={() => addValueRow("production")}
+          onUpdate={(rowId, patch) => updateValueRow("production", rowId, patch)}
+          onRemove={rowId => removeValueRow("production", rowId)}
+        />
+
+        <ValueSection
+          title="Upkeep"
+          emptyText="No upkeep values yet."
+          rows={upkeepValueRows}
+          onAdd={() => addValueRow("upkeep")}
+          onUpdate={(rowId, patch) => updateValueRow("upkeep", rowId, patch)}
+          onRemove={rowId => removeValueRow("upkeep", rowId)}
+        />
 
         <section className={s.section}>
           <div className={s.sectionHeader}>
@@ -502,14 +489,19 @@ export default function EntityCreatePage() {
             ))}
           </div>
         </section>
-      </div>
+        <section className={s.previewPanel}>
+          <button
+            className={s.previewToggle}
+            type="button"
+            onClick={() => setIsPreviewOpen(isOpen => !isOpen)}
+          >
+            {isPreviewOpen ? "Hide JSON preview" : "Show JSON preview"}
+          </button>
+          {isPreviewOpen && (
+            <pre className={`${s.preview} ${s.mono}`}>{jsonPreview}</pre>
+          )}
+        </section>
 
-      <aside className={s.previewPanel}>
-        <header className={s.header}>
-          <h2 className={s.title}>JSON Preview</h2>
-          <p className={s.subtitle}>Paste into the matching vector JSON file for the selected entity type.</p>
-        </header>
-        <div className={s.idPreview}>{generatedId}</div>
         <div className={s.saveRow}>
           <button
             className={s.primaryButton}
@@ -523,17 +515,26 @@ export default function EntityCreatePage() {
             <span className={saveStatus.kind === "error" ? s.errorText : s.statusText}>{saveStatus.message}</span>
           )}
         </div>
-        <pre className={`${s.preview} ${s.mono}`}>{jsonPreview}</pre>
-      </aside>
+      </div>
     </section>
   );
 
-  function updateValueRow(rowId: number, patch: Partial<ValueRow>) {
-    setValueRows(rows => rows.map(row => row.id === rowId ? {...row, ...patch} : row));
+  function updateValueRow(role: ValueRole, rowId: number, patch: Partial<ValueRow>) {
+    const update = (rows: ValueRow[]) => rows.map(row => row.id === rowId ? {...row, ...patch} : row);
+    if (role === "production") {
+      setProvidedValueRows(update);
+      return;
+    }
+    setUpkeepValueRows(update);
   }
 
-  function removeValueRow(rowId: number) {
-    setValueRows(rows => rows.filter(row => row.id !== rowId));
+  function removeValueRow(role: ValueRole, rowId: number) {
+    const remove = (rows: ValueRow[]) => rows.filter(row => row.id !== rowId);
+    if (role === "production") {
+      setProvidedValueRows(remove);
+      return;
+    }
+    setUpkeepValueRows(remove);
   }
 
   function updateEffectRow(rowId: number, patch: Partial<EffectRow>) {
@@ -614,7 +615,8 @@ export default function EntityCreatePage() {
     setHint("");
     setRequiredBuildingRows([]);
     setKeywords(getAutomaticKeywords("research", "medieval", "launchSystem"));
-    setValueRows([]);
+    setProvidedValueRows([]);
+    setUpkeepValueRows([]);
     setEffectRows([]);
     setRequirementRows([]);
     setBuildRequirementRows([]);
@@ -632,7 +634,8 @@ export default function EntityCreatePage() {
     setHint("");
     setRequiredBuildingRows([]);
     setKeywords(getAutomaticKeywords(inferred.entityType, inferred.vector, inferred.partType ?? "launchSystem"));
-    setValueRows([]);
+    setProvidedValueRows([]);
+    setUpkeepValueRows([]);
     setEffectRows([]);
     setRequirementRows([]);
     setBuildRequirementRows([]);
@@ -653,11 +656,67 @@ export default function EntityCreatePage() {
       getAutomaticKeywords(storedEntity.entityType, storedEntity.vector, definition.slot ?? "launchSystem"),
       definition.keywords ?? [],
     ));
-    setValueRows(createValueRows(definition.values ?? []));
+    setProvidedValueRows(createValueRows(definition.values ?? [], "production"));
+    setUpkeepValueRows(createValueRows(definition.values ?? [], "upkeep"));
     setEffectRows(createEffectRows(definition.effects ?? []));
     setRequirementRows(createRequirementRows(definition.requirements ?? []));
     setBuildRequirementRows(createRequirementRows(definition.buildRequirements ?? []));
   }
+}
+
+function ValueSection(props: {
+  title: string;
+  emptyText: string;
+  rows: ValueRow[];
+  onAdd: () => void;
+  onUpdate: (rowId: number, patch: Partial<ValueRow>) => void;
+  onRemove: (rowId: number) => void;
+}) {
+  return (
+    <section className={s.section}>
+      <div className={s.sectionHeader}>
+        <h2 className={s.sectionTitle}>{props.title}</h2>
+        <button className={s.button} type="button" onClick={props.onAdd} title={`Add ${props.title}`}>+</button>
+      </div>
+      <div className={s.rowList}>
+        {props.rows.length === 0 && <span className={s.hint}>{props.emptyText}</span>}
+        {props.rows.map(row => (
+          <div key={row.id} className={s.row}>
+            <label className={s.field}>
+              <span className={s.label}>Value type</span>
+              <select
+                className={s.input}
+                value={row.valueId}
+                onChange={event => props.onUpdate(row.id, {valueId: event.target.value})}
+              >
+                {HOMOGENEOUS_VALUE_DEFINITION_LIST.map(definition => (
+                  <option key={definition.id} value={definition.id}>{definition.label}</option>
+                ))}
+              </select>
+            </label>
+            <div className={s.field}>
+              <span className={s.label}>Additional keywords</span>
+              <SearchableMultiSelect
+                label=""
+                options={entityKeywordOptions}
+                selected={row.additionalKeywords}
+                onChange={additionalKeywords => props.onUpdate(row.id, {additionalKeywords})}
+              />
+            </div>
+            <label className={s.field}>
+              <span className={s.label}>Additive</span>
+              <input className={s.input} type="number" value={row.additive} onChange={event => props.onUpdate(row.id, {additive: event.target.value})} />
+            </label>
+            <label className={s.field}>
+              <span className={s.label}>Multiplier</span>
+              <input className={s.input} type="number" value={row.multiplier} onChange={event => props.onUpdate(row.id, {multiplier: event.target.value})} />
+            </label>
+            <button className={s.dangerButton} type="button" onClick={() => props.onRemove(row.id)} title="Remove value">x</button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function BuildingIdSection(props: {
@@ -834,15 +893,18 @@ function createPreview(args: {
   hint: string;
   requiredBuildingRows: BuildingIdRow[];
   keywords: string[];
-  valueRows: ValueRow[];
+  providedValueRows: ValueRow[];
+  upkeepValueRows: ValueRow[];
   effectRows: EffectRow[];
   requirementRows: RequirementRow[];
   buildRequirementRows: RequirementRow[];
   baseDefinition: StoredEntityDefinition | null;
 }): Record<string, unknown> {
   const keywords = args.keywords;
-  const values = args.valueRows
-    .map(createValueEffect)
+  const values = [
+    ...args.providedValueRows.map(row => createValueEffect(row, "production")),
+    ...args.upkeepValueRows.map(row => createValueEffect(row, "upkeep")),
+  ]
     .filter((value): value is HomogeneousValueEffect => Boolean(value));
   const effects = args.effectRows
     .map(createAdjacencyRule)
@@ -1045,14 +1107,17 @@ function createRequirementRows(requirements: readonly Requirement[]): Requiremen
   });
 }
 
-function createValueRows(values: readonly HomogeneousValueEffect[]): ValueRow[] {
-  return values.map(value => ({
-    id: nextRowId++,
-    valueId: value.valueId,
-    additive: value.additive === undefined || value.additive === null ? "" : String(value.additive),
-    multiplier: value.multiplier === undefined || value.multiplier === null ? "" : String(value.multiplier),
-    base: value,
-  }));
+function createValueRows(values: readonly HomogeneousValueEffect[], role: ValueRole): ValueRow[] {
+  return values
+    .filter(value => getValueRole(value) === role)
+    .map(value => ({
+      id: nextRowId++,
+      valueId: value.valueId,
+      additionalKeywords: getAdditionalValueKeywords(value),
+      additive: value.additive === undefined || value.additive === null ? "" : String(value.additive),
+      multiplier: value.multiplier === undefined || value.multiplier === null ? "" : String(value.multiplier),
+      base: value,
+    }));
 }
 
 function createEffectRows(effects: readonly HomogeneousAdjacencyRule[]): EffectRow[] {
@@ -1068,15 +1133,17 @@ function createEffectRows(effects: readonly HomogeneousAdjacencyRule[]): EffectR
   }));
 }
 
-function createValueEffect(row: ValueRow): HomogeneousValueEffect | null {
+function createValueEffect(row: ValueRow, role: ValueRole): HomogeneousValueEffect | null {
   const additive = parseOptionalNumber(row.additive);
   const multiplier = parseOptionalNumber(row.multiplier);
   if (!row.base && additive === null && multiplier === null) return null;
+  const retainedKeywords = row.additionalKeywords
+    .filter(keyword => keyword !== "production" && keyword !== "upkeep");
 
   const effect: HomogeneousValueEffect = {
     ...row.base,
     valueId: row.valueId,
-    additionalKeywords: row.base?.additionalKeywords ?? ["production"],
+    additionalKeywords: [role, ...retainedKeywords],
   };
 
   if (additive !== null) {
@@ -1092,6 +1159,14 @@ function createValueEffect(row: ValueRow): HomogeneousValueEffect | null {
   }
 
   return effect;
+}
+
+function getValueRole(value: HomogeneousValueEffect): ValueRole {
+  return value.additionalKeywords?.includes("upkeep") ? "upkeep" : "production";
+}
+
+function getAdditionalValueKeywords(value: HomogeneousValueEffect): string[] {
+  return (value.additionalKeywords ?? []).filter(keyword => keyword !== "production" && keyword !== "upkeep");
 }
 
 function createAdjacencyRule(row: EffectRow): HomogeneousAdjacencyRule | null {
