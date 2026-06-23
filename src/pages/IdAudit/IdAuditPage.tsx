@@ -1,5 +1,6 @@
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
 import {useMemo, useState} from "react";
+import {Link} from "react-router-dom";
 import {PROGRESSION_RULES} from "../Progression/data/rules.ts";
 import {getRuleForTarget} from "../Progression/data/progression.ts";
 import {BATTLE_ENEMY_BLUEPRINTS} from "../../data/enemies/index.ts";
@@ -121,7 +122,7 @@ function createRows(): AuditRow[] {
 
     rows.push({
       category: "Tower Part",
-      path: `gunparts.${item.slotGroup}.${item.vector}.${item.key}`,
+      path: `gunParts.${item.vector}.${item.slot}.${item.key}`,
       id: item.id,
       name: data?.name,
       dataStatus: data ? "ok" : "missing",
@@ -353,6 +354,7 @@ export default function IdAuditPage() {
               <th className={s.headCell}>Progression</th>
               <th className={s.headCell}>Assets</th>
               <th className={s.headCell}>Notes</th>
+              <th className={s.headCell}>Edit</th>
             </tr>
           </thead>
           <tbody>
@@ -366,6 +368,13 @@ export default function IdAuditPage() {
                 <td className={s.cell}><StatusBadge status={row.progressionStatus} /></td>
                 <td className={s.cell}><StatusBadge status={row.assetStatus} /></td>
                 <td className={s.cell}>{row.notes}</td>
+                <td className={s.cell}>
+                  {isEditableEntityCategory(row.category) ? (
+                    <Link className={s.editLink} to={`/entity-create/${encodeURIComponent(row.id)}`}>Edit</Link>
+                  ) : (
+                    <span className={s.muted}>N/A</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -373,6 +382,14 @@ export default function IdAuditPage() {
       </div>
     </section>
   );
+}
+
+function isEditableEntityCategory(category: string): boolean {
+  return category === "Building"
+    || category === "Technology"
+    || category === "Tower Part"
+    || category === "Wall"
+    || category === "Tower";
 }
 
 function StatusSelect({

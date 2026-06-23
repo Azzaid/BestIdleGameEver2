@@ -6,21 +6,10 @@ import {WALL_SEGMENT_BUILDINGS} from "./wallSegments/index.ts";
 import {WALL_SUPERSTRUCTURE_BUILDINGS} from "./wallSuperstructures/index.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey, type DevelopmentVectorValue} from "../models/DevlopmentVector.ts";
 import {getResearchNodeVector} from "../models/research/ResearchNode.ts";
-import type {TowerPartSlot} from "../models/battle/towerParts.ts";
 
 type GroupedIds = Record<string, Record<string, string>>;
 
 const vectorKeys = Object.keys(DEVELOPMENT_VECTORS) as DevelopmentVectorKey[];
-
-const towerPartSlotGroups: Record<TowerPartSlot, string> = {
-  platform: "bases",
-  barrel: "barrels",
-  ammo: "ammo",
-  aimSystem: "aimSystems",
-  barrelAttachment: "barrelAttachments",
-  loadingSystem: "loadingSystems",
-  launchSystem: "launchSystems",
-};
 
 export const buildings = Object.fromEntries(
   vectorKeys.map(vector => [
@@ -45,25 +34,24 @@ export const technologies = Object.fromEntries(
 export const technologyIds = Object.values(technologies).flatMap(group => Object.values(group));
 
 export const gunparts = Object.fromEntries(
-  Object.values(towerPartSlotGroups).map(slotGroup => [
-    slotGroup,
+  [...new Set(TOWER_PARTS.flatMap(part => part.slot ? [part.slot] : []))].map(slot => [
+    slot,
     Object.fromEntries(vectorKeys.map(vector => [vector, {}])),
   ]),
 ) as Record<string, GroupedIds>;
 
 for (const part of TOWER_PARTS) {
   if (!part.slot || !part.vector) continue;
-  const slotGroup = towerPartSlotGroups[part.slot];
-  gunparts[slotGroup][part.vector][getIdKey(part.id)] = part.id;
+  gunparts[part.slot][part.vector][getIdKey(part.id)] = part.id;
 }
 
 export const gunpartIds = Object.values(gunparts).flatMap(byVector => (
   Object.values(byVector).flatMap(group => Object.values(group))
 ));
 
-export const gunpartIdRows = Object.entries(gunparts).flatMap(([slotGroup, byVector]) => (
+export const gunpartIdRows = Object.entries(gunparts).flatMap(([slot, byVector]) => (
   Object.entries(byVector).flatMap(([vector, group]) => (
-    Object.entries(group).map(([key, id]) => ({slotGroup, vector, key, id}))
+    Object.entries(group).map(([key, id]) => ({slot, vector, key, id}))
   ))
 ));
 

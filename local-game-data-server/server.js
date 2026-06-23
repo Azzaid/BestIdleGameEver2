@@ -5,12 +5,21 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dataDir = path.join(__dirname, 'data')
+const gameDataDir = path.resolve(process.env.GAME_DATA_DIR ?? path.join(__dirname, '..', 'src', 'data'))
 const port = Number.parseInt(process.env.PORT ?? '4317', 10)
+const entityCollections = new Set([
+  'buildings',
+  'enemies',
+  'gunParts',
+  'research',
+  'wallSegments',
+  'wallSuperstructures',
+])
 
 const sendJson = (response, statusCode, body) => {
   response.writeHead(statusCode, {
     'Access-Control-Allow-Headers': 'content-type',
-    'Access-Control-Allow-Methods': 'GET,PUT,OPTIONS',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json; charset=utf-8',
   })
@@ -47,7 +56,7 @@ const server = createServer(async (request, response) => {
   if (request.method === 'OPTIONS') {
     response.writeHead(204, {
       'Access-Control-Allow-Headers': 'content-type',
-      'Access-Control-Allow-Methods': 'GET,PUT,OPTIONS',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
       'Access-Control-Allow-Origin': '*',
     })
     response.end()
@@ -56,6 +65,60 @@ const server = createServer(async (request, response) => {
 
   if (request.method === 'GET' && url.pathname === '/health') {
     sendJson(response, 200, { ok: true })
+    return
+  }
+
+  if (request.method === 'POST' && url.pathname === '/entities') {
+    let entity
+
+    try {
+      const body = await readRequestBody(request)
+      entity = JSON.parse(body)
+    } catch (error) {
+      sendJson(response, 400, { error: 'Request body must be valid JSON' })
+      return
+    }
+
+    const target = resolveEntityFile(entity)
+
+    if (!target.ok) {
+      sendJson(response, target.statusCode, { error: target.error })
+      return
+    }
+
+    try {
+      const fileContents = await readFile(target.filePath, 'utf8')
+      const entities = JSON.parse(fileContents)
+
+      if (!Array.isArray(entities)) {
+        sendJson(response, 500, { error: 'Target data file must contain a JSON array' })
+        return
+      }
+
+      const existingIndex = entities.findIndex(item => item?.id === entity.id)
+      const action = existingIndex === -1 ? 'created' : 'updated'
+
+      if (existingIndex === -1) {
+        entities.push(entity)
+      } else {
+        entities[existingIndex] = entity
+      }
+
+      await writeFile(target.filePath, `${JSON.stringify(entities, null, 2)}\n`, 'utf8')
+      sendJson(response, existingIndex === -1 ? 201 : 200, { action, entity, file: target.relativePath })
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        sendJson(response, 404, { error: `Target data file not found for "${entity.id}"` })
+        return
+      }
+
+      if (error instanceof SyntaxError) {
+        sendJson(response, 500, { error: 'Target data file must contain valid JSON' })
+        return
+      }
+
+      sendJson(response, 500, { error: 'Failed to add entity' })
+    }
     return
   }
 
@@ -101,3 +164,48 @@ const server = createServer(async (request, response) => {
 server.listen(port, '127.0.0.1', () => {
   console.log(`Local game data server listening on http://127.0.0.1:${port}`)
 })
+
+function resolveEntityFile(entity) {
+  if (!entity || Array.isArray(entity) || typeof entity !== 'object') {
+    return { ok: false, statusCode: 400, error: 'Entity must be a JSON object' }
+  }
+
+  if (typeof entity.id !== 'string' || !entity.id.trim()) {
+    return { ok: false, statusCode: 400, error: 'Entity id must be a non-empty string' }
+  }
+
+  const [collection, group, slot, itemName, ...extra] = entity.id.split('.')
+
+  if (!entityCollections.has(collection)) {
+    return { ok: false, statusCode: 400, error: `Unsupported entity collection "${collection}"` }
+  }
+
+  if (!group || !isSafePathPart(group)) {
+    return { ok: false, statusCode: 400, error: 'Entity id must include a safe group segment' }
+  }
+
+  if (collection === 'gunParts') {
+    if (!slot || !itemName || extra.length || !isSafePathPart(slot) || !isSafePathPart(itemName)) {
+      return { ok: false, statusCode: 400, error: 'Gun part ids must use gunParts.{vector}.{slot}.{item}' }
+    }
+  } else if (!slot || extra.length || !isSafePathPart(slot)) {
+    return { ok: false, statusCode: 400, error: `${collection} ids must use ${collection}.{group}.{item}` }
+  }
+
+  const filePath = path.resolve(gameDataDir, collection, `${group}.json`)
+  const collectionDir = path.resolve(gameDataDir, collection)
+
+  if (!filePath.startsWith(`${collectionDir}${path.sep}`)) {
+    return { ok: false, statusCode: 400, error: 'Resolved entity path is outside the data directory' }
+  }
+
+  return {
+    ok: true,
+    filePath,
+    relativePath: path.relative(path.join(__dirname, '..'), filePath).replaceAll(path.sep, '/'),
+  }
+}
+
+function isSafePathPart(value) {
+  return /^[A-Za-z0-9_-]+$/.test(value)
+}

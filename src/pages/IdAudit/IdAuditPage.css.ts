@@ -112,7 +112,7 @@ export const toggle = style({
 export const table = style({
   width: "100%",
   borderCollapse: "collapse",
-  minWidth: "980px",
+  minWidth: "1060px",
 });
 
 export const headCell = style({
@@ -174,4 +174,22 @@ export const neutralBadge = style({
   color: vars.color.text.muted,
   fontSize: "0.78rem",
   fontWeight: 700,
+});
+
+export const editLink = style({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: "28px",
+  padding: "4px 9px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "6px",
+  color: vars.color.text.primary,
+  textDecoration: "none",
+  fontWeight: 700,
+  selectors: {
+    "&:hover": {
+      borderColor: vars.color.border.focus,
+    },
+  },
 });

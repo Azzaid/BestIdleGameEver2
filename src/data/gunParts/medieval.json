@@ -1,6 +1,6 @@
 [
   {
-    "id": "gunParts.medieval.crudeSling",
+    "id": "gunParts.medieval.launchSystem.crudeSling",
     "slot": "launchSystem",
     "name": "Primitive Launcher",
     "description": "Crude slingshot. It is a bit rough, but it works.",
@@ -75,7 +75,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.hollowedTrunk",
+    "id": "gunParts.medieval.barrel.hollowedTrunk",
     "slot": "barrel",
     "name": "Hollow trunk",
     "description": "Old hollow trunk found near the city walls.",
@@ -139,7 +139,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.stoneBasket",
+    "id": "gunParts.medieval.ammo.stoneBasket",
     "slot": "ammo",
     "name": "Stone Basket",
     "description": "A basket stones.",
@@ -185,7 +185,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.pickedStones",
+    "id": "gunParts.medieval.ammo.pickedStones",
     "slot": "ammo",
     "name": "Hand picked stones",
     "description": "A basket of carefully picked stones heavy stones with sharp edges",
@@ -230,7 +230,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.carvedLog",
+    "id": "gunParts.medieval.barrel.carvedLog",
     "slot": "barrel",
     "name": "Carved out log",
     "description": "Fresh log carefully hollowed by hands and crude tools.",
@@ -301,7 +301,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.handTrebuchet",
+    "id": "gunParts.medieval.launchSystem.handTrebuchet",
     "slot": "launchSystem",
     "name": "Hand drawn trebuchet",
     "description": "Flexible planks and a bit of rope. Basically a big bow attached to a gun platform.",
@@ -393,7 +393,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.sharpenedStakes",
+    "id": "gunParts.medieval.ammo.sharpenedStakes",
     "slot": "ammo",
     "name": "Sharpened stakes",
     "description": "Bunch or thick sticks sharpened by axe",
@@ -470,7 +470,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.boredTimberBarrel",
+    "id": "gunParts.medieval.barrel.boredTimberBarrel",
     "slot": "barrel",
     "name": "Bored timber barrel",
     "description": "Whole three bored and sanded from inside",
@@ -540,7 +540,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.baseWoodArrow",
+    "id": "gunParts.medieval.ammo.baseWoodArrow",
     "slot": "ammo",
     "name": "Wooden arrows",
     "description": "Simple but carefully crafted",
@@ -610,7 +610,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.woodenRails",
+    "id": "gunParts.medieval.platform.woodenRails",
     "slot": "platform",
     "name": "Wooden rails",
     "description": "Set of rails to aid in tower rotation",
@@ -652,7 +652,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.leverLoader",
+    "id": "gunParts.medieval.loadingSystem.leverLoader",
     "slot": "loadingSystem",
     "name": "Lever loader",
     "description": "Clever lever loading mechanism allows to load ammo faster",
@@ -694,7 +694,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.barrelStoneRails",
+    "id": "gunParts.medieval.barrel.stoneRails",
     "slot": "barrel",
     "name": "Stone rails",
     "description": "Set of stone rails to guide projectile.",
@@ -764,7 +764,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.makeshiftWoodenAim",
+    "id": "gunParts.medieval.aimSystem.makeshiftWoodenAim",
     "slot": "aimSystem",
     "name": "Makeshift wooden aim",
     "description": "Few planks with holes in them but it still helps to land a shot",
@@ -820,7 +820,7 @@
     ]
   },
   {
-    "id": "gunParts.medieval.baseStoneRails",
+    "id": "gunParts.medieval.platform.stoneRails",
     "slot": "platform",
     "name": "Stone rails",
     "description": "Set of stone rails to aid in tower rotation",
@@ -869,11 +869,13 @@
     ]
   },
   {
-    "id": "gunParts.medieval.counterweightLoader",
+    "id": "gunParts.medieval.loadingSystem.counterweightLoader",
     "slot": "loadingSystem",
     "name": "Counterweight loader",
     "description": "Loader with a handy stone counterweight. Allows to handle bigger projectiles just as quick",
     "keywords": [
+      "gunPart",
+      "loadingSystem",
       "stone"
     ],
     "requirements": [
@@ -892,7 +894,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 4
+        "additive": 5
       },
       {
         "valueId": "resource.people",

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import {Provider} from "react-redux";
 import {store} from "./store";
 import { ThemeProvider } from './theme/ThemeProvider'
@@ -14,6 +14,7 @@ import StatisticsPage from './pages/Statistics/StatisticsPage'
 import ProgressionPage from './pages/Progression/ProgressionPage.tsx'
 import GunPartEditorPage from './pages/GunPartEditor/GunPartEditorPage.tsx'
 import IdAuditPage from './pages/IdAudit/IdAuditPage.tsx'
+import EntityCreatePage from './pages/EntityCreate/EntityCreatePage.tsx'
 import {THEME_NAMES} from "./models/Theme.ts";
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedSelector} from "./store/hooks.ts";
@@ -95,6 +96,9 @@ function AppFrame() {
                                   <li>
                                       <Link className={appTheme.navBarLink} to="/ids">IDs</Link>
                                   </li>
+                                  <li>
+                                      <Link className={appTheme.navBarLink} to="/entity-create/new">Entity Create</Link>
+                                  </li>
                               </>
                           )}
                       </ul>
@@ -114,9 +118,11 @@ function AppFrame() {
                           <Route path="/research" element={signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />} />
                           <Route path="/city" element={<CityPage />} />
                           <Route path="/statistics" element={<StatisticsPage />} />
-                          <Route path="/progression" element={<ProgressionPage />} />
-                          <Route path="/gun-part-editor" element={<GunPartEditorPage />} />
-                          <Route path="/ids" element={<IdAuditPage />} />
+                          <Route path="/progression" element={isDebugModeEnabled ? <ProgressionPage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/gun-part-editor" element={isDebugModeEnabled ? <GunPartEditorPage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/ids" element={isDebugModeEnabled ? <IdAuditPage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/entity-create" element={<Navigate to="/entity-create/new" replace />} />
+                          <Route path="/entity-create/:entityId" element={isDebugModeEnabled ? <EntityCreatePage /> : <Navigate to="/battle" replace />} />
                       </Routes>
                   </main>
               </div>

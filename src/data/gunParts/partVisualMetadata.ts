@@ -62,11 +62,11 @@ function normalizeMetadata(metadata: TowerPartVisualMetadata): TowerPartVisualMe
 }
 
 export const TOWER_PART_VISUAL_ASSETS: Record<string, TowerPartVisualAsset> = {
-  ["gunParts.medieval.stoneBasket"]: {
+  ["gunParts.medieval.ammo.stoneBasket"]: {
     metadata: normalizeMetadata(medievalAmmoCrudeStoneMetadata),
     src: medievalAmmoCrudeStoneUrl,
   },
-  ["gunParts.medieval.crudeSling"]: {
+  ["gunParts.medieval.launchSystem.crudeSling"]: {
     metadata: normalizeMetadata(medievalLauncherCrudeSlingMetadata),
     src: medievalLauncherCrudeSlingUrl,
   },
