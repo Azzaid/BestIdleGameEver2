@@ -67,7 +67,7 @@ const CityPage = () => {
     const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
     const activeGlobalModifiers = useTypedSelector(selectActiveGlobalModifiers);
     const [selectedHex, setSelectedHex] = useState<HexCell | null>(null);
-    const [globalEffectsOpen, setGlobalEffectsOpen] = useState(true);
+    const [globalEffectsOpen, setGlobalEffectsOpen] = useState(false);
     const selectHex = (hex: HexCell) => {
         const selectedCoreHex = hex.partOfStructureId
             ? hexes.find(candidate => candidate.cellKey === (hex.structureCoreCellKey ?? hex.cellKey)) ?? hex

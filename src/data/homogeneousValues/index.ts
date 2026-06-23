@@ -74,7 +74,7 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         label: "People",
         keywords: ["resource", "support", "output", "spendable", "display_bar", "medieval", "people"],
         displayMethod: "integer",
-        roundingMethod: "roundDown",
+        roundingMethod: "roundUp",
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourceGold]: {
@@ -82,7 +82,7 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         label: "Gold",
         keywords: ["resource", "support", "output", "spendable", "display_bar", "medieval", "gold"],
         displayMethod: "integer",
-        roundingMethod: "roundDown",
+        roundingMethod: "roundUp",
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.resourcePower]: {
