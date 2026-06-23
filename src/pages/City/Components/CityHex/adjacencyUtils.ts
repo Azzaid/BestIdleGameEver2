@@ -94,11 +94,11 @@ export function resolveCityUpkeepAndSignature(
     };
 
     resolvedCity.territorySignature = hexes.length * SIGNATURE_PER_HEX;
-    const buildingEntities: HomogeneousValueEntitySource[] = [...city.values()].map((building) => ({
-            id: `${building.column}:${building.row}`,
+    const buildingEntities: HomogeneousValueEntitySource[] = [...city.entries()].map(([cellKey, building]) => ({
+            id: cellKey,
             contentId: building.id,
             entityType: "building",
-            cellKey: `${building.column}:${building.row}`,
+            cellKey,
             column: building.column,
             row: building.row,
             keywords: building.keywords,

@@ -18,7 +18,7 @@ import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
 import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
-import {selectCityResolution, selectCitySignatureStatus} from "../../store/upkeep/selectors.ts";
+import {selectCitySignatureStatus, selectTowerAwareCityResolution} from "../../store/upkeep/selectors.ts";
 import type {PlacedBuilding} from "../../models/city/Building.ts";
 import type {StructureDetectionResult} from "../../models/city/multistructureDetection.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
@@ -30,7 +30,7 @@ import {
     getHomogeneousRequirementContributions,
 } from "../../models/homogeneousValueHelpers.ts";
 import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
-import type {HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import {getUpkeepValues, normalizeMultiplier, resolveHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {GLOBAL_MODIFIERS} from "../../data/globalModifiers/index.ts";
@@ -57,7 +57,8 @@ const CityPage = () => {
     const structureCandidates = useTypedSelector(selectCityStructureCandidates);
     const wallResolution = useTypedSelector(selectWallResolution);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
-    const {effectiveUpkeep} = useTypedSelector(selectCityResolution);
+    const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
+    const {effectiveUpkeep} = cityResolution;
     const unlockedBuildingIds = useTypedSelector(selectUnlockedBuildingIds);
     const visibleBuildingIds = useTypedSelector(selectVisibleBuildingIds);
     const unlockedWallSegmentIds = useTypedSelector(selectUnlockedWallSegmentIds);
@@ -182,6 +183,12 @@ const CityPage = () => {
     };
 
     const selectedBuilding = selectedHex ? cityBuildings.get(selectedHex.cellKey) : undefined;
+    const selectedResolvedEntity = selectedHex
+        ? cityResolution.resolvedHexes.find(entity => (
+            entity.entityType === "building"
+            && entity.cellKey === selectedHex.cellKey
+        ))
+        : undefined;
     const selectedWallBuilding = selectedHex?.wallKey ? WALL_SEGMENT_BUILDINGS[selectedHex.wallKey] : undefined;
     const selectedWallTopBuilding = selectedHex?.wallTopKey ? WALL_TOWER_BUILDINGS[selectedHex.wallTopKey] : undefined;
     const selectedStructureCandidates = selectedHex
@@ -209,6 +216,7 @@ const CityPage = () => {
                     <SelectedHexPanel
                         selectedHex={selectedHex}
                         selectedBuilding={selectedBuilding}
+                        selectedResolvedEntity={selectedResolvedEntity}
                         selectedWallBuilding={selectedWallBuilding}
                         selectedWallTopBuilding={selectedWallTopBuilding}
                         structureCandidates={selectedStructureCandidates}
@@ -342,6 +350,7 @@ function GlobalEffectList({effects}: {effects: HomogeneousValueEffect[]}) {
 function SelectedHexPanel({
     selectedHex,
     selectedBuilding,
+    selectedResolvedEntity,
     selectedWallBuilding,
     selectedWallTopBuilding,
     structureCandidates,
@@ -369,18 +378,23 @@ function SelectedHexPanel({
                         <HomogeneousContributionGroup
                             title="Resolved production"
                             effects={getHomogeneousProductionContributions({
-                                values: selectedBuilding.effectiveHomogeneousValueEffects,
+                                values: selectedResolvedEntity?.resolvedContributions
+                                    ?? selectedBuilding.effectiveHomogeneousValueEffects,
                             })}
                             baseEffects={getHomogeneousProductionContributions(selectedBuilding)}
                         />
                         <HomogeneousContributionGroup
                             title="Resolved upkeep"
                             effects={getHomogeneousRequirementContributions({
-                                values: selectedBuilding.effectiveHomogeneousValueEffects,
+                                values: selectedResolvedEntity?.resolvedContributions
+                                    ?? selectedBuilding.effectiveHomogeneousValueEffects,
                             })}
                             baseEffects={getHomogeneousRequirementContributions(selectedBuilding)}
                         />
                     </div>
+                    {selectedResolvedEntity && (
+                        <ActiveModifierList modifiers={selectedResolvedEntity.activeModifiers} />
+                    )}
                     <MultistructureStatus
                         structureCandidates={structureCandidates}
                         builtStructureIds={builtStructureIds}
@@ -581,6 +595,33 @@ function MetricGroup({title, values}: {title: string; values: UpkeepAmount}) {
     );
 }
 
+function ActiveModifierList({modifiers}: {modifiers: readonly HomogeneousAdjacencyRule[]}) {
+    const visibleModifiers = modifiers.filter(modifier => (
+        (modifier.additive ?? 0) !== 0
+        || normalizeMultiplier(modifier.multiplier) !== 1
+        || (modifier.additionalBuildingKeywords?.length ?? 0) > 0
+        || (modifier.removedBuildingKeywords?.length ?? 0) > 0
+    ));
+
+    return (
+        <div>
+            <h4 className={s.metricTitle}>Active effects</h4>
+            {visibleModifiers.length ? (
+                <dl className={s.metricList}>
+                    {visibleModifiers.map((modifier, index) => (
+                        <div key={index} className={s.metricRow}>
+                            <dt>{formatModifierTarget(modifier)}</dt>
+                            <dd>{formatModifierAmount(modifier)}</dd>
+                        </div>
+                    ))}
+                </dl>
+            ) : (
+                <p className={s.emptyStats}>None</p>
+            )}
+        </div>
+    );
+}
+
 function HomogeneousContributionGroup({
     title,
     effects,
@@ -631,6 +672,50 @@ function HomogeneousContributionGroup({
             )}
         </div>
     );
+}
+
+function formatModifierTarget(modifier: HomogeneousAdjacencyRule): string {
+    const hiddenValueKeywords = new Set(["resource", "support", "output", "spendable", "production", "upkeep", "unlock"]);
+    const valueKeywords = modifier.requiredValueKeywords?.filter(keyword => !hiddenValueKeywords.has(keyword)) ?? [];
+    const buildingKeywords = modifier.requiredBuildingKeywords ?? [];
+    const targets = [...buildingKeywords, ...valueKeywords];
+
+    return targets.length
+        ? targets.map(formatKeywordLabel).join(", ")
+        : "Matching values";
+}
+
+function formatModifierAmount(modifier: HomogeneousAdjacencyRule): string {
+    const parts: string[] = [];
+    const additive = modifier.additive ?? 0;
+    const multiplier = normalizeMultiplier(modifier.multiplier);
+
+    if (additive) {
+        parts.push(additive > 0 ? `+${additive}` : String(additive));
+    }
+
+    if (multiplier !== 1) {
+        parts.push(`x${formatResourceAmount(multiplier)}`);
+    }
+
+    if (modifier.additionalBuildingKeywords?.length) {
+        parts.push(`adds ${modifier.additionalBuildingKeywords.map(formatKeywordLabel).join(", ")}`);
+    }
+
+    if (modifier.removedBuildingKeywords?.length) {
+        parts.push(`removes ${modifier.removedBuildingKeywords.map(formatKeywordLabel).join(", ")}`);
+    }
+
+    return parts.join(" ") || "Active";
+}
+
+function formatKeywordLabel(keyword: string): string {
+    return keyword
+        .replace(/^resource\./, "")
+        .replace(/^city\./, "")
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .replace(/[-_.]+/g, " ")
+        .replace(/\b\w/g, character => character.toUpperCase());
 }
 
 function buildEffectAmountMap(effects: HomogeneousValueEffect[]): Map<string, number> {
