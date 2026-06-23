@@ -336,3 +336,47 @@ export const option = style({
     },
   },
 });
+
+export const visualAssetGrid = style({
+  display: "grid",
+  gridTemplateColumns: "minmax(220px, 0.9fr) minmax(240px, 1.1fr)",
+  gap: "10px",
+  "@media": {
+    "(max-width: 720px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
+export const visualPreviewBox = style({
+  display: "grid",
+  alignContent: "start",
+  gap: "8px",
+  minHeight: "120px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "8px",
+  padding: "8px",
+  background: vars.color.background.app,
+});
+
+export const visualPreviewImage = style({
+  display: "block",
+  maxWidth: "100%",
+  maxHeight: "180px",
+  objectFit: "contain",
+  borderRadius: "6px",
+  background: vars.color.background.surface,
+});
+
+export const visualMetadataPreview = style({
+  maxHeight: "180px",
+  overflow: "auto",
+  margin: 0,
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "6px",
+  padding: "8px",
+  background: vars.color.background.surface,
+  color: vars.color.text.primary,
+  fontSize: "0.76rem",
+  lineHeight: 1.35,
+});

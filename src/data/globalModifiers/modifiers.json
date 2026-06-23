@@ -1,0 +1,26 @@
+[
+  {
+    "id": "fungal_inheritance",
+    "title": "Fungal Inheritance",
+    "description": "Carries a portion of each city's fungal production forward.",
+    "applyRules": [
+      {
+        "type": "addHomogeneousValue",
+        "stateKey": "fungiBonus",
+        "valueId": "resource.fungi",
+        "valueField": "produced",
+        "multiplier": 0.1
+      }
+    ],
+    "effects": [
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": ["production"],
+        "additive": {
+          "stateKey": "fungiBonus"
+        },
+        "multiplier": 1
+      }
+    ]
+  }
+]

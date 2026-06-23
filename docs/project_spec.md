@@ -87,7 +87,7 @@ Content data layout:
 
 - `src/data/buildings` uses vector-keyed atlas modules.
 - `src/data/wallSegments` and `src/data/wallSuperstructures` use independent atlas patterns keyed by development vector. Wall hexes store those two layers separately.
-- `src/data/towers` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
+- `src/data/gunParts` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research` uses a technology factory with keyworded definitions, then exposes a vector-keyed research atlas and flattened helpers for the research tree. Research visual grouping is derived from vector keywords such as `medieval`, `nature`, `aether`, and `tech`.
 - `src/pages/Progression/data` contains the derived progression catalog, graph helpers, and page-local progression types used by `/progression` and the `/ids` audit coverage view.
 - `src/data/enemies` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
@@ -96,10 +96,10 @@ Content data layout:
 
 Texture asset layout:
 
-- City building textures live in `src/assets/city/buildings/<vector>` and are registered through `src/models/sprites/buildings`.
-- City wall segment textures and metadata live in `src/assets/city/walls/<vector>` and are registered through `src/models/sprites/walls`.
-- City wall-top/superstructure textures live in `src/assets/city/wallTops/<vector>` and are registered through `src/models/sprites/wallTops`.
-- Battle tower component textures and metadata live in `src/assets/battle/towerParts/<vector>` and are registered through `src/data/towers/partVisualMetadata.ts`.
+- City building textures live in `src/assets/buildings/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
+- City wall segment textures and metadata live in `src/assets/wallSegments/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
+- City wall-top/superstructure textures live in `src/assets/wallSuperstructures/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
+- Tower component textures and metadata live in `src/assets/gunParts/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`; tower part runtime metadata is derived in `src/data/gunParts/partVisualMetadata.ts`.
 - Images not currently loaded by code belong under `src/assets/unused`.
 
 Future architecture direction:
@@ -398,7 +398,7 @@ Current implementation:
 - Build and Battle share resolved tower state.
 - Tower projectile radius, projectile spread, trigger tolerance, maximum range, minimum range, and maximum rotation angle are resolved as homogeneous tower values alongside damage, speed, range, reload, rotation, and area. Maximum range, minimum range, and maximum rotation angle default to unlimited when no source contributes them. If multiple sources contribute maximum range or maximum rotation angle, the lower value wins; if multiple sources contribute minimum range, the higher value wins.
 - Gun stat values from tower parts stay inside the specific mounted gun assembly. Only city-scoped tower-part values enter city homogeneous totals, which prevents stats such as projectile damage from being summed into the city and reused by other towers.
-- Shared tower content starts in `src/data/towers/parts`, with tower parts split by development vector.
+- Shared tower content starts in `src/data/gunParts`, with tower parts split by development vector.
 - Battle is blocked until the player assembles the first tower and commits it with Rebuild.
 - The most basic tower components are medieval and require no upkeep.
 
@@ -608,7 +608,7 @@ Current content layout:
 - `src/data/buildings/` uses vector-keyed atlas modules.
 - `src/data/wallSegments/` and `src/data/wallSuperstructures/` use independent atlas patterns keyed by development vector. Wall hexes store those two layers separately.
 - `src/data/enemies/` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
-- `src/data/towers/` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
+- `src/data/gunParts/` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research/` uses `createTechnologyFactory(...)` for keyworded technology definitions and exposes a vector-keyed research atlas plus flattened helpers for the research tree.
 - `src/pages/Progression/data/` contains progression graph helpers derived from building, research, wall, and tower part requirement data.
 - `src/data/identificators/` owns content ids for buildings, technologies, tower parts, enemies, wall segments, and wall superstructures. Add ids there first, then consume those constants from data, progression, state defaults, and asset registries.

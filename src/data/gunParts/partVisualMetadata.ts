@@ -1,10 +1,7 @@
-import medievalAmmoCrudeStoneMetadata from '../../assets/battle/towerParts/medieval/medieval_ammo_crude-stone.json';
-import medievalAmmoCrudeStoneUrl from '../../assets/battle/towerParts/medieval/medieval_ammo_crude-stone.png';
-import medievalLauncherCrudeSlingMetadata from '../../assets/battle/towerParts/medieval/medieval_launcher_crude-sling.json';
-import medievalLauncherCrudeSlingUrl from '../../assets/battle/towerParts/medieval/medieval_launcher_crude-sling.png';
 import type { TowerPartVisualMetadata } from '../../models/battle/towerPartVisualMetadata.ts';
 import type { TowerVisualPoint, TowerVisualSize } from '../../models/battle/towerVisual.ts';
 import type { SpriteAsset } from '../../models/sprites/SpriteAtlas.ts';
+import {ENTITY_VISUAL_ASSETS, type GunPartVisualAssetOption} from "../entityVisualAssets.ts";
 
 export type TowerPartVisualAsset = SpriteAsset<TowerPartVisualMetadata> & {
   metadata: TowerPartVisualMetadata;
@@ -61,16 +58,17 @@ function normalizeMetadata(metadata: TowerPartVisualMetadata): TowerPartVisualMe
   };
 }
 
-export const TOWER_PART_VISUAL_ASSETS: Record<string, TowerPartVisualAsset> = {
-  ["gunParts.medieval.ammo.stoneBasket"]: {
-    metadata: normalizeMetadata(medievalAmmoCrudeStoneMetadata),
-    src: medievalAmmoCrudeStoneUrl,
-  },
-  ["gunParts.medieval.launchSystem.crudeSling"]: {
-    metadata: normalizeMetadata(medievalLauncherCrudeSlingMetadata),
-    src: medievalLauncherCrudeSlingUrl,
-  },
-};
+export const TOWER_PART_VISUAL_ASSETS: Record<string, TowerPartVisualAsset> = Object.fromEntries(
+  ENTITY_VISUAL_ASSETS
+    .filter((asset): asset is GunPartVisualAssetOption => asset.kind === "gunPart")
+    .map(asset => [
+      asset.id,
+      {
+        metadata: normalizeMetadata(asset.metadata),
+        src: asset.src,
+      },
+    ]),
+) as Record<string, TowerPartVisualAsset>;
 
 export const TOWER_PART_VISUAL_METADATA = Object.fromEntries(
   Object.entries(TOWER_PART_VISUAL_ASSETS).map(([partId, asset]) => [partId, asset.metadata])

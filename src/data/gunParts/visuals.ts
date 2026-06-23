@@ -65,7 +65,8 @@ const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
 function createVisualPartForSlot(slot: TowerPartSlot, resolvedTower: TowerAssemblyResolved): TowerVisualPartDefinition {
   const selectedPart = resolvedTower.selectedParts[slot];
   const layout = slotVisualLayouts[slot];
-  const visualMetadata = selectedPart ? TOWER_PART_VISUAL_METADATA[selectedPart.id] : undefined;
+  const visualTextureKey = selectedPart?.sprite.textureKey ?? selectedPart?.id;
+  const visualMetadata = visualTextureKey ? TOWER_PART_VISUAL_METADATA[visualTextureKey] : undefined;
 
   return {
     id: selectedPart?.id ?? `empty_${slot}`,

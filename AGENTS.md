@@ -46,10 +46,10 @@ For design intent and game mechanics, also refer to the docs folder before makin
 
 Use `docs/texture-assets.md` before adding or moving wall, wall-top/superstructure, building, or tower component textures. The short version:
 
-- Active city building textures live under `src/assets/city/buildings/<vector>` and are registered in `src/models/sprites/buildings/<vector>.ts`.
-- Active wall segment textures live under `src/assets/city/walls/<vector>` and are registered in `src/models/sprites/walls/<vector>.ts`.
-- Active wall-top/superstructure textures live under `src/assets/city/wallTops/<vector>` and are registered in `src/models/sprites/wallTops/<vector>.ts`.
-- Active tower component textures and metadata live under `src/assets/battle/towerParts/<vector>` and are registered in `src/data/towers/partVisualMetadata.ts`.
+- Active city building textures live under `src/assets/buildings/<vector>` and are cataloged in `src/data/entityVisualAssets.ts`.
+- Active wall segment textures live under `src/assets/wallSegments/<vector>` and are cataloged in `src/data/entityVisualAssets.ts`.
+- Active wall-top/superstructure textures live under `src/assets/wallSuperstructures/<vector>` and are cataloged in `src/data/entityVisualAssets.ts`.
+- Active tower component textures and metadata live under `src/assets/gunParts/<vector>` and are cataloged in `src/data/entityVisualAssets.ts`.
 - Active texture loading should go through sprite atlases/registries. Do not import one-off gameplay textures directly in page components when a registry exists.
 - Move images that are not currently loaded by code to `src/assets/unused`, preserving source subfolders when useful.
 - After adding texture content, check `/ids`; for tower component sockets also use `/gun-part-editor`.

@@ -20,6 +20,8 @@ Endpoints:
 - `GET /game-files/sample-game-state.json`
 - `PUT /game-files/sample-game-state.json`
 - `POST /entities`
+- `POST /global-events`
+- `POST /global-modifiers`
 
 Only `.json` files inside this folder's `data` directory are readable or writable.
 
@@ -34,3 +36,7 @@ The target file is selected from the entity `id`:
 - `wallSuperstructures.{vector}.{item}` -> `src/data/wallSuperstructures/{vector}.json`
 
 The server appends new entities and updates existing entities with the same ID. Set `GAME_DATA_DIR` to point at a different data root for tests.
+
+`POST /global-events` writes event definitions to `src/data/globalEvents/events.json`.
+`POST /global-modifiers` writes modifier definitions to `src/data/globalModifiers/modifiers.json`.
+Both endpoints append new definitions and update existing definitions with the same ID.

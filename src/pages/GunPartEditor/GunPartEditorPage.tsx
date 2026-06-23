@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { TOWER_PARTS } from '../../data/gunParts/index.ts';
 import { TOWER_PART_SLOT_ORDER } from '../../data/gunParts/index.ts';
+import {ENTITY_VISUAL_ASSETS} from "../../data/entityVisualAssets.ts";
 import { gunpartIdRows } from '../../data/ids.ts';
 import type { TowerPartVisualMetadata } from '../../models/battle/towerPartVisualMetadata.ts';
 import type { TowerPartSlot } from '../../models/battle/towerParts.ts';
@@ -21,11 +22,11 @@ interface EditorAsset {
   src?: string;
 }
 
-const metadataModules = import.meta.glob('../../assets/battle/towerParts/**/*.json', {
+const metadataModules = import.meta.glob('../../assets/gunParts/**/*.json', {
   eager: true,
 }) as Record<string, { default: TowerPartVisualMetadata }>;
 
-const imageModules = import.meta.glob('../../assets/battle/towerParts/**/*.png', {
+const imageModules = import.meta.glob('../../assets/gunParts/**/*.png', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -161,6 +162,15 @@ function buildAssetMap() {
     assets[id] = {
       ...assets[id],
       src,
+    };
+  }
+
+  for (const asset of ENTITY_VISUAL_ASSETS) {
+    if (asset.kind !== "gunPart") continue;
+    assets[asset.id] = {
+      ...assets[asset.id],
+      metadata: assets[asset.id]?.metadata ?? asset.metadata,
+      src: assets[asset.id]?.src ?? asset.src,
     };
   }
 
@@ -415,7 +425,8 @@ export default function GunPartEditorPage() {
 
   const [selectedPartId, setSelectedPartId] = useState(initialPart.id);
   const selectedPart = TOWER_PARTS.find((part) => part.id === selectedPartId) ?? initialPart;
-  const selectedAsset = EDITOR_ASSETS[selectedPart.id];
+  const selectedAssetId = selectedPart.sprite.textureKey ?? selectedPart.id;
+  const selectedAsset = EDITOR_ASSETS[selectedAssetId] ?? EDITOR_ASSETS[selectedPart.id];
   const [slot, setSlot] = useState<TowerPartSlot>(selectedPart.slot ?? 'barrel');
   const [sourceSpriteSize, setSourceSpriteSize] = useState<TowerVisualSize>(
     selectedAsset?.metadata?.sourceSpriteSize ?? DEFAULT_SOURCE_SIZE
@@ -522,7 +533,8 @@ export default function GunPartEditorPage() {
             </thead>
             <tbody>
               {sortedParts.map((part) => {
-                const hasAsset = Boolean(EDITOR_ASSETS[part.id]?.src);
+                const assetId = part.sprite.textureKey ?? part.id;
+                const hasAsset = Boolean(EDITOR_ASSETS[assetId]?.src ?? EDITOR_ASSETS[part.id]?.src);
                 const rowClassName = part.id === selectedPart.id ? s.selectedPartRow : s.partRow;
 
                 return (
@@ -551,7 +563,7 @@ export default function GunPartEditorPage() {
         <div className={s.controlsPanel}>
           <label className={s.field}>
             <span className={s.label}>Asset ID</span>
-            <input className={s.input} value={selectedPart.id} readOnly />
+            <input className={s.input} value={selectedAssetId} readOnly />
           </label>
           <label className={s.field}>
             <span className={s.label}>Part Type</span>
@@ -681,7 +693,7 @@ export default function GunPartEditorPage() {
               </svg>
             ) : (
               <div className={s.emptyStage}>
-                This part does not have a PNG under src/assets/battle/towerParts yet. Add the sprite asset, then it will appear here for socket editing.
+                This part does not have a PNG under src/assets/gunParts yet. Add the sprite asset, then it will appear here for socket editing.
               </div>
             )}
           </div>

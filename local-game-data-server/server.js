@@ -122,6 +122,77 @@ const server = createServer(async (request, response) => {
     return
   }
 
+  if (request.method === 'POST' && (url.pathname === '/global-events' || url.pathname === '/global-modifiers')) {
+    const targetFile = url.pathname === '/global-events'
+      ? path.resolve(gameDataDir, 'globalEvents', 'events.json')
+      : path.resolve(gameDataDir, 'globalModifiers', 'modifiers.json')
+
+    const targetDir = path.dirname(targetFile)
+    if (!targetFile.startsWith(`${targetDir}${path.sep}`)) {
+      sendJson(response, 400, { error: 'Resolved global data path is outside the data directory' })
+      return
+    }
+
+    let definition
+
+    try {
+      const body = await readRequestBody(request)
+      definition = JSON.parse(body)
+    } catch (error) {
+      sendJson(response, 400, { error: 'Request body must be valid JSON' })
+      return
+    }
+
+    if (!definition || Array.isArray(definition) || typeof definition !== 'object') {
+      sendJson(response, 400, { error: 'Definition must be a JSON object' })
+      return
+    }
+
+    if (typeof definition.id !== 'string' || !definition.id.trim()) {
+      sendJson(response, 400, { error: 'Definition id must be a non-empty string' })
+      return
+    }
+
+    try {
+      const fileContents = await readFile(targetFile, 'utf8')
+      const definitions = JSON.parse(fileContents)
+
+      if (!Array.isArray(definitions)) {
+        sendJson(response, 500, { error: 'Target data file must contain a JSON array' })
+        return
+      }
+
+      const existingIndex = definitions.findIndex(item => item?.id === definition.id)
+      const action = existingIndex === -1 ? 'created' : 'updated'
+
+      if (existingIndex === -1) {
+        definitions.push(definition)
+      } else {
+        definitions[existingIndex] = definition
+      }
+
+      await writeFile(targetFile, `${JSON.stringify(definitions, null, 2)}\n`, 'utf8')
+      sendJson(response, existingIndex === -1 ? 201 : 200, {
+        action,
+        definition,
+        file: path.relative(path.join(__dirname, '..'), targetFile).replaceAll(path.sep, '/'),
+      })
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        sendJson(response, 404, { error: 'Target global data file not found' })
+        return
+      }
+
+      if (error instanceof SyntaxError) {
+        sendJson(response, 500, { error: 'Target data file must contain valid JSON' })
+        return
+      }
+
+      sendJson(response, 500, { error: 'Failed to save global definition' })
+    }
+    return
+  }
+
   const fileMatch = url.pathname.match(/^\/game-files\/([^/]+)$/)
 
   if (!fileMatch) {

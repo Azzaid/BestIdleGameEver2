@@ -46,11 +46,11 @@ type AuditRow = {
 
 type StatusFilter = AuditStatus | "any";
 
-const metadataModules = import.meta.glob("../../assets/battle/towerParts/**/*.json", {
+const metadataModules = import.meta.glob("../../assets/gunParts/**/*.json", {
   eager: true,
 }) as Record<string, unknown>;
 
-const imageModules = import.meta.glob("../../assets/battle/towerParts/**/*.png", {
+const imageModules = import.meta.glob("../../assets/gunParts/**/*.png", {
   eager: true,
   query: "?url",
   import: "default",
@@ -116,9 +116,11 @@ function createRows(): AuditRow[] {
 
   for (const item of gunpartIdRows) {
     const data = TOWER_PARTS_BY_ID[item.id];
-    const hasPng = gunPartImageIds.has(item.id);
-    const hasJson = gunPartMetadataIds.has(item.id);
-    const isRegistered = registeredTowerPartAssetIds.has(item.id);
+    const textureKey = data?.sprite.textureKey ?? item.id;
+    const registeredAsset = TOWER_PART_VISUAL_ASSETS[textureKey] ?? TOWER_PART_VISUAL_ASSETS[item.id];
+    const hasPng = Boolean(registeredAsset?.src) || gunPartImageIds.has(textureKey);
+    const hasJson = Boolean(registeredAsset?.metadata) || gunPartMetadataIds.has(textureKey);
+    const isRegistered = Boolean(registeredAsset) || registeredTowerPartAssetIds.has(textureKey);
 
     rows.push({
       category: "Tower Part",
@@ -128,7 +130,7 @@ function createRows(): AuditRow[] {
       dataStatus: data ? "ok" : "missing",
       progressionStatus: getProgressionStatus("towerPart", item.id),
       assetStatus: hasPng && hasJson && isRegistered ? "ok" : "missing",
-      notes: data ? `${data.slot ?? "unknown slot"} / PNG ${hasPng ? "yes" : "no"} / JSON ${hasJson ? "yes" : "no"} / registry ${isRegistered ? "yes" : "no"}` : "No tower part definition",
+      notes: data ? `${data.slot ?? "unknown slot"} / texture ${textureKey} / PNG ${hasPng ? "yes" : "no"} / JSON ${hasJson ? "yes" : "no"} / registry ${isRegistered ? "yes" : "no"}` : "No tower part definition",
     });
   }
 
@@ -212,6 +214,7 @@ function getUnregisteredRows(rows: readonly AuditRow[]): AuditRow[] {
 
   for (const id of new Set([...gunPartMetadataIds, ...gunPartImageIds])) {
     if (registeredIds.has(id)) continue;
+    if (registeredTowerPartAssetIds.has(id)) continue;
     unregisteredRows.push({
       category: "Tower Part Asset",
       path: "missing identificator asset",

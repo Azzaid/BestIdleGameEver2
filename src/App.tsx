@@ -15,6 +15,7 @@ import ProgressionPage from './pages/Progression/ProgressionPage.tsx'
 import GunPartEditorPage from './pages/GunPartEditor/GunPartEditorPage.tsx'
 import IdAuditPage from './pages/IdAudit/IdAuditPage.tsx'
 import EntityCreatePage from './pages/EntityCreate/EntityCreatePage.tsx'
+import GlobalEventsEditorPage from './pages/GlobalEventsEditor/GlobalEventsEditorPage.tsx'
 import {THEME_NAMES} from "./models/Theme.ts";
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedSelector} from "./store/hooks.ts";
@@ -100,6 +101,9 @@ function AppFrame() {
                                   <li>
                                       <Link className={appTheme.navBarLink} to="/entity-create/new">Entity Create</Link>
                                   </li>
+                                  <li>
+                                      <Link className={appTheme.navBarLink} to="/global-events">Global Events</Link>
+                                  </li>
                               </>
                           )}
                       </ul>
@@ -125,6 +129,7 @@ function AppFrame() {
                           <Route path="/ids" element={isDebugModeEnabled ? <IdAuditPage /> : <Navigate to="/battle" replace />} />
                           <Route path="/entity-create" element={<Navigate to="/entity-create/new" replace />} />
                           <Route path="/entity-create/:entityId" element={isDebugModeEnabled ? <EntityCreatePage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/global-events" element={isDebugModeEnabled ? <GlobalEventsEditorPage /> : <Navigate to="/battle" replace />} />
                       </Routes>
                   </main>
               </div>

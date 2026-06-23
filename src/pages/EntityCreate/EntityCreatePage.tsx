@@ -8,6 +8,12 @@ import {ALL_BUILDING_KEYWORDS} from "../../models/city/Keywords.ts";
 import {HOMOGENEOUS_VALUE_DEFINITION_LIST} from "../../data/homogeneousValues/index.ts";
 import {TOWER_PART_SLOT_ORDER} from "../../data/gunParts/index.ts";
 import {buildingIds, technologyIds} from "../../data/ids.ts";
+import {
+  ENTITY_VISUAL_ASSETS_BY_ID,
+  getEntityVisualAssetsForKind,
+  type EntityVisualAsset,
+  type EntityVisualAssetKind,
+} from "../../data/entityVisualAssets.ts";
 import aetherBuildingDefinitions from "../../data/buildings/aether.json";
 import medievalBuildingDefinitions from "../../data/buildings/medieval.json";
 import natureBuildingDefinitions from "../../data/buildings/nature.json";
@@ -81,6 +87,8 @@ type StoredEntityDefinition = {
   buildRequirements?: Requirement[];
   values?: HomogeneousValueEffect[];
   effects?: HomogeneousAdjacencyRule[];
+  visualAssetId?: string;
+  spriteTextureKey?: string;
 };
 
 type StoredEntityLookup = {
@@ -173,6 +181,7 @@ export default function EntityCreatePage() {
   const [hint, setHint] = useState("");
   const [requiredBuildingRows, setRequiredBuildingRows] = useState<BuildingIdRow[]>([]);
   const [keywords, setKeywords] = useState<string[]>([]);
+  const [visualAssetId, setVisualAssetId] = useState("");
   const [providedValueRows, setProvidedValueRows] = useState<ValueRow[]>([]);
   const [upkeepValueRows, setUpkeepValueRows] = useState<ValueRow[]>([]);
   const [effectRows, setEffectRows] = useState<EffectRow[]>([]);
@@ -191,6 +200,16 @@ export default function EntityCreatePage() {
     : `${idPrefix}.${vector}.${normalizedItemName}`;
   const showBuildingFields = entityType === "building";
   const showBuildRequirements = entityType === "building" || entityType === "wallSegment" || entityType === "wallSuperstructure";
+  const visualAssetKind = getVisualAssetKind(entityType);
+  const visualAssetOptions = useMemo(
+    () => visualAssetKind
+      ? getEntityVisualAssetsForKind(visualAssetKind)
+        .filter(asset => asset.vector === vector)
+        .filter(asset => asset.kind !== "gunPart" || asset.slot === partType)
+      : [],
+    [partType, vector, visualAssetKind],
+  );
+  const selectedVisualAsset = visualAssetId ? ENTITY_VISUAL_ASSETS_BY_ID[visualAssetId] : undefined;
   const automaticKeywords = useMemo(
     () => getAutomaticKeywords(entityType, vector, partType),
     [entityType, partType, vector],
@@ -212,6 +231,12 @@ export default function EntityCreatePage() {
     });
     previousAutomaticKeywordsRef.current = automaticKeywords;
   }, [automaticKeywords]);
+
+  useEffect(() => {
+    if (!visualAssetId) return;
+    if (visualAssetOptions.some(asset => asset.id === visualAssetId)) return;
+    setVisualAssetId("");
+  }, [visualAssetId, visualAssetOptions]);
 
   useEffect(() => {
     if (entityId === "new") {
@@ -240,6 +265,7 @@ export default function EntityCreatePage() {
       hint,
       requiredBuildingRows,
       keywords,
+      visualAssetId,
       providedValueRows,
       upkeepValueRows,
       effectRows,
@@ -257,6 +283,7 @@ export default function EntityCreatePage() {
     hint,
     isSuperstructure,
     keywords,
+    visualAssetId,
     partType,
     providedValueRows,
     requiredBuildingRows,
@@ -370,6 +397,14 @@ export default function EntityCreatePage() {
                 />
                 Is superstructure
               </label>
+            )}
+            {visualAssetKind && (
+              <VisualAssetField
+                options={visualAssetOptions}
+                selectedAsset={selectedVisualAsset}
+                value={visualAssetId}
+                onChange={setVisualAssetId}
+              />
             )}
             <label className={`${s.field} ${s.fullWidth}`}>
               <span className={s.label}>Item name id part</span>
@@ -617,6 +652,7 @@ export default function EntityCreatePage() {
     setHint("");
     setRequiredBuildingRows([]);
     setKeywords(getAutomaticKeywords("research", "medieval", "launchSystem"));
+    setVisualAssetId("");
     setProvidedValueRows([]);
     setUpkeepValueRows([]);
     setEffectRows([]);
@@ -636,6 +672,7 @@ export default function EntityCreatePage() {
     setHint("");
     setRequiredBuildingRows([]);
     setKeywords(getAutomaticKeywords(inferred.entityType, inferred.vector, inferred.partType ?? "launchSystem"));
+    setVisualAssetId("");
     setProvidedValueRows([]);
     setUpkeepValueRows([]);
     setEffectRows([]);
@@ -658,6 +695,7 @@ export default function EntityCreatePage() {
       getAutomaticKeywords(storedEntity.entityType, storedEntity.vector, definition.slot ?? "launchSystem"),
       definition.keywords ?? [],
     ));
+    setVisualAssetId(definition.spriteTextureKey ?? definition.visualAssetId ?? "");
     setProvidedValueRows(createValueRows(definition.values ?? [], "production"));
     setUpkeepValueRows(createValueRows(definition.values ?? [], "upkeep"));
     setEffectRows(createEffectRows(definition.effects ?? []));
@@ -750,6 +788,77 @@ function BuildingIdSection(props: {
             <button className={s.dangerButton} type="button" onClick={() => props.onRemove(row.id)} title="Remove building id">x</button>
           </div>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function VisualAssetField(props: {
+  options: readonly EntityVisualAsset[];
+  selectedAsset: EntityVisualAsset | undefined;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const visibleOptions = props.options
+    .filter(option => `${option.label} ${option.id}`.toLowerCase().includes(query.trim().toLowerCase()))
+    .slice(0, 16);
+
+  return (
+    <section className={`${s.section} ${s.fullWidth}`}>
+      <div className={s.sectionHeader}>
+        <h2 className={s.sectionTitle}>Visual Asset</h2>
+      </div>
+      <div className={s.visualAssetGrid}>
+        <div className={s.field}>
+          <span className={s.label}>Image</span>
+          <div className={s.multiSelect}>
+            <div className={s.chipList}>
+              {props.value ? (
+                <button className={s.chip} type="button" onClick={() => props.onChange("")} title="Clear visual asset">
+                  {props.value} x
+                </button>
+              ) : (
+                <span className={s.hint}>No visual asset selected.</span>
+              )}
+            </div>
+            <input
+              className={s.multiSearch}
+              value={query}
+              onChange={event => setQuery(event.target.value)}
+              placeholder="Search visual assets"
+            />
+            {visibleOptions.length > 0 && (
+              <div className={s.optionList}>
+                {visibleOptions.map(option => (
+                  <button
+                    key={option.id}
+                    className={s.option}
+                    type="button"
+                    onClick={() => {
+                      props.onChange(option.id);
+                      setQuery("");
+                    }}
+                  >
+                    {option.label} - {option.id}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className={s.visualPreviewBox}>
+          {props.selectedAsset ? (
+            <>
+              <img className={s.visualPreviewImage} src={props.selectedAsset.src} alt={props.selectedAsset.label} />
+              {props.selectedAsset.metadata && (
+                <pre className={`${s.visualMetadataPreview} ${s.mono}`}>{JSON.stringify(props.selectedAsset.metadata, null, 2)}</pre>
+              )}
+            </>
+          ) : (
+            <span className={s.hint}>Choose an image to preview its paired metadata.</span>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -905,6 +1014,7 @@ function createPreview(args: {
   effectRows: EffectRow[];
   requirementRows: RequirementRow[];
   buildRequirementRows: RequirementRow[];
+  visualAssetId: string;
   baseDefinition: StoredEntityDefinition | null;
 }): Record<string, unknown> {
   const keywords = args.keywords;
@@ -933,6 +1043,11 @@ function createPreview(args: {
 
   if (args.entityType === "gunPart") {
     preview.slot = args.partType;
+    if (args.visualAssetId) {
+      preview.spriteTextureKey = args.visualAssetId;
+    }
+  } else if (args.visualAssetId) {
+    preview.visualAssetId = args.visualAssetId;
   }
 
   preview.name = args.displayName.trim() || titleFromIdPart(args.generatedId);
@@ -1047,6 +1162,14 @@ function getEntityTypeFromPrefix(prefix: string | undefined): EntityType {
   if (prefix === "wallSuperstructures") return "wallSuperstructure";
   if (prefix === "gunParts") return "gunPart";
   return "research";
+}
+
+function getVisualAssetKind(entityType: EntityType): EntityVisualAssetKind | null {
+  if (entityType === "building") return "building";
+  if (entityType === "wallSegment") return "wallSegment";
+  if (entityType === "wallSuperstructure") return "wallSuperstructure";
+  if (entityType === "gunPart") return "gunPart";
+  return null;
 }
 
 function isDevelopmentVectorKey(value: string | undefined): value is DevelopmentVectorKey {
