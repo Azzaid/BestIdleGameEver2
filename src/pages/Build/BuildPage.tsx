@@ -359,6 +359,7 @@ const BuildPage = () => {
     && selectedPartBuildRequirementsMet
     && hasCompleteDraft
     && canModifyTower;
+  const actionLabel = hasAnyTowerBuild ? 'Rebuild' : 'Build';
   const draftChanged = JSON.stringify(activeTower?.selectedPartIds ?? {}) !== JSON.stringify(towerDraftAssembly.selectedPartIds);
   const filteredRowCount = table.getFilteredRowModel().rows.length;
   const firstVisibleRow = filteredRowCount === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
@@ -480,13 +481,13 @@ const BuildPage = () => {
               )}
             </div>
 
-            <div className={s.statsActions}>
+            <div className={`${s.statsActions} ${hasAnyTowerBuild ? '' : s.statsActionsCentered}`}>
               <button
-                className={s.rebuildButton}
+                className={`${s.rebuildButton} ${hasAnyTowerBuild ? '' : s.buildButtonCentered}`}
                 disabled={!canRebuild}
                 title={!canModifyTower
                   ? 'The city is besieged. Tower rebuilding is blocked.'
-                  : !hasCompleteDraft ? 'Select all required tower components before rebuilding.'
+                  : !hasCompleteDraft ? `Select all required tower components before ${actionLabel.toLowerCase()}ing.`
                   : !selectedPartBuildRequirementsMet ? formatUnmetBuildRequirements(selectedPartBuildRequirementFailures, requirementResolutionData)
                   : !canRebuild ? 'City support is too low for this draft tower' : undefined}
                 onClick={() => {
@@ -494,15 +495,17 @@ const BuildPage = () => {
                   dispatch(commitTowerDraft(undefined));
                 }}
               >
-                Rebuild
+                {actionLabel}
               </button>
-              <button
-                className={s.cancelButton}
-                disabled={!draftChanged}
-                onClick={() => dispatch(cancelTowerDraft(undefined))}
-              >
-                Cancel
-              </button>
+              {hasAnyTowerBuild && (
+                <button
+                  className={s.cancelButton}
+                  disabled={!draftChanged}
+                  onClick={() => dispatch(cancelTowerDraft(undefined))}
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </aside>
         </div>

@@ -14,6 +14,9 @@ export type GlobalEventTrigger =
   | {type: "migration"}
   | {type: "buildingConstructed"; buildingId?: string}
   | {type: "buildingDiscovered"; buildingId?: string}
+  | {type: "siegeStarted"}
+  | {type: "siegeSucceeded"}
+  | {type: "siegeFailed"}
   | {type: "siegeEnded"}
   | {type: "technologyUnlocked"; technologyId?: string};
 

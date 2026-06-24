@@ -82,6 +82,9 @@ const triggerTypes: TriggerType[] = [
   "migration",
   "buildingConstructed",
   "buildingDiscovered",
+  "siegeStarted",
+  "siegeSucceeded",
+  "siegeFailed",
   "siegeEnded",
   "technologyUnlocked",
 ];

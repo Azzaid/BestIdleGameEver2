@@ -15,6 +15,7 @@ import {
 } from "../../store/upkeep/selectors.ts";
 import { recordSurvivedSiege, retreatCityRadius } from "../../store/city/slice.ts";
 import { selectIsDebugModeEnabled } from "../../store/debug/selectors.ts";
+import {enqueueGlobalSignal} from "../../store/globalEvents/slice.ts";
 import type { BattleMetrics, BattleResult } from "../../models/battle/world.ts";
 import type { BattleWallSegment } from "../../models/battle/wallSegment.ts";
 import {
@@ -123,6 +124,7 @@ const BattlePage = () => {
         wallResilience: wallResolution.resilience,
     }));
     const lastRenderedMetricsSecondRef = useRef(-1);
+    const hasAnnouncedSiegeStartedRef = useRef(false);
     const [battleMessage, setBattleMessage] = useState<string | null>(null);
     const siegeProgressPercent = isSiege
         ? toPercent(metrics.siegeElapsedSeconds, SIEGE_DURATION_SECONDS)
@@ -195,6 +197,17 @@ const BattlePage = () => {
             wallResilience: wallResolution.resilience,
         });
     }, [battleKey, initialThreat, targetThreat, wallResolution.resilience]);
+    useEffect(() => {
+        if (!isSiege) {
+            hasAnnouncedSiegeStartedRef.current = false;
+            return;
+        }
+
+        if (hasAnnouncedSiegeStartedRef.current) return;
+
+        hasAnnouncedSiegeStartedRef.current = true;
+        dispatch(enqueueGlobalSignal({type: "siegeStarted"}));
+    }, [dispatch, isSiege]);
     const handleBattleEnded = useCallback((result: BattleResult) => {
         setMetrics(result);
         dispatch(recordControlledTerritoryReached(result.threat));
@@ -202,12 +215,19 @@ const BattlePage = () => {
         if (result.outcome === "held") {
             dispatch(recordLastSiegeSignature(cityThreat));
             dispatch(recordSurvivedSiege());
+            dispatch(enqueueGlobalSignal({type: "siegeSucceeded"}));
+            dispatch(enqueueGlobalSignal({type: "siegeEnded"}));
             setBattleMessage("Siege is over. The wall shifts back into pressure watch.");
             setBattleMode("pressure");
             return;
         }
 
         if (result.threat < result.targetThreat) {
+            if (isSiege) {
+                dispatch(enqueueGlobalSignal({type: "siegeFailed"}));
+                dispatch(enqueueGlobalSignal({type: "siegeEnded"}));
+            }
+
             if (isDebugModeEnabled) {
                 setBattleMessage("The wall was overwhelmed. Debug mode ignored the city retreat.");
                 setBattleMode("pressure");
@@ -222,7 +242,7 @@ const BattlePage = () => {
 
         setBattleMessage("Pressure exceeded wall resilience. Improve the wall or tower build.");
         setBattleMode("pressure");
-    }, [cityThreat, dispatch, isDebugModeEnabled]);
+    }, [cityThreat, dispatch, isDebugModeEnabled, isSiege]);
     const handleBattleMetrics = useCallback((nextMetrics: BattleMetrics) => {
         const nextSecond = Math.floor(nextMetrics.siegeElapsedSeconds);
         if (nextSecond === lastRenderedMetricsSecondRef.current) return;

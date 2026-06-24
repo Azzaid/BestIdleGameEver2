@@ -180,6 +180,10 @@ export const statsActions = style({
   paddingTop: '18px',
 });
 
+export const statsActionsCentered = style({
+  justifyContent: 'center',
+});
+
 export const summaryTitle = style({
   margin: '0 0 8px',
   fontSize: '15px',
@@ -459,6 +463,10 @@ export const rebuildButton = style({
       opacity: 0.55,
     },
   },
+});
+
+export const buildButtonCentered = style({
+  flex: '0 1 180px',
 });
 
 export const cancelButton = style({

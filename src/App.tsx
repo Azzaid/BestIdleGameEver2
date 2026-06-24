@@ -61,7 +61,7 @@ function AppFrame() {
                               <Link className={appTheme.navBarLink} to="/battle">Battle</Link>
                           </li>
                           <li>
-                              <Link className={isBuildBlocked ? appTheme.navBarLinkBlocked : appTheme.navBarLink} to="/build">Build</Link>
+                              <Link className={isBuildBlocked ? appTheme.navBarLinkBlocked : appTheme.navBarLink} to="/build">Tower</Link>
                           </li>
                           <li>
                               <Link className={signatureStatus.isBesieged ? appTheme.navBarLinkBlocked : appTheme.navBarLink} to="/research">Research</Link>
