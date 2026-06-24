@@ -76,6 +76,7 @@ export function BuildingSelector({
                     const buildBlockedReason = blocked ? blockedReason : unavailableReason;
                     const buildBlocked = blocked || Boolean(unavailableReason);
                     const hasAdjacencyRules = Boolean(building.effects?.length);
+                    const spriteUrl = buildingsSpriteAtlas[building.vector][building.id]?.src;
 
                     return (
                         <article key={building.id} role="listitem" className={s.card} aria-labelledby={`${building.id}-name`}>
@@ -102,7 +103,9 @@ export function BuildingSelector({
                             <section className={s.effectsRow}>
                                 <div className={s.previewCol}>
                                     <HexTilePreview
-                                        imageUrl={buildingsSpriteAtlas[building.vector][building.id]?.src}
+                                        imageUrl={spriteUrl}
+                                        padding={spriteUrl ? 1 : 0.96}
+                                        strokeWidth={spriteUrl ? 0 : 3}
                                     />
                                 </div>
                                 <div className={s.contentCol}>

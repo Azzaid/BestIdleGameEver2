@@ -23,13 +23,16 @@ globalStyle('html, body', {
   height: '100%',
   width: '100%',
   overflow: 'hidden',
+  overscrollBehavior: 'none',
 });
 
 globalStyle('body', {
   margin: 0,
   padding: 0,
   minWidth: '320px',
-  minHeight: '100vh',
+  minHeight: '100dvh',
+  WebkitTapHighlightColor: 'transparent',
+  touchAction: 'manipulation',
 });
 
 globalStyle('h1', {
@@ -68,6 +71,7 @@ globalStyle('button', {
   borderRadius: '4px',
   border: '1px solid transparent',
   padding: '8px 16px',
+  minHeight: '36px',
   fontSize: '14px',
   fontWeight: '500',
   fontFamily: 'inherit',
@@ -75,6 +79,11 @@ globalStyle('button', {
   color: vars.color.text.primary,
   cursor: 'pointer',
   transition: 'background-color 0.2s',
+  '@media': {
+    '(max-width: 700px)': {
+      minHeight: '44px',
+    },
+  },
 });
 
 globalStyle('button:hover', {
@@ -88,9 +97,13 @@ globalStyle('button:focus, button:focus-visible', {
 
 globalStyle('#root', {
   width: '100%',
-  height: '100vh',
+  height: '100dvh',
   margin: 0,
   padding: 0,
+});
+
+globalStyle('input, select, textarea, button', {
+  font: 'inherit',
 });
 
 globalStyle('.text-center', { textAlign: 'center' });

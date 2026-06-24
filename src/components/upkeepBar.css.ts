@@ -4,7 +4,7 @@ import {vars} from "../theme/theme.css.ts";
 export const upkeepBar = style({
     display: 'flex',
     minHeight: '64px',
-    padding: '6px 12px',
+    padding: '6px max(12px, env(safe-area-inset-right, 0px)) 6px max(12px, env(safe-area-inset-left, 0px))',
     width: '100%',
     boxSizing: 'border-box',
     backgroundColor: vars.color.background.navbar,
@@ -12,11 +12,29 @@ export const upkeepBar = style({
     gap: '16px',
     alignItems: 'center',
     overflow: 'visible',
+    '@media': {
+        '(max-width: 760px)': {
+            minHeight: '52px',
+            gap: '10px',
+            padding: '5px max(8px, env(safe-area-inset-right, 0px)) 5px max(8px, env(safe-area-inset-left, 0px))',
+            alignItems: 'stretch',
+        },
+        '(max-width: 520px)': {
+            flexWrap: 'wrap',
+            overflow: 'hidden',
+        },
+    },
 });
 
 export const rightSlot = style({
     marginLeft: 'auto',
     flex: '0 0 auto',
+    '@media': {
+        '(max-width: 520px)': {
+            marginLeft: 0,
+            width: '100%',
+        },
+    },
 });
 
 export const resourceGroup = style({
@@ -26,6 +44,18 @@ export const resourceGroup = style({
     flex: '1 1 0',
     minWidth: 0,
     overflowX: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    scrollbarWidth: 'none',
+    selectors: {
+        '&::-webkit-scrollbar': {
+            display: 'none',
+        },
+    },
+    '@media': {
+        '(max-width: 760px)': {
+            gap: '10px',
+        },
+    },
 });
 
 export const rightGroup = style({
@@ -35,12 +65,25 @@ export const rightGroup = style({
     gap: '16px',
     flex: '1 1 0',
     minWidth: 0,
+    '@media': {
+        '(max-width: 760px)': {
+            gap: '10px',
+        },
+        '(max-width: 520px)': {
+            flexBasis: '100%',
+        },
+    },
 });
 
 export const vectorCard = style({
     display: 'grid',
     gap: '2px',
     flex: '0 0 auto',
+    '@media': {
+        '(max-width: 520px)': {
+            fontSize: '0.86rem',
+        },
+    },
 });
 
 export const aetherMeterSlot = style({
@@ -61,6 +104,13 @@ export const natureBalanceWrap = style({
             boxShadow: `0 0 0 3px ${vars.color.border.selected}`,
         },
     },
+    '@media': {
+        '(max-width: 520px)': {
+            flexBasis: '44px',
+            width: '44px',
+            height: '44px',
+        },
+    },
 });
 
 export const natureBalanceSvg = style({
@@ -69,6 +119,12 @@ export const natureBalanceSvg = style({
     display: 'block',
     overflow: 'visible',
     filter: 'drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2))',
+    '@media': {
+        '(max-width: 520px)': {
+            width: '44px',
+            height: '44px',
+        },
+    },
 });
 
 export const natureBalanceAxis = style({
@@ -167,6 +223,12 @@ export const aetherOrbWrap = style({
             boxShadow: `0 0 0 3px ${vars.color.border.selected}`,
         },
     },
+    '@media': {
+        '(max-width: 520px)': {
+            width: '38px',
+            height: '38px',
+        },
+    },
 });
 
 export const aetherOrb = style({
@@ -175,6 +237,12 @@ export const aetherOrb = style({
     borderRadius: '50%',
     border: `1px solid ${vars.color.border.default}`,
     boxShadow: `inset -7px -8px 12px rgba(0, 0, 0, 0.2), inset 5px 6px 12px rgba(255, 255, 255, 0.42), 0 5px 14px rgba(0, 0, 0, 0.22)`,
+    '@media': {
+        '(max-width: 520px)': {
+            width: '38px',
+            height: '38px',
+        },
+    },
 });
 
 export const aetherTooltip = style({
@@ -235,6 +303,17 @@ export const signatureMeter = style({
     maxWidth: 'calc(100vw - 24px)',
     display: 'grid',
     gap: '4px',
+    '@media': {
+        '(max-width: 760px)': {
+            flex: '1 1 190px',
+            width: 'auto',
+            minWidth: '180px',
+        },
+        '(max-width: 520px)': {
+            flexBasis: '100%',
+            minWidth: 0,
+        },
+    },
 });
 
 export const signatureMeterTitle = style({

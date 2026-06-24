@@ -39,7 +39,7 @@ export function HexTilePreview({
     return (
         <svg
             className={s.previewSvg}
-            viewBox={`-${size} -${size} ${size * 2} ${size * 2}`}
+            viewBox={`${-(h + strokeWidth)} ${-(r + strokeWidth)} ${(h + strokeWidth) * 2} ${(r + strokeWidth) * 2}`}
             role="img"
             aria-label={ariaLabel}
         >
@@ -49,8 +49,10 @@ export function HexTilePreview({
                 </clipPath>
             </defs>
 
-            {/* background under the image (shows through padding) */}
-            <polygon points={points} fill={fill ?? "var(--tile-fill)"} />
+            {/* background under fallback previews only */}
+            {!imageUrl && (
+                <polygon points={points} fill={fill ?? "var(--tile-fill)"} />
+            )}
 
             {/* single image, clipped to hex */}
             {imageUrl && (

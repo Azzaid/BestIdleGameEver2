@@ -11,7 +11,16 @@ export const cityPage = style({
     height: '100%',
     minHeight: 0,
     overflow: 'hidden',
-    backgroundColor: vars.color.background.app
+    padding: '0 max(0px, env(safe-area-inset-right, 0px)) max(0px, env(safe-area-inset-bottom, 0px)) max(0px, env(safe-area-inset-left, 0px))',
+    backgroundColor: vars.color.background.app,
+    '@media': {
+        '(max-width: 760px)': {
+            display: 'block',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            padding: '8px max(8px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px))',
+        },
+    },
 });
 
 export const globalEffectsShell = style({
@@ -27,6 +36,15 @@ export const globalEffectsShell = style({
     selectors: {
         '&[data-open="false"]': {
             transform: 'translateX(calc(100% - 32px))',
+        },
+    },
+    '@media': {
+        '(max-width: 760px)': {
+            position: 'fixed',
+            top: 'calc(env(safe-area-inset-top, 0px) + 44px)',
+            bottom: 'max(8px, env(safe-area-inset-bottom, 0px))',
+            height: 'auto',
+            width: 'min(420px, calc(100% - 16px))',
         },
     },
 });
@@ -98,7 +116,14 @@ export const cityContainer = style({
     width: '100%',
     maxWidth: '900px',
     maxHeight: 'min(100%, 900px)',
-    aspectRatio:'1/1'     /* ensures square shape */
+    aspectRatio:'1/1',     /* ensures square shape */
+    '@media': {
+        '(max-width: 760px)': {
+            maxWidth: '100%',
+            maxHeight: 'min(78dvh, 100vw)',
+            margin: '0 auto 12px',
+        },
+    },
 });
 
 export const buildingSelectorContainer = style({
@@ -110,6 +135,13 @@ export const buildingSelectorContainer = style({
     gap: '12px',
     overflowY: 'auto',
     scrollbarGutter: 'stable',
+    '@media': {
+        '(max-width: 760px)': {
+            minWidth: 0,
+            maxHeight: 'none',
+            overflowY: 'visible',
+        },
+    },
 });
 
 export const selectionPanel = style({
@@ -120,6 +152,11 @@ export const selectionPanel = style({
     background: vars.color.background.surface,
     color: vars.color.text.primary,
     borderRadius: 8,
+    '@media': {
+        '(max-width: 520px)': {
+            padding: '12px',
+        },
+    },
 });
 
 export const selectionHeader = style({
@@ -127,6 +164,7 @@ export const selectionHeader = style({
     alignItems: 'baseline',
     justifyContent: 'space-between',
     gap: '12px',
+    flexWrap: 'wrap',
 });
 
 export const selectionTitle = style({
@@ -255,6 +293,11 @@ export const wallCard = style({
     background: vars.color.background.surface,
     borderRadius: 8,
     color: vars.color.text.primary,
+    '@media': {
+        '(max-width: 520px)': {
+            gridTemplateColumns: '1fr',
+        },
+    },
 });
 
 export const wallCardTitle = style({

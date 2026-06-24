@@ -5,18 +5,20 @@ export const appContainer = style({
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
+  minHeight: 0,
+  backgroundColor: vars.color.background.app,
 });
 
 export const appNav = style({
   backgroundColor: vars.color.background.navbar,
   boxSizing: 'border-box',
-  minHeight: '36px',
-  maxHeight: '40px',
-  padding: '0 10px',
+  minHeight: 'calc(36px + env(safe-area-inset-top, 0px))',
+  maxHeight: 'calc(48px + env(safe-area-inset-top, 0px))',
+  padding: 'env(safe-area-inset-top, 0px) max(10px, env(safe-area-inset-right, 0px)) 0 max(10px, env(safe-area-inset-left, 0px))',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  gap: '10px',
+  gap: '8px',
   overflow: 'hidden',
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   zIndex: 100,
@@ -27,7 +29,9 @@ export const appNavHidden = style({
   minHeight: 0,
   maxHeight: 0,
   paddingTop: 0,
+  paddingRight: 'max(10px, env(safe-area-inset-right, 0px))',
   paddingBottom: 0,
+  paddingLeft: 'max(10px, env(safe-area-inset-left, 0px))',
   opacity: 0,
   pointerEvents: 'none',
   transform: 'translateY(-100%)',
@@ -51,6 +55,7 @@ export const navLeft = style({
   alignItems: 'center',
   gap: '10px',
   minWidth: 0,
+  flex: '0 0 auto',
 });
 
 export const debugToggle = style({
@@ -71,13 +76,25 @@ export const debugToggle = style({
 export const navLinks = style({
   display: 'flex',
   flex: 1,
-  justifyContent: 'center',
+  justifyContent: 'flex-start',
   listStyle: 'none',
   margin: 0,
   padding: 0,
   minWidth: 0,
   overflowX: 'auto',
+  overscrollBehaviorX: 'contain',
   scrollbarWidth: 'none',
+  WebkitOverflowScrolling: 'touch',
+  selectors: {
+    '&::-webkit-scrollbar': {
+      display: 'none',
+    },
+  },
+  '@media': {
+    'screen and (min-width: 760px)': {
+      justifyContent: 'center',
+    },
+  },
 });
 
 export const navBarItem = style({
@@ -88,16 +105,24 @@ export const navBarItem = style({
 export const navBarLink = style({
         display: 'block',
         textDecoration: 'none',
-        padding: '9px 9px',
+        minHeight: '36px',
+        padding: '8px 10px',
         transition: 'background-color 0.2s',
         whiteSpace: 'nowrap',
         fontSize: '0.84rem',
         fontWeight: 700,
+        lineHeight: '20px',
     selectors: {
         '&:hover': {
             backgroundColor: vars.color.border.focus,
         },
-    }
+    },
+    '@media': {
+      '(max-width: 700px)': {
+        minHeight: '44px',
+        padding: '12px 11px',
+      },
+    },
 });
 
 export const navBarLinkBlocked = style([
@@ -110,7 +135,11 @@ export const navBarLinkBlocked = style([
 
 export const appContent = style({
   flex: 1,
+  minHeight: 0,
   overflow: 'auto',
+  WebkitOverflowScrolling: 'touch',
+  overscrollBehavior: 'contain',
+  paddingBottom: 'env(safe-area-inset-bottom, 0px)',
   backgroundColor: vars.color.background.app,
 });
 
@@ -118,6 +147,7 @@ export const themeSwitcher = style({
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
+  flex: '0 0 auto',
 });
 
 export const blockedPage = style({
@@ -126,7 +156,8 @@ export const blockedPage = style({
   alignContent: 'center',
   gap: '12px',
   minHeight: '100%',
-  padding: '32px',
+  padding: 'clamp(18px, 5vw, 32px)',
+  paddingBottom: 'max(clamp(18px, 5vw, 32px), env(safe-area-inset-bottom, 0px))',
   color: vars.color.text.primary,
   textAlign: 'center',
 });
@@ -134,7 +165,7 @@ export const blockedPage = style({
 export const blockedTitle = style({
   margin: 0,
   color: vars.color.state.error,
-  fontSize: '2rem',
+  fontSize: 'clamp(1.5rem, 7vw, 2rem)',
 });
 
 export const blockedText = style({

@@ -1,4 +1,5 @@
 $ErrorActionPreference = "Stop"
+$NodeVersion = (Get-Content -Raw ".\.node-version").Trim()
 
 function Invoke-PinnedNode {
     param(
@@ -8,7 +9,7 @@ function Invoke-PinnedNode {
     )
 
     Write-Host "==> $Label"
-    & fnm exec --using v22.22.3 node $Tool @ToolArgs
+    & fnm exec --using $NodeVersion node $Tool @ToolArgs
 
     if ($LASTEXITCODE -ne 0) {
         throw "$Label failed with exit code $LASTEXITCODE"

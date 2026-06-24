@@ -63,11 +63,11 @@ Use npm. The lockfile is `package-lock.json`, so prefer `npm ci` for clean insta
 - `npm run lint` - run ESLint over the repository.
 - `npm run preview` - preview the production build locally.
 
-Node is pinned by `.node-version` to `v22.22.3`. In the Codex desktop sandbox on this machine, plain `npm` may resolve through an older fnm multishell Node 16 shim and fail before scripts run, sometimes with `EPERM` on `C:\Users\Johanas Azzaid` or ESLint errors such as `structuredClone is not defined`. When that happens, skip retrying plain npm and run the project tools directly through fnm's pinned Node:
+Node is pinned by `.node-version` to Node 24. In the Codex desktop sandbox on this machine, plain `npm` may resolve through an older fnm multishell Node 16 shim and fail before scripts run, sometimes with `EPERM` on `C:\Users\Johanas Azzaid` or ESLint errors such as `structuredClone is not defined`. When that happens, skip retrying plain npm and run the project tools directly through fnm's pinned Node:
 
-- `fnm exec --using v22.22.3 node .\node_modules\eslint\bin\eslint.js .` - equivalent lint check.
-- `fnm exec --using v22.22.3 node .\node_modules\typescript\bin\tsc -b` - TypeScript build check.
-- `fnm exec --using v22.22.3 node .\node_modules\vite\bin\vite.js build` - Vite production build.
+- `fnm exec --using 24 node .\node_modules\eslint\bin\eslint.js .` - equivalent lint check.
+- `fnm exec --using 24 node .\node_modules\typescript\bin\tsc -b` - TypeScript build check.
+- `fnm exec --using 24 node .\node_modules\vite\bin\vite.js build` - Vite production build.
 
 There is no formal unit test command or test framework configured yet. By default, leave "if it builds" checks and "if the UI looks and works as expected" checks for the user. Agents may mention the relevant command or page to check, but should not run build/lint verification or browser-based UI inspection unless the user explicitly asks for those checks.
 
@@ -103,7 +103,7 @@ There is no formal unit test command or test framework configured yet. By defaul
 - Do not revert unrelated work in a dirty working tree.
 - Preserve existing assets unless the task specifically calls for asset changes.
 - This is currently a frontend-only prototype with no backend and no persistence policy beyond future notes in the spec.
-- Node.js 18 or newer is expected because of Vite 7 and the current toolchain.
+- Node.js 24 is expected because the project pins Node 24 for local development and GitHub Pages builds.
 - TypeScript is strict: `noUnusedLocals`, `noUnusedParameters`, `erasableSyntaxOnly`, `noFallthroughCasesInSwitch`, and `noUncheckedSideEffectImports` are enabled.
 - When adding new routes, update both `src/App.tsx` routing and navigation.
 - When adding new themes, update theme names/models, `theme.css.ts`, and any manual theme switcher UI that should expose them.

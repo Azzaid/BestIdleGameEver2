@@ -3,11 +3,16 @@ import { vars } from '../../theme/theme.css.ts';
 
 export const battlePage = style({
   height: '100%',
-  minHeight: '560px',
+  minHeight: 0,
   display: 'grid',
   placeItems: 'center',
   overflow: 'hidden',
   backgroundColor: vars.color.background.app,
+  '@media': {
+    '(min-width: 760px) and (min-height: 680px)': {
+      minHeight: '560px',
+    },
+  },
 });
 
 export const battleShell = style({
@@ -43,6 +48,14 @@ export const battleHud = style({
   flexWrap: 'wrap',
   gap: '8px',
   color: vars.color.text.primary,
+  '@media': {
+    '(max-width: 700px)': {
+      top: '42px',
+      left: '8px',
+      right: '8px',
+      gap: '6px',
+    },
+  },
 });
 
 export const battleProgress = style({
@@ -110,6 +123,12 @@ export const battleMetric = style({
   borderRadius: '6px',
   backgroundColor: vars.color.background.surface,
   boxShadow: vars.color.shadow.card,
+  '@media': {
+    '(max-width: 700px)': {
+      minWidth: '96px',
+      padding: '6px 8px',
+    },
+  },
 });
 
 export const battleMetricLabel = style({
@@ -123,12 +142,17 @@ export const battleMetricValue = style({
   color: vars.color.text.heading,
   fontSize: '1.1rem',
   fontWeight: 800,
+  '@media': {
+    '(max-width: 700px)': {
+      fontSize: '0.95rem',
+    },
+  },
 });
 
 export const battleNotice = style({
   position: 'absolute',
   left: '50%',
-  bottom: '42px',
+  bottom: 'max(42px, env(safe-area-inset-bottom, 0px))',
   zIndex: 2,
   width: 'min(680px, calc(100% - 32px))',
   transform: 'translateX(-50%)',
@@ -140,6 +164,13 @@ export const battleNotice = style({
   color: vars.color.text.heading,
   fontWeight: 700,
   textAlign: 'center',
+  '@media': {
+    '(max-width: 700px)': {
+      bottom: 'max(34px, env(safe-area-inset-bottom, 0px))',
+      padding: '10px 12px',
+      fontSize: '0.9rem',
+    },
+  },
 });
 
 export const battleLocked = style({
@@ -147,7 +178,7 @@ export const battleLocked = style({
   placeItems: 'center',
   alignContent: 'center',
   gap: '12px',
-  padding: '32px',
+  padding: 'clamp(18px, 6vw, 32px)',
   textAlign: 'center',
   color: vars.color.text.primary,
 });
@@ -155,7 +186,7 @@ export const battleLocked = style({
 export const battleLockedTitle = style({
   margin: 0,
   color: vars.color.text.heading,
-  fontSize: '2rem',
+  fontSize: 'clamp(1.45rem, 8vw, 2rem)',
 });
 
 export const battleLockedText = style({

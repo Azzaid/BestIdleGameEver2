@@ -126,7 +126,7 @@ Use npm. The lockfile is `package-lock.json`, so prefer `npm ci` for clean insta
 - `npm run lint` runs ESLint.
 - `npm run preview` previews the production build.
 
-Node.js 18 or newer is expected because of Vite 7 and the current toolchain.
+Node.js 24 is expected because the project pins Node 24 for local development and GitHub Pages builds.
 
 There is no formal unit test framework configured yet. For behavior changes, run at least `npm run lint` and `npm run build` when practical. For visual/frontend work, inspect the affected page in the browser.
 

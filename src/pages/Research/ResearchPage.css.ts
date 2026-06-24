@@ -1,10 +1,16 @@
 import { style } from '@vanilla-extract/css';
 
 export const researchPage = style({
-  padding: '20px',
+  padding: '20px max(20px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px))',
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
+  minHeight: 0,
+  '@media': {
+    '(max-width: 700px)': {
+      padding: '10px max(10px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px))',
+    },
+  },
 });
 
 export const researchHeader = style({
@@ -12,6 +18,13 @@ export const researchHeader = style({
   justifyContent: 'space-between',
   alignItems: 'center',
   marginBottom: '20px',
+  gap: '10px',
+  flexWrap: 'wrap',
+  '@media': {
+    '(max-width: 700px)': {
+      marginBottom: '10px',
+    },
+  },
 });
 
 export const researchPoints = style({
@@ -21,6 +34,12 @@ export const researchPoints = style({
   backgroundColor: '#f0f0f0',
   borderRadius: '5px',
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  '@media': {
+    '(max-width: 700px)': {
+      fontSize: '15px',
+      padding: '7px 10px',
+    },
+  },
 });
 
 export const researchFilters = style({});
@@ -30,6 +49,7 @@ export const researchSelect = style({
   borderRadius: '4px',
   border: '1px solid #ccc',
   fontSize: '16px',
+  maxWidth: '100%',
 });
 
 export const researchTree = style({
@@ -52,6 +72,13 @@ export const researchTreeControls = style({
   zIndex: 2,
   display: 'flex',
   gap: '8px',
+  '@media': {
+    '(max-width: 700px)': {
+      top: '8px',
+      right: '8px',
+      gap: '6px',
+    },
+  },
 });
 
 export const researchTreeControl = style({
@@ -59,6 +86,12 @@ export const researchTreeControl = style({
   padding: '4px 10px',
   borderRadius: '6px',
   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.16)',
+  '@media': {
+    '(max-width: 700px)': {
+      minHeight: '38px',
+      padding: '4px 8px',
+    },
+  },
 });
 
 export const treeCanvas = style({

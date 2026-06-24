@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type UIEvent } from 'react'
+import { useEffect, useRef, useState, type TouchEvent, type UIEvent, type WheelEvent } from 'react'
 import { HashRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import {Provider} from "react-redux";
 import {store} from "./store";
@@ -34,6 +34,7 @@ function AppFrame() {
   const location = useLocation();
   const contentRef = useRef<HTMLElement | null>(null);
   const lastScrollTopRef = useRef(0);
+  const lastTouchYRef = useRef<number | null>(null);
   const [isNavHidden, setIsNavHidden] = useState(false);
   const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
@@ -53,20 +54,44 @@ function AppFrame() {
     lastScrollTopRef.current = contentRef.current?.scrollTop ?? 0;
   }, [location.pathname]);
 
+  const updateNavForDirection = (deltaY: number, currentScrollTop = contentRef.current?.scrollTop ?? 0) => {
+    if (currentScrollTop <= 12 && deltaY <= 0) {
+      setIsNavHidden(false);
+      return;
+    }
+
+    if (deltaY > 6) {
+      setIsNavHidden(true);
+    } else if (deltaY < -1) {
+      setIsNavHidden(false);
+    }
+  };
+
   const handleContentScroll = (event: UIEvent<HTMLElement>) => {
     const currentScrollTop = event.currentTarget.scrollTop;
     const previousScrollTop = lastScrollTopRef.current;
     const scrollDelta = currentScrollTop - previousScrollTop;
 
-    if (currentScrollTop <= 12) {
-      setIsNavHidden(false);
-    } else if (scrollDelta > 6) {
-      setIsNavHidden(true);
-    } else if (scrollDelta < -1) {
-      setIsNavHidden(false);
-    }
-
+    updateNavForDirection(scrollDelta, currentScrollTop);
     lastScrollTopRef.current = currentScrollTop;
+  };
+
+  const handleContentWheel = (event: WheelEvent<HTMLElement>) => {
+    updateNavForDirection(event.deltaY);
+  };
+
+  const handleContentTouchStart = (event: TouchEvent<HTMLElement>) => {
+    lastTouchYRef.current = event.touches[0]?.clientY ?? null;
+  };
+
+  const handleContentTouchMove = (event: TouchEvent<HTMLElement>) => {
+    const currentTouchY = event.touches[0]?.clientY;
+    const previousTouchY = lastTouchYRef.current;
+
+    if (currentTouchY === undefined || previousTouchY === null) return;
+
+    updateNavForDirection(previousTouchY - currentTouchY);
+    lastTouchYRef.current = currentTouchY;
   };
 
   return (
@@ -134,6 +159,9 @@ function AppFrame() {
                       ref={contentRef}
                       className={appTheme.appContent}
                       onScroll={handleContentScroll}
+                      onWheel={handleContentWheel}
+                      onTouchStart={handleContentTouchStart}
+                      onTouchMove={handleContentTouchMove}
                   >
                       <Routes>
                           <Route path="/" element={<BattlePage />} />

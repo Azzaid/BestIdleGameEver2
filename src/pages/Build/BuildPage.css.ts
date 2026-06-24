@@ -7,6 +7,13 @@ export const buildPage = style({
   gap: '18px',
   maxWidth: '1280px',
   margin: '0 auto',
+  padding: '16px max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))',
+  '@media': {
+    '(max-width: 700px)': {
+      gap: '12px',
+      padding: '10px max(10px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px))',
+    },
+  },
 });
 
 export const assemblyPanel = style({
@@ -18,6 +25,13 @@ export const towerSelector = style({
   gap: '2px',
   overflowX: 'auto',
   padding: '6px 8px 0',
+  WebkitOverflowScrolling: 'touch',
+  scrollbarWidth: 'none',
+  selectors: {
+    '&::-webkit-scrollbar': {
+      display: 'none',
+    },
+  },
 });
 
 export const towerSelectorButton = style({
@@ -79,6 +93,9 @@ export const towerPreview = style({
       borderRight: 0,
       borderBottom: `1px solid ${vars.color.border.default}`,
     },
+    '(max-width: 700px)': {
+      minHeight: '260px',
+    },
   },
 });
 
@@ -89,6 +106,11 @@ export const towerImage = style({
   overflow: 'hidden',
   borderRadius: '8px',
   background: `linear-gradient(180deg, ${vars.color.background.surface}, ${vars.color.background.surfaceHover})`,
+  '@media': {
+    '(max-width: 700px)': {
+      minHeight: '260px',
+    },
+  },
 });
 
 export const slotButton = style({
@@ -128,14 +150,26 @@ export const towerStats = style({
   padding: '16px',
     borderRadius: '8px',
   backgroundColor: vars.color.background.surface,
+  '@media': {
+    '(max-width: 700px)': {
+      padding: '12px',
+    },
+  },
 });
 
 export const slotStrip = style({
   display: 'flex',
   gap: '2px',
   position: 'relative',
-  overflow: 'visible',
+  overflowX: 'auto',
   padding: '6px 8px 0',
+  WebkitOverflowScrolling: 'touch',
+  scrollbarWidth: 'none',
+  selectors: {
+    '&::-webkit-scrollbar': {
+      display: 'none',
+    },
+  },
 });
 
 export const panelTitle = style({
@@ -178,6 +212,11 @@ export const statsActions = style({
   gap: '10px',
   marginTop: 'auto',
   paddingTop: '18px',
+  '@media': {
+    '(max-width: 520px)': {
+      flexDirection: 'column',
+    },
+  },
 });
 
 export const statsActionsCentered = style({
@@ -316,6 +355,12 @@ export const tableContainer = style({
     border: `1px solid ${vars.color.border.default}`,
     borderRadius: '8px',
     backgroundColor: vars.color.background.surface,
+  WebkitOverflowScrolling: 'touch',
+  '@media': {
+    '(max-width: 700px)': {
+      padding: '0 8px',
+    },
+  },
 });
 
 export const partsTable = style({

@@ -130,23 +130,38 @@ export const buildBtn = style({
 // Zone rows
 export const effectsRow = style({
     display: "grid",
-    gridTemplateColumns: "120px minmax(0, 1fr) minmax(0, 1fr)",
+    gridTemplateColumns: "148px minmax(0, 1fr) minmax(0, 1fr)",
     gap: tokens.space.lg,
     padding: `${tokens.space.md} ${tokens.space.lg}`,
     borderBottom: `1px solid ${vars.color.border.default}`,
+    '@media': {
+        '(max-width: 520px)': {
+            gridTemplateColumns: '112px minmax(0, 1fr)',
+        },
+    },
 });
 
 export const zoneRow = style({
     display: "grid",
-    gridTemplateColumns: "120px 1fr",
+    gridTemplateColumns: "148px 1fr",
     gap: tokens.space.lg,
     padding: `${tokens.space.md} ${tokens.space.lg}`,
     borderBottom: `1px solid ${vars.color.border.default}`,
+    '@media': {
+        '(max-width: 520px)': {
+            gridTemplateColumns: '112px 1fr',
+        },
+    },
 });
 
 export const previewCol = style({
     display: "grid",
     placeItems: "center",
+    '@media': {
+        '(max-width: 520px)': {
+            gridRow: 'span 2',
+        },
+    },
 });
 export const previewColPlaceholder = style({
     visibility: "hidden",
@@ -195,8 +210,14 @@ export const muted = style({
 
 // Preview SVG default tile vars (can be themed)
 export const previewSvg = style({
-    width: 84,
-    height: 84,
-    "--tile-fill": "color-mix(in oklab, var(--surface) 75%, var(--text) 5%)",
-    "--tile-stroke": "var(--rim)",
+    width: 126,
+    height: 126,
+    "--tile-fill": vars.color.background.surfaceHover,
+    "--tile-stroke": vars.color.border.default,
+    '@media': {
+        '(max-width: 520px)': {
+            width: 96,
+            height: 96,
+        },
+    },
 } as React.CSSProperties);
