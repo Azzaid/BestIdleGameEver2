@@ -1,4 +1,4 @@
-import type {GlobalEventAction, GlobalModifierInstance} from "../globalEvents.ts";
+import type {GlobalEventAction, GlobalModifierInstance, GlobalSignalMessage} from "../globalEvents.ts";
 
 export type GlobalEventModalEntry = {
   eventId: string;
@@ -12,6 +12,7 @@ export interface GlobalEventsState {
   triggeredEndingIds: string[];
   shownCutsceneIds: string[];
   pendingTechnologyUnlockIds: string[];
+  pendingSignals: GlobalSignalMessage[];
   pendingModalEntries: GlobalEventModalEntry[];
   pendingAbandonCity: boolean;
 }

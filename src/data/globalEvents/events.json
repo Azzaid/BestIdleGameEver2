@@ -39,5 +39,18 @@
     "description": "The world did not fall to nanobots. Not to quantum ruptures. Not to uncontrolled genetic engineering. And not to reality-shattering spells.\n\nIt fell to all of them at once.\n\nA war of everyone against everyone transformed the world into a shattered wasteland where monsters roam among the ruins of forgotten civilizations.",
     "imageId": "intro_pt1",
     "imageAlt": "The end"
+  },
+  {
+    "id": "The_new_begining",
+    "title": "The new begining",
+    "trigger": {
+      "type": "gameStarted"
+    },
+    "once": true,
+    "priority": 1,
+    "actions": [],
+    "description": "A small group of survivors struggles to endure in the ruins of the old world.\n\nYou have found a relatively safe place and established a crude settlement. But safety never lasts for long.\n\nThe growing settlement has attracted the attention of nearby monsters.\n\nBuild your first defense tower and hold them back.",
+    "imageId": "The_new_begining",
+    "imageAlt": "The new begining"
   }
 ]

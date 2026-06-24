@@ -77,8 +77,11 @@ const triggerTypes: TriggerType[] = [
   "gameStarted",
   "requirementsMet",
   "cityAbandoned",
+  "cityExpanded",
   "cityMigrated",
   "migration",
+  "buildingConstructed",
+  "buildingDiscovered",
   "siegeEnded",
   "technologyUnlocked",
 ];
@@ -433,12 +436,12 @@ function EventEditor({
               {triggerTypes.map(type => <option key={type} value={type}>{formatLabel(type)}</option>)}
             </select>
           </label>
-          {draft.triggerType === "technologyUnlocked" ? (
+          {draft.triggerType === "technologyUnlocked" || draft.triggerType === "buildingConstructed" || draft.triggerType === "buildingDiscovered" ? (
             <SearchableIdField
               id={`trigger-${draft.id}`}
               label={getTriggerTargetLabel(draft.triggerType)}
               value={draft.triggerTarget}
-              options={technologyIdOptions}
+              options={draft.triggerType === "technologyUnlocked" ? technologyIdOptions : buildingIdOptions}
               onChange={triggerTarget => onChange({triggerTarget})}
             />
           ) : (
@@ -930,6 +933,9 @@ function createNewModifier(id = "new_global_modifier"): GlobalModifierDefinition
 function createTrigger(type: TriggerType, target: string): GlobalEventTrigger {
   if (type === "manual") return target.trim() ? {type, triggerId: target.trim()} : {type};
   if (type === "technologyUnlocked") return target.trim() ? {type, technologyId: target.trim()} : {type};
+  if (type === "buildingConstructed" || type === "buildingDiscovered") {
+    return target.trim() ? {type, buildingId: target.trim()} : {type};
+  }
 
   return {type};
 }
@@ -937,6 +943,7 @@ function createTrigger(type: TriggerType, target: string): GlobalEventTrigger {
 function getTriggerTarget(trigger: GlobalEventTrigger): string {
   if (trigger.type === "manual") return trigger.triggerId ?? "";
   if (trigger.type === "technologyUnlocked") return trigger.technologyId ?? "";
+  if (trigger.type === "buildingConstructed" || trigger.type === "buildingDiscovered") return trigger.buildingId ?? "";
   return "";
 }
 
@@ -999,11 +1006,13 @@ function createActionRow(type: ActionType = "addFlag", target = ""): ActionRow {
 function getTriggerTargetLabel(type: TriggerType): string {
   if (type === "manual") return "Trigger ID";
   if (type === "technologyUnlocked") return "Technology ID";
+  if (type === "buildingConstructed" || type === "buildingDiscovered") return "Building ID";
   return "Target";
 }
 
 function getDefaultTriggerTarget(type: TriggerType): string {
   if (type === "technologyUnlocked") return technologyIds[0] ?? "";
+  if (type === "buildingConstructed" || type === "buildingDiscovered") return buildingIds[0] ?? "";
   return "";
 }
 

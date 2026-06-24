@@ -1,9 +1,8 @@
-import {useMemo, useState} from "react";
+import {useState} from "react";
 import {sendNotification} from "../lib/notifications/eventBus.ts";
-import type {GlobalEventTrigger} from "../models/globalEvents.ts";
 import {expandCityRadius, resetCityForMigration} from "../store/city/slice.ts";
-import {selectRunnableGlobalEventsForTrigger} from "../store/globalEvents/selectors.ts";
-import {executeGlobalEvents} from "../store/globalEvents/slice.ts";
+import {selectGlobalSignalRequirementSnapshot} from "../store/globalEvents/selectors.ts";
+import {enqueueGlobalSignal} from "../store/globalEvents/slice.ts";
 import {useTypedDispatch, useTypedSelector} from "../store/hooks.ts";
 import {selectCitySignatureStatus, selectGlobalModifierApplyContext} from "../store/upkeep/selectors.ts";
 import {resetWallForMigration} from "../store/wall/slice.ts";
@@ -13,22 +12,18 @@ import * as s from "./CityExpansionControl.css.ts";
 const EXPAND_BLOCK_REASON = "The city is besieged. Raise controlled territory in battle before expanding.";
 const EXPAND_WARNING = "City grows bigger, more noticeable and attracts more monsters";
 const EXODUS_MESSAGE = "Are you ready to abandon city and move on in search for a better place?";
-const MIGRATION_TRIGGER: GlobalEventTrigger = {type: "migration"};
 
 export function CityExpansionControl() {
     const dispatch = useTypedDispatch();
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
-    const selectMigrationEvents = useMemo(
-        () => selectRunnableGlobalEventsForTrigger(MIGRATION_TRIGGER),
-        [],
-    );
-    const migrationEvents = useTypedSelector(selectMigrationEvents);
     const modifierContext = useTypedSelector(selectGlobalModifierApplyContext);
+    const requirementSnapshot = useTypedSelector(selectGlobalSignalRequirementSnapshot);
     const [isConfirming, setIsConfirming] = useState(false);
     const [isConfirmingExodus, setIsConfirmingExodus] = useState(false);
 
     const handleExpandConfirm = () => {
         dispatch(expandCityRadius());
+        dispatch(enqueueGlobalSignal({type: "cityExpanded"}));
         setIsConfirming(false);
         sendNotification({
             title: "City Expanded",
@@ -38,11 +33,17 @@ export function CityExpansionControl() {
     };
 
     const handleExodusConfirm = () => {
-        dispatch(executeGlobalEvents(migrationEvents.map(event => ({
-            eventId: event.id,
-            actions: event.actions,
+        dispatch(enqueueGlobalSignal({
+            signal: {type: "migration"},
+            requirementSnapshot,
             modifierContext,
-        }))));
+        }));
+        dispatch(enqueueGlobalSignal({
+            signal: {type: "cityAbandoned"},
+            requirementSnapshot,
+            modifierContext,
+        }));
+        dispatch(enqueueGlobalSignal({type: "cityMigrated"}));
         dispatch(resetCityForMigration());
         dispatch(resetWallForMigration());
         setIsConfirmingExodus(false);

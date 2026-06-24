@@ -18,10 +18,9 @@ import EntityCreatePage from './pages/EntityCreate/EntityCreatePage.tsx'
 import GlobalEventsEditorPage from './pages/GlobalEventsEditor/GlobalEventsEditorPage.tsx'
 import {THEME_NAMES} from "./models/Theme.ts";
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
-import {useTypedSelector} from "./store/hooks.ts";
+import {useTypedDispatch, useTypedSelector} from "./store/hooks.ts";
 import {selectCitySignatureStatus} from "./store/upkeep/selectors.ts";
 import {selectHasAnyTowerBuild} from "./store/towers/selectors.ts";
-import {useTypedDispatch} from "./store/hooks.ts";
 import {selectIsDebugModeEnabled} from "./store/debug/selectors.ts";
 import {toggleDebugMode} from "./store/debug/slice.ts";
 import { NotificationCenter } from "./components/Notifications/NotificationCenter.tsx";
@@ -29,6 +28,7 @@ import { useResearchAutoUnlock } from "./pages/Research/useResearchAutoUnlock.ts
 import {CityExpansionControl} from "./components/CityExpansionControl.tsx";
 import {useContentAutoUnlock} from "./hooks/useContentAutoUnlock.ts";
 import {GlobalEventModal} from "./components/GlobalEvents/GlobalEventModal.tsx";
+import {useGlobalEventSignals} from "./components/GlobalEvents/useGlobalEventSignals.ts";
 
 //this is temporary theme switcher
 function ThemeSwitcher() {
@@ -56,6 +56,7 @@ function AppFrame() {
 
   useResearchAutoUnlock();
   useContentAutoUnlock();
+  useGlobalEventSignals();
 
   return (
               <div className={appTheme.appContainer}>

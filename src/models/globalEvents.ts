@@ -9,10 +9,29 @@ export type GlobalEventTrigger =
   | {type: "gameStarted"}
   | {type: "requirementsMet"}
   | {type: "cityAbandoned"}
+  | {type: "cityExpanded"}
   | {type: "cityMigrated"}
   | {type: "migration"}
+  | {type: "buildingConstructed"; buildingId?: string}
+  | {type: "buildingDiscovered"; buildingId?: string}
   | {type: "siegeEnded"}
   | {type: "technologyUnlocked"; technologyId?: string};
+
+export type GlobalSignal = GlobalEventTrigger;
+
+export type GlobalSignalRequirementSnapshot = {
+  buildingIds: string[];
+  buildingKeywords: string[];
+  technologyIds: string[];
+  globalFlagIds: string[];
+  homogeneousValues: Record<string, number>;
+};
+
+export type GlobalSignalMessage = {
+  signal: GlobalSignal;
+  requirementSnapshot?: GlobalSignalRequirementSnapshot;
+  modifierContext?: GlobalModifierApplyContext;
+};
 
 export type GlobalEventAction =
   | {type: "applyGlobalModifier"; modifierId: string}
@@ -140,6 +159,16 @@ export function doGlobalEventTriggersMatch(
   if (definitionTrigger.type === "technologyUnlocked") {
     return definitionTrigger.technologyId === undefined
       || trigger.type === "technologyUnlocked" && definitionTrigger.technologyId === trigger.technologyId;
+  }
+
+  if (definitionTrigger.type === "buildingConstructed") {
+    return definitionTrigger.buildingId === undefined
+      || trigger.type === "buildingConstructed" && definitionTrigger.buildingId === trigger.buildingId;
+  }
+
+  if (definitionTrigger.type === "buildingDiscovered") {
+    return definitionTrigger.buildingId === undefined
+      || trigger.type === "buildingDiscovered" && definitionTrigger.buildingId === trigger.buildingId;
   }
 
   return true;
