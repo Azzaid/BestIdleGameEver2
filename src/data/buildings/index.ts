@@ -16,6 +16,7 @@ type BuildingDefinition = {
   description: string;
   keywords?: BuildingKeyword[];
   requiredBuildingIds?: string[];
+  requiredBuildingSprites?: Record<string, string>;
   hint?: string;
   requirements?: Requirement[];
   buildRequirements?: Requirement[];
@@ -37,6 +38,7 @@ export type StructureDefinition = {
   name: string;
   vector: DevelopmentVectorKey;
   requiredBuildingIds: string[];
+  requiredBuildingSprites?: Record<string, string>;
   description?: string;
   hint: string;
 };
@@ -58,6 +60,7 @@ export const STRUCTURES: StructureDefinition[] = Object.values(DEVELOPMENT_VECTO
         name: building.name,
         vector: getDevelopmentVectorKey(building.vector),
         requiredBuildingIds: rule.requiredBuildingIds,
+        requiredBuildingSprites: rule.requiredBuildingSprites,
         description: building.description,
         hint: rule.hint ?? getDefaultStructureHint(rule.requiredBuildingIds),
       }];
@@ -85,6 +88,7 @@ function buildBuildings(vector: DevelopmentVectorKey): Record<string, Building> 
         definition.keywords ?? [],
         {
           requiredBuildingIds: definition.requiredBuildingIds,
+          requiredBuildingSprites: definition.requiredBuildingSprites,
           hint: definition.hint,
           requirements: definition.requirements,
           buildRequirements: definition.buildRequirements,

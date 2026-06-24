@@ -10,6 +10,7 @@ export type HexCell = AxialCoordinate & {
     buildingKey: string | null;
     developmentVector: DevelopmentVectorValue;
     spriteKey?: string | null;
+    initialBuildingKey?: string | null;
     partOfStructureId?: string | null;
     structureCoreCellKey?: string | null;
     wallKey?: string | null;

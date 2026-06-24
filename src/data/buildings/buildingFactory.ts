@@ -15,6 +15,7 @@ type BuildingOptions = {
 
 type SuperstructureOptions = BuildingOptions & {
   requiredBuildingIds?: string[];
+  requiredBuildingSprites?: Record<string, string>;
   hint?: string;
 };
 
@@ -62,7 +63,11 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
       isMultiHex: true,
       isMultistructure: true,
       multiHexStructure: options.requiredBuildingIds
-        ? [{requiredBuildingIds: options.requiredBuildingIds, hint: options.hint}]
+        ? [{
+            requiredBuildingIds: options.requiredBuildingIds,
+            requiredBuildingSprites: options.requiredBuildingSprites,
+            hint: options.hint,
+        }]
         : undefined,
     };
   }

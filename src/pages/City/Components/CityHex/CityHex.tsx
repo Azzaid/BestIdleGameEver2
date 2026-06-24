@@ -11,7 +11,7 @@ import {
     coordKey
 } from "./hexUtils.ts";
 import cityBackground from '../../../../assets/city/background/Top-down_map_view_circular_lan.jpeg'
-import {BUILDINGS_ATLAS} from "../../../../data/buildings/index.ts";
+import {BUILDINGS_ATLAS, STRUCTURES_BY_ID} from "../../../../data/buildings/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../../../data/wallSegments/index.ts";
 import {WALL_TOWER_BUILDINGS} from "../../../../data/wallSuperstructures/index.ts";
 import {CITY_HEX_SIZE} from "../../../../data/constants.ts";
@@ -288,6 +288,8 @@ export default function CityHex({
                         developmentVector,
                         buildingKey,
                         spriteKey,
+                        initialBuildingKey,
+                        partOfStructureId,
                         kind,
                         wallKey,
                         wallDevelopmentVector,
@@ -300,9 +302,14 @@ export default function CityHex({
                     const building = kind === "city" && buildingKey
                         ? BUILDINGS_ATLAS[developmentVector]?.[buildingKey]
                         : undefined;
-                    const spriteLookupKey = spriteKey && citySpriteAtlas?.[spriteKey]
-                        ? spriteKey
-                        : building?.visualAssetId && citySpriteAtlas?.[building.visualAssetId]
+                    const structureSpriteKey = kind === "city" && partOfStructureId && initialBuildingKey
+                        ? STRUCTURES_BY_ID[partOfStructureId]?.requiredBuildingSprites?.[initialBuildingKey]
+                        : undefined;
+                    const spriteLookupKey = structureSpriteKey && citySpriteAtlas?.[structureSpriteKey]
+                        ? structureSpriteKey
+                        : spriteKey && citySpriteAtlas?.[spriteKey]
+                            ? spriteKey
+                            : building?.visualAssetId && citySpriteAtlas?.[building.visualAssetId]
                             ? building.visualAssetId
                             : buildingKey;
                     const citySpriteAsset = kind === "city" && spriteLookupKey

@@ -435,6 +435,75 @@ export const spriteDropTitle = style({
   fontWeight: 900,
 });
 
+export const requiredSpriteField = style({
+  display: "grid",
+  gap: "6px",
+  minWidth: 0,
+});
+
+export const sourceSpriteList = style({
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(240px, 1fr))",
+  gap: "8px",
+  "@media": {
+    "(max-width: 760px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
+export const requiredSpriteCard = style({
+  display: "grid",
+  gridTemplateColumns: "64px minmax(0, 1fr) auto",
+  gap: "8px",
+  alignItems: "center",
+  minHeight: "82px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "8px",
+  padding: "8px",
+  background: vars.color.background.app,
+  "@media": {
+    "(max-width: 560px)": {
+      gridTemplateColumns: "64px minmax(0, 1fr)",
+    },
+  },
+});
+
+export const requiredSpriteThumb = style({
+  display: "block",
+  width: "64px",
+  height: "64px",
+  objectFit: "contain",
+  borderRadius: "6px",
+  background: vars.color.background.surface,
+});
+
+export const requiredSpriteActions = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  gap: "6px",
+  flexWrap: "wrap",
+});
+
+export const requiredSpriteDropZone = style({
+  display: "grid",
+  placeItems: "center",
+  gap: "4px",
+  minHeight: "82px",
+  border: `1px dashed ${vars.color.border.default}`,
+  borderRadius: "8px",
+  padding: "10px",
+  background: vars.color.background.app,
+  cursor: "pointer",
+  textAlign: "center",
+  selectors: {
+    "&:hover": {
+      borderColor: vars.color.border.focus,
+    },
+  },
+});
+
 export const fileInput = style({
   display: "none",
 });

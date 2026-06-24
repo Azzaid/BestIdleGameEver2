@@ -131,11 +131,9 @@ function detectStructureAtCore(
 ): StructureDetectionResult {
     const usedHexKeys = new Set(coreCandidate.hexes.map(hex => hex.cellKey));
     const matchedComponents: StructureComponentCandidate[] = [coreCandidate];
-    const matchedSatellites: StructureRequirementMatch[] = coreCandidate.hexes
-        .filter(hex => hex.cellKey !== coreCandidate.representativeHex.cellKey)
-        .map(hex => ({buildingId: coreCandidate.buildingId, hex}));
     const missingBuildingIds = [...structure.requiredBuildingIds];
     const consumedCoreIndex = missingBuildingIds.indexOf(coreCandidate.buildingId);
+    const matchedSatellites: StructureRequirementMatch[] = [];
 
     if (consumedCoreIndex === -1) {
         return {
@@ -148,6 +146,12 @@ function detectStructureAtCore(
     }
 
     missingBuildingIds.splice(consumedCoreIndex, 1);
+    matchedSatellites.push(...coreCandidate.hexes
+        .filter(hex => hex.cellKey !== coreCandidate.representativeHex.cellKey)
+        .map(hex => ({
+            buildingId: coreCandidate.buildingId,
+            hex,
+        })));
 
     for (let index = 0; index < missingBuildingIds.length; index++) {
         const buildingId = missingBuildingIds[index];
@@ -161,7 +165,10 @@ function detectStructureAtCore(
 
         for (const hex of match.hexes) {
             usedHexKeys.add(hex.cellKey);
-            matchedSatellites.push({buildingId, hex});
+            matchedSatellites.push({
+                buildingId,
+                hex,
+            });
         }
         matchedComponents.push(match);
         missingBuildingIds.splice(index, 1);

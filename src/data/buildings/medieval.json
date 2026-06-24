@@ -74,6 +74,7 @@
     "kind": "superstructure",
     "description": "Hut of an experienced stalker that can go further and bring more than just scraps.",
     "keywords": [
+      "building",
       "production",
       "people",
       "gold",
@@ -116,7 +117,11 @@
         ],
         "additive": 5
       }
-    ]
+    ],
+    "visualAssetId": "building_medieval_stalker-hut",
+    "requiredBuildingSprites": {
+      "buildings.medieval.shelter": "building_medieval_stalker-hut"
+    }
   },
   {
     "id": "buildings.medieval.toolShed",

@@ -102,6 +102,7 @@ export const citySlice = createSlice({
                 ...action.payload,
                 kind: currentHex.kind,
                 spriteKey: null,
+                initialBuildingKey: null,
                 partOfStructureId: null,
                 structureCoreCellKey: null,
             };
@@ -139,18 +140,18 @@ export const citySlice = createSlice({
                 ...candidate.matchedSatellites.map(m => m.hex.cellKey),
             ]);
 
-            const partKeys = [...involvedKeys];
-
             // Replace core and satellites with linked multistructure parts
             state.hexes.forEach(hex => {
                 if (hex.kind !== "city") return;
                 if (!involvedKeys.has(hex.cellKey)) return;
 
+                const initialBuildingKey = hex.initialBuildingKey ?? hex.buildingKey;
                 hex.buildingKey = structureId;
                 hex.developmentVector = DEVELOPMENT_VECTORS[structureDef.vector];
+                hex.initialBuildingKey = initialBuildingKey;
                 hex.partOfStructureId = structureId;
                 hex.structureCoreCellKey = coreCellKey;
-                hex.spriteKey = `${structureId}:${partKeys.indexOf(hex.cellKey)}`;
+                hex.spriteKey = null;
             });
 
             if (!state.builtStructureIds.includes(structureId)) {
@@ -178,6 +179,7 @@ export const citySlice = createSlice({
 
                 hex.buildingKey = null;
                 hex.spriteKey = null;
+                hex.initialBuildingKey = null;
                 hex.partOfStructureId = null;
                 hex.structureCoreCellKey = null;
             });

@@ -615,6 +615,10 @@ A structure definition should contain:
 
 Required Buildings
 
+Required Building Sprites
+
+These are keyed by the original source building id for each participating cell, not by array index. When a multistructure is folded into a later multistructure, each cell keeps its `initialBuildingKey`, so later structures can provide replacement sprites for all inherited cells.
+
 Player Hint
 
 Threat Modifier

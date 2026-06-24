@@ -12,6 +12,7 @@ import {ALL_BUILDING_KEYWORDS} from "../../models/city/Keywords.ts";
 import {HOMOGENEOUS_VALUE_DEFINITION_LIST} from "../../data/homogeneousValues/index.ts";
 import {TOWER_PART_SLOT_ORDER} from "../../data/gunParts/index.ts";
 import {buildingIds, technologyIds} from "../../data/ids.ts";
+import {STRUCTURES_BY_ID} from "../../data/buildings/index.ts";
 import {
   ENTITY_VISUAL_ASSETS_BY_ID,
   getEntityVisualAssetsForKind,
@@ -76,6 +77,14 @@ type BuildingIdRow = {
   buildingId: string;
 };
 
+type RequiredSourceSpriteRow = {
+  sourceBuildingId: string;
+  visualAssetId: string;
+  spriteDraft: SpriteDraft | null;
+};
+
+type RequiredBuildingSpriteMap = Record<string, string>;
+
 type StoredEntityDefinition = {
   id: string;
   parentId?: string | null;
@@ -86,6 +95,7 @@ type StoredEntityDefinition = {
   summary?: string;
   keywords?: string[];
   requiredBuildingIds?: string[];
+  requiredBuildingSprites?: RequiredBuildingSpriteMap;
   hint?: string;
   requirements?: Requirement[];
   buildRequirements?: Requirement[];
@@ -202,6 +212,7 @@ export default function EntityCreatePage() {
   const [description, setDescription] = useState("");
   const [hint, setHint] = useState("");
   const [requiredBuildingRows, setRequiredBuildingRows] = useState<BuildingIdRow[]>([]);
+  const [requiredSourceSpriteRows, setRequiredSourceSpriteRows] = useState<RequiredSourceSpriteRow[]>([]);
   const [keywords, setKeywords] = useState<string[]>([]);
   const [visualAssetId, setVisualAssetId] = useState("");
   const [spriteDraft, setSpriteDraft] = useState<SpriteDraft | null>(null);
@@ -241,6 +252,10 @@ export default function EntityCreatePage() {
       : [],
     [partType, vector, visualAssetKind],
   );
+  const buildingVisualAssetOptions = useMemo(
+    () => getEntityVisualAssetsForKind("building").filter(asset => asset.vector === vector),
+    [vector],
+  );
   const selectedVisualAsset = effectiveVisualAssetId ? ENTITY_VISUAL_ASSETS_BY_ID[effectiveVisualAssetId] : undefined;
   const automaticKeywords = useMemo(
     () => getAutomaticKeywords(entityType, vector, partType),
@@ -269,6 +284,11 @@ export default function EntityCreatePage() {
     if (visualAssetOptions.some(asset => asset.id === visualAssetId) || ENTITY_VISUAL_ASSETS_BY_ID[visualAssetId]) return;
     setVisualAssetId("");
   }, [removedVisualAssetId, spriteDraft, visualAssetId, visualAssetOptions]);
+
+  useEffect(() => {
+    const sourceBuildingIds = getSourceBuildingIdsForRequirements(requiredBuildingRows.map(row => row.buildingId));
+    setRequiredSourceSpriteRows(rows => syncRequiredSourceSpriteRows(rows, sourceBuildingIds));
+  }, [requiredBuildingRows]);
 
   useEffect(() => () => {
     if (spriteDraft) URL.revokeObjectURL(spriteDraft.previewUrl);
@@ -300,6 +320,7 @@ export default function EntityCreatePage() {
       description,
       hint,
       requiredBuildingRows,
+      requiredSourceSpriteRows,
       keywords,
       visualAssetId: effectiveVisualAssetId,
       providedValueRows,
@@ -323,6 +344,7 @@ export default function EntityCreatePage() {
     partType,
     providedValueRows,
     requiredBuildingRows,
+    requiredSourceSpriteRows,
     requirementRows,
     loadedEntity,
     upkeepValueRows,
@@ -379,6 +401,8 @@ export default function EntityCreatePage() {
       {
         id: nextRowId++,
         buildingId: "",
+        visualAssetId: "",
+        spriteDraft: null,
       },
     ]);
   }
@@ -473,8 +497,15 @@ export default function EntityCreatePage() {
                 <BuildingIdSection
                   title="Required Building IDs"
                   rows={requiredBuildingRows}
+                  sourceSpriteRows={requiredSourceSpriteRows}
+                  visualAssetOptions={buildingVisualAssetOptions}
+                  structureId={generatedId}
+                  vector={vector}
                   onAdd={addRequiredBuildingRow}
-                  onUpdate={(rowId, buildingId) => updateRequiredBuildingRow(rowId, buildingId)}
+                  onUpdate={updateRequiredBuildingRow}
+                  onUpdateSourceSprite={updateRequiredSourceSprite}
+                  onDropFile={setRequiredSourceSpriteFile}
+                  onRemoveSprite={removeRequiredSourceSprite}
                   onRemove={removeRequiredBuildingRow}
                 />
                 <label className={`${s.field} ${s.fullWidth}`}>
@@ -640,12 +671,27 @@ export default function EntityCreatePage() {
     setBuildRequirementRows(remove);
   }
 
-  function updateRequiredBuildingRow(rowId: number, buildingId: string) {
-    setRequiredBuildingRows(rows => rows.map(row => row.id === rowId ? {...row, buildingId} : row));
+  function updateRequiredBuildingRow(rowId: number, patch: Partial<BuildingIdRow>) {
+    setRequiredBuildingRows(rows => rows.map(row => row.id === rowId ? {...row, ...patch} : row));
   }
 
   function removeRequiredBuildingRow(rowId: number) {
     setRequiredBuildingRows(rows => rows.filter(row => row.id !== rowId));
+  }
+
+  function updateRequiredSourceSprite(sourceBuildingId: string, patch: Partial<Pick<RequiredSourceSpriteRow, "visualAssetId">>) {
+    setRequiredSourceSpriteRows(rows => rows.map(row => {
+      if (row.sourceBuildingId !== sourceBuildingId) return row;
+      if (patch.visualAssetId !== undefined && row.spriteDraft) {
+        URL.revokeObjectURL(row.spriteDraft.previewUrl);
+      }
+
+      return {
+        ...row,
+        ...patch,
+        spriteDraft: patch.visualAssetId !== undefined ? null : row.spriteDraft,
+      };
+    }));
   }
 
   function selectVisualAsset(nextVisualAssetId: string) {
@@ -670,6 +716,40 @@ export default function EntityCreatePage() {
     } catch (error) {
       setSaveStatus({kind: "error", message: "Could not read the dropped image."});
     }
+  }
+
+  async function setRequiredSourceSpriteFile(sourceBuildingId: string, file: File) {
+    if (file.type !== "image/png") {
+      setSaveStatus({kind: "error", message: "Sprites must be PNG files."});
+      return;
+    }
+
+    try {
+      const draft = await createSpriteDraft(file, "building", partType);
+      setRequiredSourceSpriteRows(rows => rows.map(row => {
+        if (row.sourceBuildingId !== sourceBuildingId) return row;
+        if (row.spriteDraft) URL.revokeObjectURL(row.spriteDraft.previewUrl);
+        return {
+          ...row,
+          spriteDraft: draft,
+        };
+      }));
+      setSaveStatus({kind: "idle", message: ""});
+    } catch (error) {
+      setSaveStatus({kind: "error", message: "Could not read the dropped image."});
+    }
+  }
+
+  function removeRequiredSourceSprite(sourceBuildingId: string) {
+    setRequiredSourceSpriteRows(rows => rows.map(row => {
+      if (row.sourceBuildingId !== sourceBuildingId) return row;
+      if (row.spriteDraft) URL.revokeObjectURL(row.spriteDraft.previewUrl);
+      return {
+        ...row,
+        visualAssetId: "",
+        spriteDraft: null,
+      };
+    }));
   }
 
   function removeSprite() {
@@ -707,12 +787,50 @@ export default function EntityCreatePage() {
       const spriteResult = spriteAction
         ? await applySpriteSaveAction(spriteAction, spriteDraft)
         : undefined;
+      const requiredBuildingSpriteActions = createRequiredBuildingSpriteSaveActions({
+        vector,
+        structureId: generatedId,
+        requiredSourceSpriteRows,
+      });
+      const requiredBuildingSpriteResults: ({action?: string; file?: string} | undefined)[] = [];
+      for (const action of requiredBuildingSpriteActions) {
+        const row = requiredSourceSpriteRows.find(requiredRow => requiredRow.sourceBuildingId === action.sourceBuildingId);
+        const result = await applySpriteSaveAction(action.spriteAction, row?.spriteDraft ?? null);
+        requiredBuildingSpriteResults.push(result);
+      }
+      const savedRequiredSourceSpriteRows = requiredSourceSpriteRows.map(row => {
+        const savedAction = requiredBuildingSpriteActions.find(action => action.sourceBuildingId === row.sourceBuildingId);
+        if (savedAction && row.spriteDraft) URL.revokeObjectURL(row.spriteDraft.previewUrl);
+        return savedAction
+          ? {...row, visualAssetId: savedAction.spriteAction.assetId, spriteDraft: null}
+          : row;
+      });
+      const previewToSave = createPreview({
+        entityType,
+        vector,
+        generatedId,
+        partType,
+        isSuperstructure,
+        displayName,
+        description,
+        hint,
+        requiredBuildingRows,
+        requiredSourceSpriteRows: savedRequiredSourceSpriteRows,
+        keywords,
+        providedValueRows,
+        upkeepValueRows,
+        effectRows,
+        requirementRows,
+        buildRequirementRows,
+        visualAssetId: effectiveVisualAssetId,
+        baseDefinition: loadedEntity?.definition ?? null,
+      });
       const response = await fetch(`${localDataServerUrl}/entities`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(entityPreview),
+        body: JSON.stringify(previewToSave),
       });
       const responseBody = await response.json().catch(() => null) as {action?: string; file?: string; error?: string} | null;
 
@@ -729,11 +847,13 @@ export default function EntityCreatePage() {
         message: [
           `${responseBody?.action ?? "saved"} in ${responseBody?.file ?? "data file"}`,
           spriteResult?.action ? `sprite ${spriteResult.action}` : "",
+          requiredBuildingSpriteResults.length ? `${requiredBuildingSpriteResults.length} multistructure sprite${requiredBuildingSpriteResults.length === 1 ? "" : "s"} saved` : "",
         ].filter(Boolean).join("; ") + ".",
       });
       setSpriteDraft(null);
       setRemovedVisualAssetId("");
       setVisualAssetId(effectiveVisualAssetId);
+      setRequiredSourceSpriteRows(savedRequiredSourceSpriteRows);
     } catch (error) {
       setSaveStatus({
         kind: "error",
@@ -754,6 +874,7 @@ export default function EntityCreatePage() {
     setDescription("");
     setHint("");
     setRequiredBuildingRows([]);
+    setRequiredSourceSpriteRows([]);
     setKeywords(getAutomaticKeywords("research", "medieval", "launchSystem"));
     setVisualAssetId("");
     setSpriteDraft(null);
@@ -776,6 +897,7 @@ export default function EntityCreatePage() {
     setDescription("");
     setHint("");
     setRequiredBuildingRows([]);
+    setRequiredSourceSpriteRows([]);
     setKeywords(getAutomaticKeywords(inferred.entityType, inferred.vector, inferred.partType ?? "launchSystem"));
     setVisualAssetId("");
     setSpriteDraft(null);
@@ -797,7 +919,13 @@ export default function EntityCreatePage() {
     setDisplayName(definition.name ?? titleFromIdPart(definition.id));
     setDescription(definition.summary ?? definition.description ?? "");
     setHint(definition.hint ?? "");
-    setRequiredBuildingRows(createBuildingIdRows(definition.requiredBuildingIds ?? []));
+    setRequiredBuildingRows(createBuildingIdRows(
+      definition.requiredBuildingIds ?? [],
+    ));
+    setRequiredSourceSpriteRows(createRequiredSourceSpriteRows(
+      definition.requiredBuildingIds ?? [],
+      definition.requiredBuildingSprites ?? {},
+    ));
     setKeywords(mergeKeywords(
       getAutomaticKeywords(storedEntity.entityType, storedEntity.vector, definition.slot ?? "launchSystem"),
       definition.keywords ?? [],
@@ -871,8 +999,15 @@ function ValueSection(props: {
 function BuildingIdSection(props: {
   title: string;
   rows: BuildingIdRow[];
+  sourceSpriteRows: RequiredSourceSpriteRow[];
+  visualAssetOptions: readonly EntityVisualAsset[];
+  structureId: string;
+  vector: DevelopmentVectorKey;
   onAdd: () => void;
-  onUpdate: (rowId: number, buildingId: string) => void;
+  onUpdate: (rowId: number, patch: Partial<BuildingIdRow>) => void;
+  onUpdateSourceSprite: (sourceBuildingId: string, patch: Partial<Pick<RequiredSourceSpriteRow, "visualAssetId">>) => void;
+  onDropFile: (sourceBuildingId: string, file: File) => void;
+  onRemoveSprite: (sourceBuildingId: string) => void;
   onRemove: (rowId: number) => void;
 }) {
   return (
@@ -887,7 +1022,7 @@ function BuildingIdSection(props: {
           <div key={row.id} className={s.idRow}>
             <label className={s.field}>
               <span className={s.label}>Building id</span>
-              <select className={s.input} value={row.buildingId} onChange={event => props.onUpdate(row.id, event.target.value)}>
+              <select className={s.input} value={row.buildingId} onChange={event => props.onUpdate(row.id, {buildingId: event.target.value})}>
                 <option value="">Select building</option>
                 {buildingIds.map(buildingId => (
                   <option key={buildingId} value={buildingId}>{buildingId}</option>
@@ -897,8 +1032,125 @@ function BuildingIdSection(props: {
             <button className={s.dangerButton} type="button" onClick={() => props.onRemove(row.id)} title="Remove building id">x</button>
           </div>
         ))}
+        {props.sourceSpriteRows.length > 0 && (
+          <div className={s.sourceSpriteList}>
+            {props.sourceSpriteRows.map(row => (
+              <RequiredBuildingSpriteField
+                key={row.sourceBuildingId}
+                row={row}
+                structureId={props.structureId}
+                vector={props.vector}
+                options={props.visualAssetOptions}
+                onSelect={visualAssetId => props.onUpdateSourceSprite(row.sourceBuildingId, {visualAssetId})}
+                onDropFile={file => props.onDropFile(row.sourceBuildingId, file)}
+                onRemove={() => props.onRemoveSprite(row.sourceBuildingId)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
+  );
+}
+
+function RequiredBuildingSpriteField(props: {
+  row: RequiredSourceSpriteRow;
+  structureId: string;
+  vector: DevelopmentVectorKey;
+  options: readonly EntityVisualAsset[];
+  onSelect: (visualAssetId: string) => void;
+  onDropFile: (file: File) => void;
+  onRemove: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const generatedAssetId = getRequiredBuildingSpriteAssetId(
+    props.vector,
+    props.structureId,
+    props.row.sourceBuildingId,
+  );
+  const selectedAsset = props.row.visualAssetId
+    ? ENTITY_VISUAL_ASSETS_BY_ID[props.row.visualAssetId]
+    : undefined;
+  const previewSrc = props.row.spriteDraft?.previewUrl ?? selectedAsset?.src;
+  const previewLabel = props.row.spriteDraft?.file.name ?? selectedAsset?.label ?? props.row.visualAssetId;
+  const visibleOptions = props.options
+    .filter(option => {
+      const fileStem = "fileStem" in option ? option.fileStem : "";
+      return `${option.label} ${option.id} ${fileStem}`.toLowerCase().includes(query.trim().toLowerCase());
+    })
+    .slice(0, 10);
+
+  function handleFiles(files: FileList | null) {
+    const file = files?.[0];
+    if (file) props.onDropFile(file);
+  }
+
+  function onDrop(event: DragEvent<HTMLLabelElement | HTMLDivElement>) {
+    event.preventDefault();
+    handleFiles(event.dataTransfer.files);
+  }
+
+  function onFileChange(event: ChangeEvent<HTMLInputElement>) {
+    handleFiles(event.target.files);
+    event.target.value = "";
+  }
+
+  return (
+    <div className={s.requiredSpriteField}>
+      <span className={s.label}>Replacement sprite for {props.row.sourceBuildingId}</span>
+      {previewSrc ? (
+        <div
+          className={s.requiredSpriteCard}
+          onDragOver={event => event.preventDefault()}
+          onDrop={onDrop}
+        >
+          <img className={s.requiredSpriteThumb} src={previewSrc} alt={previewLabel} />
+          <span className={s.spriteCaption}>{props.row.spriteDraft ? generatedAssetId : props.row.visualAssetId}</span>
+          <div className={s.requiredSpriteActions}>
+            <label className={s.spriteReplaceButton}>
+              Replace
+              <input className={s.fileInput} type="file" accept="image/png" onChange={onFileChange} />
+            </label>
+            <button className={s.dangerButton} type="button" onClick={props.onRemove} title="Clear replacement sprite">Clear</button>
+          </div>
+        </div>
+      ) : (
+        <label
+          className={s.requiredSpriteDropZone}
+          onDragOver={event => event.preventDefault()}
+          onDrop={onDrop}
+        >
+          <input className={s.fileInput} type="file" accept="image/png" onChange={onFileChange} />
+          <span className={s.spriteDropTitle}>Drop PNG</span>
+          <span className={s.hint}>source asset: {generatedAssetId}</span>
+        </label>
+      )}
+      <div className={s.multiSelect}>
+        <input
+          className={s.multiSearch}
+          value={query}
+          onChange={event => setQuery(event.target.value)}
+          placeholder="Search existing building sprites"
+        />
+        {visibleOptions.length > 0 && (
+          <div className={s.optionList}>
+            {visibleOptions.map(option => (
+              <button
+                key={option.id}
+                className={s.option}
+                type="button"
+                onClick={() => {
+                  props.onSelect(option.id);
+                  setQuery("");
+                }}
+              >
+                {option.label} - {option.id}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -1253,6 +1505,40 @@ function createSpriteSaveAction(args: {
   return undefined;
 }
 
+function createRequiredBuildingSpriteSaveActions(args: {
+  vector: DevelopmentVectorKey;
+  structureId: string;
+  requiredSourceSpriteRows: readonly RequiredSourceSpriteRow[];
+}): {sourceBuildingId: string; spriteAction: SpriteSaveAction}[] {
+  return args.requiredSourceSpriteRows.flatMap(row => {
+    if (!row.spriteDraft) return [];
+    const assetId = getRequiredBuildingSpriteAssetId(args.vector, args.structureId, row.sourceBuildingId);
+
+    return [{
+      sourceBuildingId: row.sourceBuildingId,
+      spriteAction: {
+        kind: "building",
+        vector: args.vector,
+        assetId,
+        fileStem: assetId,
+        metadata: row.spriteDraft.metadata,
+      },
+    }];
+  });
+}
+
+function getEffectiveRequiredBuildingSpriteId(row: RequiredSourceSpriteRow): string | null {
+  return row.spriteDraft ? "" : row.visualAssetId || null;
+}
+
+function getRequiredBuildingSpriteAssetId(
+  vector: DevelopmentVectorKey,
+  structureId: string,
+  sourceBuildingId: string,
+): string {
+  return `building_${vector}_${camelToKebab(getEntityItemName(structureId))}-from-${camelToKebab(getEntityItemName(sourceBuildingId))}`;
+}
+
 async function applySpriteSaveAction(
   action: SpriteSaveAction,
   spriteDraft: SpriteDraft | null,
@@ -1425,6 +1711,7 @@ function createPreview(args: {
   description: string;
   hint: string;
   requiredBuildingRows: BuildingIdRow[];
+  requiredSourceSpriteRows: RequiredSourceSpriteRow[];
   keywords: string[];
   providedValueRows: ValueRow[];
   upkeepValueRows: ValueRow[];
@@ -1488,11 +1775,23 @@ function createPreview(args: {
   }
 
   if (args.entityType === "building" && args.isSuperstructure) {
-    const requiredBuildingIds = args.requiredBuildingRows
-      .map(row => row.buildingId)
-      .filter(Boolean);
+    const validRequiredBuildingRows = args.requiredBuildingRows.filter(row => row.buildingId);
+    const requiredBuildingIds = validRequiredBuildingRows.map(row => row.buildingId);
+    const requiredBuildingSpriteEntries = args.requiredSourceSpriteRows.flatMap(row => {
+      const spriteId = row.spriteDraft
+        ? getRequiredBuildingSpriteAssetId(args.vector, args.generatedId, row.sourceBuildingId)
+        : getEffectiveRequiredBuildingSpriteId(row);
+
+      return spriteId ? [[row.sourceBuildingId, spriteId] as const] : [];
+    });
+    const requiredBuildingSprites = Object.fromEntries(requiredBuildingSpriteEntries);
     if (requiredBuildingIds.length > 0) {
       preview.requiredBuildingIds = requiredBuildingIds;
+    }
+    if (requiredBuildingSpriteEntries.length > 0) {
+      preview.requiredBuildingSprites = requiredBuildingSprites;
+    } else {
+      delete preview.requiredBuildingSprites;
     }
   }
 
@@ -1641,6 +1940,64 @@ function createBuildingIdRows(ids: readonly string[]): BuildingIdRow[] {
     id: nextRowId++,
     buildingId,
   }));
+}
+
+function createRequiredSourceSpriteRows(
+  requiredBuildingIds: readonly string[],
+  sprites: RequiredBuildingSpriteMap = {},
+): RequiredSourceSpriteRow[] {
+  return getSourceBuildingIdsForRequirements(requiredBuildingIds).map(sourceBuildingId => ({
+    sourceBuildingId,
+    visualAssetId: sprites[sourceBuildingId] ?? "",
+    spriteDraft: null,
+  }));
+}
+
+function syncRequiredSourceSpriteRows(
+  rows: readonly RequiredSourceSpriteRow[],
+  sourceBuildingIds: readonly string[],
+): RequiredSourceSpriteRow[] {
+  const rowsBySourceId = new Map(rows.map(row => [row.sourceBuildingId, row]));
+  const nextSourceIdSet = new Set(sourceBuildingIds);
+
+  for (const row of rows) {
+    if (!nextSourceIdSet.has(row.sourceBuildingId) && row.spriteDraft) {
+      URL.revokeObjectURL(row.spriteDraft.previewUrl);
+    }
+  }
+
+  return sourceBuildingIds.map(sourceBuildingId => rowsBySourceId.get(sourceBuildingId) ?? {
+    sourceBuildingId,
+    visualAssetId: "",
+    spriteDraft: null,
+  });
+}
+
+function getSourceBuildingIdsForRequirements(requiredBuildingIds: readonly string[]): string[] {
+  const sourceBuildingIds = new Set<string>();
+
+  for (const buildingId of requiredBuildingIds) {
+    for (const sourceBuildingId of getSourceBuildingIdsForRequirement(buildingId)) {
+      sourceBuildingIds.add(sourceBuildingId);
+    }
+  }
+
+  return [...sourceBuildingIds];
+}
+
+function getSourceBuildingIdsForRequirement(buildingId: string): string[] {
+  if (!buildingId) return [];
+  const structure = STRUCTURES_BY_ID[buildingId];
+  if (!structure) return [buildingId];
+
+  const sourceBuildingIds = new Set<string>();
+  for (const requiredBuildingId of structure.requiredBuildingIds) {
+    for (const sourceBuildingId of getSourceBuildingIdsForRequirement(requiredBuildingId)) {
+      sourceBuildingIds.add(sourceBuildingId);
+    }
+  }
+
+  return [...sourceBuildingIds];
 }
 
 function createRequirementRows(requirements: readonly Requirement[]): RequirementRow[] {

@@ -471,7 +471,7 @@ Core rules:
 - The player selects any participating building and explicitly confirms the upgrade.
 - The City page lists ready and incomplete multistructure candidates for the selected participant. Ready candidates expose a Transform action unless the city is besieged.
 - Confirming a transform links the matched buildings into one multistructure. Each part stores the multistructure id and an internal representative core hex key used for selection, adjacency, economy, signature, and research checks.
-- Structure parts may store their own sprite id, allowing future multistructure art to vary by hex without changing gameplay calculations.
+- Structure parts may store their original source building id as `initialBuildingKey`. Superstructures can define `requiredBuildingSprites` as a source-building-id to sprite-id map, allowing each folded cell to render the correct replacement sprite across multiple multistructure levels without changing gameplay calculations.
 - Required buildings must form a connected blob, not a fixed shape. A superstructure may require repeated copies of the same building id.
 - Blob-shaped layouts are allowed.
 - Normal buildings remain mechanically understandable, while the district may visually integrate into one larger structure.
