@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState, type UIEvent } from 'react'
 import { HashRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import {Provider} from "react-redux";
 import {store} from "./store";
@@ -31,9 +32,14 @@ import {useGlobalEventSignals} from "./components/GlobalEvents/useGlobalEventSig
 function AppFrame() {
   const dispatch = useTypedDispatch();
   const location = useLocation();
+  const contentRef = useRef<HTMLElement | null>(null);
+  const lastScrollTopRef = useRef(0);
+  const [isNavHidden, setIsNavHidden] = useState(false);
   const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
   const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
+  const isLocalDebugAvailable = import.meta.env.DEV;
+  const isDebugToolsEnabled = isLocalDebugAvailable && isDebugModeEnabled;
   const isBuildBlocked = signatureStatus.isBesieged && hasAnyTowerBuild;
   const shouldShowUpkeepBar = location.pathname !== "/" && location.pathname !== "/battle";
   const shouldShowCityExpansionControl = location.pathname === "/city";
@@ -42,18 +48,41 @@ function AppFrame() {
   useContentAutoUnlock();
   useGlobalEventSignals();
 
+  useEffect(() => {
+    setIsNavHidden(false);
+    lastScrollTopRef.current = contentRef.current?.scrollTop ?? 0;
+  }, [location.pathname]);
+
+  const handleContentScroll = (event: UIEvent<HTMLElement>) => {
+    const currentScrollTop = event.currentTarget.scrollTop;
+    const previousScrollTop = lastScrollTopRef.current;
+    const scrollDelta = currentScrollTop - previousScrollTop;
+
+    if (currentScrollTop <= 12) {
+      setIsNavHidden(false);
+    } else if (scrollDelta > 6) {
+      setIsNavHidden(true);
+    } else if (scrollDelta < -1) {
+      setIsNavHidden(false);
+    }
+
+    lastScrollTopRef.current = currentScrollTop;
+  };
+
   return (
               <div className={appTheme.appContainer}>
-                  <nav className={appTheme.appNav}>
+                  <nav className={`${appTheme.appNav} ${isNavHidden ? appTheme.appNavHidden : ""}`}>
                       <div className={appTheme.navLeft}>
-                          <label className={appTheme.debugToggle}>
-                              <input
-                                  type="checkbox"
-                                  checked={isDebugModeEnabled}
-                                  onChange={() => dispatch(toggleDebugMode())}
-                              />
-                              Debug
-                          </label>
+                          {isLocalDebugAvailable && (
+                              <label className={appTheme.debugToggle}>
+                                  <input
+                                      type="checkbox"
+                                      checked={isDebugModeEnabled}
+                                      onChange={() => dispatch(toggleDebugMode())}
+                                  />
+                                  Debug
+                              </label>
+                          )}
                           <div className={appTheme.appTitle}>Tower Defense Idle</div>
                       </div>
                       <ul className={appTheme.navLinks}>
@@ -72,7 +101,7 @@ function AppFrame() {
                           <li>
                               <Link className={appTheme.navBarLink} to="/statistics">Statistics</Link>
                           </li>
-                          {isDebugModeEnabled && (
+                          {isDebugToolsEnabled && (
                               <>
                                   <li>
                                       <Link className={appTheme.navBarLink} to="/progression">Progression</Link>
@@ -101,7 +130,11 @@ function AppFrame() {
                   {shouldShowUpkeepBar && (
                       <UpkeepBar rightSlot={shouldShowCityExpansionControl ? <CityExpansionControl /> : undefined}/>
                   )}
-                  <main className={appTheme.appContent}>
+                  <main
+                      ref={contentRef}
+                      className={appTheme.appContent}
+                      onScroll={handleContentScroll}
+                  >
                       <Routes>
                           <Route path="/" element={<BattlePage />} />
                           <Route path="/battle" element={<BattlePage />} />
@@ -109,12 +142,12 @@ function AppFrame() {
                           <Route path="/research" element={signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />} />
                           <Route path="/city" element={<CityPage />} />
                           <Route path="/statistics" element={<StatisticsPage />} />
-                          <Route path="/progression" element={isDebugModeEnabled ? <ProgressionPage /> : <Navigate to="/battle" replace />} />
-                          <Route path="/gun-part-editor" element={isDebugModeEnabled ? <GunPartEditorPage /> : <Navigate to="/battle" replace />} />
-                          <Route path="/ids" element={isDebugModeEnabled ? <IdAuditPage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/progression" element={isDebugToolsEnabled ? <ProgressionPage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/gun-part-editor" element={isDebugToolsEnabled ? <GunPartEditorPage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/ids" element={isDebugToolsEnabled ? <IdAuditPage /> : <Navigate to="/battle" replace />} />
                           <Route path="/entity-create" element={<Navigate to="/entity-create/new" replace />} />
-                          <Route path="/entity-create/:entityId" element={isDebugModeEnabled ? <EntityCreatePage /> : <Navigate to="/battle" replace />} />
-                          <Route path="/global-events" element={isDebugModeEnabled ? <GlobalEventsEditorPage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/entity-create/:entityId" element={isDebugToolsEnabled ? <EntityCreatePage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/global-events" element={isDebugToolsEnabled ? <GlobalEventsEditorPage /> : <Navigate to="/battle" replace />} />
                       </Routes>
                   </main>
               </div>

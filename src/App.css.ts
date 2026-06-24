@@ -9,36 +9,60 @@ export const appContainer = style({
 
 export const appNav = style({
   backgroundColor: vars.color.background.navbar,
-  padding: '0 20px',
+  boxSizing: 'border-box',
+  minHeight: '36px',
+  maxHeight: '40px',
+  padding: '0 10px',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
+  gap: '10px',
+  overflow: 'hidden',
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   zIndex: 100,
+  transition: 'min-height 140ms ease, max-height 140ms ease, padding 140ms ease, opacity 100ms ease, transform 140ms ease, box-shadow 140ms ease',
+});
+
+export const appNavHidden = style({
+  minHeight: 0,
+  maxHeight: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  opacity: 0,
+  pointerEvents: 'none',
+  transform: 'translateY(-100%)',
+  boxShadow: 'none',
 });
 
 export const appTitle = style({
-  fontSize: '1.5rem',
-  fontWeight: 'bold',
-  padding: '15px 0',
+  display: 'none',
+  fontSize: '0.95rem',
+  fontWeight: 800,
+  whiteSpace: 'nowrap',
+  '@media': {
+    'screen and (min-width: 1100px)': {
+      display: 'block',
+    },
+  },
 });
 
 export const navLeft = style({
   display: 'flex',
   alignItems: 'center',
-  gap: '14px',
+  gap: '10px',
+  minWidth: 0,
 });
 
 export const debugToggle = style({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '6px',
-  minHeight: '32px',
-  padding: '4px 8px',
+  gap: '5px',
+  minHeight: '26px',
+  padding: '2px 7px',
   border: `1px solid ${vars.color.border.default}`,
   borderRadius: '6px',
   color: vars.color.text.primary,
-  fontSize: '0.85rem',
+  fontSize: '0.78rem',
   fontWeight: 700,
   cursor: 'pointer',
   userSelect: 'none',
@@ -46,9 +70,14 @@ export const debugToggle = style({
 
 export const navLinks = style({
   display: 'flex',
+  flex: 1,
+  justifyContent: 'center',
   listStyle: 'none',
   margin: 0,
   padding: 0,
+  minWidth: 0,
+  overflowX: 'auto',
+  scrollbarWidth: 'none',
 });
 
 export const navBarItem = style({
@@ -59,8 +88,11 @@ export const navBarItem = style({
 export const navBarLink = style({
         display: 'block',
         textDecoration: 'none',
-        padding: '20px 15px',
+        padding: '9px 9px',
         transition: 'background-color 0.2s',
+        whiteSpace: 'nowrap',
+        fontSize: '0.84rem',
+        fontWeight: 700,
     selectors: {
         '&:hover': {
             backgroundColor: vars.color.border.focus,
