@@ -29,11 +29,12 @@ export function useResearchAutoUnlock(): void {
 
             const node = researchTree[techId];
             if (!node) continue;
+            const scheme = getResearchNodeThemeName(node);
 
             sendNotification({
                 title: node.name,
                 message: node.summary ?? `${node.name} technology unlocked.`,
-                scheme: getResearchNodeThemeName(node),
+                scheme: scheme === "default" ? "tech" : scheme,
             });
         }
     }, [

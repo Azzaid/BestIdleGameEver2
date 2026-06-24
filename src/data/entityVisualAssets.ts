@@ -110,12 +110,14 @@ export const ENTITY_VISUAL_ASSETS: readonly EntityVisualAsset[] = [
   || left.label.localeCompare(right.label)
 ));
 
-export const ENTITY_VISUAL_ASSETS_BY_ID = Object.fromEntries(
-  ENTITY_VISUAL_ASSETS.flatMap(asset => (
+const entityVisualAssetEntries = ENTITY_VISUAL_ASSETS.flatMap((asset): readonly (readonly [string, EntityVisualAsset])[] => (
     asset.kind === "building"
       ? [[asset.id, asset] as const, [asset.fileStem, asset] as const]
       : [[asset.id, asset] as const]
-  )),
+  ));
+
+export const ENTITY_VISUAL_ASSETS_BY_ID = Object.fromEntries(
+  entityVisualAssetEntries,
 ) as Record<string, EntityVisualAsset>;
 
 export function getEntityVisualAssetsForKind(kind: EntityVisualAssetKind): EntityVisualAsset[] {

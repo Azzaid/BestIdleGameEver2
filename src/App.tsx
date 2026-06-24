@@ -1,8 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import {Provider} from "react-redux";
 import {store} from "./store";
 import { ThemeProvider } from './theme/ThemeProvider'
-import { useTheme } from './theme/useTheme.ts'
 import * as appTheme from './App.css.ts'
 
 // Import page components
@@ -16,7 +15,6 @@ import GunPartEditorPage from './pages/GunPartEditor/GunPartEditorPage.tsx'
 import IdAuditPage from './pages/IdAudit/IdAuditPage.tsx'
 import EntityCreatePage from './pages/EntityCreate/EntityCreatePage.tsx'
 import GlobalEventsEditorPage from './pages/GlobalEventsEditor/GlobalEventsEditorPage.tsx'
-import {THEME_NAMES} from "./models/Theme.ts";
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedDispatch, useTypedSelector} from "./store/hooks.ts";
 import {selectCitySignatureStatus} from "./store/upkeep/selectors.ts";
@@ -29,20 +27,6 @@ import {CityExpansionControl} from "./components/CityExpansionControl.tsx";
 import {useContentAutoUnlock} from "./hooks/useContentAutoUnlock.ts";
 import {GlobalEventModal} from "./components/GlobalEvents/GlobalEventModal.tsx";
 import {useGlobalEventSignals} from "./components/GlobalEvents/useGlobalEventSignals.ts";
-
-//this is temporary theme switcher
-function ThemeSwitcher() {
-  const { setTheme } = useTheme();
-  return (
-    <div className={appTheme.themeSwitcher}>
-        <button onClick={() => setTheme(THEME_NAMES.tech)}>Tech</button>
-        <button onClick={() => setTheme(THEME_NAMES.nature)}>Nature</button>
-        <button onClick={() => setTheme(THEME_NAMES.medieval)}>Medieval</button>
-        <button onClick={() => setTheme(THEME_NAMES.aether)}>Aether</button>
-        <button onClick={() => setTheme(THEME_NAMES.default)}>Default</button>
-    </div>
-  );
-}
 
 function AppFrame() {
   const dispatch = useTypedDispatch();

@@ -105,7 +105,7 @@ export const effectTitle = style({
 });
 
 export const effectDescription = style({
-  color: vars.color.text.secondary,
+  color: vars.color.text.muted,
   lineHeight: 1.4,
 });
 

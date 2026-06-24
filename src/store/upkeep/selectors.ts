@@ -27,7 +27,6 @@ import {selectUnlockedTowerPartIds} from "../unlocks/selectors.ts";
 import {resolveTowerAssembly, resolveTowerAssemblyStatsAndSupport} from "../../models/battle/resolveTowerAssembly.ts";
 import type {TowerAssemblyResolved} from "../../models/battle/towerParts.ts";
 import type {WallResolution} from "../../models/city/Wall.ts";
-import {selectWallResolution} from "../wall/selectors.ts";
 import {selectTechnologyHomogeneousEntities} from "../research/selectors.ts";
 import {selectGlobalModifierHomogeneousEntities} from "../globalEvents/selectors.ts";
 import type {GlobalModifierApplyContext} from "../../models/globalEvents.ts";
@@ -104,8 +103,8 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
 );
 
 export const selectEffectiveWallResolution = createSelector(
-    [selectTowerAwareCityResolution, selectWallResolution],
-    (cityResolution, wallResolution): WallResolution => {
+    [selectTowerAwareCityResolution],
+    (cityResolution): WallResolution => {
         const resolvedWallValues = resolveHomogeneousValueContributions(
             cityResolution.resolvedWallSegments.flatMap((entity) => entity.resolvedContributions),
         );

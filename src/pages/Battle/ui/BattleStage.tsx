@@ -402,7 +402,7 @@ function createBattleWallLayer({
             : undefined;
         const textureAlias = wallSpriteMetadata ? segment.wallKey : undefined;
 
-        if (textureAlias && Assets.cache.has(textureAlias)) {
+        if (wallSpriteMetadata && textureAlias && Assets.cache.has(textureAlias)) {
             const sprite = new Sprite(Texture.from(textureAlias));
             const spriteWidth = wallSpriteMetadata.targetSpriteSize.width * cityToBattleScale;
             const spriteHeight = wallSpriteMetadata.targetSpriteSize.height * cityToBattleScale;
@@ -429,7 +429,7 @@ function createBattleWallLayer({
             : undefined;
         const textureAlias = wallTopSpriteMetadata ? segment.wallTopKey : undefined;
 
-        if (textureAlias && Assets.cache.has(textureAlias)) {
+        if (wallTopSpriteMetadata && textureAlias && Assets.cache.has(textureAlias)) {
             const sprite = new Sprite(Texture.from(textureAlias));
             const spriteWidth = wallTopSpriteMetadata.targetSpriteSize.width * cityToBattleScale;
             const spriteHeight = wallTopSpriteMetadata.targetSpriteSize.height * cityToBattleScale;

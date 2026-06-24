@@ -24,6 +24,7 @@ export function FiringSystem(world: World, dt: number) {
       targetTransform,
       targetMovement: world.movements.get(tower.currentTarget),
       projectileSpeed: tower.projectileSpeed,
+      monsterMovementModifiers: world.config.monsterMovementModifiers,
     });
     const triggerTolerance = Math.max(0, tower.triggerTolerance);
     if (triggerTolerance < Math.PI && Math.abs(shortestAngleDelta(center, desired)) > triggerTolerance) {
