@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useState, type ChangeEvent, type DragEvent} from "react";
 import type {
   GlobalEventAction,
   GlobalEventDefinition,
@@ -8,7 +8,7 @@ import type {
 import type {Requirement} from "../../models/progression/requirements.ts";
 import {buildingIds, technologyIds} from "../../data/ids.ts";
 import {HOMOGENEOUS_VALUE_DEFINITION_LIST} from "../../data/homogeneousValues/index.ts";
-import {GLOBAL_EVENT_IMAGE_OPTIONS, type GlobalEventImageId} from "../../data/globalEvents/eventImages.ts";
+import {GLOBAL_EVENT_IMAGES, GLOBAL_EVENT_IMAGE_OPTIONS, type GlobalEventImageId} from "../../data/globalEvents/eventImages.ts";
 import eventDefinitions from "../../data/globalEvents/events.json";
 import modifierDefinitions from "../../data/globalModifiers/modifiers.json";
 import * as s from "./GlobalEventsEditorPage.css.ts";
@@ -35,6 +35,13 @@ type EventDraft = {
   requirements: RequirementRow[];
   blockRequirements: RequirementRow[];
   actions: ActionRow[];
+};
+
+type EventImageDraft = {
+  file: File;
+  previewUrl: string;
+  imageId: GlobalEventImageId;
+  previousImageId?: GlobalEventImageId;
 };
 
 type RequirementRow = {
@@ -110,6 +117,7 @@ export default function GlobalEventsEditorPage() {
   const [selectedModifierId, setSelectedModifierId] = useState(modifiers[0]?.id ?? "new_global_modifier");
   const [eventDraft, setEventDraft] = useState<EventDraft>(() => createEventDraft(events[0] ?? createNewEvent()));
   const [modifierDraft, setModifierDraft] = useState<ModifierDraft>(() => createModifierDraft(modifiers[0] ?? createNewModifier()));
+  const [eventImageDraft, setEventImageDraft] = useState<EventImageDraft | null>(null);
   const [eventStatus, setEventStatus] = useState<SaveStatus>({kind: "idle", message: ""});
   const [modifierStatus, setModifierStatus] = useState<SaveStatus>({kind: "idle", message: ""});
 
@@ -127,9 +135,17 @@ export default function GlobalEventsEditorPage() {
   const modifierPreviewJson = useMemo(() => JSON.stringify(modifierPreview.definition, null, 2), [modifierPreview.definition]);
 
   useEffect(() => {
+    setEventImageDraft(currentDraft => {
+      if (currentDraft) URL.revokeObjectURL(currentDraft.previewUrl);
+      return null;
+    });
     setEventDraft(createEventDraft(selectedEvent ?? createNewEvent(selectedEventId)));
     setEventStatus({kind: "idle", message: ""});
   }, [selectedEvent, selectedEventId]);
+
+  useEffect(() => () => {
+    if (eventImageDraft) URL.revokeObjectURL(eventImageDraft.previewUrl);
+  }, [eventImageDraft]);
 
   useEffect(() => {
     setModifierDraft(createModifierDraft(selectedModifier ?? createNewModifier(selectedModifierId)));
@@ -159,6 +175,10 @@ export default function GlobalEventsEditorPage() {
             selectedId={selectedEventId}
             onSelect={setSelectedEventId}
             onCreate={() => {
+              setEventImageDraft(currentDraft => {
+                if (currentDraft) URL.revokeObjectURL(currentDraft.previewUrl);
+                return null;
+              });
               setSelectedEventId("new_global_event");
               setEventDraft(createEventDraft(createNewEvent()));
             }}
@@ -181,9 +201,13 @@ export default function GlobalEventsEditorPage() {
           <EventEditor
             draft={eventDraft}
             modifierIds={modifiers.map(modifier => modifier.id)}
+            imageDraft={eventImageDraft}
             previewJson={eventPreviewJson}
             status={eventStatus}
             onChange={patch => setEventDraft(current => ({...current, ...patch}))}
+            onImageChange={setEventImageId}
+            onDropImage={setEventImageFile}
+            onRemoveImage={removeEventImage}
             onSave={saveEvent}
           />
         ) : (
@@ -204,6 +228,7 @@ export default function GlobalEventsEditorPage() {
     setEventStatus({kind: "saving", message: "Saving global event..."});
 
     try {
+      const imageResult = eventImageDraft ? await uploadGlobalEventImage(eventImageDraft) : undefined;
       const response = await fetch(`${localDataServerUrl}/global-events`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -218,10 +243,58 @@ export default function GlobalEventsEditorPage() {
 
       setEvents(current => upsertById(current, eventPreview));
       setSelectedEventId(eventPreview.id);
-      setEventStatus({kind: "success", message: `${responseBody?.action ?? "saved"} in ${responseBody?.file ?? "events.json"}.`});
+      setEventStatus({
+        kind: "success",
+        message: [
+          `${responseBody?.action ?? "saved"} in ${responseBody?.file ?? "events.json"}`,
+          imageResult?.action ? `image ${imageResult.action}` : "",
+        ].filter(Boolean).join("; ") + ".",
+      });
+      if (eventImageDraft) URL.revokeObjectURL(eventImageDraft.previewUrl);
+      setEventImageDraft(null);
     } catch (error) {
-      setEventStatus({kind: "error", message: "Could not reach local data server at http://127.0.0.1:4317."});
+      setEventStatus({
+        kind: "error",
+        message: error instanceof Error
+          ? error.message
+          : "Could not reach local data server at http://127.0.0.1:4317.",
+      });
     }
+  }
+
+  function setEventImageFile(file: File) {
+    if (file.type !== "image/png") {
+      setEventStatus({kind: "error", message: "Event pictures must be PNG files."});
+      return;
+    }
+
+    if (eventImageDraft) URL.revokeObjectURL(eventImageDraft.previewUrl);
+
+    const imageId = normalizeImageStem(eventDraft.id);
+    setEventImageDraft({
+      file,
+      previewUrl: URL.createObjectURL(file),
+      imageId,
+      previousImageId: eventDraft.imageId || undefined,
+    });
+    setEventDraft(current => ({
+      ...current,
+      imageId,
+      imageAlt: current.imageAlt || current.title,
+    }));
+    setEventStatus({kind: "idle", message: ""});
+  }
+
+  function removeEventImage() {
+    if (eventImageDraft) URL.revokeObjectURL(eventImageDraft.previewUrl);
+    setEventImageDraft(null);
+    setEventDraft(current => ({...current, imageId: ""}));
+  }
+
+  function setEventImageId(imageId: EventDraft["imageId"]) {
+    if (eventImageDraft) URL.revokeObjectURL(eventImageDraft.previewUrl);
+    setEventImageDraft(null);
+    setEventDraft(current => ({...current, imageId}));
   }
 
   async function saveModifier() {
@@ -288,18 +361,29 @@ function DefinitionList<T extends {id: string; title?: string}>({
 function EventEditor({
   draft,
   modifierIds,
+  imageDraft,
   previewJson,
   status,
   onChange,
+  onImageChange,
+  onDropImage,
+  onRemoveImage,
   onSave,
 }: {
   draft: EventDraft;
   modifierIds: readonly string[];
+  imageDraft: EventImageDraft | null;
   previewJson: string;
   status: SaveStatus;
   onChange: (patch: Partial<EventDraft>) => void;
+  onImageChange: (imageId: EventDraft["imageId"]) => void;
+  onDropImage: (file: File) => void;
+  onRemoveImage: () => void;
   onSave: () => void;
 }) {
+  const selectedImageSrc = imageDraft?.previewUrl ?? (draft.imageId ? GLOBAL_EVENT_IMAGES[draft.imageId] : undefined);
+  const selectedImageLabel = imageDraft?.file.name ?? imageOptions.find(option => option.value === draft.imageId)?.label ?? draft.imageId;
+
   return (
     <>
       <div className={s.section}>
@@ -317,12 +401,15 @@ function EventEditor({
             <span className={s.label}>Description</span>
             <textarea className={s.textarea} value={draft.description} onChange={event => onChange({description: event.target.value})} />
           </label>
-          <label className={s.field}>
-            <span className={s.label}>Image</span>
-            <select className={s.input} value={draft.imageId} onChange={event => onChange({imageId: event.target.value as EventDraft["imageId"]})}>
-              {imageOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
-          </label>
+          <EventImageField
+            imageId={draft.imageId}
+            imageSrc={selectedImageSrc}
+            imageLabel={selectedImageLabel}
+            hasDraft={Boolean(imageDraft)}
+            onChange={onImageChange}
+            onDropFile={onDropImage}
+            onRemove={onRemoveImage}
+          />
           <TextField label="Image alt" value={draft.imageAlt} onChange={imageAlt => onChange({imageAlt})} />
         </div>
       </div>
@@ -367,6 +454,93 @@ function EventEditor({
 
       <PreviewAndSave previewJson={previewJson} status={status} onSave={onSave} />
     </>
+  );
+}
+
+function EventImageField({
+  imageId,
+  imageSrc,
+  imageLabel,
+  hasDraft,
+  onChange,
+  onDropFile,
+  onRemove,
+}: {
+  imageId: EventDraft["imageId"];
+  imageSrc: string | undefined;
+  imageLabel: string;
+  hasDraft: boolean;
+  onChange: (imageId: EventDraft["imageId"]) => void;
+  onDropFile: (file: File) => void;
+  onRemove: () => void;
+}) {
+  function handleFiles(files: FileList | null) {
+    const file = files?.[0];
+    if (file) onDropFile(file);
+  }
+
+  function onDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    handleFiles(event.dataTransfer.files);
+  }
+
+  function onFileChange(event: ChangeEvent<HTMLInputElement>) {
+    handleFiles(event.target.files);
+    event.target.value = "";
+  }
+
+  return (
+    <section className={`${s.section} ${s.fullWidth}`}>
+      <div className={s.sectionHeader}>
+        <h2 className={s.sectionTitle}>Event Picture</h2>
+      </div>
+      <div className={s.imageAssetGrid}>
+        <div className={s.field}>
+          <span className={s.label}>Image</span>
+          {imageSrc ? (
+            <div
+              className={s.imageCard}
+              onDragOver={event => event.preventDefault()}
+              onDrop={event => {
+                event.preventDefault();
+                handleFiles(event.dataTransfer.files);
+              }}
+            >
+              <img className={s.imageThumb} src={imageSrc} alt={imageLabel} />
+              <button className={s.imageRemoveButton} type="button" onClick={onRemove} title="Remove picture">x</button>
+              <span className={s.imageCaption}>{hasDraft ? "Pending replacement" : imageId}</span>
+              <label className={s.imageReplaceButton}>
+                Replace
+                <input className={s.fileInput} type="file" accept="image/png" onChange={onFileChange} />
+              </label>
+            </div>
+          ) : (
+            <label
+              className={s.imageDropZone}
+              onDragOver={event => event.preventDefault()}
+              onDrop={onDrop}
+            >
+              <input className={s.fileInput} type="file" accept="image/png" onChange={onFileChange} />
+              <span className={s.imageDropTitle}>Drop PNG picture</span>
+              <span className={s.hint}>or click to choose a file</span>
+            </label>
+          )}
+          <label className={s.field}>
+            <span className={s.label}>Existing Image</span>
+            <select className={s.input} value={imageId} onChange={event => onChange(event.target.value as EventDraft["imageId"])}>
+              {imageOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
+        </div>
+        <div className={s.imagePreviewBox}>
+          {imageSrc ? (
+            <img className={s.imagePreview} src={imageSrc} alt={imageLabel} />
+          ) : (
+            <span className={s.hint}>Drop a PNG or choose an existing picture.</span>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -712,6 +886,27 @@ function createModifierDefinition(draft: ModifierDraft): ModifierPreview {
   }
 }
 
+async function uploadGlobalEventImage(draft: EventImageDraft): Promise<{action?: string; file?: string}> {
+  const formData = new FormData();
+  formData.append("fileStem", draft.imageId);
+  if (draft.previousImageId && draft.previousImageId !== draft.imageId) {
+    formData.append("previousFileStem", draft.previousImageId);
+  }
+  formData.append("image", draft.file, draft.file.name);
+
+  const response = await fetch(`${localDataServerUrl}/global-event-images`, {
+    method: "POST",
+    body: formData,
+  });
+  const responseBody = await response.json().catch(() => null) as {action?: string; file?: string; error?: string} | null;
+
+  if (!response.ok) {
+    throw new Error(responseBody?.error ?? `Image upload failed with status ${response.status}.`);
+  }
+
+  return responseBody ?? {};
+}
+
 function createNewEvent(id = "new_global_event"): GlobalEventJsonDefinition {
   return {
     id,
@@ -848,6 +1043,11 @@ function formatLabel(value: string): string {
 
 function normalizeId(value: string): string {
   return value.trim().replace(/\s+/g, "_").replace(/[^A-Za-z0-9._-]/g, "");
+}
+
+function normalizeImageStem(value: string): string {
+  const normalized = normalizeId(value).replace(/[.]+/g, "_");
+  return normalized || "new_global_event";
 }
 
 function upsertById<T extends {id: string}>(items: readonly T[], nextItem: T): T[] {

@@ -1,6 +1,7 @@
 import type {DevelopmentVectorKey} from "../models/DevlopmentVector.ts";
 import type {TowerPartSlot} from "../models/battle/towerParts.ts";
 import type {TowerPartVisualMetadata} from "../models/battle/towerPartVisualMetadata.ts";
+import type {BuildingSpriteMetadata} from "../models/sprites/buildings/BuildingSpriteMetadata.ts";
 import type {WallSpriteMetadata} from "../models/sprites/walls/WallSpriteAtlas.ts";
 import type {WallTopSpriteMetadata} from "../models/sprites/wallTops/WallTopSpriteMetadata.ts";
 
@@ -15,8 +16,9 @@ type EntityVisualAssetBase<Metadata> = {
   metadata?: Metadata;
 };
 
-export type BuildingVisualAsset = EntityVisualAssetBase<never> & {
+export type BuildingVisualAsset = EntityVisualAssetBase<BuildingSpriteMetadata> & {
   kind: "building";
+  fileStem: string;
 };
 
 export type WallSegmentVisualAsset = EntityVisualAssetBase<WallSpriteMetadata> & {
@@ -58,6 +60,11 @@ const buildingImages = import.meta.glob("../assets/buildings/**/*.png", {
   query: "?url",
   import: "default",
 }) as Record<string, string>;
+
+const buildingMetadata = import.meta.glob("../assets/buildings/**/*.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, BuildingSpriteMetadata>;
 
 const wallSegmentImages = import.meta.glob("../assets/wallSegments/**/*.png", {
   eager: true,
@@ -104,7 +111,11 @@ export const ENTITY_VISUAL_ASSETS: readonly EntityVisualAsset[] = [
 ));
 
 export const ENTITY_VISUAL_ASSETS_BY_ID = Object.fromEntries(
-  ENTITY_VISUAL_ASSETS.map(asset => [asset.id, asset]),
+  ENTITY_VISUAL_ASSETS.flatMap(asset => (
+    asset.kind === "building"
+      ? [[asset.id, asset] as const, [asset.fileStem, asset] as const]
+      : [[asset.id, asset] as const]
+  )),
 ) as Record<string, EntityVisualAsset>;
 
 export function getEntityVisualAssetsForKind(kind: EntityVisualAssetKind): EntityVisualAsset[] {
@@ -115,7 +126,8 @@ function createBuildingVisualAssets(): BuildingVisualAsset[] {
   return Object.entries(buildingImages).flatMap(([path, src]) => {
     const vector = getVectorFromPath(path);
     if (!vector) return [];
-    const id = getFileStem(path);
+    const fileStem = getFileStem(path);
+    const id = getBuildingId(fileStem, vector);
 
     return [{
       id,
@@ -123,6 +135,8 @@ function createBuildingVisualAssets(): BuildingVisualAsset[] {
       kind: "building",
       vector,
       src,
+      fileStem,
+      metadata: buildingMetadata[replaceExtension(path, "json")],
     }];
   });
 }
@@ -187,6 +201,10 @@ function createGunPartVisualAssets(): GunPartVisualAssetOption[] {
 function getGunPartSlot(stem: string): TowerPartSlot | undefined {
   const [, slot] = stem.split("_");
   return towerPartSlots.find(option => option === slot);
+}
+
+function getBuildingId(stem: string, vector: DevelopmentVectorKey): string {
+  return `buildings.${vector}.${getEntityIdPart(stem, `building_${vector}_`)}`;
 }
 
 function getWallSegmentId(stem: string, vector: DevelopmentVectorKey): string {

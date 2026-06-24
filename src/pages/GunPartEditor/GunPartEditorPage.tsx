@@ -22,6 +22,13 @@ interface EditorAsset {
   src?: string;
 }
 
+type SaveStatus = {
+  kind: 'idle' | 'saving' | 'success' | 'error';
+  message: string;
+};
+
+const localDataServerUrl = 'http://127.0.0.1:4317';
+
 const metadataModules = import.meta.glob('../../assets/gunParts/**/*.json', {
   eager: true,
 }) as Record<string, { default: TowerPartVisualMetadata }>;
@@ -143,6 +150,24 @@ const SOCKET_MAP_CONNECTIONS: SocketMapConnection[] = [
 
 function getFileStem(path: string) {
   return path.split('/').at(-1)?.replace(/\.(json|png)$/i, '') ?? path;
+}
+
+function getEntityItemName(id: string): string {
+  return id.split('.').at(-1) ?? id;
+}
+
+function camelToKebab(value: string): string {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+}
+
+function getGunPartFileStem(assetId: string, vector: string, slot: TowerPartSlot): string {
+  return assetId.startsWith(`${vector}_${slot}_`)
+    ? assetId
+    : `${vector}_${slot}_${camelToKebab(getEntityItemName(assetId))}`;
 }
 
 function buildAssetMap() {
@@ -283,12 +308,12 @@ function getSvgPoint(svg: SVGSVGElement, clientX: number, clientY: number): Towe
   };
 }
 
-function getJson(
+function createMetadata(
   sourceSpriteSize: TowerVisualSize,
   targetSpriteSize: TowerVisualSize,
   rotationDegrees: number,
   sockets: readonly SocketDraft[]
-) {
+): TowerPartVisualMetadata {
   const inputSocket = sockets.find((socket) => socket.kind === 'input')?.point ?? getCenter(sourceSpriteSize);
   const outputSockets = Object.fromEntries(
     sockets
@@ -296,13 +321,17 @@ function getJson(
       .map((socket) => [socket.name, roundPoint(socket.point)])
   );
 
-  return JSON.stringify({
+  return {
     sourceSpriteSize,
     targetSpriteSize,
     rotationDegrees,
     inputSocket: roundPoint(inputSocket),
     outputSockets,
-  }, null, 2);
+  };
+}
+
+function getJson(metadata: TowerPartVisualMetadata) {
+  return JSON.stringify(metadata, null, 2);
 }
 
 function getSocketMapNode(slot: TowerPartSlot) {
@@ -440,6 +469,7 @@ export default function GunPartEditorPage() {
   const [zoom, setZoom] = useState(1);
   const [rotationDegrees, setRotationDegrees] = useState(selectedAsset?.metadata?.rotationDegrees ?? 0);
   const [activeSocketKey, setActiveSocketKey] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>({ kind: 'idle', message: '' });
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
@@ -453,6 +483,7 @@ export default function GunPartEditorPage() {
     setTargetSpriteSize(nextAsset?.metadata?.targetSpriteSize ?? DEFAULT_TARGET_SIZE);
     setSockets(createSocketsForSlot(nextSlot, nextSourceSize, nextAsset?.metadata));
     setRotationDegrees(nextAsset?.metadata?.rotationDegrees ?? 0);
+    setSaveStatus({ kind: 'idle', message: '' });
     setZoom(1);
   }, [initialPart, selectedPartId]);
 
@@ -471,10 +502,11 @@ export default function GunPartEditorPage() {
     image.src = selectedAsset.src;
   }, [selectedAsset?.metadata, selectedAsset?.src, slot]);
 
-  const generatedJson = useMemo(
-    () => getJson(sourceSpriteSize, targetSpriteSize, rotationDegrees, sockets),
+  const generatedMetadata = useMemo(
+    () => createMetadata(sourceSpriteSize, targetSpriteSize, rotationDegrees, sockets),
     [rotationDegrees, sourceSpriteSize, sockets, targetSpriteSize]
   );
+  const generatedJson = useMemo(() => getJson(generatedMetadata), [generatedMetadata]);
 
   function updateSlot(nextSlot: TowerPartSlot) {
     setSlot(nextSlot);
@@ -487,6 +519,51 @@ export default function GunPartEditorPage() {
         ? { ...socket, point: roundPoint(clampPoint(point, sourceSpriteSize)) }
         : socket
     )));
+  }
+
+  async function saveMetadata() {
+    const vector = selectedPart.vector;
+    const partSlot = selectedPart.slot ?? slot;
+
+    if (!vector || !partSlot) {
+      setSaveStatus({ kind: 'error', message: 'Selected part is missing vector or slot.' });
+      return;
+    }
+
+    setSaveStatus({ kind: 'saving', message: 'Saving metadata...' });
+
+    try {
+      const response = await fetch(`${localDataServerUrl}/gun-part-metadata`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          vector,
+          fileStem: getGunPartFileStem(selectedAssetId, vector, partSlot),
+          metadata: generatedMetadata,
+        }),
+      });
+      const responseBody = await response.json().catch(() => null) as {file?: string; error?: string} | null;
+
+      if (!response.ok) {
+        setSaveStatus({
+          kind: 'error',
+          message: responseBody?.error ?? `Save failed with status ${response.status}.`,
+        });
+        return;
+      }
+
+      setSaveStatus({
+        kind: 'success',
+        message: `Saved ${responseBody?.file ?? 'metadata file'}.`,
+      });
+    } catch (error) {
+      setSaveStatus({
+        kind: 'error',
+        message: 'Could not reach local data server at http://127.0.0.1:4317.',
+      });
+    }
   }
 
   function handlePointerMove(event: PointerEvent<SVGSVGElement>) {
@@ -711,7 +788,18 @@ export default function GunPartEditorPage() {
         <div className={s.jsonPanel}>
           <div className={s.jsonHeader}>
             <h2 className={s.title}>Generated JSON</h2>
+            <button
+              className={s.primaryButton}
+              type="button"
+              disabled={saveStatus.kind === 'saving'}
+              onClick={saveMetadata}
+            >
+              {saveStatus.kind === 'saving' ? 'Saving...' : 'Save'}
+            </button>
           </div>
+          {saveStatus.message && (
+            <span className={saveStatus.kind === 'error' ? s.errorText : s.statusText}>{saveStatus.message}</span>
+          )}
           <pre className={s.jsonOutput}>{generatedJson}</pre>
         </div>
       </section>

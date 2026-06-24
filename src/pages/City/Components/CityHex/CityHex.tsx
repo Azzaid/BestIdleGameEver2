@@ -11,6 +11,7 @@ import {
     coordKey
 } from "./hexUtils.ts";
 import cityBackground from '../../../../assets/city/background/Top-down_map_view_circular_lan.jpeg'
+import {BUILDINGS_ATLAS} from "../../../../data/buildings/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../../../data/wallSegments/index.ts";
 import {WALL_TOWER_BUILDINGS} from "../../../../data/wallSuperstructures/index.ts";
 import {CITY_HEX_SIZE} from "../../../../data/constants.ts";
@@ -296,12 +297,27 @@ export default function CityHex({
                     const isHovered = cellKey === hoveredCellKey;
                     const clipId = `clip-${cellKey}`;
                     const citySpriteAtlas = kind === "city" ? buildingsSpriteAtlas[developmentVector] : undefined;
+                    const building = kind === "city" && buildingKey
+                        ? BUILDINGS_ATLAS[developmentVector]?.[buildingKey]
+                        : undefined;
                     const spriteLookupKey = spriteKey && citySpriteAtlas?.[spriteKey]
                         ? spriteKey
-                        : buildingKey;
-                    const spriteUrl = kind === "city" && spriteLookupKey
-                        ? citySpriteAtlas?.[spriteLookupKey]?.src
+                        : building?.visualAssetId && citySpriteAtlas?.[building.visualAssetId]
+                            ? building.visualAssetId
+                            : buildingKey;
+                    const citySpriteAsset = kind === "city" && spriteLookupKey
+                        ? citySpriteAtlas?.[spriteLookupKey]
                         : undefined;
+                    const spriteUrl = kind === "city" && spriteLookupKey
+                        ? citySpriteAsset?.src
+                        : undefined;
+                    const buildingSpriteMetadata = citySpriteAsset?.metadata;
+                    const buildingSpriteZoom = Number.isFinite(buildingSpriteMetadata?.zoom)
+                        ? Math.max(0.01, buildingSpriteMetadata?.zoom ?? 1)
+                        : 1;
+                    const buildingSpriteShift = buildingSpriteMetadata?.shift ?? {x: 0, y: 0};
+                    const buildingSpriteWidth = SPRITE_WIDTH * buildingSpriteZoom;
+                    const buildingSpriteHeight = SPRITE_HEIGHT * buildingSpriteZoom;
                     const wallSpriteUrl = kind === "wall" && wallKey && wallDevelopmentVector
                         ? wallSpritesAtlas[wallDevelopmentVector]?.[wallKey]?.src
                         : undefined;
@@ -354,10 +370,10 @@ export default function CityHex({
                             {spriteUrl && (
                                 <image
                                     href={spriteUrl}
-                                    x={-SPRITE_WIDTH / 2}
-                                    y={-SPRITE_HEIGHT / 2}
-                                    width={SPRITE_WIDTH}
-                                    height={SPRITE_HEIGHT}
+                                    x={-buildingSpriteWidth / 2 + buildingSpriteShift.x}
+                                    y={-buildingSpriteHeight / 2 + buildingSpriteShift.y}
+                                    width={buildingSpriteWidth}
+                                    height={buildingSpriteHeight}
                                     preserveAspectRatio="xMidYMid meet"
                                     clipPath={`url(#${clipId})`}
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}

@@ -20,7 +20,7 @@ const entityCollections = new Set([
 const sendJson = (response, statusCode, body) => {
   response.writeHead(statusCode, {
     'Access-Control-Allow-Headers': 'content-type',
-    'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json; charset=utf-8',
   })
@@ -35,6 +35,75 @@ const readRequestBody = async (request) => {
   }
 
   return Buffer.concat(chunks).toString('utf8')
+}
+
+const readRequestBuffer = async (request) => {
+  const chunks = []
+
+  for await (const chunk of request) {
+    chunks.push(chunk)
+  }
+
+  return Buffer.concat(chunks)
+}
+
+const readMultipartFormData = async (request) => {
+  const contentType = request.headers['content-type'] ?? ''
+  const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i)
+
+  if (!boundaryMatch) {
+    const error = new Error('Multipart upload must include a boundary')
+    error.statusCode = 400
+    throw error
+  }
+
+  const boundary = boundaryMatch[1] ?? boundaryMatch[2]
+  const body = await readRequestBuffer(request)
+  const boundaryBuffer = Buffer.from(`--${boundary}`)
+  const fields = {}
+  const files = {}
+  let cursor = 0
+
+  while (cursor < body.length) {
+    const boundaryStart = body.indexOf(boundaryBuffer, cursor)
+    if (boundaryStart === -1) break
+
+    const partStart = boundaryStart + boundaryBuffer.length
+    if (body.subarray(partStart, partStart + 2).toString('utf8') === '--') break
+
+    const headerStart = partStart + 2
+    const headerEnd = body.indexOf(Buffer.from('\r\n\r\n'), headerStart)
+    if (headerEnd === -1) break
+
+    const headerText = body.subarray(headerStart, headerEnd).toString('utf8')
+    const contentStart = headerEnd + 4
+    const nextBoundary = body.indexOf(boundaryBuffer, contentStart)
+    if (nextBoundary === -1) break
+
+    const contentEnd = body.subarray(nextBoundary - 2, nextBoundary).toString('utf8') === '\r\n'
+      ? nextBoundary - 2
+      : nextBoundary
+    const content = body.subarray(contentStart, contentEnd)
+    const name = headerText.match(/name="([^"]+)"/i)?.[1]
+    const filename = headerText.match(/filename="([^"]*)"/i)?.[1]
+    const partContentType = headerText.match(/content-type:\s*([^\r\n]+)/i)?.[1]?.trim()
+
+    if (name) {
+      if (filename !== undefined) {
+        files[name] = {
+          filename,
+          contentType: partContentType,
+          buffer: content,
+        }
+      } else {
+        fields[name] = content.toString('utf8')
+      }
+    }
+
+    cursor = nextBoundary
+  }
+
+  return { fields, files }
 }
 
 const resolveGameFile = (fileName) => {
@@ -57,7 +126,7 @@ const server = createServer(async (request, response) => {
   if (request.method === 'OPTIONS') {
     response.writeHead(204, {
       'Access-Control-Allow-Headers': 'content-type',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
       'Access-Control-Allow-Origin': '*',
     })
     response.end()
@@ -71,13 +140,11 @@ const server = createServer(async (request, response) => {
 
   if (request.method === 'POST' && url.pathname === '/entities') {
     let entity
-    let spriteAction
 
     try {
       const body = await readRequestBody(request)
       const payload = JSON.parse(body)
-      entity = payload?.entity && payload?.spriteAction ? payload.entity : payload
-      spriteAction = payload?.entity && payload?.spriteAction ? payload.spriteAction : undefined
+      entity = payload?.entity ?? payload
     } catch (error) {
       sendJson(response, 400, { error: 'Request body must be valid JSON' })
       return
@@ -108,13 +175,11 @@ const server = createServer(async (request, response) => {
         entities[existingIndex] = entity
       }
 
-      const spriteResult = spriteAction ? await applySpriteAction(spriteAction) : undefined
       await writeFile(target.filePath, `${JSON.stringify(entities, null, 2)}\n`, 'utf8')
       sendJson(response, existingIndex === -1 ? 201 : 200, {
         action,
         entity,
         file: target.relativePath,
-        sprite: spriteResult,
       })
     } catch (error) {
       if (error.code === 'ENOENT') {
@@ -128,6 +193,29 @@ const server = createServer(async (request, response) => {
       }
 
       sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to add entity' })
+    }
+    return
+  }
+
+  if (request.method === 'POST' && url.pathname === '/entity-sprites') {
+    try {
+      const upload = await readMultipartFormData(request)
+      const spriteResult = await saveSpriteUpload(upload.fields, upload.files.image)
+      sendJson(response, 200, spriteResult)
+    } catch (error) {
+      sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to save sprite' })
+    }
+    return
+  }
+
+  if (request.method === 'DELETE' && url.pathname === '/entity-sprites') {
+    try {
+      const body = await readRequestBody(request)
+      const action = JSON.parse(body)
+      const spriteResult = await deleteSpriteAction(action)
+      sendJson(response, 200, spriteResult)
+    } catch (error) {
+      sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to delete sprite' })
     }
     return
   }
@@ -147,7 +235,8 @@ const server = createServer(async (request, response) => {
 
     try {
       const body = await readRequestBody(request)
-      definition = JSON.parse(body)
+      const payload = JSON.parse(body)
+      definition = payload?.definition ?? payload
     } catch (error) {
       sendJson(response, 400, { error: 'Request body must be valid JSON' })
       return
@@ -199,6 +288,68 @@ const server = createServer(async (request, response) => {
       }
 
       sendJson(response, 500, { error: 'Failed to save global definition' })
+    }
+    return
+  }
+
+  if (request.method === 'POST' && url.pathname === '/global-event-images') {
+    try {
+      const upload = await readMultipartFormData(request)
+      const imageResult = await saveGlobalEventImageUpload(upload.fields, upload.files.image)
+      sendJson(response, 200, imageResult)
+    } catch (error) {
+      sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to save event image' })
+    }
+    return
+  }
+
+  if (request.method === 'DELETE' && url.pathname === '/global-event-images') {
+    try {
+      const body = await readRequestBody(request)
+      const action = JSON.parse(body)
+      const imageResult = await deleteGlobalEventImageAction(action)
+      sendJson(response, 200, imageResult)
+    } catch (error) {
+      sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to delete event image' })
+    }
+    return
+  }
+
+  if (request.method === 'POST' && url.pathname === '/gun-part-metadata') {
+    let payload
+
+    try {
+      const body = await readRequestBody(request)
+      payload = JSON.parse(body)
+    } catch (error) {
+      sendJson(response, 400, { error: 'Request body must be valid JSON' })
+      return
+    }
+
+    const target = resolveSpriteTarget({
+      kind: 'gunPart',
+      vector: payload?.vector,
+    }, payload?.fileStem)
+
+    if (!target.ok || !target.metadataPath) {
+      sendJson(response, target.statusCode ?? 400, { error: target.error ?? 'Could not resolve metadata file' })
+      return
+    }
+
+    if (!payload?.metadata || Array.isArray(payload.metadata) || typeof payload.metadata !== 'object') {
+      sendJson(response, 400, { error: 'Metadata must be a JSON object' })
+      return
+    }
+
+    try {
+      await mkdir(target.dir, { recursive: true })
+      await writeFile(target.metadataPath, `${JSON.stringify(payload.metadata, null, 2)}\n`, 'utf8')
+      sendJson(response, 200, {
+        action: 'saved',
+        file: target.relativeMetadataPath,
+      })
+    } catch (error) {
+      sendJson(response, 500, { error: 'Failed to save gun part metadata' })
     }
     return
   }
@@ -287,7 +438,16 @@ function resolveEntityFile(entity) {
   }
 }
 
-async function applySpriteAction(action) {
+async function saveSpriteUpload(fields, imageFile) {
+  const action = {
+    kind: fields.kind,
+    vector: fields.vector,
+    slot: fields.slot || undefined,
+    assetId: fields.assetId,
+    fileStem: fields.fileStem,
+    previousFileStem: fields.previousFileStem || undefined,
+    metadata: fields.metadata ? JSON.parse(fields.metadata) : undefined,
+  }
   const target = resolveSpriteTarget(action, action?.fileStem)
 
   if (!target.ok) {
@@ -296,25 +456,13 @@ async function applySpriteAction(action) {
     throw error
   }
 
-  if (action.action === 'delete') {
-    await deleteSpriteFiles(target)
-    return {
-      action: 'removed',
-      file: target.relativeImagePath,
-    }
-  }
-
-  if (action.action !== 'upsert') {
-    throw new Error('Sprite action must be "upsert" or "delete"')
-  }
-
-  if (action.mimeType !== 'image/png' || typeof action.imageBase64 !== 'string' || !action.imageBase64) {
+  if (!imageFile?.buffer?.length || imageFile.contentType !== 'image/png') {
     throw new Error('Sprite upload must include a PNG image')
   }
 
   await mkdir(target.dir, { recursive: true })
 
-  await writeFile(target.imagePath, Buffer.from(action.imageBase64, 'base64'))
+  await writeFile(target.imagePath, imageFile.buffer)
 
   if (target.metadataPath) {
     if (!action.metadata || Array.isArray(action.metadata) || typeof action.metadata !== 'object') {
@@ -335,6 +483,22 @@ async function applySpriteAction(action) {
     action: 'saved',
     file: target.relativeImagePath,
     metadataFile: target.relativeMetadataPath,
+  }
+}
+
+async function deleteSpriteAction(action) {
+  const target = resolveSpriteTarget(action, action?.fileStem)
+
+  if (!target.ok) {
+    const error = new Error(target.error)
+    error.statusCode = target.statusCode
+    throw error
+  }
+
+  await deleteSpriteFiles(target)
+  return {
+    action: 'removed',
+    file: target.relativeImagePath,
   }
 }
 
@@ -362,7 +526,7 @@ function resolveSpriteTarget(action, fileStem) {
   }
 
   const imagePath = path.resolve(dir, `${fileStem}.png`)
-  const metadataPath = action.kind === 'building' ? undefined : path.resolve(dir, `${fileStem}.json`)
+  const metadataPath = path.resolve(dir, `${fileStem}.json`)
 
   if (!imagePath.startsWith(`${dir}${path.sep}`) || (metadataPath && !metadataPath.startsWith(`${dir}${path.sep}`))) {
     return { ok: false, statusCode: 400, error: 'Resolved sprite path is outside the asset directory' }
@@ -396,6 +560,76 @@ function resolveSpriteDir(kind, vector) {
   if (!dir.startsWith(`${collectionDir}${path.sep}`)) return null
 
   return dir
+}
+
+async function saveGlobalEventImageUpload(fields, imageFile) {
+  const action = {
+    fileStem: fields.fileStem,
+    previousFileStem: fields.previousFileStem || undefined,
+  }
+  const target = resolveGlobalEventImageTarget(action?.fileStem)
+
+  if (!target.ok) {
+    const error = new Error(target.error)
+    error.statusCode = target.statusCode
+    throw error
+  }
+
+  if (!imageFile?.buffer?.length || imageFile.contentType !== 'image/png') {
+    throw new Error('Event image upload must include a PNG image')
+  }
+
+  await mkdir(target.dir, { recursive: true })
+  await writeFile(target.imagePath, imageFile.buffer)
+
+  if (action.previousFileStem && action.previousFileStem !== action.fileStem) {
+    const previousTarget = resolveGlobalEventImageTarget(action.previousFileStem)
+    if (previousTarget.ok) {
+      await rm(previousTarget.imagePath, { force: true })
+    }
+  }
+
+  return {
+    action: 'saved',
+    file: target.relativeImagePath,
+  }
+}
+
+async function deleteGlobalEventImageAction(action) {
+  const target = resolveGlobalEventImageTarget(action?.fileStem)
+
+  if (!target.ok) {
+    const error = new Error(target.error)
+    error.statusCode = target.statusCode
+    throw error
+  }
+
+  await rm(target.imagePath, { force: true })
+  return {
+    action: 'removed',
+    file: target.relativeImagePath,
+  }
+}
+
+function resolveGlobalEventImageTarget(fileStem) {
+  const dir = path.resolve(gameAssetsDir, 'events')
+
+  if (!fileStem || !isSafePathPart(fileStem)) {
+    return { ok: false, statusCode: 400, error: 'Event image file stem must be a safe path segment' }
+  }
+
+  const imagePath = path.resolve(dir, `${fileStem}.png`)
+
+  if (!imagePath.startsWith(`${dir}${path.sep}`)) {
+    return { ok: false, statusCode: 400, error: 'Resolved event image path is outside the asset directory' }
+  }
+
+  return {
+    ok: true,
+    dir,
+    imagePath,
+    relativeImagePath: path.relative(path.join(__dirname, '..'), imagePath).replaceAll(path.sep, '/'),
+  }
 }
 
 function isSafePathPart(value) {

@@ -22,6 +22,7 @@ type BuildingDefinition = {
   values?: HomogeneousValueEffect[];
   effects?: HomogeneousAdjacencyRule[];
   adjacencyDescription?: string;
+  visualAssetId?: string;
 };
 
 const definitionsByVector: Record<DevelopmentVectorKey, readonly BuildingDefinition[]> = {
@@ -89,6 +90,7 @@ function buildBuildings(vector: DevelopmentVectorKey): Record<string, Building> 
           buildRequirements: definition.buildRequirements,
           values: definition.values,
           effects: definition.effects,
+          visualAssetId: definition.visualAssetId,
         },
       );
 

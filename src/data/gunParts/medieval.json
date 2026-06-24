@@ -80,6 +80,8 @@
     "name": "Hollow trunk",
     "description": "Old hollow trunk found near the city walls.",
     "keywords": [
+      "gunPart",
+      "barrel",
       "rough",
       "wood"
     ],
@@ -136,7 +138,8 @@
         ],
         "additive": 1
       }
-    ]
+    ],
+    "spriteTextureKey": "gunParts.medieval.barrel.hollowedTrunk"
   },
   {
     "id": "gunParts.medieval.ammo.stoneBasket",
@@ -235,6 +238,8 @@
     "name": "Carved out log",
     "description": "Fresh log carefully hollowed by hands and crude tools.",
     "keywords": [
+      "gunPart",
+      "barrel",
       "rough",
       "wood"
     ],
@@ -298,7 +303,8 @@
         ],
         "additive": 1
       }
-    ]
+    ],
+    "spriteTextureKey": "gunParts.medieval.barrel.carvedLog"
   },
   {
     "id": "gunParts.medieval.launchSystem.handTrebuchet",

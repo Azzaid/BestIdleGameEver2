@@ -288,3 +288,110 @@ export const hint = style({
   color: vars.color.text.muted,
   fontSize: "0.84rem",
 });
+
+export const imageAssetGrid = style({
+  display: "grid",
+  gridTemplateColumns: "minmax(220px, 0.9fr) minmax(260px, 1.1fr)",
+  gap: "10px",
+  alignItems: "stretch",
+  "@media": {
+    "(max-width: 760px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
+export const imageCard = style({
+  position: "relative",
+  display: "grid",
+  gap: "6px",
+  minHeight: "180px",
+  overflow: "hidden",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "8px",
+  padding: "8px",
+  background: vars.color.background.app,
+});
+
+export const imageThumb = style({
+  width: "100%",
+  height: "138px",
+  objectFit: "cover",
+  borderRadius: "6px",
+  background: vars.color.background.surface,
+});
+
+export const imageRemoveButton = style({
+  position: "absolute",
+  top: "8px",
+  right: "8px",
+  width: "28px",
+  height: "28px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "999px",
+  background: vars.color.background.surface,
+  color: vars.color.text.primary,
+  cursor: "pointer",
+  fontWeight: 900,
+});
+
+export const imageCaption = style({
+  overflowWrap: "anywhere",
+  color: vars.color.text.muted,
+  fontSize: "0.78rem",
+});
+
+export const imageReplaceButton = style([
+  button,
+  {
+    justifySelf: "start",
+  },
+]);
+
+export const imageDropZone = style({
+  display: "grid",
+  placeItems: "center",
+  minHeight: "180px",
+  border: `1px dashed ${vars.color.border.default}`,
+  borderRadius: "8px",
+  padding: "14px",
+  background: vars.color.background.app,
+  cursor: "pointer",
+  textAlign: "center",
+  selectors: {
+    "&:hover": {
+      borderColor: vars.color.border.focus,
+    },
+  },
+});
+
+export const imageDropTitle = style({
+  color: vars.color.text.heading,
+  fontWeight: 900,
+});
+
+export const imagePreviewBox = style({
+  display: "grid",
+  placeItems: "center",
+  minHeight: "230px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "8px",
+  overflow: "hidden",
+  background: vars.color.background.app,
+});
+
+export const imagePreview = style({
+  width: "100%",
+  height: "100%",
+  maxHeight: "320px",
+  objectFit: "contain",
+});
+
+export const fileInput = style({
+  position: "absolute",
+  width: "1px",
+  height: "1px",
+  overflow: "hidden",
+  clip: "rect(0 0 0 0)",
+  whiteSpace: "nowrap",
+});

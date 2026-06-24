@@ -1,8 +1,9 @@
 import {DEVELOPMENT_VECTORS} from "../../DevlopmentVector.ts";
 import type {SpriteAtlas} from "../SpriteAtlas.ts";
-import {ENTITY_VISUAL_ASSETS} from "../../../data/entityVisualAssets.ts";
+import {ENTITY_VISUAL_ASSETS, type BuildingVisualAsset} from "../../../data/entityVisualAssets.ts";
+import type {BuildingSpriteMetadata} from "./BuildingSpriteMetadata.ts";
 
-export const buildingsSpriteAtlas: SpriteAtlas = {
+export const buildingsSpriteAtlas: SpriteAtlas<BuildingSpriteMetadata> = {
     [DEVELOPMENT_VECTORS.tech]: buildSprites("tech"),
     [DEVELOPMENT_VECTORS.aether]: buildSprites("aether"),
     [DEVELOPMENT_VECTORS.nature]: buildSprites("nature"),
@@ -12,7 +13,10 @@ export const buildingsSpriteAtlas: SpriteAtlas = {
 function buildSprites(vector: "tech" | "aether" | "nature" | "medieval") {
     return Object.fromEntries(
         ENTITY_VISUAL_ASSETS
-            .filter(asset => asset.kind === "building" && asset.vector === vector)
-            .map(asset => [asset.id, {src: asset.src}]),
+            .filter((asset): asset is BuildingVisualAsset => asset.kind === "building" && asset.vector === vector)
+            .flatMap(asset => [
+                [asset.id, {src: asset.src, metadata: asset.metadata}] as const,
+                [asset.fileStem, {src: asset.src, metadata: asset.metadata}] as const,
+            ]),
     );
 }

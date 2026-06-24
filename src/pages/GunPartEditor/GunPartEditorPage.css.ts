@@ -165,6 +165,36 @@ export const button = style({
   },
 });
 
+export const primaryButton = style([
+  button,
+  {
+    borderColor: vars.color.brand.primary,
+    background: vars.color.brand.primary,
+    color: vars.color.text.inverse,
+    selectors: {
+      '&:disabled': {
+        cursor: 'wait',
+        opacity: 0.7,
+      },
+    },
+  },
+]);
+
+export const statusText = style({
+  padding: '8px 14px',
+  borderBottom: `1px solid ${vars.color.border.default}`,
+  color: vars.color.text.muted,
+  fontSize: '0.84rem',
+});
+
+export const errorText = style([
+  statusText,
+  {
+    color: vars.color.state.error,
+    fontWeight: 700,
+  },
+]);
+
 export const stagePanel = style([
   panel,
   {
@@ -378,6 +408,11 @@ export const jsonPanel = style([
 ]);
 
 export const jsonHeader = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '10px',
+  flexWrap: 'wrap',
   padding: '12px 14px',
   borderBottom: `1px solid ${vars.color.border.default}`,
 });

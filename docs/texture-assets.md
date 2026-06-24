@@ -5,6 +5,7 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 ## Folder Layout
 
 - City building textures: `src/assets/buildings/<vector>/building_<vector>_<id>.png`
+- City building metadata: `src/assets/buildings/<vector>/building_<vector>_<id>.json`
 - City wall segment textures: `src/assets/wallSegments/<vector>/wall_<vector>_<id>.png`
 - City wall segment metadata: `src/assets/wallSegments/<vector>/wall_<vector>_<id>.json`
 - City wall-top/superstructure textures: `src/assets/wallSuperstructures/<vector>/walltop_<vector>_<id>.png`
@@ -13,6 +14,7 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - Tower component metadata: `src/assets/gunParts/<vector>/<vector>_<slot>_<id>.json`
 - Battle backgrounds: `src/assets/battle/backgrounds/<id>.png`
 - City backgrounds: `src/assets/city/background/<id>.<ext>`
+- Global event pictures: `src/assets/events/<id>.png`
 - Unused images: `src/assets/unused/...`
 
 Use the development vector folder names from `src/models/DevlopmentVector.ts`: `tech`, `nature`, `medieval`, and `aether`.
@@ -22,9 +24,10 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 
 1. Add the id in `src/data/identificators/buildings/<vector>.ts` if it does not exist.
 2. Add or confirm the building definition in `src/data/buildings/<vector>.ts`.
-3. Put the image in `src/assets/buildings/<vector>/`.
-4. Import and map the texture in `src/data/entityVisualAssets.ts`, then register active runtime sprites in `src/models/sprites/buildings/<vector>.ts` as needed.
-5. The City page reads through `buildingsSpriteAtlas`; do not import building textures directly in page components.
+3. Put the PNG and JSON metadata in `src/assets/buildings/<vector>/`.
+4. Import and map both files in `src/data/entityVisualAssets.ts`, then register active runtime sprites in `src/models/sprites/buildings/<vector>.ts` as needed.
+5. Keep building metadata limited to `zoom` and `shift`. `zoom` scales the city hex sprite from its default hex fit, and `shift.x`/`shift.y` offset it in city SVG units.
+6. The City page reads through `buildingsSpriteAtlas`; do not import building textures directly in page components.
 
 ## Add A Wall Segment Texture
 
@@ -55,6 +58,12 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 4. Import and map both files in `src/data/entityVisualAssets.ts`; `src/data/gunParts/partVisualMetadata.ts` derives tower part visual metadata from that registry.
 5. Keep tower part metadata JSON limited to sockets, source size, target size, and rotation. Do not duplicate `id` or `spriteId` in the JSON; the visual asset registry key is the Pixi texture alias.
 6. Use `/gun-part-editor` to check sockets and `/ids` to check id/data/asset coverage.
+
+## Add A Global Event Picture
+
+1. Put the PNG in `src/assets/events/`.
+2. Set the global event `imageId` to the file stem without extension.
+3. The Global Events editor can upload the PNG and set `imageId` automatically. The runtime event image catalog discovers files in `src/assets/events`.
 
 ## Cleanup Rules
 

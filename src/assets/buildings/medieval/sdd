@@ -1,0 +1,6 @@
+{
+    "action": "upsert",
+    "fileStem": "new_global_event",
+    "imageBase64": {shortened for readability},
+    "mimeType": "image/png"
+}

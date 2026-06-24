@@ -5,6 +5,7 @@ import type {TowerPartSlot} from "../../models/battle/towerParts.ts";
 import type {TowerPartVisualMetadata} from "../../models/battle/towerPartVisualMetadata.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
+import type {BuildingSpriteMetadata} from "../../models/sprites/buildings/BuildingSpriteMetadata.ts";
 import type {WallSpriteMetadata} from "../../models/sprites/walls/WallSpriteAtlas.ts";
 import type {WallTopSpriteMetadata} from "../../models/sprites/wallTops/WallTopSpriteMetadata.ts";
 import {ALL_BUILDING_KEYWORDS} from "../../models/city/Keywords.ts";
@@ -105,7 +106,7 @@ type SaveStatus = {
   message: string;
 };
 
-type SpriteMetadata = WallSpriteMetadata | WallTopSpriteMetadata | TowerPartVisualMetadata;
+type SpriteMetadata = BuildingSpriteMetadata | WallSpriteMetadata | WallTopSpriteMetadata | TowerPartVisualMetadata;
 
 type SpriteDraft = {
   file: File;
@@ -114,15 +115,12 @@ type SpriteDraft = {
 };
 
 type SpriteSaveAction = {
-  action: "upsert" | "delete";
   kind: EntityVisualAssetKind;
   vector: DevelopmentVectorKey;
   slot?: TowerPartSlot;
   assetId: string;
   fileStem: string;
   previousFileStem?: string;
-  imageBase64?: string;
-  mimeType?: string;
   metadata?: SpriteMetadata;
 };
 
@@ -268,7 +266,7 @@ export default function EntityCreatePage() {
 
   useEffect(() => {
     if (!visualAssetId || spriteDraft || removedVisualAssetId) return;
-    if (visualAssetOptions.some(asset => asset.id === visualAssetId)) return;
+    if (visualAssetOptions.some(asset => asset.id === visualAssetId) || ENTITY_VISUAL_ASSETS_BY_ID[visualAssetId]) return;
     setVisualAssetId("");
   }, [removedVisualAssetId, spriteDraft, visualAssetId, visualAssetOptions]);
 
@@ -444,6 +442,7 @@ export default function EntityCreatePage() {
                 draft={spriteDraft}
                 onChange={selectVisualAsset}
                 onDropFile={setSpriteFile}
+                onMetadataChange={updateSpriteMetadata}
                 onRemove={removeSprite}
               />
             )}
@@ -685,12 +684,16 @@ export default function EntityCreatePage() {
     }
   }
 
+  function updateSpriteMetadata(metadata: SpriteMetadata) {
+    setSpriteDraft(currentDraft => currentDraft ? {...currentDraft, metadata} : currentDraft);
+  }
+
   async function saveEntity() {
     setSaveStatus({kind: "saving", message: "Saving to local data server..."});
 
     try {
       const spriteAction = visualAssetKind
-        ? await createSpriteSaveAction({
+        ? createSpriteSaveAction({
           kind: visualAssetKind,
           vector,
           partType,
@@ -701,14 +704,17 @@ export default function EntityCreatePage() {
           spriteDraft,
         })
         : undefined;
+      const spriteResult = spriteAction
+        ? await applySpriteSaveAction(spriteAction, spriteDraft)
+        : undefined;
       const response = await fetch(`${localDataServerUrl}/entities`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(spriteAction ? {entity: entityPreview, spriteAction} : entityPreview),
+        body: JSON.stringify(entityPreview),
       });
-      const responseBody = await response.json().catch(() => null) as {action?: string; file?: string; sprite?: {action?: string; file?: string}; error?: string} | null;
+      const responseBody = await response.json().catch(() => null) as {action?: string; file?: string; error?: string} | null;
 
       if (!response.ok) {
         setSaveStatus({
@@ -722,7 +728,7 @@ export default function EntityCreatePage() {
         kind: "success",
         message: [
           `${responseBody?.action ?? "saved"} in ${responseBody?.file ?? "data file"}`,
-          responseBody?.sprite?.action ? `sprite ${responseBody.sprite.action}` : "",
+          spriteResult?.action ? `sprite ${spriteResult.action}` : "",
         ].filter(Boolean).join("; ") + ".",
       });
       setSpriteDraft(null);
@@ -731,7 +737,9 @@ export default function EntityCreatePage() {
     } catch (error) {
       setSaveStatus({
         kind: "error",
-        message: "Could not reach local data server at http://127.0.0.1:4317.",
+        message: error instanceof Error
+          ? error.message
+          : "Could not reach local data server at http://127.0.0.1:4317.",
       });
     }
   }
@@ -901,6 +909,7 @@ function VisualAssetField(props: {
   draft: SpriteDraft | null;
   onChange: (value: string) => void;
   onDropFile: (file: File) => void;
+  onMetadataChange: (metadata: SpriteMetadata) => void;
   onRemove: () => void;
 }) {
   const [query, setQuery] = useState("");
@@ -924,6 +933,18 @@ function VisualAssetField(props: {
   function onFileChange(event: ChangeEvent<HTMLInputElement>) {
     handleFiles(event.target.files);
     event.target.value = "";
+  }
+
+  function updateBuildingMetadata(patch: Partial<BuildingSpriteMetadata>) {
+    if (!props.draft?.metadata || !isBuildingSpriteMetadata(props.draft.metadata)) return;
+    props.onMetadataChange({
+      ...props.draft.metadata,
+      ...patch,
+      shift: {
+        ...props.draft.metadata.shift,
+        ...patch.shift,
+      },
+    });
   }
 
   return (
@@ -992,6 +1013,41 @@ function VisualAssetField(props: {
           {previewSrc ? (
             <>
               <img className={s.visualPreviewImage} src={previewSrc} alt={previewLabel} />
+              {props.draft?.metadata && isBuildingSpriteMetadata(props.draft.metadata) && (
+                <div className={s.row}>
+                  <label className={s.field}>
+                    <span className={s.label}>Zoom</span>
+                    <input
+                      className={s.input}
+                      type="number"
+                      min="0.01"
+                      step="0.05"
+                      value={props.draft.metadata.zoom}
+                      onChange={event => updateBuildingMetadata({zoom: parseNumberOrFallback(event.target.value, 1)})}
+                    />
+                  </label>
+                  <label className={s.field}>
+                    <span className={s.label}>Shift X</span>
+                    <input
+                      className={s.input}
+                      type="number"
+                      step="1"
+                      value={props.draft.metadata.shift.x}
+                      onChange={event => updateBuildingMetadata({shift: {x: parseNumberOrFallback(event.target.value, 0), y: props.draft?.metadata && isBuildingSpriteMetadata(props.draft.metadata) ? props.draft.metadata.shift.y : 0}})}
+                    />
+                  </label>
+                  <label className={s.field}>
+                    <span className={s.label}>Shift Y</span>
+                    <input
+                      className={s.input}
+                      type="number"
+                      step="1"
+                      value={props.draft.metadata.shift.y}
+                      onChange={event => updateBuildingMetadata({shift: {x: props.draft?.metadata && isBuildingSpriteMetadata(props.draft.metadata) ? props.draft.metadata.shift.x : 0, y: parseNumberOrFallback(event.target.value, 0)}})}
+                    />
+                  </label>
+                </div>
+              )}
               {previewMetadata && (
                 <pre className={`${s.visualMetadataPreview} ${s.mono}`}>{JSON.stringify(previewMetadata, null, 2)}</pre>
               )}
@@ -1156,7 +1212,7 @@ async function createSpriteDraft(file: File, entityType: EntityType, partType: T
   }
 }
 
-async function createSpriteSaveAction(args: {
+function createSpriteSaveAction(args: {
   kind: EntityVisualAssetKind;
   vector: DevelopmentVectorKey;
   partType: TowerPartSlot;
@@ -1165,7 +1221,7 @@ async function createSpriteSaveAction(args: {
   selectedVisualAssetId: string;
   removedVisualAssetId: string;
   spriteDraft: SpriteDraft | null;
-}): Promise<SpriteSaveAction | undefined> {
+}): SpriteSaveAction | undefined {
   if (args.spriteDraft) {
     const fileStem = getSpriteFileStem(args.entityType, args.vector, args.partType, args.generatedVisualAssetId);
     const previousVisualAssetId = args.selectedVisualAssetId || args.removedVisualAssetId;
@@ -1174,22 +1230,18 @@ async function createSpriteSaveAction(args: {
       : undefined;
 
     return {
-      action: "upsert",
       kind: args.kind,
       vector: args.vector,
       slot: args.entityType === "gunPart" ? args.partType : undefined,
       assetId: args.generatedVisualAssetId,
       fileStem,
       previousFileStem,
-      imageBase64: await readFileBase64(args.spriteDraft.file),
-      mimeType: args.spriteDraft.file.type,
       metadata: args.spriteDraft.metadata,
     };
   }
 
   if (args.removedVisualAssetId) {
     return {
-      action: "delete",
       kind: args.kind,
       vector: args.vector,
       slot: args.entityType === "gunPart" ? args.partType : undefined,
@@ -1199,6 +1251,48 @@ async function createSpriteSaveAction(args: {
   }
 
   return undefined;
+}
+
+async function applySpriteSaveAction(
+  action: SpriteSaveAction,
+  spriteDraft: SpriteDraft | null,
+): Promise<{action?: string; file?: string} | undefined> {
+  if (!spriteDraft) {
+    const response = await fetch(`${localDataServerUrl}/entity-sprites`, {
+      method: "DELETE",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(action),
+    });
+    const responseBody = await response.json().catch(() => null) as {action?: string; file?: string; error?: string} | null;
+
+    if (!response.ok) {
+      throw new Error(responseBody?.error ?? `Sprite delete failed with status ${response.status}.`);
+    }
+
+    return responseBody ?? {};
+  }
+
+  const formData = new FormData();
+  formData.append("kind", action.kind);
+  formData.append("vector", action.vector);
+  if (action.slot) formData.append("slot", action.slot);
+  formData.append("assetId", action.assetId);
+  formData.append("fileStem", action.fileStem);
+  if (action.previousFileStem) formData.append("previousFileStem", action.previousFileStem);
+  if (action.metadata) formData.append("metadata", JSON.stringify(action.metadata));
+  formData.append("image", spriteDraft.file, spriteDraft.file.name);
+
+  const response = await fetch(`${localDataServerUrl}/entity-sprites`, {
+    method: "POST",
+    body: formData,
+  });
+  const responseBody = await response.json().catch(() => null) as {action?: string; file?: string; error?: string} | null;
+
+  if (!response.ok) {
+    throw new Error(responseBody?.error ?? `Sprite upload failed with status ${response.status}.`);
+  }
+
+  return responseBody ?? {};
 }
 
 function getSpriteAssetId(
@@ -1242,7 +1336,15 @@ function createDefaultSpriteMetadata(
   partType: TowerPartSlot,
   sourceSpriteSize: {width: number; height: number},
 ): SpriteMetadata | undefined {
-  if (entityType === "building") return undefined;
+  if (entityType === "building") {
+    return {
+      zoom: 1,
+      shift: {
+        x: 0,
+        y: 0,
+      },
+    };
+  }
 
   if (entityType === "wallSegment") {
     return {
@@ -1298,18 +1400,6 @@ function readImageSize(src: string): Promise<{width: number; height: number}> {
     image.onload = () => resolve({width: image.naturalWidth, height: image.naturalHeight});
     image.onerror = () => reject(new Error("Image could not be loaded"));
     image.src = src;
-  });
-}
-
-function readFileBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : "";
-      resolve(result.includes(",") ? result.split(",")[1] ?? "" : result);
-    };
-    reader.onerror = () => reject(new Error("File could not be read"));
-    reader.readAsDataURL(file);
   });
 }
 
@@ -1724,6 +1814,15 @@ function parseOptionalNumber(value: string): number | null {
   if (value.trim() === "") return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseNumberOrFallback(value: string, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function isBuildingSpriteMetadata(metadata: SpriteMetadata): metadata is BuildingSpriteMetadata {
+  return "zoom" in metadata && "shift" in metadata;
 }
 
 function normalizeIdPart(value: string): string {

@@ -10,6 +10,7 @@ type BuildingOptions = {
     buildRequirements?: Requirement[];
     values?: HomogeneousValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
+    visualAssetId?: string;
 };
 
 type SuperstructureOptions = BuildingOptions & {
@@ -42,6 +43,7 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
       effects: options.effects,
       adjacencyDescription: "Not affected",
       description,
+      visualAssetId: options.visualAssetId,
       keywords: [...defaultKeywords, ...keywords],
       requirements: options.requirements,
       buildRequirements: options.buildRequirements,

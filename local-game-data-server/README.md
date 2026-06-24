@@ -20,7 +20,12 @@ Endpoints:
 - `GET /game-files/sample-game-state.json`
 - `PUT /game-files/sample-game-state.json`
 - `POST /entities`
+- `POST /entity-sprites`
+- `DELETE /entity-sprites`
+- `POST /gun-part-metadata`
 - `POST /global-events`
+- `POST /global-event-images`
+- `DELETE /global-event-images`
 - `POST /global-modifiers`
 
 Only `.json` files inside this folder's `data` directory are readable or writable.
@@ -37,26 +42,38 @@ The target file is selected from the entity `id`:
 
 The server appends new entities and updates existing entities with the same ID. Set `GAME_DATA_DIR` to point at a different data root for tests.
 
-`POST /entities` also accepts an editor payload with an optional sprite action:
+`POST /entity-sprites` saves sprite PNG files under `src/assets` with paired metadata JSON for sprite-backed entity types. Send it as `multipart/form-data`:
+
+```txt
+kind=wallSegment
+vector=medieval
+assetId=wallSegments.medieval.scrapBarricade
+fileStem=wall_medieval_scrap-barricade
+previousFileStem=optional_previous_stem
+metadata={"sourceSpriteSize":{"width":80,"height":80},"targetSpriteSize":{"width":80,"height":80}}
+image=<PNG file>
+```
+
+`DELETE /entity-sprites` removes a sprite PNG and paired metadata JSON. Send JSON with `kind`, `vector`, and `fileStem`; include `slot` for gun parts.
+
+`POST /gun-part-metadata` writes tower-part socket metadata to `src/assets/gunParts/{vector}/{fileStem}.json`:
 
 ```json
 {
-  "entity": { "id": "wallSegments.medieval.scrapBarricade" },
-  "spriteAction": {
-    "action": "upsert",
-    "kind": "wallSegment",
-    "vector": "medieval",
-    "assetId": "wallSegments.medieval.scrapBarricade",
-    "fileStem": "wall_medieval_scrap-barricade",
-    "mimeType": "image/png",
-    "imageBase64": "...",
-    "metadata": {}
+  "vector": "medieval",
+  "fileStem": "medieval_launchSystem_crude-sling",
+  "metadata": {
+    "sourceSpriteSize": {"width": 1536, "height": 1024},
+    "targetSpriteSize": {"width": 150, "height": 100},
+    "rotationDegrees": 270,
+    "inputSocket": {"x": 773, "y": 631},
+    "outputSockets": {}
   }
 }
 ```
 
-Sprite actions write or delete PNG files under `src/assets`. Non-building sprites also write or delete paired metadata JSON.
-
 `POST /global-events` writes event definitions to `src/data/globalEvents/events.json`.
+`POST /global-event-images` saves a PNG event image under `src/assets/events/{fileStem}.png`. Send it as `multipart/form-data` with `fileStem`, optional `previousFileStem`, and an `image` file field.
+`DELETE /global-event-images` removes an event PNG. Send JSON with `fileStem`.
 `POST /global-modifiers` writes modifier definitions to `src/data/globalModifiers/modifiers.json`.
 Both endpoints append new definitions and update existing definitions with the same ID.

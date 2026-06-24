@@ -5,6 +5,7 @@
     "kind": "building",
     "description": "A rough first home that makes organized foraging possible.",
     "keywords": [
+      "building",
       "production",
       "people",
       "housing"
@@ -24,7 +25,8 @@
         ],
         "additive": 4
       }
-    ]
+    ],
+    "visualAssetId": "building_medieval_shelter"
   },
   {
     "id": "buildings.medieval.scrapCollectionPoint",

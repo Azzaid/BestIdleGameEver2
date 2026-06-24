@@ -21,6 +21,7 @@ export interface Building extends RequirementGate {
     adjacencyDescription: string;
     keywords: BuildingKeyword[];
     description: string;
+    visualAssetId?: string;
     multiHexStructure?: MultiHexStructureRule[]
 }
 

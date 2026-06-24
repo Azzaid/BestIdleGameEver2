@@ -93,13 +93,13 @@ function AppFrame() {
                                       <Link className={appTheme.navBarLink} to="/progression">Progression</Link>
                                   </li>
                                   <li>
-                                      <Link className={appTheme.navBarLink} to="/gun-part-editor">Part Editor</Link>
-                                  </li>
-                                  <li>
                                       <Link className={appTheme.navBarLink} to="/ids">IDs</Link>
                                   </li>
                                   <li>
                                       <Link className={appTheme.navBarLink} to="/entity-create/new">Entity Create</Link>
+                                  </li>
+                                  <li>
+                                      <Link className={appTheme.navBarLink} to="/gun-part-editor">Part Editor</Link>
                                   </li>
                                   <li>
                                       <Link className={appTheme.navBarLink} to="/global-events">Global Events</Link>
