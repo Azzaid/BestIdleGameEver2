@@ -15,6 +15,14 @@ Research determines:
 - which multistructures can be created;
 - which endings become possible.
 
+Current implementation note, 2026-06-24:
+
+- Research data lives in vector-keyed JSON files under `src/data/research`.
+- `createTechnologyFactory` normalizes raw technology definitions into `ResearchNodeData`.
+- Purchased technologies are stored in the research slice, then exposed as homogeneous entities so their values and global modifier effects participate in the same resolver as buildings, towers, and walls.
+- Research currently supports technology prerequisites, additional requirements, unlock lists, required buildings, required structures, required free upkeep, required aether atmosphere, required biodiversity, homogeneous value gates, and notes.
+- The visible research page is backed by `researchTree` and vector atlases; debug progression tools derive graph/audit views from the same data.
+
 ---
 
 # Core Philosophy

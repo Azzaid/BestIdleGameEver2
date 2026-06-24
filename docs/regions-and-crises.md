@@ -16,6 +16,12 @@ Crises prevent the player from focusing exclusively on one vector.
 
 Together they create adaptation pressure.
 
+Current implementation note, 2026-06-24:
+
+- Full regional progression and crisis systems are not implemented yet.
+- The current code has global event and global modifier data, an editor route, event images, global flags, and modifier application context. These are the nearest implemented foundation for future crises.
+- Enemy data is grouped under `src/data/enemies`, with battle spawning currently using available enemy blueprints rather than a full region ecosystem model.
+
 ---
 
 # Core Philosophy

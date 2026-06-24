@@ -1,5 +1,12 @@
 # Texture Asset Workflow
 
+Current implementation note, 2026-06-24:
+
+- Active city building, wall segment, wall superstructure, tower component, and global event image assets are cataloged through data registries rather than direct one-off page imports.
+- `/ids` audits content IDs and visual coverage.
+- `/gun-part-editor` supports tower component socket/visual metadata work.
+- `/entity-create/:entityId` and `/global-events` support debug editing flows for entity and event content.
+
 Use this when adding or moving gameplay textures. Keep active textures in typed registries and move unused images to `src/assets/unused`.
 
 ## Folder Layout
@@ -22,8 +29,8 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 
 ## Add A City Building Texture
 
-1. Add the id in `src/data/identificators/buildings/<vector>.ts` if it does not exist.
-2. Add or confirm the building definition in `src/data/buildings/<vector>.ts`.
+1. Add or confirm the building definition and id in `src/data/buildings/<vector>.json`.
+2. Confirm `src/data/ids.ts` derives the building id from the active atlas.
 3. Put the PNG and JSON metadata in `src/assets/buildings/<vector>/`.
 4. Import and map both files in `src/data/entityVisualAssets.ts`, then register active runtime sprites in `src/models/sprites/buildings/<vector>.ts` as needed.
 5. Keep building metadata limited to `zoom` and `shift`. `zoom` scales the city hex sprite from its default hex fit, and `shift.x`/`shift.y` offset it in city SVG units.
@@ -31,10 +38,10 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 
 ## Add A Wall Segment Texture
 
-1. Add the id in `src/data/identificators/walls/<vector>.ts` if it does not exist.
-2. Add or confirm the segment definition in `src/data/wallSegments/<vector>.json`.
+1. Add or confirm the segment definition and id in `src/data/wallSegments/<vector>.json`.
+2. Confirm `src/data/ids.ts` derives the wall id from the active atlas.
 3. Put the PNG and JSON metadata in `src/assets/wallSegments/<vector>/`.
-4. Import and map both files in `src/data/entityVisualAssets.ts`, then register active runtime sprites in `src/models/sprites/walls/<vector>.ts` as a sprite asset keyed by the wall id from `src/data/identificators/walls/<vector>.ts`: `{ src, metadata }`.
+4. Import and map both files in `src/data/entityVisualAssets.ts`, then register active runtime sprites in `src/models/sprites/walls/<vector>.ts` as a sprite asset keyed by the wall id: `{ src, metadata }`.
 5. Keep wall metadata JSON limited to image sizing/bounds. Do not duplicate `id`, `spriteId`, or `wallId` in the JSON; the registry key is the wall id and battle texture alias.
 6. City rendering uses `wallSpritesAtlas`; battle loading uses `wallSpriteMetadataAtlas` and `wallSpritesAtlas`.
 7. Set `targetSpriteSize` to the intended city SVG size at zoom 1. City hex rendering centers that size on the hex and clips anything outside the hex border. Battle wall rendering scales that size by `BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX / CITY_HEX_SIZE`.
@@ -42,8 +49,8 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 
 ## Add A Wall-Top/Superstructure Texture
 
-1. Add the id in `src/data/identificators/superstructures/<vector>.ts` if it does not exist.
-2. Add or confirm the superstructure definition in `src/data/wallSuperstructures/<vector>.ts`.
+1. Add or confirm the superstructure definition and id in `src/data/wallSuperstructures/<vector>.json`.
+2. Confirm `src/data/ids.ts` derives the superstructure id from the active atlas.
 3. Put the PNG and JSON metadata in `src/assets/wallSuperstructures/<vector>/`.
 4. Import and map both files in `src/data/entityVisualAssets.ts`, then register active runtime sprites in `src/models/sprites/wallTops/<vector>.ts` as a sprite asset keyed by the superstructure id: `{ src, metadata }`.
 5. Keep wall-top metadata JSON limited to image sizing/bounds. Do not duplicate `id`, `spriteId`, or `superstructureId` in the JSON; the registry key is the superstructure id and battle texture alias.
@@ -52,8 +59,8 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 
 ## Add A Tower Component Texture
 
-1. Add the id in `src/data/identificators/gunparts/<vector>.ts` and its slot group in `src/data/identificators/gunparts/index.ts`.
-2. Add or confirm the tower part definition in `src/data/gunParts/<vector>.json`.
+1. Add or confirm the tower part definition, id, vector, and slot in `src/data/gunParts/<vector>.json`.
+2. Confirm `src/data/ids.ts` derives the gun part id from the active atlas and slot group.
 3. Put the PNG and JSON metadata in `src/assets/gunParts/<vector>/`.
 4. Import and map both files in `src/data/entityVisualAssets.ts`; `src/data/gunParts/partVisualMetadata.ts` derives tower part visual metadata from that registry.
 5. Keep tower part metadata JSON limited to sockets, source size, target size, and rotation. Do not duplicate `id` or `spriteId` in the JSON; the visual asset registry key is the Pixi texture alias.

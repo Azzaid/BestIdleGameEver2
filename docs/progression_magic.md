@@ -1,5 +1,11 @@
 # Magic Progression Branch
 
+Current implementation note, 2026-06-24:
+
+- Runtime data uses the vector key `aether` for the magic branch.
+- Implemented aether data currently lives in `src/data/research/aether.json` and `src/data/buildings/aether.json`; aether tower parts and wall content are scaffolded but mostly empty.
+- This file remains a design draft and naming reference; the JSON catalogs are the runtime source of truth.
+
 Draft of the magic progression branch.
 
 Entry format:

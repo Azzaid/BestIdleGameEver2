@@ -1,5 +1,11 @@
 # Medieval Progression Branch
 
+Current implementation note, 2026-06-24:
+
+- Implemented medieval data currently lives in `src/data/research/medieval.json`, `src/data/buildings/medieval.json`, `src/data/gunParts/medieval.json`, `src/data/wallSegments/medieval.json`, and `src/data/wallSuperstructures/medieval.json`.
+- This file remains a design draft and naming reference; the JSON catalogs are the runtime source of truth.
+- Current code uses vector keys `medieval`, `nature`, `aether`, and `tech`; older notes may still say `bio` or `magic`.
+
 Черновик средневековой ветки прогрессии.
 
 Формат записи:

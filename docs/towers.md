@@ -43,6 +43,14 @@ The tower system should:
 
 The player should feel like an engineer.
 
+Current implementation note, 2026-06-24:
+
+- Tower parts are data-driven through `src/data/gunParts/<vector>.json` and normalized by `createTowerPartFactory`.
+- Implemented tower slots are `launchSystem`, `platform`, `barrel`, `ammo`, `aimSystem`, `barrelAttachment`, and `loadingSystem`.
+- `ammo` and `launchSystem` are currently required for a valid tower assembly.
+- Tower part values resolve through the homogeneous value system into stats such as rotation speed, shots per second, burst count, damage, projectile speed/radius/spread, AOE radius, range limits, rotation limits, retarget cooldown, trigger tolerance, and weight.
+- Towers can also receive effective modifiers from city/wall/research/global context after assembly.
+
 ---
 
 # Tower Philosophy

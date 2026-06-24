@@ -4,6 +4,13 @@ This document describes the intended identity, resource model, scaling model and
 
 The purpose of this document is to guide future content additions and ensure that new buildings, technologies and mechanics reinforce the unique identity of each branch rather than turning them into recolored versions of one another.
 
+Current implementation note, 2026-06-24:
+
+- The implemented vector keys are `tech`, `nature`, `medieval`, and `aether`.
+- The older branch labels `bio` and `magic` still appear in some draft progression notes, but current data and code use `nature` and `aether`.
+- Current content is strongest in medieval, with early nature and aether entries; tech is mostly scaffolded in data shape.
+- Branch identity is enforced technically through vector keywords, homogeneous value IDs, requirements, and modifier rules.
+
 ---
 
 # Core Principle

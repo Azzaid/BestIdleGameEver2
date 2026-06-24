@@ -2,6 +2,11 @@
 
 Raw future-facing notes. These are not commitments; they preserve design and technical thoughts for later triage.
 
+Current implementation note, 2026-06-24:
+
+- Some notes here have already been partially addressed by the current implementation, including multistructure detection, active tower editing, global events tooling, ID audit tooling, and broader data folder structure.
+- Keep this file as raw triage material; update focused docs or runtime JSON when an idea becomes an accepted system.
+
 ## 2026-06-15 Future Work Notes
 
 - Fix scroll and drag behavior on graph-based pages.

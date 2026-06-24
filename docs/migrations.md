@@ -14,6 +14,12 @@ The player's story is the story of many settlements.
 
 Migration and colonization exist to create long-term progression without relying on traditional prestige currencies.
 
+Current implementation note, 2026-06-24:
+
+- Migration, colonies, capitals, specialists, imports, abandoned cities, and capital transfer are not implemented yet.
+- The current portable foundation for these systems is the state/data architecture: content IDs, requirements, homogeneous values, city footprint/signature, controlled territory, global flags, and resolved city state.
+- Any future implementation should reuse the existing value and requirement vocabulary instead of creating separate progression currencies.
+
 ---
 
 # Core Philosophy

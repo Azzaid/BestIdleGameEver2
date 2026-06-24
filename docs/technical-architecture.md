@@ -4,9 +4,9 @@
 
 This document describes the content architecture of the game.
 
-It is not code.
+It is partly design blueprint and partly implementation map.
 
-It is a blueprint for future implementation.
+For the compact list of architectural decisions to preserve across an engine migration, see `docs/architecture-principles.md`.
 
 The primary goal is:
 
@@ -22,6 +22,13 @@ The game should eventually contain:
 - dozens of endings.
 
 The architecture must support that scale.
+
+Current implementation note, 2026-06-24:
+
+- Content definitions are already data-driven for buildings, research, tower parts, wall segments, wall superstructures, enemies, global events, and global modifiers.
+- The central shared rule layer is the homogeneous value system in `src/models/homogeneousValues.ts`, `src/models/homogeneousValueResolution.ts`, and `src/data/homogeneousValues/index.ts`.
+- Content visibility and unlock gates use requirement objects from `src/models/progression/requirements.ts`.
+- Debug tools exist for progression graph inspection, ID audit, entity editing, tower-part sockets/metadata, and global events.
 
 ---
 
@@ -69,7 +76,14 @@ Tower Components
 ↓
 Combat
 
-Everything should ultimately be represented through data.
+Everything should ultimately be represented through data or resolved from data through a shared system.
+
+Current route/data surfaces:
+
+- Player routes: Battle, Tower, Research, City, Statistics.
+- Debug routes: Progression, IDs, Entity Create, Gun Part Editor, Global Events.
+- Data catalogs: `src/data/buildings`, `src/data/research`, `src/data/gunParts`, `src/data/wallSegments`, `src/data/wallSuperstructures`, `src/data/enemies`, `src/data/globalEvents`, `src/data/globalModifiers`.
+- Derived ID catalog: `src/data/ids.ts`.
 
 ---
 

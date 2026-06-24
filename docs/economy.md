@@ -12,6 +12,13 @@ Instead, the player increases the amount of complexity the city can sustain.
 
 The economy is based around support.
 
+Current implementation note, 2026-06-24:
+
+- The implemented economy is expressed through homogeneous values with `production`, `upkeep`, and `unlock` roles.
+- Resource-like support values currently include People, Gold, Power, Compute, Veil, Mana Flows, Death, Fungi, Plants, and Animals.
+- Produced values, upkeep values, available values, and unlock requirements are resolved from the same contribution map, then adapted into the upkeep bar and build/research gates.
+- Nature balance values such as domination, bio complexity, and bio disbalance are derived from Plants, Fungi, and Animals.
+
 ---
 
 # Design Goals

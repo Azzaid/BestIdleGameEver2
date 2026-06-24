@@ -1,4 +1,4 @@
-no# Best Idle Game Ever 2 — Vision
+# Best Idle Game Ever 2 — Vision
 
 ## Purpose of this document
 
@@ -6,6 +6,12 @@ This file defines the high-level vision of the game: what it is, what emotional 
 
 It is not a technical specification.  
 It is a compass.
+
+Current implementation note, 2026-06-24:
+
+- The current prototype already expresses the core fantasy through a city view, modular tower design, research tree, battle validation, support/upkeep pressure, and signature-driven siege state.
+- Long-term migration, colonies, capitals, regions, crises, and endings remain design direction rather than complete game systems.
+- `docs/architecture-principles.md` captures which implemented technical decisions should survive if the prototype moves to another engine.
 
 ---
 

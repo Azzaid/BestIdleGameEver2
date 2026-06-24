@@ -15,6 +15,13 @@ They are intended to become:
 
 The goal is to make city planning feel creative rather than procedural.
 
+Current implementation note, 2026-06-24:
+
+- Superstructure definitions can declare `requiredBuildingIds`; the building atlas derives `STRUCTURES` from those definitions.
+- The city selector detects connected multistructure candidates from placed city hexes.
+- Completed structures are tracked from hex `partOfStructureId` values and can be used by requirements.
+- Manual upgrade UX, rare/regional/capital/ending structures, and cross-vector district identity remain design direction.
+
 ---
 
 # Core Philosophy

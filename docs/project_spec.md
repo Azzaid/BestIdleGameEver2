@@ -1,6 +1,6 @@
 # Project Specification: Best Idle Game Ever 2
 
-Last updated: 2026-06-22 (local)
+Last updated: 2026-06-24 (local)
 
 This document is the repository's single project specification. It summarizes the implemented prototype and the current design direction from the rest of the `docs` folder. The focused design documents remain the deeper references for individual systems.
 
@@ -28,6 +28,8 @@ Design pillars:
 - The wall visually and mechanically connects city building to combat.
 - Victory is built through megaproject endings, not granted by a score threshold or cutscene.
 
+For portable technical decisions, data schema principles, value resolution rules, and engine-migration guidance, see `docs/architecture-principles.md`.
+
 ## 2. Current Prototype Scope
 
 The current app is a frontend-only prototype with multiple routed views:
@@ -37,6 +39,7 @@ The current app is a frontend-only prototype with multiple routed views:
 - Research: radial research tree with unlockable nodes and vector coloring.
 - City: SVG hex city visualization with clickable city and wall tiles, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
 - Statistics: sample time-series charts.
+- Debug/content tools: progression graph, ID audit, entity creation, gun part editor, and global events editor.
 
 The prototype has no backend and no formal persistence system yet.
 
@@ -47,7 +50,7 @@ Current stack:
 - React 19 with TypeScript.
 - Vite 7.
 - Redux Toolkit.
-- React Router.
+- React Router with hash routing.
 - vanilla-extract for typed CSS.
 - Pixi.js for battle rendering.
 - TanStack Table and React Virtual for the Build page parts table.
@@ -56,7 +59,7 @@ Current stack:
 Entry points and app shell:
 
 - `src/main.tsx` loads global styles and renders the app.
-- `src/App.tsx` wires `Provider`, `ThemeProvider`, `BrowserRouter`, navigation, routes, theme switching, and the shared upkeep bar.
+- `src/App.tsx` wires `Provider`, `ThemeProvider`, `HashRouter`, navigation, routes, debug route gating, content auto-unlock hooks, global event signals/modals, and the shared upkeep bar.
 - `src/store` contains Redux setup, slices, typed hooks, and selectors.
 - `src/theme` contains the vanilla-extract theme contract and runtime theme provider.
 
@@ -67,6 +70,7 @@ Primary routes:
 - `/research` renders research.
 - `/city` renders the city view.
 - `/statistics` renders charts.
+- `/progression`, `/ids`, `/entity-create/:entityId`, `/gun-part-editor`, and `/global-events` are debug-mode tools.
 
 Important directories:
 
@@ -91,7 +95,8 @@ Content data layout:
 - `src/data/research` uses a technology factory with keyworded definitions, then exposes a vector-keyed research atlas and flattened helpers for the research tree. Research visual grouping is derived from vector keywords such as `medieval`, `nature`, `aether`, and `tech`.
 - `src/pages/Progression/data` contains the derived progression catalog, graph helpers, and page-local progression types used by `/progression` and the `/ids` audit coverage view.
 - `src/data/enemies` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
-- `src/data/identificators` is the single source of truth for content ids. Category folders collect ids by vector or biome and expose structured paths such as `buildings.aether.leylineWell` and `gunparts.barrels.medieval.crudeWood`.
+- `src/data/globalEvents` and `src/data/globalModifiers` define event content, event images, flags, and global modifiers.
+- `src/data/ids.ts` derives grouped content IDs from the active atlases for buildings, research, gun parts, enemies, walls, and superstructures.
 - `/ids` renders an audit table that compares registered ids against data definitions, progression rules, and available assets.
 
 Texture asset layout:
@@ -107,6 +112,7 @@ Texture asset layout:
 Future architecture direction:
 
 - Systems should be generic and content should be data.
+- The current shared rule spine is the homogeneous value system: content emits value effects and keyworded modifier rules; selectors resolve those into city support, tower stats, wall state, research/global modifiers, unlocks, and siege pressure.
 - Buildings, multistructures, regions, enemies, crises, technologies, tower components, targeting behaviors, and endings should move toward schema-driven definitions.
 - Save state should store current state, not full history, except where migration history matters.
 - Content scale is a major risk; new content should feel like adding data rather than writing custom engine code.
@@ -157,7 +163,7 @@ Implementation:
 
 - `src/theme/theme.css.ts` defines the theme contract and concrete theme classes.
 - `ThemeProvider.tsx` applies the selected theme class.
-- The app exposes manual theme switching.
+- The app currently applies the `tech` theme at startup. The previous manual theme switcher hook exists in the shell but is not exposed in the navigation.
 - `computeThemeFromGameState(...)` is a future integration point for automatic theme selection from research path or build composition.
 
 Use `vars.color.*` in component styles rather than hardcoded page palettes.
@@ -233,7 +239,7 @@ Current resources by vector:
 
 The shared upkeep bar includes a Nature/Biology balance indicator beside the threat meter. It renders Fungi, Plants, and Animals as a three-axis triangular balance shape, while Bio Complexity controls the center-to-edge emerald fill from empty at 0 to fully filled at 1000. Nature also derives Bio Disbalance as the difference between the highest and lowest Fungi, Plants, and Animals values.
 
-Homogeneous value definitions include keywords such as `resource`, `output`, `support`, `atmosphere`, `aether`, and `display_orb`. They also carry first-class `displayMethod`, `resolutionMethod`, and `roundingMethod` metadata. The default rounding method is `twoDigitsAfterZero`; People and Gold round down. Modifiers can target entity keywords, entity types, value keywords, and contribution role keywords, so a production bonus can affect ordinary support, magical outputs, wall stats, siege modifiers, monster modifiers, or later value groups through the same resolver. Display formatting metadata must not be placed in keywords or used for gameplay checks.
+Homogeneous value definitions include keywords such as `resource`, `output`, `support`, `atmosphere`, `aether`, and `display_orb`. They also carry first-class `displayMethod`, `resolutionMethod`, and `roundingMethod` metadata. The default rounding method is `twoDigitsAfterZero`; People and Gold currently round up. Modifiers can target entity keywords, entity types, value keywords, and contribution role keywords, so a production bonus can affect ordinary support, magical outputs, wall stats, siege modifiers, monster modifiers, or later value groups through the same resolver. Display formatting metadata must not be placed in keywords or used for gameplay checks.
 
 Important rules:
 
@@ -450,7 +456,7 @@ Current implementation:
 - Aether progression requirements use atmospheric states instead of raw numbers: Veil, Mana Flows, and Death. Each level is derived from the unified resource output total divided by city hex count, rounded down and clamped to levels 1 through 5. Biology progression requirements expose Biodiversity as a decimal value with two digits.
 - The resource bar hides ordinary resources with zero production. It still shows a resource at net zero when production and consumption cancel out.
 - The resource bar represents current Aether atmosphere as a smooth gradient orb instead of numeric rows: Mana Flows tint the left side red, Veil tints the right side blue, and Death darkens the bottom. Hovering the orb reveals the named level for each direction.
-- The early progression spine follows `docs/progression_drafts.md`: Shelter unlocks Foraging; Foraging unlocks scrap gathering and the crude barrel; Stalker House opens seed gathering and scrap tools; those split into herbalist/botany, forester/workable timber, farm/money/market, mysticism, and magic-stone tower parts.
+- The early progression spine is represented by the current medieval/nature/aether research and content JSON catalogs, with draft naming context in `docs/progression_medieval.md`, `docs/progression_bio.md`, and `docs/progression_magic.md`.
 - The first tower can be assembled without a barrel: the initial required parts are the crude wood frame, stone basket, and crude sling launcher. The crude barrel is an early Foraging unlock.
 
 Future categories include infrastructure, military, science, society, and special projects. The research tree may eventually be very large, so filtering and discoverability are important risks.
@@ -615,7 +621,7 @@ Current content layout:
 - `src/data/gunParts/` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research/` uses `createTechnologyFactory(...)` for keyworded technology definitions and exposes a vector-keyed research atlas plus flattened helpers for the research tree.
 - `src/pages/Progression/data/` contains progression graph helpers derived from building, research, wall, and tower part requirement data.
-- `src/data/identificators/` owns content ids for buildings, technologies, tower parts, enemies, wall segments, and wall superstructures. Add ids there first, then consume those constants from data, progression, state defaults, and asset registries.
+- `src/data/ids.ts` derives grouped content ids from the active atlases for buildings, technologies, tower parts, enemies, wall segments, and wall superstructures. Add runtime ids to the relevant JSON/catalog first, then confirm derived ID and asset coverage in `/ids`.
 - `/ids` is the content audit screen for checking missing definitions, progression rules, and assets by id.
 
 Future content definitions should be data-driven and tag-heavy.

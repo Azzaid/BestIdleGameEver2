@@ -74,6 +74,14 @@ Reasons:
 
 Every tile matters.
 
+Current implementation note, 2026-06-24:
+
+- The City route renders an SVG hex city with clickable city and wall tiles.
+- City hexes can hold building content; wall hexes separately track wall segment and wall superstructure layers.
+- Building content is data-driven through `src/data/buildings/<vector>.json` and normalized by `createBuildingFactory`.
+- Multistructure candidates are detected from connected clusters using `STRUCTURES` derived from superstructure definitions.
+- City resolution converts placed content into homogeneous entities, resolves adjacency/global/local modifiers, then derives support, upkeep, signature, city footprint, territory signature, building IDs, and building keywords.
+
 ---
 
 # Land

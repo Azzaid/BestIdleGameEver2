@@ -1,5 +1,11 @@
 # Best Idle Game Ever 2 — Game Design Document
 
+Current implementation note, 2026-06-24:
+
+- This is an older broad design document and remains useful for tone, fantasy, and original system intent.
+- For the current implementation summary, use `docs/project_spec.md`.
+- For portable technical architecture and data/value rules, use `docs/architecture-principles.md`.
+
 ## High Concept
 
 Best Idle Game Ever 2 — это гибрид city-builder, tower defense и системы конструирования оружия.

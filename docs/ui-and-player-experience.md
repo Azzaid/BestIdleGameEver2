@@ -15,6 +15,14 @@ It is a design document focused on:
 
 The goal is to ensure the game feels like a single coherent system rather than several disconnected screens.
 
+Current implementation note, 2026-06-24:
+
+- The app shell uses hash-routed pages for Battle, Tower, Research, City, and Statistics.
+- The shared upkeep/signature bar appears outside Battle and includes city expansion controls on the City route.
+- Build and Research navigation become blocked during siege when the city has an effective tower build and debug mode is off.
+- Debug mode exposes Progression, IDs, Entity Create, Gun Part Editor, and Global Events tools.
+- Notifications and the global event modal are mounted at the app shell level.
+
 ---
 
 # Core Philosophy

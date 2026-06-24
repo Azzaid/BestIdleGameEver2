@@ -20,6 +20,14 @@ Threat is the pressure that keeps the game moving.
 
 Without Threat the player would simply build forever.
 
+Current implementation note, 2026-06-24:
+
+- The implemented threat-like pressure is currently named City Signature in code and UI.
+- Effective signature is derived from building signature, territory signature, and city footprint.
+- Controlled territory is stored in upkeep state. When effective signature exceeds controlled territory, the city becomes besieged outside debug mode.
+- Wall values can suppress or reshape battle pressure through resilience, threat suppression, pushback, and zone damage effects.
+- The richer regional threat, threat debt, crisis, and migration interactions in this document remain design direction.
+
 ---
 
 # Core Philosophy

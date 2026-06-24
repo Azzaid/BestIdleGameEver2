@@ -1,5 +1,11 @@
 # Bio Progression Branch
 
+Current implementation note, 2026-06-24:
+
+- Runtime data uses the vector key `nature` for the bio branch.
+- Implemented nature data currently lives in `src/data/research/nature.json`, `src/data/buildings/nature.json`, `src/data/wallSegments/nature.json`, and `src/data/wallSuperstructures/nature.json`; nature tower parts are scaffolded but currently empty.
+- This file remains a design draft and naming reference; the JSON catalogs are the runtime source of truth.
+
 Черновик биологической ветки прогрессии.
 
 Файл пока содержит только уже придуманные элементы, которые появились как ранние переходы из средневековой ветки.

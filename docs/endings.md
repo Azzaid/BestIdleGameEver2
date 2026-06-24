@@ -18,6 +18,12 @@ Not because a boss died.
 
 Not because a score threshold was reached.
 
+Current implementation note, 2026-06-24:
+
+- Endings, final megaprojects, and ending-specific battles are not implemented yet.
+- The likely implementation path is data-first: ending projects should use requirements, global flags, homogeneous values, city/wall/tower capability checks, and battle validation rather than bespoke per-ending logic.
+- Existing docs remain design direction for future content.
+
 ---
 
 # Core Philosophy
