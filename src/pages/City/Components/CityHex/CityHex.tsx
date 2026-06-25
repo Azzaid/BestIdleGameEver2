@@ -25,6 +25,11 @@ const SPRITE_PADDING = 0.98; // tweak to taste (0.9–0.98)
 const spriteSide = hexWidth * SPRITE_PADDING; // << correct scale now
 const SPRITE_WIDTH = spriteSide;
 const SPRITE_HEIGHT = spriteSide;
+const INITIAL_ZOOM_FACTOR = 1.35;
+const MAX_ZOOM_FACTOR = 5;
+const WHEEL_ZOOM_IN_FACTOR = 1.12;
+const WHEEL_ZOOM_OUT_FACTOR = 0.88;
+const DRAG_CLICK_TOLERANCE_PX = 4;
 
 const HEX_SIDE_DEFINITIONS = [
     {columnDelta: 1, rowDelta: 0, startVertexIndex: 0, endVertexIndex: 1},
@@ -38,8 +43,19 @@ const HEX_SIDE_DEFINITIONS = [
 type PreparedHexCell = HexCell & {
     centerX: number;
     centerY: number;
-    spriteX: number;
-    spriteY: number;
+};
+
+type CameraState = {
+    zoom: number;
+    offsetX: number;
+    offsetY: number;
+};
+
+type SvgViewport = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
 };
 
 export default function CityHex({
@@ -59,8 +75,6 @@ export default function CityHex({
                 ...cell,
                 centerX: x,
                 centerY: y,
-                spriteX: x - spriteSide / 2,
-                spriteY: y - spriteSide / 2,
             };
         });
     }, [cells]);
@@ -79,14 +93,19 @@ export default function CityHex({
     );
 
     // Camera state
-    const [zoomFactor, setZoomFactor] = useState(2);
+    const [zoomFactor, setZoomFactor] = useState(INITIAL_ZOOM_FACTOR);
     const [cameraOffsetX, setCameraOffsetX] = useState(0);
     const [cameraOffsetY, setCameraOffsetY] = useState(0);
     const svgRef = useRef<SVGSVGElement>(null);
     const isDraggingRef = useRef(false);
+    const didDragRef = useRef(false);
+    const suppressNextClickRef = useRef(false);
     const startMouseRef = useRef({ x: 0, y: 0 });
     const startCameraOffsetRef = useRef({ x: 0, y: 0 });
     const cameraOffsetRef = useRef({ x: cameraOffsetX, y: cameraOffsetY });
+    const zoomFactorRef = useRef(zoomFactor);
+    const touchPanStartRef = useRef<{x: number; y: number} | null>(null);
+    const touchPinchDistanceRef = useRef<number | null>(null);
 
     // Hover & selection
     const [hoveredCellKey, setHoveredCellKey] = useState<string | null>(null);
@@ -115,8 +134,66 @@ export default function CityHex({
     const viewBoxY = -viewExtent;
     const viewBoxW = viewExtent * 2;
     const viewBoxH = viewExtent * 2;
+    const viewport = useMemo<SvgViewport>(() => ({
+        x: viewBoxX,
+        y: viewBoxY,
+        width: viewBoxW,
+        height: viewBoxH,
+    }), [viewBoxH, viewBoxW, viewBoxX, viewBoxY]);
+
+    const applyCamera = useCallback((camera: CameraState) => {
+        zoomFactorRef.current = camera.zoom;
+        cameraOffsetRef.current = {
+            x: camera.offsetX,
+            y: camera.offsetY,
+        };
+        setZoomFactor(camera.zoom);
+        setCameraOffsetX(camera.offsetX);
+        setCameraOffsetY(camera.offsetY);
+    }, []);
+
+    const clampZoomForCity = useCallback((zoom: number) => {
+        const minZoomThatFits = maxZoomThatFits(cityBounds, viewport.width, viewport.height);
+
+        return Math.max(minZoomThatFits, Math.min(MAX_ZOOM_FACTOR, zoom));
+    }, [cityBounds, viewport.height, viewport.width]);
+
+    const clampCamera = useCallback((offsetX: number, offsetY: number, zoom: number): CameraState => {
+        const clamped = clampPan(
+            offsetX,
+            offsetY,
+            zoom,
+            cityBounds,
+            viewport.x,
+            viewport.y,
+            viewport.width,
+            viewport.height,
+        );
+
+        return {
+            zoom,
+            offsetX: clamped.tx,
+            offsetY: clamped.ty,
+        };
+    }, [cityBounds, viewport]);
+
+    const zoomAtSvgPoint = useCallback((svgPoint: {x: number; y: number}, targetZoom: number) => {
+        const zoom = clampZoomForCity(targetZoom);
+        const currentZoom = zoomFactorRef.current;
+        const currentOffset = cameraOffsetRef.current;
+        const worldX = (svgPoint.x - currentOffset.x) / currentZoom;
+        const worldY = (svgPoint.y - currentOffset.y) / currentZoom;
+        const nextOffsetX = svgPoint.x - worldX * zoom;
+        const nextOffsetY = svgPoint.y - worldY * zoom;
+
+        applyCamera(clampCamera(nextOffsetX, nextOffsetY, zoom));
+    }, [applyCamera, clampCamera, clampZoomForCity]);
 
     const handleClick = (event: React.MouseEvent<SVGSVGElement>) => {
+        if (suppressNextClickRef.current) {
+            suppressNextClickRef.current = false;
+            return;
+        }
         if (!svgRef.current) return;
         const svgPoint = svgRef.current.createSVGPoint();
         svgPoint.x = event.clientX;
@@ -129,8 +206,8 @@ export default function CityHex({
             transformationMatrix.inverse()
         );
 
-        const worldX = (x - cameraOffsetX) / zoomFactor;
-        const worldY = (y - cameraOffsetY) / zoomFactor;
+        const worldX = (x - cameraOffsetRef.current.x) / zoomFactorRef.current;
+        const worldY = (y - cameraOffsetRef.current.y) / zoomFactorRef.current;
 
         const { column, row } = pixelPositionToAxialCoordinate(worldX, worldY, HEX_RADIUS_PX);
         const cellKey = coordKey({column, row});
@@ -158,8 +235,8 @@ export default function CityHex({
             transformationMatrix.inverse()
         );
 
-        const worldX = (x - cameraOffsetX) / zoomFactor;
-        const worldY = (y - cameraOffsetY) / zoomFactor;
+        const worldX = (x - cameraOffsetRef.current.x) / zoomFactorRef.current;
+        const worldY = (y - cameraOffsetRef.current.y) / zoomFactorRef.current;
 
         const { column, row } = pixelPositionToAxialCoordinate(worldX, worldY, HEX_RADIUS_PX);
         setHoveredCellKey(`${column},${row}`);
@@ -169,56 +246,18 @@ export default function CityHex({
         event.preventDefault();
         if (!svgRef.current) return;
 
-        // 1) figure out mouse in SVG coordinates
-        const svg = svgRef.current;
-        const pt = svg.createSVGPoint();
-        pt.x = event.clientX; pt.y = event.clientY;
-        const ctm = svg.getScreenCTM();
-        if (!ctm) return;
-        const svgPt = pt.matrixTransform(ctm.inverse());
+        const svgPoint = getSvgPointFromClient(svgRef.current, event.clientX, event.clientY);
+        if (!svgPoint) return;
 
-        // 2) world point under cursor before zoom (keep this fixed)
-        const worldX = (svgPt.x - cameraOffsetRef.current.x) / zoomFactor;
-        const worldY = (svgPt.y - cameraOffsetRef.current.y) / zoomFactor;
-
-        // 3) compute new zoom with limits
-        const zoomStep = event.deltaY < 0 ? 1.1 : 0.9;
-
-        // City must always fit in viewport when zoomed out:
-        const minZoomThatFits = maxZoomThatFits(cityBounds, viewBoxW, viewBoxH);
-
-        // Hard cap for zooming in:
-        const hardMaxZoom = 2;
-        // Apply wheel step and clamp:
-        let proposedZoom = zoomFactor * zoomStep;
-
-        // Clamp so: minZoom ≤ zoom ≤ hardMax
-        proposedZoom = Math.max(minZoomThatFits, Math.min(hardMaxZoom, proposedZoom));
-
-        // optional snap near integers
-        const near = Math.round(proposedZoom);
-        if (Math.abs(proposedZoom - near) < 0.06) proposedZoom = near;
-
-        // 4) adjust pan so the world point under cursor stays under cursor
-        const nextTx = svgPt.x - worldX * proposedZoom;
-        const nextTy = svgPt.y - worldY * proposedZoom;
-
-        // 5) clamp pan so city stays inside
-        const clamped = clampPan(
-            nextTx, nextTy, proposedZoom,
-            cityBounds,
-            viewBoxX, viewBoxY, viewBoxW, viewBoxH
-        );
-
-        setZoomFactor(proposedZoom);
-        setCameraOffsetX(clamped.tx);
-        setCameraOffsetY(clamped.ty);
-    }, [cityBounds, viewBoxH, viewBoxW, viewBoxX, viewBoxY, zoomFactor]);
+        const zoomStep = event.deltaY < 0 ? WHEEL_ZOOM_IN_FACTOR : WHEEL_ZOOM_OUT_FACTOR;
+        zoomAtSvgPoint(svgPoint, zoomFactorRef.current * zoomStep);
+    }, [zoomAtSvgPoint]);
 
     // Drag to pan
     useEffect(() => {
         cameraOffsetRef.current = { x: cameraOffsetX, y: cameraOffsetY };
-    }, [cameraOffsetX, cameraOffsetY]);
+        zoomFactorRef.current = zoomFactor;
+    }, [cameraOffsetX, cameraOffsetY, zoomFactor]);
 
     useEffect(() => {
         const svgElement = svgRef.current;
@@ -227,6 +266,7 @@ export default function CityHex({
         const onMouseDown = (e: MouseEvent) => {
             if (e.button !== 0) return; // left button only
             isDraggingRef.current = true;
+            didDragRef.current = false;
             startMouseRef.current = { x: e.clientX, y: e.clientY };
             startCameraOffsetRef.current = { ...cameraOffsetRef.current };
             // optional: prevent text selection while dragging
@@ -238,29 +278,92 @@ export default function CityHex({
             if (!isDraggingRef.current) return;
             const dx = e.clientX - startMouseRef.current.x;
             const dy = e.clientY - startMouseRef.current.y;
+            if (Math.hypot(dx, dy) > DRAG_CLICK_TOLERANCE_PX) {
+                didDragRef.current = true;
+            }
 
             const nextTx = startCameraOffsetRef.current.x + dx;
             const nextTy = startCameraOffsetRef.current.y + dy;
 
-            const clamped = clampPan(
-                nextTx, nextTy, zoomFactor,
-                cityBounds,
-                viewBoxX, viewBoxY, viewBoxW, viewBoxH
-            );
-
-            setCameraOffsetX(clamped.tx);
-            setCameraOffsetY(clamped.ty);
+            applyCamera(clampCamera(nextTx, nextTy, zoomFactorRef.current));
         };
 
         const onMouseUp = () => {
             if (!isDraggingRef.current) return;
             isDraggingRef.current = false;
+            if (didDragRef.current) {
+                suppressNextClickRef.current = true;
+            }
             document.body.style.userSelect = "";
             if (svgElement) svgElement.style.cursor = "grab";
         };
 
+        const onTouchStart = (e: TouchEvent) => {
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                if (!touch) return;
+                touchPanStartRef.current = {x: touch.clientX, y: touch.clientY};
+                startCameraOffsetRef.current = {...cameraOffsetRef.current};
+                didDragRef.current = false;
+                touchPinchDistanceRef.current = null;
+                return;
+            }
+
+            if (e.touches.length >= 2) {
+                e.preventDefault();
+                touchPanStartRef.current = null;
+                touchPinchDistanceRef.current = getTouchDistance(e.touches);
+                suppressNextClickRef.current = true;
+            }
+        };
+
+        const onTouchMove = (e: TouchEvent) => {
+            if (e.touches.length >= 2) {
+                e.preventDefault();
+                const midpoint = getTouchMidpoint(e.touches);
+                const svgPoint = getSvgPointFromClient(svgElement, midpoint.x, midpoint.y);
+                const previousDistance = touchPinchDistanceRef.current;
+                const nextDistance = getTouchDistance(e.touches);
+                if (!svgPoint || !previousDistance || nextDistance <= 0) return;
+
+                touchPinchDistanceRef.current = nextDistance;
+                zoomAtSvgPoint(svgPoint, zoomFactorRef.current * (nextDistance / previousDistance));
+                return;
+            }
+
+            if (e.touches.length === 1 && touchPanStartRef.current) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                if (!touch) return;
+                const dx = touch.clientX - touchPanStartRef.current.x;
+                const dy = touch.clientY - touchPanStartRef.current.y;
+                if (Math.hypot(dx, dy) > DRAG_CLICK_TOLERANCE_PX) {
+                    didDragRef.current = true;
+                    suppressNextClickRef.current = true;
+                }
+
+                applyCamera(clampCamera(
+                    startCameraOffsetRef.current.x + dx,
+                    startCameraOffsetRef.current.y + dy,
+                    zoomFactorRef.current,
+                ));
+            }
+        };
+
+        const onTouchEnd = () => {
+            touchPanStartRef.current = null;
+            touchPinchDistanceRef.current = null;
+            if (didDragRef.current) {
+                suppressNextClickRef.current = true;
+            }
+        };
+
         svgElement.addEventListener("mousedown", onMouseDown);
         svgElement.addEventListener("wheel", handleWheelZoom, { passive: false });
+        svgElement.addEventListener("touchstart", onTouchStart, { passive: false });
+        svgElement.addEventListener("touchmove", onTouchMove, { passive: false });
+        svgElement.addEventListener("touchend", onTouchEnd);
+        svgElement.addEventListener("touchcancel", onTouchEnd);
         window.addEventListener("mousemove", onMouseMove);
         window.addEventListener("mouseup", onMouseUp);
 
@@ -270,11 +373,23 @@ export default function CityHex({
         return () => {
             svgElement.removeEventListener("mousedown", onMouseDown);
             svgElement.removeEventListener("wheel", handleWheelZoom)
+            svgElement.removeEventListener("touchstart", onTouchStart);
+            svgElement.removeEventListener("touchmove", onTouchMove);
+            svgElement.removeEventListener("touchend", onTouchEnd);
+            svgElement.removeEventListener("touchcancel", onTouchEnd);
             window.removeEventListener("mousemove", onMouseMove);
             window.removeEventListener("mouseup", onMouseUp);
             document.body.style.userSelect = "";
         };
-    }, [cityBounds, handleWheelZoom, viewBoxH, viewBoxW, viewBoxX, viewBoxY, zoomFactor]);
+    }, [applyCamera, clampCamera, handleWheelZoom, zoomAtSvgPoint]);
+
+    useEffect(() => {
+        applyCamera(clampCamera(
+            cameraOffsetRef.current.x,
+            cameraOffsetRef.current.y,
+            clampZoomForCity(zoomFactorRef.current),
+        ));
+    }, [applyCamera, cells.length, clampCamera, clampZoomForCity]);
 
 
     return (
@@ -289,6 +404,8 @@ export default function CityHex({
                 background: "#0f0f13",
                 imageRendering: "pixelated",
                 shapeRendering: "crispEdges",
+                touchAction: "none",
+                userSelect: "none",
             }}
         >
             <defs>
@@ -632,6 +749,35 @@ function getViewExtent(bounds: {minX: number; minY: number; maxX: number; maxY: 
         Math.abs(bounds.maxY),
         HEX_RADIUS_PX * 4,
     ) + HEX_RADIUS_PX * 2;
+}
+
+function getSvgPointFromClient(svg: SVGSVGElement, clientX: number, clientY: number) {
+    const point = svg.createSVGPoint();
+    point.x = clientX;
+    point.y = clientY;
+    const transformationMatrix = svg.getScreenCTM();
+    if (!transformationMatrix) return null;
+
+    return point.matrixTransform(transformationMatrix.inverse());
+}
+
+function getTouchDistance(touches: TouchList): number {
+    const first = touches[0];
+    const second = touches[1];
+    if (!first || !second) return 0;
+
+    return Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY);
+}
+
+function getTouchMidpoint(touches: TouchList) {
+    const first = touches[0];
+    const second = touches[1];
+    if (!first || !second) return {x: 0, y: 0};
+
+    return {
+        x: (first.clientX + second.clientX) / 2,
+        y: (first.clientY + second.clientY) / 2,
+    };
 }
 
 function getHexBackgroundFallbackFill(
