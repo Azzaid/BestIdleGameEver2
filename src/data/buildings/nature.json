@@ -5,6 +5,8 @@
     "kind": "building",
     "description": "A small garden with wild inedible and strange plants.",
     "keywords": [
+      "nature",
+      "building",
       "plants"
     ],
     "requirements": [
@@ -21,7 +23,8 @@
         ],
         "additive": 2
       }
-    ]
+    ],
+    "visualAssetId": "building_nature_wild-garden"
   },
   {
     "id": "buildings.nature.herbalistHut",
@@ -29,6 +32,8 @@
     "kind": "superstructure",
     "description": "A stalker hut and wild garden combined into a place study gathered plants.",
     "keywords": [
+      "nature",
+      "building",
       "production",
       "plants"
     ],
@@ -61,7 +66,13 @@
         ],
         "additive": 5
       }
-    ]
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.wildGarden": "building_nature_herbalist-hut-from-wild-garden",
+      "buildings.medieval.shelter": "building_nature_herbalist-hut-from-shelter",
+      "buildings.medieval.scrapCollectionPoint": "building_nature_herbalist-hut-from-scrap-collection-point"
+    },
+    "visualAssetId": "building_nature_herbalist-hut"
   },
   {
     "id": "buildings.nature.field",

@@ -132,6 +132,7 @@
     "kind": "building",
     "description": "A cramped rack of repaired scrap tools sturdy enough for repeat work.",
     "keywords": [
+      "building",
       "production",
       "gold",
       "tools"
@@ -143,6 +144,13 @@
       }
     ],
     "values": [
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
       {
         "valueId": "resource.people",
         "additionalKeywords": [
@@ -156,15 +164,9 @@
           "upkeep"
         ],
         "additive": 1
-      },
-      {
-        "valueId": "city.signature",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 3
       }
-    ]
+    ],
+    "visualAssetId": "building_medieval_tool-shed"
   },
   {
     "id": "buildings.medieval.lumberjackHouse",
@@ -172,6 +174,7 @@
     "kind": "superstructure",
     "description": "A stalker hut and tool shed combined for reliable timber work.",
     "keywords": [
+      "building",
       "production",
       "people",
       "gold",
@@ -215,7 +218,12 @@
         ],
         "additive": 10
       }
-    ]
+    ],
+    "requiredBuildingSprites": {
+      "buildings.medieval.toolShed": "building_medieval_lumberjack-house-from-tool-shed",
+      "buildings.medieval.shelter": "building_medieval_lumberjack-house-from-shelter",
+      "buildings.medieval.scrapCollectionPoint": "building_medieval_lumberjack-house-from-scrap-collection-point"
+    }
   },
   {
     "id": "buildings.medieval.farm",
@@ -274,6 +282,7 @@
     "kind": "building",
     "description": "Real walls, a dry roof, and enough stability to grow the population.",
     "keywords": [
+      "building",
       "production",
       "people",
       "wood",
@@ -300,7 +309,8 @@
         ],
         "additive": 10
       }
-    ]
+    ],
+    "visualAssetId": "building_medieval_wooden-house"
   },
   {
     "id": "buildings.medieval.craftsmansHouse",

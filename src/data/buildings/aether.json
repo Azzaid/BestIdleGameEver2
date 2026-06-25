@@ -5,6 +5,8 @@
     "kind": "building",
     "description": "A raised stone place where early mysticism becomes a city practice.",
     "keywords": [
+      "aether",
+      "building",
       "ritual"
     ],
     "requirements": [
@@ -27,6 +29,13 @@
         "additive": 8
       },
       {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 20
+      },
+      {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
@@ -39,15 +48,9 @@
           "upkeep"
         ],
         "additive": 2
-      },
-      {
-        "valueId": "city.signature",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 20
       }
-    ]
+    ],
+    "visualAssetId": "building_aether_dolmen"
   },
   {
     "id": "buildings.aether.shamanHut",
@@ -55,6 +58,8 @@
     "kind": "superstructure",
     "description": "A dolmen and stalker hut combined into an early magical specialist dwelling.",
     "keywords": [
+      "aether",
+      "building",
       "production",
       "manaFlows",
       "ritual"
@@ -100,7 +105,13 @@
         ],
         "additive": 26
       }
-    ]
+    ],
+    "visualAssetId": "building_aether_shaman-hut",
+    "requiredBuildingSprites": {
+      "buildings.aether.dolmen": "building_aether_shaman-hut-from-dolmen",
+      "buildings.medieval.shelter": "building_aether_shaman-hut-from-shelter",
+      "buildings.medieval.scrapCollectionPoint": "building_aether_shaman-hut-from-scrap-collection-point"
+    }
   },
   {
     "id": "buildings.aether.wardedHome",
