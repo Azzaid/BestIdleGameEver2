@@ -17,7 +17,7 @@ import {WALL_TOWER_BUILDINGS} from "../../../../data/wallSuperstructures/index.t
 import {CITY_HEX_SIZE} from "../../../../data/constants.ts";
 
 const HEX_RADIUS_PX = CITY_HEX_SIZE / Math.sqrt(3);
-const HEX_STROKE_WIDTH = 2;
+const HEX_STROKE_WIDTH = 3;
 const hexWidth = Math.sqrt(3) * HEX_RADIUS_PX; // flat-to-flat
 const SPRITE_PADDING = 0.98; // tweak to taste (0.9–0.98)
 const spriteSide = hexWidth * SPRITE_PADDING; // << correct scale now
@@ -37,6 +37,14 @@ const backgroundWorldHeight = imagePixelHeight * backgroundScale;
 const backgroundX = -backgroundWorldWidth  / 2;
 const backgroundY = -backgroundWorldHeight / 2;
 
+const HEX_SIDE_DEFINITIONS = [
+    {columnDelta: 1, rowDelta: 0, startVertexIndex: 0, endVertexIndex: 1},
+    {columnDelta: 0, rowDelta: 1, startVertexIndex: 1, endVertexIndex: 2},
+    {columnDelta: -1, rowDelta: 1, startVertexIndex: 2, endVertexIndex: 3},
+    {columnDelta: -1, rowDelta: 0, startVertexIndex: 3, endVertexIndex: 4},
+    {columnDelta: 0, rowDelta: -1, startVertexIndex: 4, endVertexIndex: 5},
+    {columnDelta: 1, rowDelta: -1, startVertexIndex: 5, endVertexIndex: 0},
+] as const;
 
 export default function CityHex({
                                              cells,
@@ -62,6 +70,10 @@ export default function CityHex({
     const hexagonPolygonPoints = useMemo(() => {
         return getHexagonPolygonPoints(HEX_RADIUS_PX);
     }, []);
+
+    const hexagonVertexPoints = useMemo(() => getHexagonVertexPoints(HEX_RADIUS_PX), []);
+
+    const cellsByKey = useMemo(() => new Map(cells.map(cell => [cell.cellKey, cell])), [cells]);
 
     const cityBounds = useMemo(
         () => computeCityBounds(preparedCells, HEX_RADIUS_PX),
@@ -351,6 +363,12 @@ export default function CityHex({
                         ? [wallKey, wallTopKey].filter(Boolean).join("+")
                         : buildingKey;
                     const fallbackFill = getFallbackFill(fallbackName ?? cellKey, kind);
+                    const strokeColor = isSelected
+                        ? "#57d77a"
+                        : isHovered
+                            ? "#6f6f7a"
+                            : "#16161b";
+                    const visibleHexSides = HEX_SIDE_DEFINITIONS.filter(side => !isSharedStructureSide(cell, side, cellsByKey));
 
                     return (
                         <g
@@ -364,14 +382,7 @@ export default function CityHex({
                             <use
                                 href="#hexagonPath"
                                 fill={hasTexture ? "transparent" : kind === "wall" ? "#2c2f38" : "#8016161b"}
-                                stroke={
-                                isSelected
-                                    ? "#2e2a17"
-                                    : isHovered
-                                        ? "#6f6f7a" : "#16161b"
-                                }
-                                strokeWidth={HEX_STROKE_WIDTH}
-                                vectorEffect="non-scaling-stroke"
+                                stroke="none"
                             />
 
                             {spriteUrl && (
@@ -443,12 +454,61 @@ export default function CityHex({
                                     </text>
                                 </>
                             )}
+                            {visibleHexSides.map(side => {
+                                const start = hexagonVertexPoints[side.startVertexIndex];
+                                const end = hexagonVertexPoints[side.endVertexIndex];
+                                if (!start || !end) return null;
+
+                                return (
+                                    <line
+                                        key={`${cellKey}-${side.startVertexIndex}-${side.endVertexIndex}`}
+                                        x1={start.x}
+                                        y1={start.y}
+                                        x2={end.x}
+                                        y2={end.y}
+                                        stroke={strokeColor}
+                                        strokeWidth={HEX_STROKE_WIDTH}
+                                        vectorEffect="non-scaling-stroke"
+                                        pointerEvents="none"
+                                    />
+                                );
+                            })}
                         </g>
                     );
                 })}
             </g>
         </svg>
     );
+}
+
+function getHexagonVertexPoints(hexRadiusPx: number) {
+    return Array.from({length: 6}, (_, vertexIndex) => {
+        const angleRadians = (Math.PI / 180) * (60 * vertexIndex - 30);
+
+        return {
+            x: hexRadiusPx * Math.cos(angleRadians),
+            y: hexRadiusPx * Math.sin(angleRadians),
+        };
+    });
+}
+
+function isSharedStructureSide(
+    cell: HexCell,
+    side: typeof HEX_SIDE_DEFINITIONS[number],
+    cellsByKey: ReadonlyMap<string, HexCell>,
+): boolean {
+    if (cell.kind !== "city" || !cell.partOfStructureId) return false;
+
+    const neighbor = cellsByKey.get(coordKey({
+        column: cell.column + side.columnDelta,
+        row: cell.row + side.rowDelta,
+    }));
+    if (!neighbor || neighbor.kind !== "city") return false;
+    if (neighbor.partOfStructureId !== cell.partOfStructureId) return false;
+
+    const cellCoreKey = cell.structureCoreCellKey ?? cell.cellKey;
+    const neighborCoreKey = neighbor.structureCoreCellKey ?? neighbor.cellKey;
+    return cellCoreKey === neighborCoreKey;
 }
 
 function getFallbackFill(seed: string, kind: HexCell["kind"]) {

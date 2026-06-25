@@ -34,6 +34,7 @@
     "kind": "building",
     "description": "A sorting yard for salvaged tools, hollow trunks, fittings, and other early supplies.",
     "keywords": [
+      "building",
       "production",
       "gold",
       "scavenger"
@@ -53,20 +54,21 @@
         "additive": 1
       },
       {
-        "valueId": "resource.people",
-        "additionalKeywords": [
-          "upkeep"
-        ],
-        "additive": 2
-      },
-      {
         "valueId": "city.signature",
         "additionalKeywords": [
           "production"
         ],
         "additive": 2
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
       }
-    ]
+    ],
+    "visualAssetId": "building_medieval_scrap-collection-point"
   },
   {
     "id": "buildings.medieval.stalkerHut",
@@ -120,7 +122,8 @@
     ],
     "visualAssetId": "building_medieval_stalker-hut",
     "requiredBuildingSprites": {
-      "buildings.medieval.shelter": "building_medieval_stalker-hut"
+      "buildings.medieval.shelter": "building_medieval_stalker-hut",
+      "buildings.medieval.scrapCollectionPoint": "building_medieval_stalker-hut-from-scrap-collection-point"
     }
   },
   {
