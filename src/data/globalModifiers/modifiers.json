@@ -15,11 +15,25 @@
     "effects": [
       {
         "valueId": "resource.fungi",
-        "additionalKeywords": ["production"],
+        "additionalKeywords": [
+          "production"
+        ],
         "additive": {
           "stateKey": "fungiBonus"
         },
         "multiplier": 1
+      }
+    ]
+  },
+  {
+    "id": "tiny_settlement",
+    "title": "Tiny settlement",
+    "description": "Merely an outpost not even a village. Easy to blend with environment. Sieges will be much shorter.",
+    "applyRules": [],
+    "effects": [
+      {
+        "valueId": "siege.lengthMultiplier",
+        "multiplier": 0.2
       }
     ]
   }

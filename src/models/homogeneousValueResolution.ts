@@ -214,10 +214,15 @@ export function normalizeMultiplier(multiplier?: number | null): number {
 export function getContributionRoleKeyword(
     keywords: Iterable<string>,
     valueId = "unknown",
+    defaultRoleKeyword?: HomogeneousValueRoleKeyword,
 ): HomogeneousValueRoleKeyword {
     const roleKeywords = [...keywords].filter((keyword): keyword is HomogeneousValueRoleKeyword => (
         HOMOGENEOUS_VALUE_ROLE_KEYWORDS.includes(keyword as HomogeneousValueRoleKeyword)
     ));
+
+    if (roleKeywords.length === 0 && defaultRoleKeyword) {
+        return defaultRoleKeyword;
+    }
 
     if (roleKeywords.length !== 1) {
         throw new Error(`Homogeneous contribution for ${valueId} must have exactly one role keyword: production, upkeep, or unlock.`);
@@ -262,7 +267,7 @@ function buildResolvedEntityDrafts(
     sources: readonly HomogeneousValueEntitySource[],
 ): ResolvedEntityDraft[] {
     return sources
-        .filter((source) => source.entityType !== "technology")
+        .filter((source) => source.entityType !== "technology" && source.entityType !== "globalModifier")
         .map((source) => {
             const baseKeywords = normalizeEntityKeywords(source);
 
@@ -359,7 +364,10 @@ function resolveEntityKeywordIteration(
 }
 
 function resolveEntityValues(entity: ResolvedEntityDraft): HomogeneousResolvedEntity {
-    const contributionAccumulators = groupHomogeneousValueEffects(entity.baseValueEffects);
+    const contributionAccumulators = groupHomogeneousValueEffects(
+        entity.baseValueEffects,
+        getDefaultContributionRoleKeyword(entity),
+    );
     const activeModifiers = entity.matchedRules.map((matchedRule) => matchedRule.rule);
 
     for (const modifier of activeModifiers) {
@@ -393,7 +401,10 @@ function resolveEntityValues(entity: ResolvedEntityDraft): HomogeneousResolvedEn
 function resolveTechnologySourceValues(source: HomogeneousValueEntitySource): HomogeneousResolvedEntity {
     const baseKeywords = normalizeEntityKeywords(source);
     const baseValueEffects = [...getEntityValues(source)];
-    const contributionAccumulators = groupHomogeneousValueEffects(baseValueEffects);
+    const contributionAccumulators = groupHomogeneousValueEffects(
+        baseValueEffects,
+        getDefaultContributionRoleKeyword(source),
+    );
     const resolvedContributions = contributionAccumulators.map(toResolvedHomogeneousValueEffect);
     const resolvedValues = resolveHomogeneousValueContributions(resolvedContributions);
 
@@ -412,12 +423,16 @@ function resolveTechnologySourceValues(source: HomogeneousValueEntitySource): Ho
     };
 }
 
-function groupHomogeneousValueEffects(effects: readonly HomogeneousValueEffect[]): EffectAccumulator[] {
+function groupHomogeneousValueEffects(
+    effects: readonly HomogeneousValueEffect[],
+    defaultRoleKeyword?: HomogeneousValueRoleKeyword,
+): EffectAccumulator[] {
     const accumulators = new Map<string, EffectAccumulator>();
 
     for (const effect of effects) {
         const keywords = getEffectKeywords(effect);
-        const roleKeyword = getContributionRoleKeyword(keywords, effect.valueId);
+        const roleKeyword = getContributionRoleKeyword(keywords, effect.valueId, defaultRoleKeyword);
+        keywords.add(roleKeyword);
         const key = getAccumulatorKey(effect.valueId, roleKeyword);
         const existing = accumulators.get(key);
 
@@ -752,6 +767,14 @@ function getRuleSourceEntityType(entity: HomogeneousValueEntitySource): Homogene
     if (entity.entityType === "tower") return "tower";
 
     return "hex";
+}
+
+function getDefaultContributionRoleKeyword(
+    entity: Pick<HomogeneousValueEntitySource, "entityType">,
+): HomogeneousValueRoleKeyword | undefined {
+    if (entity.entityType === "globalModifier") return "production";
+
+    return undefined;
 }
 
 function getEntityPosition(entity: HomogeneousValueEntitySource): HexCoordinates | null {

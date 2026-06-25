@@ -1,8 +1,11 @@
 import {useEffect, useMemo, useState, type ChangeEvent, type DragEvent} from "react";
 import type {
+  EffectTemplate,
   GlobalEventAction,
   GlobalEventDefinition,
   GlobalEventTrigger,
+  GlobalModifierApplyRule,
+  GlobalModifierNumericTemplate,
   GlobalModifierDefinition,
 } from "../../models/globalEvents.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
@@ -17,6 +20,9 @@ type EditorTab = "events" | "modifiers";
 type TriggerType = GlobalEventTrigger["type"];
 type ActionType = GlobalEventAction["type"];
 type RequirementType = Requirement["type"];
+type ApplyRuleType = GlobalModifierApplyRule["type"];
+type GlobalModifierValueField = "available" | "produced" | "upkeep";
+type NumericTemplateMode = "none" | "number" | "state";
 
 type GlobalEventJsonDefinition = Omit<GlobalEventDefinition, "imageSrc"> & {
   imageId?: GlobalEventImageId;
@@ -61,8 +67,36 @@ type ModifierDraft = {
   id: string;
   title: string;
   description: string;
-  applyRulesJson: string;
-  effectsJson: string;
+  applyRules: ApplyRuleRow[];
+  effects: EffectRow[];
+};
+
+type ApplyRuleRow = {
+  rowId: number;
+  type: ApplyRuleType;
+  stateKey: string;
+  valueId: string;
+  valueField: GlobalModifierValueField;
+  multiplier: string;
+  additive: string;
+  amount: string;
+};
+
+type NumericTemplateDraft = {
+  mode: NumericTemplateMode;
+  value: string;
+  stateKey: string;
+  multiplier: string;
+  additive: string;
+};
+
+type EffectRow = {
+  rowId: number;
+  valueId: string;
+  additionalKeywords: string;
+  removedKeywords: string;
+  additive: NumericTemplateDraft;
+  multiplier: NumericTemplateDraft;
 };
 
 type SaveStatus = {
@@ -106,12 +140,23 @@ const actionTypes: ActionType[] = [
   "addFlag",
   "removeFlag",
 ];
+const applyRuleTypes: ApplyRuleType[] = [
+  "addHomogeneousValue",
+  "addStateValue",
+  "setStateValue",
+  "maxStateValue",
+];
+const modifierValueFields: GlobalModifierValueField[] = ["available", "produced", "upkeep"];
 const imageOptions: {value: "" | GlobalEventImageId; label: string}[] = [
   {value: "", label: "No image"},
   ...GLOBAL_EVENT_IMAGE_OPTIONS.map(image => ({value: image.id, label: image.label})),
 ];
 const buildingIdOptions = buildingIds.map(id => ({value: id, label: id}));
 const technologyIdOptions = technologyIds.map(id => ({value: id, label: id}));
+const homogeneousValueOptions = HOMOGENEOUS_VALUE_DEFINITION_LIST.map(definition => ({
+  value: definition.id,
+  label: `${definition.label} (${definition.id})`,
+}));
 
 let nextRowId = 1;
 
@@ -580,18 +625,144 @@ function ModifierEditor({
       </div>
 
       <div className={s.section}>
-        <h2 className={s.sectionTitle}>Apply Rules</h2>
-        <textarea className={s.jsonTextarea} value={draft.applyRulesJson} onChange={event => onChange({applyRulesJson: event.target.value})} />
+        <div className={s.sectionHeader}>
+          <h2 className={s.sectionTitle}>Apply Rules</h2>
+          <button className={s.button} type="button" onClick={() => onChange({applyRules: [...draft.applyRules, createApplyRuleRow()]})}>Add</button>
+        </div>
+        <ApplyRuleEditor rows={draft.applyRules} onChange={applyRules => onChange({applyRules})} />
       </div>
 
       <div className={s.section}>
-        <h2 className={s.sectionTitle}>Generated Effects</h2>
-        <textarea className={s.jsonTextarea} value={draft.effectsJson} onChange={event => onChange({effectsJson: event.target.value})} />
-        {!preview.ok && <span className={s.errorText}>{preview.error}</span>}
+        <div className={s.sectionHeader}>
+          <h2 className={s.sectionTitle}>Generated Effects</h2>
+          <button className={s.button} type="button" onClick={() => onChange({effects: [...draft.effects, createEffectRow()]})}>Add</button>
+        </div>
+        <EffectEditor rows={draft.effects} onChange={effects => onChange({effects})} />
       </div>
 
       <PreviewAndSave previewJson={previewJson} status={status} onSave={onSave} disabled={!preview.ok} />
     </>
+  );
+}
+
+function ApplyRuleEditor({
+  rows,
+  onChange,
+}: {
+  rows: ApplyRuleRow[];
+  onChange: (rows: ApplyRuleRow[]) => void;
+}) {
+  return (
+    <div className={s.rowList}>
+      {rows.length === 0 && <span className={s.hint}>No apply rules.</span>}
+      {rows.map(row => (
+        <div key={row.rowId} className={s.modifierRuleRow}>
+          <label className={s.field}>
+            <span className={s.label}>Type</span>
+            <select
+              className={s.input}
+              value={row.type}
+              onChange={event => updateRule(row.rowId, {type: event.target.value as ApplyRuleType})}
+            >
+              {applyRuleTypes.map(type => <option key={type} value={type}>{formatLabel(type)}</option>)}
+            </select>
+          </label>
+          <TextField label="State Key" value={row.stateKey} onChange={stateKey => updateRule(row.rowId, {stateKey})} />
+          {row.type === "addHomogeneousValue" ? (
+            <>
+              <ValueIdField id={`apply-rule-value-${row.rowId}`} label="Value ID" value={row.valueId} onChange={valueId => updateRule(row.rowId, {valueId})} />
+              <label className={s.field}>
+                <span className={s.label}>Value Field</span>
+                <select className={s.input} value={row.valueField} onChange={event => updateRule(row.rowId, {valueField: event.target.value as GlobalModifierValueField})}>
+                  {modifierValueFields.map(valueField => <option key={valueField} value={valueField}>{formatLabel(valueField)}</option>)}
+                </select>
+              </label>
+              <TextField label="Multiplier" value={row.multiplier} type="number" onChange={multiplier => updateRule(row.rowId, {multiplier})} />
+              <TextField label="Additive" value={row.additive} type="number" onChange={additive => updateRule(row.rowId, {additive})} />
+            </>
+          ) : (
+            <TextField label="Amount" value={row.amount} type="number" onChange={amount => updateRule(row.rowId, {amount})} />
+          )}
+          <button className={s.button} type="button" onClick={() => onChange(rows.filter(item => item.rowId !== row.rowId))}>Remove</button>
+        </div>
+      ))}
+    </div>
+  );
+
+  function updateRule(rowId: number, patch: Partial<ApplyRuleRow>) {
+    onChange(rows.map(row => row.rowId === rowId ? {...row, ...patch} : row));
+  }
+}
+
+function EffectEditor({
+  rows,
+  onChange,
+}: {
+  rows: EffectRow[];
+  onChange: (rows: EffectRow[]) => void;
+}) {
+  return (
+    <div className={s.rowList}>
+      {rows.length === 0 && <span className={s.hint}>No generated effects.</span>}
+      {rows.map(row => (
+        <div key={row.rowId} className={s.effectRow}>
+          <div className={s.effectMainRow}>
+            <ValueIdField id={`effect-value-${row.rowId}`} label="Value ID" value={row.valueId} onChange={valueId => updateEffect(row.rowId, {valueId})} />
+            <TextField label="Additional Keywords" value={row.additionalKeywords} onChange={additionalKeywords => updateEffect(row.rowId, {additionalKeywords})} />
+            <TextField label="Removed Keywords" value={row.removedKeywords} onChange={removedKeywords => updateEffect(row.rowId, {removedKeywords})} />
+            <button className={s.button} type="button" onClick={() => onChange(rows.filter(item => item.rowId !== row.rowId))}>Remove</button>
+          </div>
+          <div className={s.numericTemplateGrid}>
+            <NumericTemplateEditor
+              label="Additive"
+              draft={row.additive}
+              onChange={additive => updateEffect(row.rowId, {additive})}
+            />
+            <NumericTemplateEditor
+              label="Multiplier"
+              draft={row.multiplier}
+              onChange={multiplier => updateEffect(row.rowId, {multiplier})}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  function updateEffect(rowId: number, patch: Partial<EffectRow>) {
+    onChange(rows.map(row => row.rowId === rowId ? {...row, ...patch} : row));
+  }
+}
+
+function NumericTemplateEditor({
+  label,
+  draft,
+  onChange,
+}: {
+  label: string;
+  draft: NumericTemplateDraft;
+  onChange: (draft: NumericTemplateDraft) => void;
+}) {
+  return (
+    <div className={s.numericTemplate}>
+      <label className={s.field}>
+        <span className={s.label}>{label}</span>
+        <select className={s.input} value={draft.mode} onChange={event => onChange({...draft, mode: event.target.value as NumericTemplateMode})}>
+          <option value="none">None</option>
+          <option value="number">Number</option>
+          <option value="state">State Value</option>
+        </select>
+      </label>
+      {draft.mode === "number" ? (
+        <TextField label="Value" value={draft.value} type="number" onChange={value => onChange({...draft, value})} />
+      ) : draft.mode === "state" ? (
+        <>
+          <TextField label="State Key" value={draft.stateKey} onChange={stateKey => onChange({...draft, stateKey})} />
+          <TextField label="Multiplier" value={draft.multiplier} type="number" onChange={multiplier => onChange({...draft, multiplier})} />
+          <TextField label="Additive" value={draft.additive} type="number" onChange={additive => onChange({...draft, additive})} />
+        </>
+      ) : null}
+    </div>
   );
 }
 
@@ -660,6 +831,28 @@ function RequirementEditor({
   function updateRequirement(rowId: number, patch: Partial<RequirementRow>) {
     onChange(rows.map(row => row.rowId === rowId ? {...row, ...patch} : row));
   }
+}
+
+function ValueIdField({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <SearchableIdField
+      id={id}
+      label={label}
+      value={value}
+      options={homogeneousValueOptions}
+      onChange={onChange}
+    />
+  );
 }
 
 function ActionEditor({
@@ -826,8 +1019,8 @@ function createModifierDraft(definition: GlobalModifierDefinition): ModifierDraf
     id: definition.id,
     title: definition.title,
     description: definition.description ?? "",
-    applyRulesJson: JSON.stringify(definition.applyRules, null, 2),
-    effectsJson: JSON.stringify(definition.effects, null, 2),
+    applyRules: definition.applyRules.map(createApplyRuleRowFromRule),
+    effects: definition.effects.map(createEffectRowFromEffect),
   };
 }
 
@@ -855,41 +1048,15 @@ type ModifierPreview =
   | {ok: false; definition: GlobalModifierDefinition; error: string};
 
 function createModifierDefinition(draft: ModifierDraft): ModifierPreview {
-  const fallbackDefinition: GlobalModifierDefinition = {
+  const definition: GlobalModifierDefinition = {
     id: draft.id.trim() || "new_global_modifier",
     title: draft.title.trim() || "New Global Modifier",
     description: draft.description.trim() || undefined,
-    applyRules: [],
-    effects: [],
+    applyRules: draft.applyRules.map(createApplyRule),
+    effects: draft.effects.map(createEffect),
   };
 
-  try {
-    const applyRules = JSON.parse(draft.applyRulesJson) as GlobalModifierDefinition["applyRules"];
-    const effects = JSON.parse(draft.effectsJson) as GlobalModifierDefinition["effects"];
-
-    if (!Array.isArray(applyRules) || !Array.isArray(effects)) {
-      return {
-        ok: false,
-        definition: fallbackDefinition,
-        error: "Apply rules and effects must both be JSON arrays.",
-      };
-    }
-
-    return {
-      ok: true,
-      definition: {
-        ...fallbackDefinition,
-        applyRules,
-        effects,
-      },
-    };
-  } catch (error) {
-    return {
-      ok: false,
-      definition: fallbackDefinition,
-      error: "Modifier JSON must be valid.",
-    };
-  }
+  return {ok: true, definition};
 }
 
 async function uploadGlobalEventImage(draft: EventImageDraft): Promise<{action?: string; file?: string}> {
@@ -931,6 +1098,142 @@ function createNewModifier(id = "new_global_modifier"): GlobalModifierDefinition
     applyRules: [],
     effects: [],
   };
+}
+
+function createApplyRule(row: ApplyRuleRow): GlobalModifierApplyRule {
+  const stateKey = row.stateKey.trim() || "value";
+
+  if (row.type === "addHomogeneousValue") {
+    const rule: GlobalModifierApplyRule = {
+      type: row.type,
+      stateKey,
+      valueId: row.valueId.trim() || defaultValueId,
+      valueField: row.valueField,
+    };
+    const multiplier = parseOptionalNumber(row.multiplier);
+    const additive = parseOptionalNumber(row.additive);
+    if (multiplier !== undefined) rule.multiplier = multiplier;
+    if (additive !== undefined) rule.additive = additive;
+    return rule;
+  }
+
+  return {
+    type: row.type,
+    stateKey,
+    amount: Number.parseFloat(row.amount) || 0,
+  };
+}
+
+function createApplyRuleRowFromRule(rule: GlobalModifierApplyRule): ApplyRuleRow {
+  if (rule.type === "addHomogeneousValue") {
+    return createApplyRuleRow(
+      rule.type,
+      rule.stateKey,
+      rule.valueId,
+      rule.valueField ?? "available",
+      stringifyOptionalNumber(rule.multiplier),
+      stringifyOptionalNumber(rule.additive),
+    );
+  }
+
+  return createApplyRuleRow(rule.type, rule.stateKey, defaultValueId, "available", "", "", String(rule.amount));
+}
+
+function createApplyRuleRow(
+  type: ApplyRuleType = "addHomogeneousValue",
+  stateKey = "",
+  valueId = defaultValueId,
+  valueField: GlobalModifierValueField = "available",
+  multiplier = "",
+  additive = "",
+  amount = "0",
+): ApplyRuleRow {
+  return {
+    rowId: nextRowId++,
+    type,
+    stateKey,
+    valueId,
+    valueField,
+    multiplier,
+    additive,
+    amount,
+  };
+}
+
+function createEffect(row: EffectRow): EffectTemplate {
+  const effect: EffectTemplate = {
+    valueId: row.valueId.trim() || defaultValueId,
+  };
+  const additionalKeywords = parseKeywordList(row.additionalKeywords);
+  const removedKeywords = parseKeywordList(row.removedKeywords);
+  const additive = createNumericTemplate(row.additive);
+  const multiplier = createNumericTemplate(row.multiplier);
+
+  if (additionalKeywords.length) effect.additionalKeywords = additionalKeywords;
+  if (removedKeywords.length) effect.removedKeywords = removedKeywords;
+  if (additive !== undefined) effect.additive = additive;
+  if (multiplier !== undefined) effect.multiplier = multiplier;
+
+  return effect;
+}
+
+function createEffectRowFromEffect(effect: EffectTemplate): EffectRow {
+  return createEffectRow(
+    effect.valueId,
+    effect.additionalKeywords?.join(", ") ?? "",
+    effect.removedKeywords?.join(", ") ?? "",
+    createNumericTemplateDraft(effect.additive),
+    createNumericTemplateDraft(effect.multiplier),
+  );
+}
+
+function createEffectRow(
+  valueId = defaultValueId,
+  additionalKeywords = "",
+  removedKeywords = "",
+  additive = createNumericTemplateDraft(undefined),
+  multiplier = createNumericTemplateDraft(undefined),
+): EffectRow {
+  return {
+    rowId: nextRowId++,
+    valueId,
+    additionalKeywords,
+    removedKeywords,
+    additive,
+    multiplier,
+  };
+}
+
+function createNumericTemplateDraft(template: GlobalModifierNumericTemplate | null | undefined): NumericTemplateDraft {
+  if (template === undefined || template === null) {
+    return {mode: "none", value: "", stateKey: "", multiplier: "", additive: ""};
+  }
+
+  if (typeof template === "number") {
+    return {mode: "number", value: String(template), stateKey: "", multiplier: "", additive: ""};
+  }
+
+  return {
+    mode: "state",
+    value: "",
+    stateKey: template.stateKey,
+    multiplier: stringifyOptionalNumber(template.multiplier),
+    additive: stringifyOptionalNumber(template.additive),
+  };
+}
+
+function createNumericTemplate(draft: NumericTemplateDraft): GlobalModifierNumericTemplate | undefined {
+  if (draft.mode === "none") return undefined;
+  if (draft.mode === "number") return Number.parseFloat(draft.value) || 0;
+
+  const template: Exclude<GlobalModifierNumericTemplate, number> = {
+    stateKey: draft.stateKey.trim() || "value",
+  };
+  const multiplier = parseOptionalNumber(draft.multiplier);
+  const additive = parseOptionalNumber(draft.additive);
+  if (multiplier !== undefined) template.multiplier = multiplier;
+  if (additive !== undefined) template.additive = additive;
+  return template;
 }
 
 function createTrigger(type: TriggerType, target: string): GlobalEventTrigger {
@@ -1047,6 +1350,25 @@ function getDefaultActionTarget(type: ActionType, modifierIds: readonly string[]
   if (type === "applyGlobalModifier") return modifierIds[0] ?? "";
   if (type === "unlockTechnology") return technologyIds[0] ?? "";
   return "";
+}
+
+function parseKeywordList(value: string): string[] {
+  return value
+    .split(",")
+    .map(keyword => keyword.trim())
+    .filter(Boolean);
+}
+
+function parseOptionalNumber(value: string): number | undefined {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) return undefined;
+
+  const parsedValue = Number.parseFloat(trimmedValue);
+  return Number.isFinite(parsedValue) ? parsedValue : undefined;
+}
+
+function stringifyOptionalNumber(value: number | null | undefined): string {
+  return value === undefined || value === null ? "" : String(value);
 }
 
 function formatLabel(value: string): string {

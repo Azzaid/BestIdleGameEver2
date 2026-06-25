@@ -48,7 +48,12 @@
     },
     "once": true,
     "priority": 1,
-    "actions": [],
+    "actions": [
+      {
+        "type": "applyGlobalModifier",
+        "modifierId": "tiny_settlement"
+      }
+    ],
     "description": "A small group of survivors struggles to endure in the ruins of the old world.\n\nYou have found a relatively safe place and established a crude settlement. But safety never lasts for long.\n\nThe growing settlement has attracted the attention of nearby monsters.\n\nBuild your first defense tower and hold them back.",
     "imageId": "The_new_begining",
     "imageAlt": "The new begining"

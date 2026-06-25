@@ -243,6 +243,68 @@ export const actionRow = style({
   },
 });
 
+export const modifierRuleRow = style({
+  display: "grid",
+  gridTemplateColumns: "minmax(160px, 0.9fr) minmax(140px, 0.8fr) minmax(180px, 1.2fr) minmax(120px, 0.7fr) minmax(90px, 0.55fr) minmax(90px, 0.55fr) auto",
+  gap: "6px",
+  alignItems: "end",
+  "@media": {
+    "(max-width: 980px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
+    "(max-width: 620px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
+export const effectRow = style({
+  display: "grid",
+  gap: "8px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "8px",
+  padding: "8px",
+  background: vars.color.background.app,
+});
+
+export const effectMainRow = style({
+  display: "grid",
+  gridTemplateColumns: "minmax(190px, 1.2fr) minmax(160px, 1fr) minmax(160px, 1fr) auto",
+  gap: "6px",
+  alignItems: "end",
+  "@media": {
+    "(max-width: 820px)": {
+      gridTemplateColumns: "1fr 1fr",
+    },
+    "(max-width: 620px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
+export const numericTemplateGrid = style({
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: "8px",
+  "@media": {
+    "(max-width: 760px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
+export const numericTemplate = style({
+  display: "grid",
+  gridTemplateColumns: "minmax(130px, 0.8fr) repeat(3, minmax(90px, 1fr))",
+  gap: "6px",
+  alignItems: "end",
+  "@media": {
+    "(max-width: 620px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
 export const toggle = style({
   display: "inline-flex",
   alignItems: "center",

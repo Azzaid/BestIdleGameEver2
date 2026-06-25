@@ -321,10 +321,11 @@ function GlobalEffectsDrawer({
 
 function GlobalEffectList({effects}: {effects: HomogeneousValueEffect[]}) {
     const visibleEffects = effects.flatMap((effect, index) => {
-        const amount = (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
-        if (!amount) return [];
+        const additive = effect.additive ?? 0;
+        const multiplier = normalizeMultiplier(effect.multiplier);
+        if (!additive && multiplier === 1) return [];
 
-        return [{effect, amount, key: `${effect.valueId}-${index}`}];
+        return [{effect, additive, multiplier, key: `${effect.valueId}-${index}`}];
     });
 
     if (!visibleEffects.length) {
@@ -333,18 +334,36 @@ function GlobalEffectList({effects}: {effects: HomogeneousValueEffect[]}) {
 
     return (
         <dl className={s.metricList}>
-            {visibleEffects.map(({effect, amount, key}) => {
+            {visibleEffects.map(({effect, additive, multiplier, key}) => {
                 const definition = getHomogeneousValueDefinition(effect.valueId);
 
                 return (
                     <div key={key} className={s.metricRow}>
                         <dt>{definition.label}</dt>
-                        <dd>{formatHomogeneousValue(effect.valueId, amount, effect.additionalKeywords)}</dd>
+                        <dd>{formatGlobalEffectAmount(effect, additive, multiplier)}</dd>
                     </div>
                 );
             })}
         </dl>
     );
+}
+
+function formatGlobalEffectAmount(
+    effect: HomogeneousValueEffect,
+    additive: number,
+    multiplier: number,
+): string {
+    const parts: string[] = [];
+
+    if (additive) {
+        parts.push(formatHomogeneousValue(effect.valueId, additive, effect.additionalKeywords));
+    }
+
+    if (multiplier !== 1) {
+        parts.push(`x${formatResourceAmount(multiplier)}`);
+    }
+
+    return parts.join(" ") || "Active";
 }
 
 function SelectedHexPanel({

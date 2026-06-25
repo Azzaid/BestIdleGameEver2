@@ -16,7 +16,7 @@ export const BATTLE_WALL_APRON_HEIGHT = 80;
 
 export const SIEGE_THREAT_START_RATIO = 0.8;
 
-export const SIEGE_DURATION_SECONDS = 150;
+export const SIEGE_DURATION_SECONDS = 60;
 
 export const SIEGE_WAVE_INTERVAL_SECONDS = 10;
 

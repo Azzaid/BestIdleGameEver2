@@ -106,8 +106,11 @@ const BattlePage = () => {
         ? cityThreat * controlledTerritoryGrowthStep
         : cityThreat;
     const initialThreat = isSiege ? cityThreat * SIEGE_THREAT_START_RATIO : targetThreat;
+    const siegeDurationSeconds = Math.max(1, (
+        SIEGE_DURATION_SECONDS + siegeModifierValues.lengthFlat
+    ) * siegeModifierValues.lengthMultiplier);
     const threatGrowthPerSecond = isSiege && targetThreat > initialThreat
-        ? (targetThreat - initialThreat) / SIEGE_DURATION_SECONDS
+        ? (targetThreat - initialThreat) / siegeDurationSeconds
         : 0;
     const timeBetweenWavesSeconds = isSiege
         ? SIEGE_WAVE_INTERVAL_SECONDS
@@ -127,7 +130,7 @@ const BattlePage = () => {
     const hasAnnouncedSiegeStartedRef = useRef(false);
     const [battleMessage, setBattleMessage] = useState<string | null>(null);
     const siegeProgressPercent = isSiege
-        ? toPercent(metrics.siegeElapsedSeconds, SIEGE_DURATION_SECONDS)
+        ? toPercent(metrics.siegeElapsedSeconds, siegeDurationSeconds)
         : 0;
     const pressureProgressPercent = toPercent(metrics.siegePressure, metrics.wallResilience);
     const wallLogicalWidth = citySideHexes * BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX;
@@ -138,6 +141,7 @@ const BattlePage = () => {
         targetThreat,
         initialThreat,
         threatGrowthPerSecond,
+        siegeDurationSeconds,
         timeBetweenWavesSeconds,
         isSiege,
         wallResolution.resilience,
@@ -168,6 +172,7 @@ const BattlePage = () => {
         targetThreat,
         initialThreat,
         threatGrowthPerSecond,
+        siegeDurationSeconds,
         timeBetweenWavesSeconds,
         isSiege,
         wallResolution.resilience,
