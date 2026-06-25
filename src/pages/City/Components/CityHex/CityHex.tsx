@@ -18,6 +18,7 @@ import {CITY_HEX_SIZE} from "../../../../data/constants.ts";
 
 const HEX_RADIUS_PX = CITY_HEX_SIZE / Math.sqrt(3);
 const HEX_STROKE_WIDTH = 3;
+const HEX_EDGE_GAP_PX = 0;
 const hexWidth = Math.sqrt(3) * HEX_RADIUS_PX; // flat-to-flat
 const SPRITE_PADDING = 0.98; // tweak to taste (0.9–0.98)
 const spriteSide = hexWidth * SPRITE_PADDING; // << correct scale now
@@ -46,6 +47,13 @@ const HEX_SIDE_DEFINITIONS = [
     {columnDelta: 1, rowDelta: -1, startVertexIndex: 5, endVertexIndex: 0},
 ] as const;
 
+type PreparedHexCell = HexCell & {
+    centerX: number;
+    centerY: number;
+    spriteX: number;
+    spriteY: number;
+};
+
 export default function CityHex({
                                              cells,
                                     onSelect=()=>{}
@@ -56,7 +64,7 @@ export default function CityHex({
     // Precompute geometry
     const preparedCells = useMemo(() => {
         return cells.map((cell) => {
-            const { x, y } = axialCoordinateToPixelPosition(cell, HEX_RADIUS_PX, HEX_STROKE_WIDTH + 1);
+            const { x, y } = axialCoordinateToPixelPosition(cell, HEX_RADIUS_PX, HEX_EDGE_GAP_PX);
             return {
                 ...cell,
                 centerX: x,
@@ -93,6 +101,24 @@ export default function CityHex({
     // Hover & selection
     const [hoveredCellKey, setHoveredCellKey] = useState<string | null>(null);
     const [selectedCellKey, setSelectedCellKey] = useState<string | null>(null);
+    const selectedPreparedCell = useMemo<PreparedHexCell | undefined>(
+        () => preparedCells.find(cell => cell.cellKey === selectedCellKey),
+        [preparedCells, selectedCellKey],
+    );
+    const hoveredPreparedCell = useMemo<PreparedHexCell | undefined>(
+        () => preparedCells.find(cell => cell.cellKey === hoveredCellKey),
+        [hoveredCellKey, preparedCells],
+    );
+    const selectedOutlineCells = useMemo(
+        () => getOutlineCells(selectedPreparedCell, preparedCells),
+        [preparedCells, selectedPreparedCell],
+    );
+    const hoveredOutlineCells = useMemo(
+        () => getOutlineCells(hoveredPreparedCell, preparedCells),
+        [hoveredPreparedCell, preparedCells],
+    );
+    const selectedOutlineKey = selectedPreparedCell ? getOutlineKey(selectedPreparedCell) : null;
+    const hoveredOutlineKey = hoveredPreparedCell ? getOutlineKey(hoveredPreparedCell) : null;
 
     const viewExtent = Math.max(backgroundWorldWidth, backgroundWorldHeight) / 2;
     const viewBoxX = -viewExtent;
@@ -476,8 +502,73 @@ export default function CityHex({
                         </g>
                     );
                 })}
+                {hoveredOutlineKey !== selectedOutlineKey && (
+                    <StructureOutlineOverlay
+                        cells={hoveredOutlineCells}
+                        cellsByKey={cellsByKey}
+                        hexagonVertexPoints={hexagonVertexPoints}
+                        color="#8f909c"
+                        layerKey="hovered"
+                    />
+                )}
+                <StructureOutlineOverlay
+                    cells={selectedOutlineCells}
+                    cellsByKey={cellsByKey}
+                    hexagonVertexPoints={hexagonVertexPoints}
+                    color="#57d77a"
+                    layerKey="selected"
+                />
             </g>
         </svg>
+    );
+}
+
+function StructureOutlineOverlay({
+    cells,
+    cellsByKey,
+    hexagonVertexPoints,
+    color,
+    layerKey,
+}: {
+    cells: readonly PreparedHexCell[];
+    cellsByKey: ReadonlyMap<string, HexCell>;
+    hexagonVertexPoints: readonly {x: number; y: number}[];
+    color: string;
+    layerKey: string;
+}) {
+    if (cells.length === 0) return null;
+
+    return (
+        <>
+            {cells.map(cell => (
+                <g
+                    key={`${layerKey}-${cell.cellKey}`}
+                    transform={`translate(${cell.centerX} ${cell.centerY})`}
+                    pointerEvents="none"
+                >
+                    {HEX_SIDE_DEFINITIONS
+                        .filter(side => !isSharedStructureSide(cell, side, cellsByKey))
+                        .map(side => {
+                            const start = hexagonVertexPoints[side.startVertexIndex];
+                            const end = hexagonVertexPoints[side.endVertexIndex];
+                            if (!start || !end) return null;
+
+                            return (
+                                <line
+                                    key={`${layerKey}-${cell.cellKey}-${side.startVertexIndex}-${side.endVertexIndex}`}
+                                    x1={start.x}
+                                    y1={start.y}
+                                    x2={end.x}
+                                    y2={end.y}
+                                    stroke={color}
+                                    strokeWidth={HEX_STROKE_WIDTH}
+                                    vectorEffect="non-scaling-stroke"
+                                />
+                            );
+                        })}
+                </g>
+            ))}
+        </>
     );
 }
 
@@ -509,6 +600,28 @@ function isSharedStructureSide(
     const cellCoreKey = cell.structureCoreCellKey ?? cell.cellKey;
     const neighborCoreKey = neighbor.structureCoreCellKey ?? neighbor.cellKey;
     return cellCoreKey === neighborCoreKey;
+}
+
+function getOutlineCells(
+    targetCell: PreparedHexCell | undefined,
+    preparedCells: readonly PreparedHexCell[],
+): PreparedHexCell[] {
+    if (!targetCell) return [];
+    if (targetCell.kind !== "city" || !targetCell.partOfStructureId) return [targetCell];
+
+    const targetCoreKey = targetCell.structureCoreCellKey ?? targetCell.cellKey;
+
+    return preparedCells.filter(cell => (
+        cell.kind === "city"
+        && cell.partOfStructureId === targetCell.partOfStructureId
+        && (cell.structureCoreCellKey ?? cell.cellKey) === targetCoreKey
+    ));
+}
+
+function getOutlineKey(cell: PreparedHexCell): string {
+    if (cell.kind !== "city" || !cell.partOfStructureId) return cell.cellKey;
+
+    return `${cell.partOfStructureId}:${cell.structureCoreCellKey ?? cell.cellKey}`;
 }
 
 function getFallbackFill(seed: string, kind: HexCell["kind"]) {
