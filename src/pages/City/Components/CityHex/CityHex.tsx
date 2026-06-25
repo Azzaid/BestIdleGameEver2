@@ -3,6 +3,8 @@ import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildin
 import {wallSpriteMetadataAtlas, wallSpritesAtlas} from "../../../../models/sprites/walls/wallsSpriteAtlas.ts";
 import {wallTopSpriteMetadataAtlas, wallTopSpritesAtlas} from "../../../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
 import type {HexCell} from "../../../../models/city/HexGrid.ts";
+import {CITY_HEX_BACKGROUND_SPRITES_BY_ID} from "../../../../data/cityHexBackgrounds.ts";
+import {CITY_BIOME_LABELS, getDevelopmentVectorKey, type CityBiome} from "../../../../models/city/hexBackgrounds.ts";
 import {
     axialCoordinateToPixelPosition, clampPan,
     computeCityBounds,
@@ -10,7 +12,6 @@ import {
     pixelPositionToAxialCoordinate,
     coordKey
 } from "./hexUtils.ts";
-import cityBackground from '../../../../assets/city/background/Top-down_map_view_circular_lan.jpeg'
 import {BUILDINGS_ATLAS, STRUCTURES_BY_ID} from "../../../../data/buildings/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../../../data/wallSegments/index.ts";
 import {WALL_TOWER_BUILDINGS} from "../../../../data/wallSuperstructures/index.ts";
@@ -24,19 +25,6 @@ const SPRITE_PADDING = 0.98; // tweak to taste (0.9–0.98)
 const spriteSide = hexWidth * SPRITE_PADDING; // << correct scale now
 const SPRITE_WIDTH = spriteSide;
 const SPRITE_HEIGHT = spriteSide;
-
-const AUTHORED_HEX_RADIUS = 32;                 // how the image was generated
-const backgroundScale = HEX_RADIUS_PX / AUTHORED_HEX_RADIUS; // = 1 if 32
-
-const imagePixelWidth = 768;
-const imagePixelHeight = 768;
-
-const backgroundWorldWidth  = imagePixelWidth  * backgroundScale;
-const backgroundWorldHeight = imagePixelHeight * backgroundScale;
-
-// Center it on world origin so it aligns with your grid centered at (0,0)
-const backgroundX = -backgroundWorldWidth  / 2;
-const backgroundY = -backgroundWorldHeight / 2;
 
 const HEX_SIDE_DEFINITIONS = [
     {columnDelta: 1, rowDelta: 0, startVertexIndex: 0, endVertexIndex: 1},
@@ -56,9 +44,11 @@ type PreparedHexCell = HexCell & {
 
 export default function CityHex({
                                              cells,
+                                             biome,
                                     onSelect=()=>{}
                                          }: {
     cells: HexCell[];
+    biome: CityBiome;
     onSelect?: (cell: HexCell) => void;
 }) {
     // Precompute geometry
@@ -120,7 +110,7 @@ export default function CityHex({
     const selectedOutlineKey = selectedPreparedCell ? getOutlineKey(selectedPreparedCell) : null;
     const hoveredOutlineKey = hoveredPreparedCell ? getOutlineKey(hoveredPreparedCell) : null;
 
-    const viewExtent = Math.max(backgroundWorldWidth, backgroundWorldHeight) / 2;
+    const viewExtent = getViewExtent(cityBounds);
     const viewBoxX = -viewExtent;
     const viewBoxY = -viewExtent;
     const viewBoxW = viewExtent * 2;
@@ -309,21 +299,14 @@ export default function CityHex({
             </defs>
 
             <g transform={`translate(${cameraOffsetX} ${cameraOffsetY}) scale(${zoomFactor})`}>
-                <image
-                    href={cityBackground}     // put your file in public/backgrounds/
-                    x={backgroundX}
-                    y={backgroundY}
-                    width={backgroundWorldWidth}
-                    height={backgroundWorldHeight}
-                    preserveAspectRatio="none"           // keeps exact authored scale
-                    style={{ imageRendering: "pixelated" }}
-                />
                 {preparedCells.map((cell) => {
                     const {
                         centerX,
                         centerY,
                         cellKey,
                         developmentVector,
+                        backgroundSpriteId,
+                        backgroundDevelopmentVector,
                         buildingKey,
                         spriteKey,
                         initialBuildingKey,
@@ -336,6 +319,9 @@ export default function CityHex({
                     const isSelected = cellKey === selectedCellKey;
                     const isHovered = cellKey === hoveredCellKey;
                     const clipId = `clip-${cellKey}`;
+                    const backgroundSprite = CITY_HEX_BACKGROUND_SPRITES_BY_ID[backgroundSpriteId];
+                    const backgroundSpriteUrl = backgroundSprite?.src;
+                    const backgroundFill = getHexBackgroundFallbackFill(biome, backgroundDevelopmentVector, kind);
                     const citySpriteAtlas = kind === "city" ? buildingsSpriteAtlas[developmentVector] : undefined;
                     const building = kind === "city" && buildingKey
                         ? BUILDINGS_ATLAS[developmentVector]?.[buildingKey]
@@ -379,7 +365,7 @@ export default function CityHex({
                         : undefined;
                     const wallTopSpriteWidth = wallTopSpriteMetadata?.targetSpriteSize.width ?? SPRITE_WIDTH;
                     const wallTopSpriteHeight = wallTopSpriteMetadata?.targetSpriteSize.height ?? SPRITE_HEIGHT;
-                    const hasTexture = Boolean(spriteUrl || wallSpriteUrl || wallTopSpriteUrl);
+                    const hasForegroundTexture = Boolean(spriteUrl || wallSpriteUrl || wallTopSpriteUrl);
                     const wallName = wallKey ? WALL_SEGMENT_BUILDINGS[wallKey]?.name ?? wallKey : undefined;
                     const wallTopName = wallTopKey ? WALL_TOWER_BUILDINGS[wallTopKey]?.name ?? wallTopKey : undefined;
                     const fallbackName = kind === "wall"
@@ -407,10 +393,24 @@ export default function CityHex({
 
                             <use
                                 href="#hexagonPath"
-                                fill={hasTexture ? "transparent" : kind === "wall" ? "#2c2f38" : "#8016161b"}
+                                fill={backgroundFill}
                                 stroke="none"
                             />
 
+                            {backgroundSpriteUrl && (
+                                <image
+                                    href={backgroundSpriteUrl}
+                                    x={-SPRITE_WIDTH / 2}
+                                    y={-SPRITE_HEIGHT / 2}
+                                    width={SPRITE_WIDTH}
+                                    height={SPRITE_HEIGHT}
+                                    preserveAspectRatio="xMidYMid slice"
+                                    clipPath={`url(#${clipId})`}
+                                    style={{ imageRendering: "pixelated", pointerEvents: "none" }}
+                                >
+                                    <title>{`${CITY_BIOME_LABELS[biome]} ${getDevelopmentVectorKey(backgroundDevelopmentVector)} terrain`}</title>
+                                </image>
+                            )}
                             {spriteUrl && (
                                 <image
                                     href={spriteUrl}
@@ -447,7 +447,7 @@ export default function CityHex({
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}
                                 />
                             )}
-                            {fallbackKey && !spriteUrl && !wallSpriteUrl && !wallTopSpriteUrl && (
+                            {fallbackKey && !hasForegroundTexture && (
                                 <>
                                     <use
                                         href="#hexagonPath"
@@ -622,6 +622,46 @@ function getOutlineKey(cell: PreparedHexCell): string {
     if (cell.kind !== "city" || !cell.partOfStructureId) return cell.cellKey;
 
     return `${cell.partOfStructureId}:${cell.structureCoreCellKey ?? cell.cellKey}`;
+}
+
+function getViewExtent(bounds: {minX: number; minY: number; maxX: number; maxY: number}): number {
+    return Math.max(
+        Math.abs(bounds.minX),
+        Math.abs(bounds.minY),
+        Math.abs(bounds.maxX),
+        Math.abs(bounds.maxY),
+        HEX_RADIUS_PX * 4,
+    ) + HEX_RADIUS_PX * 2;
+}
+
+function getHexBackgroundFallbackFill(
+    biome: CityBiome,
+    vector: HexCell["backgroundDevelopmentVector"],
+    kind: HexCell["kind"],
+) {
+    const vectorKey = getDevelopmentVectorKey(vector);
+    const biomeHue: Record<CityBiome, number> = {
+        alpine: 192,
+        floodplain: 118,
+        swamp: 86,
+        steppe: 48,
+        rocky: 210,
+        volcanic: 8,
+        coastal: 178,
+        tundra: 204,
+        ancientForest: 132,
+    };
+    const vectorHueOffset: Record<string, number> = {
+        tech: 18,
+        nature: -18,
+        medieval: 0,
+        aether: 42,
+    };
+    const hue = (biomeHue[biome] + (vectorHueOffset[vectorKey] ?? 0) + 360) % 360;
+    const saturation = kind === "wall" ? 20 : vectorKey === "aether" ? 42 : 34;
+    const lightness = kind === "wall" ? 22 : vectorKey === "tech" ? 30 : 27;
+
+    return `hsl(${hue} ${saturation}% ${lightness}%)`;
 }
 
 function getFallbackFill(seed: string, kind: HexCell["kind"]) {

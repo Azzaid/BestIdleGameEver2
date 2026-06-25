@@ -2,7 +2,7 @@
 
 Current implementation note, 2026-06-24:
 
-- Active city building, wall segment, wall superstructure, tower component, and global event image assets are cataloged through data registries rather than direct one-off page imports.
+- Active city building, city hex background, wall segment, wall superstructure, tower component, and global event image assets are cataloged through data registries rather than direct one-off page imports.
 - `/ids` audits content IDs and visual coverage.
 - `/gun-part-editor` supports tower component socket/visual metadata work.
 - `/entity-create/:entityId` and `/global-events` support debug editing flows for entity and event content.
@@ -17,14 +17,17 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - City wall segment metadata: `src/assets/wallSegments/<vector>/wall_<vector>_<id>.json`
 - City wall-top/superstructure textures: `src/assets/wallSuperstructures/<vector>/walltop_<vector>_<id>.png`
 - City wall-top/superstructure metadata: `src/assets/wallSuperstructures/<vector>/walltop_<vector>_<id>.json`
+- City hex background textures: `src/assets/hexBackgrounds/<type>/<biome>/<vector>/<id>.png`
 - Tower component textures: `src/assets/gunParts/<vector>/<vector>_<slot>_<id>.png`
 - Tower component metadata: `src/assets/gunParts/<vector>/<vector>_<slot>_<id>.json`
 - Battle backgrounds: `src/assets/battle/backgrounds/<id>.png`
-- City backgrounds: `src/assets/city/background/<id>.<ext>`
+- Legacy city-wide backgrounds: `src/assets/city/background/<id>.<ext>`
 - Global event pictures: `src/assets/events/<id>.png`
 - Unused images: `src/assets/unused/...`
 
 Use the development vector folder names from `src/models/DevlopmentVector.ts`: `tech`, `nature`, `medieval`, and `aether`.
+Use the city hex background type folder names from `src/models/city/hexBackgrounds.ts`: `claimedTerrain`, `buildingUnderlay`, `claimableTerrain`, and `unclaimableTerrain`.
+Use the biome folder names from `src/models/city/hexBackgrounds.ts`: `alpine`, `floodplain`, `swamp`, `steppe`, `rocky`, `volcanic`, `coastal`, `tundra`, and `ancientForest`.
 Use kebab-case for the file `<id>` segment. The editor derives game IDs from these filenames, for example `wall_medieval_scrap-barricade.png` maps to `wallSegments.medieval.scrapBarricade`.
 
 ## Add A City Building Texture
@@ -35,6 +38,14 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 4. Import and map both files in `src/data/entityVisualAssets.ts`, then register active runtime sprites in `src/models/sprites/buildings/<vector>.ts` as needed.
 5. Keep building metadata limited to `zoom` and `shift`. `zoom` scales the city hex sprite from its default hex fit, and `shift.x`/`shift.y` offset it in city SVG units.
 6. The City page reads through `buildingsSpriteAtlas`; do not import building textures directly in page components.
+
+## Add A City Hex Background Texture
+
+1. Pick the terrain type, biome, and development vector folder.
+2. Put the PNG in `src/assets/hexBackgrounds/<type>/<biome>/<vector>/`.
+3. The runtime catalog in `src/data/cityHexBackgrounds.ts` discovers the file and exposes it as `hexBackgrounds.<type>.<biome>.<vector>.<fileStem>`.
+4. City hexes store the selected background sprite id in city state. If no sprite exists for the selected type, biome, and vector, the City page fills the hex with a biome/vector fallback color.
+5. Building construction switches the hex from `claimedTerrain` to `buildingUnderlay`; demolition returns it to `claimedTerrain`.
 
 ## Add A Wall Segment Texture
 

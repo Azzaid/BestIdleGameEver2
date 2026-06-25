@@ -1,3 +1,5 @@
+import {CITY_BIOMES, type CityBiome} from "../models/city/hexBackgrounds.ts";
+
 export const SIGNATURE_PER_HEX = 5;
 
 export const FOOTPRINT_PER_DEMOLISHED_HEX = 5;
@@ -5,6 +7,8 @@ export const FOOTPRINT_PER_DEMOLISHED_HEX = 5;
 export const FOOTPRINT_PER_SURVIVED_SIEGE = 1;
 
 export const INITIAL_CITY_CELL_RADIUS = 1;
+
+export const DEFAULT_INITIAL_CITY_BIOME: CityBiome = CITY_BIOMES.steppe;
 
 export const CITY_HEX_SIZE = Math.sqrt(3) * 32;
 

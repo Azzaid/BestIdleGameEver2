@@ -1,4 +1,5 @@
 import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
+import type {CityHexBackgroundSpriteId} from "./hexBackgrounds.ts";
 
 export type AxialCoordinate = { column: number; row: number };
 
@@ -9,6 +10,8 @@ export type HexCell = AxialCoordinate & {
     kind: HexCellKind;
     buildingKey: string | null;
     developmentVector: DevelopmentVectorValue;
+    backgroundSpriteId: CityHexBackgroundSpriteId;
+    backgroundDevelopmentVector: DevelopmentVectorValue;
     spriteKey?: string | null;
     initialBuildingKey?: string | null;
     partOfStructureId?: string | null;

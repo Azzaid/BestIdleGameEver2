@@ -7,6 +7,7 @@ import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/Dev
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {
     selectBuiltStructureIds,
+    selectCityBiome,
     selectCityBuildings,
     selectCityHexes,
     selectCityStructureCandidates,
@@ -52,6 +53,7 @@ const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise controlled terr
 const CityPage = () => {
     const dispatch = useTypedDispatch();
     const hexes = useTypedSelector(selectCityHexes);
+    const cityBiome = useTypedSelector(selectCityBiome);
     const cityBuildings = useTypedSelector(selectCityBuildings);
     const builtStructureIds = useTypedSelector(selectBuiltStructureIds);
     const structureCandidates = useTypedSelector(selectCityStructureCandidates);
@@ -204,7 +206,7 @@ const CityPage = () => {
     return (
         <div className={s.cityPage}>
             <div className={s.cityContainer}>
-                <CityHex cells={hexes} onSelect={selectHex}/>
+                <CityHex cells={hexes} biome={cityBiome} onSelect={selectHex}/>
             </div>
             <GlobalEffectsDrawer
                 activeGlobalModifiers={activeGlobalModifiers}

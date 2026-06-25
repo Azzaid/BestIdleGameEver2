@@ -13,6 +13,8 @@ export const selectCityFootprint = (state: RootState) => state.city.cityFootprin
 
 export const selectBuiltStructureIds = (state: RootState) => state.city.builtStructureIds ?? [];
 
+export const selectCityBiome = (state: RootState) => state.city.biome;
+
 export const selectCityBattlefield = (state: RootState) => state.city.battlefield;
 
 export const selectCitySideHexes = createSelector(

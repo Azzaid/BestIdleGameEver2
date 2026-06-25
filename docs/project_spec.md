@@ -104,6 +104,7 @@ Texture asset layout:
 - City building textures and zoom/shift metadata live in `src/assets/buildings/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
 - City wall segment textures and metadata live in `src/assets/wallSegments/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
 - City wall-top/superstructure textures live in `src/assets/wallSuperstructures/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
+- City hex background textures live in `src/assets/hexBackgrounds/<type>/<biome>/<vector>` and are cataloged through `src/data/cityHexBackgrounds.ts`. City state stores a biome plus a per-hex background sprite id/vector; migration rerolls the biome, initial and cleared cells use `claimedTerrain`, and built cells use `buildingUnderlay`.
 - Tower component textures and metadata live in `src/assets/gunParts/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`; tower part runtime metadata is derived in `src/data/gunParts/partVisualMetadata.ts`.
 - Global event pictures live in `src/assets/events` and are discovered by the global event image catalog.
 - Local editor image writes go through dedicated file upload endpoints (`/entity-sprites` and `/global-event-images`); JSON definition saves should reference image ids or visual asset ids instead of carrying image bytes.
