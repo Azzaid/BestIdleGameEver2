@@ -5,7 +5,12 @@ import {STRUCTURES} from "../../data/buildings/index.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
 import type {CityResolution} from "../../models/city/Adjancency.ts";
 
-export const selectCityHexes = (state: RootState) => state.city.hexes;
+export const selectAllCityHexes = (state: RootState) => state.city.hexes;
+
+export const selectCityHexes = createSelector(
+    [selectAllCityHexes],
+    (hexes) => hexes.filter(hex => !hex.isUnclaimed),
+);
 
 export const selectCityCellRadius = (state: RootState) => state.city.cellRadius;
 

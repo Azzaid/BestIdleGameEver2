@@ -7,6 +7,7 @@ export type HexCellKind = "city" | "wall";
 
 export type HexCell = AxialCoordinate & {
     cellKey: string;
+    isUnclaimed: boolean;
     kind: HexCellKind;
     buildingKey: string | null;
     developmentVector: DevelopmentVectorValue;

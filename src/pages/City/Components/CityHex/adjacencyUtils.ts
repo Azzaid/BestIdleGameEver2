@@ -38,6 +38,7 @@ export const placeCityBuildings = (
     const placedCity = new Map<string, PlacedBuilding>();
 
     hexes.forEach((hexCell: HexCell) => {
+        if (hexCell.isUnclaimed) return;
         const { column, row, cellKey, buildingKey, developmentVector } = hexCell;
         if (hexCell.partOfStructureId && (hexCell.structureCoreCellKey ?? cellKey) !== cellKey) return;
 
@@ -93,7 +94,8 @@ export function resolveCityUpkeepAndSignature(
         effectiveSignature: 0,
     };
 
-    resolvedCity.territorySignature = hexes.length * SIGNATURE_PER_HEX;
+    const claimedHexes = hexes.filter(hex => !hex.isUnclaimed);
+    resolvedCity.territorySignature = claimedHexes.length * SIGNATURE_PER_HEX;
     const buildingEntities: HomogeneousValueEntitySource[] = [...city.entries()].map(([cellKey, building]) => ({
             id: cellKey,
             contentId: building.id,
@@ -105,7 +107,7 @@ export function resolveCityUpkeepAndSignature(
             values: building.effectiveHomogeneousValueEffects,
             effects: building.effects,
         }));
-    const wallEntities: HomogeneousValueEntitySource[] = hexes.flatMap((hexCell) => {
+    const wallEntities: HomogeneousValueEntitySource[] = claimedHexes.flatMap((hexCell) => {
         if (hexCell.kind !== "wall") return [];
 
         return [

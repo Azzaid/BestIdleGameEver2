@@ -331,6 +331,7 @@ Building data convention:
 City view implementation:
 
 - The City page renders an SVG hex map.
+- City state stores the full generated map, including the one-hex unclaimed ring around the claimed city. Unclaimed cells are identified with `isUnclaimed`; selectors expose claimed-only hexes for upkeep, wall, battle, and progression calculations.
 - Normal city hexes use city building data.
 - The top hex row is reserved for wall hexes and uses the wall build catalog.
 - Tiles without texture render a colored fallback with the building id so unfinished content remains visible.

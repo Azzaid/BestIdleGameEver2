@@ -23,9 +23,9 @@ import {
     selectRandomCityBiome,
 } from "../../models/city/hexBackgrounds.ts";
 
-const getClaimedTerrainBackground = (biome: CityBiome) => selectCityHexBackgroundSprite(
+const getTerrainBackground = (biome: CityBiome, isUnclaimed: boolean) => selectCityHexBackgroundSprite(
     CITY_HEX_BACKGROUND_SPRITE_POOL,
-    CITY_HEX_BACKGROUND_TYPES.claimedTerrain,
+    isUnclaimed ? CITY_HEX_BACKGROUND_TYPES.claimableTerrain : CITY_HEX_BACKGROUND_TYPES.claimedTerrain,
     biome,
     selectHexBackgroundVector(),
     Math.random,
@@ -43,23 +43,29 @@ const getBuildingUnderlayBackground = (biome: CityBiome, vector: DevelopmentVect
 
 const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS, biome: CityBiome = selectRandomCityBiome()) => {
     const generatedCells: HexCell[] = [];
-    for (let column = -cityRadius; column <= cityRadius; column++) {
-        const rowMin = Math.max(-cityRadius, -column - cityRadius);
-        const rowMax = Math.min(cityRadius, -column + cityRadius);
+    const mapRadius = cityRadius + 1;
+
+    for (let column = -mapRadius; column <= mapRadius; column++) {
+        const rowMin = Math.max(-mapRadius, -column - mapRadius);
+        const rowMax = Math.min(mapRadius, -column + mapRadius);
         for (let row = rowMin; row <= rowMax; row++) {
-            const background = getClaimedTerrainBackground(biome);
+            const isUnclaimed = getAxialDistance({column, row}, {column: 0, row: 0}) > cityRadius;
+            const isWall = !isUnclaimed && row === -cityRadius;
+            const background = getTerrainBackground(biome, isUnclaimed);
+
             generatedCells.push({
                 column,
                 row,
                 cellKey: coordKey({column, row}),
-                kind: row === -cityRadius ? "wall" : "city",
+                isUnclaimed,
+                kind: isWall ? "wall" : "city",
                 buildingKey: null,
                 developmentVector: DEVELOPMENT_VECTORS.medieval,
                 backgroundSpriteId: background.backgroundSpriteId,
                 backgroundDevelopmentVector: background.backgroundDevelopmentVector,
-                wallKey: row === -cityRadius ? walls.medieval.scrapBarricade : null,
+                wallKey: isWall ? walls.medieval.scrapBarricade : null,
                 wallDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
-                wallTopKey: column === 0 && row === -cityRadius ? superstructures.medieval.oldStump : null,
+                wallTopKey: column === 0 && isWall ? superstructures.medieval.oldStump : null,
                 wallTopDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
             });
         }
@@ -72,19 +78,24 @@ const getResizedHexes = (existingHexes: HexCell[], cityRadius: number, biome: Ci
 
     return getInitialHexes(cityRadius, biome).map(hex => {
         const existingHex = existingByKey.get(hex.cellKey);
-        if (hex.kind === "wall") {
+        if (!existingHex || hex.isUnclaimed || existingHex.isUnclaimed || hex.kind === "wall") {
             return hex;
         }
 
-        return existingHex
-            ? {
-                ...existingHex,
-                kind: "city" as const,
-                wallKey: null,
-                wallTopKey: null,
-            }
-            : hex;
+        return {
+            ...existingHex,
+            isUnclaimed: false,
+            kind: "city" as const,
+            wallKey: null,
+            wallTopKey: null,
+        };
     });
+}
+
+function getAxialDistance(a: {column: number; row: number}, b: {column: number; row: number}): number {
+    const deltaColumn = a.column - b.column;
+    const deltaRow = a.row - b.row;
+    return (Math.abs(deltaColumn) + Math.abs(deltaRow) + Math.abs(deltaColumn + deltaRow)) / 2;
 }
 
 const getStructurePartHexKeys = (hexes: HexCell[], targetHex: HexCell): string[] => {
@@ -133,7 +144,7 @@ export const citySlice = createSlice({
             const hexToBuildIndex = state.hexes.findIndex(hex => hex.column === action.payload.column && hex.row === action.payload.row);
             if (hexToBuildIndex === -1) return;
             const currentHex = state.hexes[hexToBuildIndex];
-            if (currentHex.kind !== "city" || currentHex.buildingKey || currentHex.partOfStructureId) return;
+            if (currentHex.isUnclaimed || currentHex.kind !== "city" || currentHex.buildingKey || currentHex.partOfStructureId) return;
 
             state.hexes[hexToBuildIndex] = {
                 ...action.payload,
@@ -147,14 +158,14 @@ export const citySlice = createSlice({
         },
         buildWall: (state, action: PayloadAction<{cellKey: string; wallKey: string}>) => {
             const hex = state.hexes.find(cell => cell.cellKey === action.payload.cellKey);
-            if (!hex || hex.kind !== "wall") return;
+            if (!hex || hex.isUnclaimed || hex.kind !== "wall") return;
 
             hex.wallKey = action.payload.wallKey;
             hex.wallDevelopmentVector = DEVELOPMENT_VECTORS.medieval;
         },
         buildWallTop: (state, action: PayloadAction<{cellKey: string; wallTopKey: string}>) => {
             const hex = state.hexes.find(cell => cell.cellKey === action.payload.cellKey);
-            if (!hex || hex.kind !== "wall") return;
+            if (!hex || hex.isUnclaimed || hex.kind !== "wall") return;
 
             hex.wallTopKey = action.payload.wallTopKey;
             hex.wallTopDevelopmentVector = DEVELOPMENT_VECTORS.medieval;
@@ -180,7 +191,7 @@ export const citySlice = createSlice({
 
             // Replace core and satellites with linked multistructure parts
             state.hexes.forEach(hex => {
-                if (hex.kind !== "city") return;
+                if (hex.isUnclaimed || hex.kind !== "city") return;
                 if (!involvedKeys.has(hex.cellKey)) return;
 
                 const initialBuildingKey = hex.initialBuildingKey ?? hex.buildingKey;
@@ -209,7 +220,7 @@ export const citySlice = createSlice({
         },
         demolishHex: (state, action: PayloadAction<{cellKey: string}>) => {
             const targetHex = state.hexes.find(hex => hex.cellKey === action.payload.cellKey);
-            if (!targetHex || targetHex.kind !== "city" || (!targetHex.buildingKey && !targetHex.partOfStructureId)) return;
+            if (!targetHex || targetHex.isUnclaimed || targetHex.kind !== "city" || (!targetHex.buildingKey && !targetHex.partOfStructureId)) return;
 
             const demolishedHexKeys = new Set(getDemolishedHexKeys(state.hexes, targetHex));
             state.cityFootprint += demolishedHexKeys.size * FOOTPRINT_PER_DEMOLISHED_HEX;
@@ -217,7 +228,7 @@ export const citySlice = createSlice({
                 if (!demolishedHexKeys.has(hex.cellKey)) return;
 
                 hex.buildingKey = null;
-                Object.assign(hex, getClaimedTerrainBackground(state.biome));
+                Object.assign(hex, getTerrainBackground(state.biome, false));
                 hex.spriteKey = null;
                 hex.initialBuildingKey = null;
                 hex.partOfStructureId = null;

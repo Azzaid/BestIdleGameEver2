@@ -79,6 +79,7 @@ Current implementation note, 2026-06-24:
 - The City route renders an SVG hex city with clickable city and wall tiles.
 - Each city stores a random biome. Exodus/migration creates a new city and rerolls that biome.
 - Each hex stores its own terrain background sprite id and background vector. The City route draws that per-hex background clipped to the hex instead of relying on one global city image.
+- City state stores both claimed cells and the surrounding one-hex unclaimed ring. Unclaimed cells are regular hex records with `isUnclaimed: true`; gameplay selectors filter them out until expansion claims them.
 - Empty and cleared hexes use `claimedTerrain` backgrounds selected from `src/assets/hexBackgrounds/<type>/<biome>/<vector>`. Built hexes use `buildingUnderlay` backgrounds based on the city biome and the building or multistructure vector. Missing sprites fall back to a biome/vector color fill.
 - City hexes can hold building content; wall hexes separately track wall segment and wall superstructure layers.
 - Building content is data-driven through `src/data/buildings/<vector>.json` and normalized by `createBuildingFactory`.
