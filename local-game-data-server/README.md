@@ -26,6 +26,7 @@ Endpoints:
 - `POST /global-events`
 - `POST /global-event-images`
 - `DELETE /global-event-images`
+- `POST /hex-background-sprites`
 - `POST /global-modifiers`
 
 Only `.json` files inside this folder's `data` directory are readable or writable.
@@ -75,5 +76,6 @@ image=<PNG file>
 `POST /global-events` writes event definitions to `src/data/globalEvents/events.json`.
 `POST /global-event-images` saves a PNG event image under `src/assets/events/{fileStem}.png`. Send it as `multipart/form-data` with `fileStem`, optional `previousFileStem`, and an `image` file field.
 `DELETE /global-event-images` removes an event PNG. Send JSON with `fileStem`.
+`POST /hex-background-sprites` saves a PNG under `src/assets/hexBackgrounds/{type}/{biome}/{vector}/{fileStem}.png`. Send it as `multipart/form-data` with `type`, `biome`, `vector`, `fileStem`, and an `image` file field.
 `POST /global-modifiers` writes modifier definitions to `src/data/globalModifiers/modifiers.json`.
 Both endpoints append new definitions and update existing definitions with the same ID.

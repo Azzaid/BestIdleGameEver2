@@ -72,10 +72,14 @@ export function selectCityHexBackgroundSprite(
     biome: CityBiome,
     vector: DevelopmentVectorValue,
     random = Math.random,
+    fallbackBiome?: CityBiome,
 ): CityHexBackgroundSelection {
     const vectorKey = getDevelopmentVectorKey(vector);
     const sprites = pool[type]?.[biome]?.[vectorKey] ?? [];
-    const sprite = selectRandomItem(sprites, random);
+    const fallbackSprites = fallbackBiome && fallbackBiome !== biome
+        ? pool[type]?.[fallbackBiome]?.[vectorKey] ?? []
+        : [];
+    const sprite = selectRandomItem(sprites, random) ?? selectRandomItem(fallbackSprites, random);
 
     return {
         backgroundSpriteId: sprite?.id ?? getFallbackCityHexBackgroundSpriteId(type, biome, vectorKey),

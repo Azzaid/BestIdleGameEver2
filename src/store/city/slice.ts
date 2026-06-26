@@ -28,6 +28,8 @@ const getClaimedTerrainBackground = (biome: CityBiome) => selectCityHexBackgroun
     CITY_HEX_BACKGROUND_TYPES.claimedTerrain,
     biome,
     selectHexBackgroundVector(),
+    Math.random,
+    DEFAULT_INITIAL_CITY_BIOME,
 );
 
 const getBuildingUnderlayBackground = (biome: CityBiome, vector: DevelopmentVectorValue = DEVELOPMENT_VECTORS.medieval) => selectCityHexBackgroundSprite(
@@ -35,6 +37,8 @@ const getBuildingUnderlayBackground = (biome: CityBiome, vector: DevelopmentVect
     CITY_HEX_BACKGROUND_TYPES.buildingUnderlay,
     biome,
     vector,
+    Math.random,
+    DEFAULT_INITIAL_CITY_BIOME,
 );
 
 const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS, biome: CityBiome = selectRandomCityBiome()) => {

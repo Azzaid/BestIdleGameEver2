@@ -315,6 +315,17 @@ const server = createServer(async (request, response) => {
     return
   }
 
+  if (request.method === 'POST' && url.pathname === '/hex-background-sprites') {
+    try {
+      const upload = await readMultipartFormData(request)
+      const imageResult = await saveHexBackgroundSpriteUpload(upload.fields, upload.files.image)
+      sendJson(response, 200, imageResult)
+    } catch (error) {
+      sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to save hex background sprite' })
+    }
+    return
+  }
+
   if (request.method === 'POST' && url.pathname === '/gun-part-metadata') {
     let payload
 
@@ -622,6 +633,71 @@ function resolveGlobalEventImageTarget(fileStem) {
 
   if (!imagePath.startsWith(`${dir}${path.sep}`)) {
     return { ok: false, statusCode: 400, error: 'Resolved event image path is outside the asset directory' }
+  }
+
+  return {
+    ok: true,
+    dir,
+    imagePath,
+    relativeImagePath: path.relative(path.join(__dirname, '..'), imagePath).replaceAll(path.sep, '/'),
+  }
+}
+
+async function saveHexBackgroundSpriteUpload(fields, imageFile) {
+  const action = {
+    type: fields.type,
+    biome: fields.biome,
+    vector: fields.vector,
+    fileStem: fields.fileStem,
+  }
+  const target = resolveHexBackgroundSpriteTarget(action)
+
+  if (!target.ok) {
+    const error = new Error(target.error)
+    error.statusCode = target.statusCode
+    throw error
+  }
+
+  if (!imageFile?.buffer?.length || imageFile.contentType !== 'image/png') {
+    throw new Error('Hex background upload must include a PNG image')
+  }
+
+  await mkdir(target.dir, { recursive: true })
+  await writeFile(target.imagePath, imageFile.buffer)
+
+  return {
+    action: 'saved',
+    file: target.relativeImagePath,
+  }
+}
+
+function resolveHexBackgroundSpriteTarget(action) {
+  const types = new Set(['claimedTerrain', 'buildingUnderlay', 'claimableTerrain', 'unclaimableTerrain'])
+  const biomes = new Set(['alpine', 'floodplain', 'swamp', 'steppe', 'rocky', 'volcanic', 'coastal', 'tundra', 'ancientForest'])
+  const vectors = new Set(['tech', 'nature', 'medieval', 'aether'])
+
+  if (!types.has(action?.type)) {
+    return { ok: false, statusCode: 400, error: 'Hex background type is not supported' }
+  }
+
+  if (!biomes.has(action?.biome)) {
+    return { ok: false, statusCode: 400, error: 'Hex background biome is not supported' }
+  }
+
+  if (!vectors.has(action?.vector)) {
+    return { ok: false, statusCode: 400, error: 'Hex background vector is not supported' }
+  }
+
+  if (!action?.fileStem || !isSafePathPart(action.fileStem)) {
+    return { ok: false, statusCode: 400, error: 'Hex background file stem must be a safe path segment' }
+  }
+
+  const collectionDir = path.resolve(gameAssetsDir, 'hexBackgrounds')
+  const dir = path.resolve(collectionDir, action.type, action.biome, action.vector)
+  const imagePath = path.resolve(dir, `${action.fileStem}.png`)
+
+  if (!dir.startsWith(`${collectionDir}${path.sep}`) || !imagePath.startsWith(`${dir}${path.sep}`)) {
+    return { ok: false, statusCode: 400, error: 'Resolved hex background path is outside the asset directory' }
   }
 
   return {

@@ -58,7 +58,7 @@ function createEmptyPool(): CityHexBackgroundSpritePool {
         ]),
       ),
     ]),
-  ) as CityHexBackgroundSpritePool;
+  ) as unknown as CityHexBackgroundSpritePool;
 }
 
 function getPathPart<T extends string>(path: string, values: readonly T[]): T | undefined {

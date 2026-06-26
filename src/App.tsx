@@ -16,6 +16,7 @@ import GunPartEditorPage from './pages/GunPartEditor/GunPartEditorPage.tsx'
 import IdAuditPage from './pages/IdAudit/IdAuditPage.tsx'
 import EntityCreatePage from './pages/EntityCreate/EntityCreatePage.tsx'
 import GlobalEventsEditorPage from './pages/GlobalEventsEditor/GlobalEventsEditorPage.tsx'
+import HexBackgroundEditorPage from './pages/HexBackgroundEditor/HexBackgroundEditorPage.tsx'
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedDispatch, useTypedSelector} from "./store/hooks.ts";
 import {selectCitySignatureStatus} from "./store/upkeep/selectors.ts";
@@ -143,6 +144,9 @@ function AppFrame() {
                                   <li>
                                       <Link className={appTheme.navBarLink} to="/global-events">Global Events</Link>
                                   </li>
+                                  <li>
+                                      <Link className={appTheme.navBarLink} to="/hex-background-editor">Hex Backgrounds</Link>
+                                  </li>
                               </>
                           )}
                       </ul>
@@ -176,6 +180,7 @@ function AppFrame() {
                           <Route path="/entity-create" element={<Navigate to="/entity-create/new" replace />} />
                           <Route path="/entity-create/:entityId" element={isDebugToolsEnabled ? <EntityCreatePage /> : <Navigate to="/battle" replace />} />
                           <Route path="/global-events" element={isDebugToolsEnabled ? <GlobalEventsEditorPage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/hex-background-editor" element={isDebugToolsEnabled ? <HexBackgroundEditorPage /> : <Navigate to="/battle" replace />} />
                       </Routes>
                   </main>
               </div>

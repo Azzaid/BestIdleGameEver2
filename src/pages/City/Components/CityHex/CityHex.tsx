@@ -3,8 +3,16 @@ import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildin
 import {wallSpriteMetadataAtlas, wallSpritesAtlas} from "../../../../models/sprites/walls/wallsSpriteAtlas.ts";
 import {wallTopSpriteMetadataAtlas, wallTopSpritesAtlas} from "../../../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
 import type {HexCell} from "../../../../models/city/HexGrid.ts";
-import {CITY_HEX_BACKGROUND_SPRITES_BY_ID} from "../../../../data/cityHexBackgrounds.ts";
-import {CITY_BIOME_LABELS, getDevelopmentVectorKey, type CityBiome} from "../../../../models/city/hexBackgrounds.ts";
+import {CITY_HEX_BACKGROUND_SPRITE_POOL, CITY_HEX_BACKGROUND_SPRITES_BY_ID} from "../../../../data/cityHexBackgrounds.ts";
+import {
+    CITY_BIOME_LABELS,
+    CITY_HEX_BACKGROUND_TYPES,
+    getDevelopmentVectorKey,
+    selectCityHexBackgroundSprite,
+    selectHexBackgroundVector,
+    type CityBiome,
+} from "../../../../models/city/hexBackgrounds.ts";
+import {DEFAULT_INITIAL_CITY_BIOME} from "../../../../data/constants.ts";
 import {
     axialCoordinateToPixelPosition, clampPan,
     computeCityBounds,
@@ -25,6 +33,9 @@ const SPRITE_PADDING = 0.98; // tweak to taste (0.9–0.98)
 const spriteSide = hexWidth * SPRITE_PADDING; // << correct scale now
 const SPRITE_WIDTH = spriteSide;
 const SPRITE_HEIGHT = spriteSide;
+const HEX_BACKGROUND_PADDING = 1.04;
+const HEX_BACKGROUND_WIDTH = hexWidth * HEX_BACKGROUND_PADDING;
+const HEX_BACKGROUND_HEIGHT = HEX_RADIUS_PX * 2 * HEX_BACKGROUND_PADDING;
 const INITIAL_ZOOM_FACTOR = 1.35;
 const MAX_ZOOM_FACTOR = 5;
 const WHEEL_ZOOM_IN_FACTOR = 1.12;
@@ -45,6 +56,16 @@ type PreparedHexCell = HexCell & {
     centerY: number;
 };
 
+type ClaimablePreviewHexCell = {
+    column: number;
+    row: number;
+    cellKey: string;
+    centerX: number;
+    centerY: number;
+    backgroundSpriteId: string;
+    backgroundDevelopmentVector: HexCell["backgroundDevelopmentVector"];
+};
+
 type CameraState = {
     zoom: number;
     offsetX: number;
@@ -56,6 +77,13 @@ type SvgViewport = {
     y: number;
     width: number;
     height: number;
+};
+
+type Bounds = {
+    minX: number;
+    minY: number;
+    maxX: number;
+    maxY: number;
 };
 
 export default function CityHex({
@@ -87,9 +115,24 @@ export default function CityHex({
 
     const cellsByKey = useMemo(() => new Map(cells.map(cell => [cell.cellKey, cell])), [cells]);
 
+    const claimablePreviewCells = useMemo(
+        () => getClaimablePreviewCells(cells, biome),
+        [biome, cells],
+    );
+
     const cityBounds = useMemo(
         () => computeCityBounds(preparedCells, HEX_RADIUS_PX),
         [preparedCells]
+    );
+
+    const renderBounds = useMemo(
+        () => computeCityBounds([...preparedCells, ...claimablePreviewCells], HEX_RADIUS_PX),
+        [claimablePreviewCells, preparedCells],
+    );
+
+    const cameraBounds = useMemo(
+        () => computePointBounds([...preparedCells, ...claimablePreviewCells]) ?? cityBounds,
+        [claimablePreviewCells, cityBounds, preparedCells],
     );
 
     // Camera state
@@ -129,7 +172,7 @@ export default function CityHex({
     const selectedOutlineKey = selectedPreparedCell ? getOutlineKey(selectedPreparedCell) : null;
     const hoveredOutlineKey = hoveredPreparedCell ? getOutlineKey(hoveredPreparedCell) : null;
 
-    const viewExtent = getViewExtent(cityBounds);
+    const viewExtent = getViewExtent(renderBounds);
     const viewBoxX = -viewExtent;
     const viewBoxY = -viewExtent;
     const viewBoxW = viewExtent * 2;
@@ -153,17 +196,17 @@ export default function CityHex({
     }, []);
 
     const clampZoomForCity = useCallback((zoom: number) => {
-        const minZoomThatFits = maxZoomThatFits(cityBounds, viewport.width, viewport.height);
+        const minZoomThatFits = maxZoomThatFits(cameraBounds, viewport.width, viewport.height);
 
         return Math.max(minZoomThatFits, Math.min(MAX_ZOOM_FACTOR, zoom));
-    }, [cityBounds, viewport.height, viewport.width]);
+    }, [cameraBounds, viewport.height, viewport.width]);
 
     const clampCamera = useCallback((offsetX: number, offsetY: number, zoom: number): CameraState => {
         const clamped = clampPan(
             offsetX,
             offsetY,
             zoom,
-            cityBounds,
+            cameraBounds,
             viewport.x,
             viewport.y,
             viewport.width,
@@ -175,7 +218,7 @@ export default function CityHex({
             offsetX: clamped.tx,
             offsetY: clamped.ty,
         };
-    }, [cityBounds, viewport]);
+    }, [cameraBounds, viewport]);
 
     const zoomAtSvgPoint = useCallback((svgPoint: {x: number; y: number}, targetZoom: number) => {
         const zoom = clampZoomForCity(targetZoom);
@@ -416,6 +459,50 @@ export default function CityHex({
             </defs>
 
             <g transform={`translate(${cameraOffsetX} ${cameraOffsetY}) scale(${zoomFactor})`}>
+                {claimablePreviewCells.map((cell) => {
+                    const {
+                        centerX,
+                        centerY,
+                        cellKey,
+                        backgroundSpriteId,
+                        backgroundDevelopmentVector,
+                    } = cell;
+                    const clipId = `clip-preview-${cellKey}`;
+                    const backgroundSprite = CITY_HEX_BACKGROUND_SPRITES_BY_ID[backgroundSpriteId];
+                    const backgroundSpriteUrl = backgroundSprite?.src;
+                    const backgroundFill = getHexBackgroundFallbackFill(biome, backgroundDevelopmentVector, "city");
+
+                    return (
+                        <g
+                            key={`preview-${cellKey}`}
+                            transform={`translate(${centerX} ${centerY})`}
+                            pointerEvents="none"
+                        >
+                            <clipPath id={clipId}>
+                                <use href="#hexagonPath" />
+                            </clipPath>
+                            <use
+                                href="#hexagonPath"
+                                fill={backgroundFill}
+                                stroke="none"
+                            />
+                            {backgroundSpriteUrl && (
+                                <image
+                                    href={backgroundSpriteUrl}
+                                    x={-HEX_BACKGROUND_WIDTH / 2}
+                                    y={-HEX_BACKGROUND_HEIGHT / 2}
+                                    width={HEX_BACKGROUND_WIDTH}
+                                    height={HEX_BACKGROUND_HEIGHT}
+                                    preserveAspectRatio="xMidYMid slice"
+                                    clipPath={`url(#${clipId})`}
+                                    style={{ imageRendering: "pixelated", pointerEvents: "none" }}
+                                >
+                                    <title>{`${CITY_BIOME_LABELS[biome]} claimable terrain`}</title>
+                                </image>
+                            )}
+                        </g>
+                    );
+                })}
                 {preparedCells.map((cell) => {
                     const {
                         centerX,
@@ -517,10 +604,10 @@ export default function CityHex({
                             {backgroundSpriteUrl && (
                                 <image
                                     href={backgroundSpriteUrl}
-                                    x={-SPRITE_WIDTH / 2}
-                                    y={-SPRITE_HEIGHT / 2}
-                                    width={SPRITE_WIDTH}
-                                    height={SPRITE_HEIGHT}
+                                    x={-HEX_BACKGROUND_WIDTH / 2}
+                                    y={-HEX_BACKGROUND_HEIGHT / 2}
+                                    width={HEX_BACKGROUND_WIDTH}
+                                    height={HEX_BACKGROUND_HEIGHT}
                                     preserveAspectRatio="xMidYMid slice"
                                     clipPath={`url(#${clipId})`}
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}
@@ -741,7 +828,83 @@ function getOutlineKey(cell: PreparedHexCell): string {
     return `${cell.partOfStructureId}:${cell.structureCoreCellKey ?? cell.cellKey}`;
 }
 
-function getViewExtent(bounds: {minX: number; minY: number; maxX: number; maxY: number}): number {
+function getClaimablePreviewCells(cells: readonly HexCell[], biome: CityBiome): ClaimablePreviewHexCell[] {
+    const existingKeys = new Set(cells.map(cell => cell.cellKey));
+    const previewCoordinates = new Map<string, {column: number; row: number}>();
+
+    for (const cell of cells) {
+        for (const side of HEX_SIDE_DEFINITIONS) {
+            const coordinate = {
+                column: cell.column + side.columnDelta,
+                row: cell.row + side.rowDelta,
+            };
+            const cellKey = coordKey(coordinate);
+            if (existingKeys.has(cellKey) || previewCoordinates.has(cellKey)) continue;
+
+            previewCoordinates.set(cellKey, coordinate);
+        }
+    }
+
+    return [...previewCoordinates.entries()]
+        .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+        .map(([cellKey, coordinate]) => {
+            const {x, y} = axialCoordinateToPixelPosition(coordinate, HEX_RADIUS_PX, HEX_EDGE_GAP_PX);
+            const random = createSeededRandom(`${biome}:${cellKey}:claimableTerrain`);
+            const background = selectCityHexBackgroundSprite(
+                CITY_HEX_BACKGROUND_SPRITE_POOL,
+                CITY_HEX_BACKGROUND_TYPES.claimableTerrain,
+                biome,
+                selectHexBackgroundVector(random),
+                random,
+                DEFAULT_INITIAL_CITY_BIOME,
+            );
+
+            return {
+                ...coordinate,
+                cellKey,
+                centerX: x,
+                centerY: y,
+                backgroundSpriteId: background.backgroundSpriteId,
+                backgroundDevelopmentVector: background.backgroundDevelopmentVector,
+            };
+        });
+}
+
+function computePointBounds(points: readonly {centerX: number; centerY: number}[]): Bounds | null {
+    if (!points.length) return null;
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const point of points) {
+        minX = Math.min(minX, point.centerX);
+        minY = Math.min(minY, point.centerY);
+        maxX = Math.max(maxX, point.centerX);
+        maxY = Math.max(maxY, point.centerY);
+    }
+
+    return {minX, minY, maxX, maxY};
+}
+
+function createSeededRandom(seed: string): () => number {
+    let hash = 2166136261;
+    for (let index = 0; index < seed.length; index++) {
+        hash ^= seed.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+    }
+
+    return () => {
+        hash += 0x6D2B79F5;
+        let value = hash;
+        value = Math.imul(value ^ (value >>> 15), value | 1);
+        value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+        return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+function getViewExtent(bounds: Bounds): number {
     return Math.max(
         Math.abs(bounds.minX),
         Math.abs(bounds.minY),

@@ -46,6 +46,7 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 3. The runtime catalog in `src/data/cityHexBackgrounds.ts` discovers the file and exposes it as `hexBackgrounds.<type>.<biome>.<vector>.<fileStem>`.
 4. City hexes store the selected background sprite id in city state. If no sprite exists for the selected type, biome, and vector, the City page fills the hex with a biome/vector fallback color.
 5. Building construction switches the hex from `claimedTerrain` to `buildingUnderlay`; demolition returns it to `claimedTerrain`.
+6. In local debug mode, `/hex-background-editor` lists discovered hex background sprites and uploads PNGs through the local data server endpoint `POST /hex-background-sprites`.
 
 ## Add A Wall Segment Texture
 
