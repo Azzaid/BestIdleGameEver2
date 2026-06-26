@@ -8,20 +8,26 @@ import {selectCitySignatureStatus, selectGlobalModifierApplyContext} from "../st
 import {resetWallForMigration} from "../store/wall/slice.ts";
 import {ConfirmationModal} from "./ConfirmationModal.tsx";
 import * as s from "./CityExpansionControl.css.ts";
+import {selectCanExpandCityRadius, selectCityMaxCellRadius} from "../store/city/selectors.ts";
 
 const EXPAND_BLOCK_REASON = "The city is besieged. Raise controlled territory in battle before expanding.";
+const EXPAND_MAX_REASON = "This settlement has reached its maximum city size.";
 const EXPAND_WARNING = "City grows bigger, more noticeable and attracts more monsters";
 const EXODUS_MESSAGE = "Are you ready to abandon city and move on in search for a better place?";
 
 export function CityExpansionControl() {
     const dispatch = useTypedDispatch();
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
+    const canExpandCityRadius = useTypedSelector(selectCanExpandCityRadius);
+    const maxCellRadius = useTypedSelector(selectCityMaxCellRadius);
     const modifierContext = useTypedSelector(selectGlobalModifierApplyContext);
     const requirementSnapshot = useTypedSelector(selectGlobalSignalRequirementSnapshot);
     const [isConfirming, setIsConfirming] = useState(false);
     const [isConfirmingExodus, setIsConfirmingExodus] = useState(false);
 
     const handleExpandConfirm = () => {
+        if (!canExpandCityRadius) return;
+
         dispatch(expandCityRadius());
         dispatch(enqueueGlobalSignal({type: "cityExpanded"}));
         setIsConfirming(false);
@@ -53,6 +59,12 @@ export function CityExpansionControl() {
             scheme: "warning",
         });
     };
+    const expandDisabled = signatureStatus.isBesieged || !canExpandCityRadius;
+    const expandTitle = signatureStatus.isBesieged
+        ? EXPAND_BLOCK_REASON
+        : !canExpandCityRadius
+            ? EXPAND_MAX_REASON
+            : undefined;
 
     return (
         <>
@@ -60,8 +72,8 @@ export function CityExpansionControl() {
                 <button
                     className={s.expandButton}
                     type="button"
-                    disabled={signatureStatus.isBesieged}
-                    title={signatureStatus.isBesieged ? EXPAND_BLOCK_REASON : undefined}
+                    disabled={expandDisabled}
+                    title={expandTitle}
                     onClick={() => setIsConfirming(true)}
                 >
                     Expand City
@@ -79,7 +91,7 @@ export function CityExpansionControl() {
             {isConfirming && (
                 <ConfirmationModal
                     title="Expand City?"
-                    message={EXPAND_WARNING}
+                    message={`${EXPAND_WARNING}. Maximum city size: ${maxCellRadius}.`}
                     confirmLabel="Expand"
                     onCancel={() => setIsConfirming(false)}
                     onConfirm={handleExpandConfirm}

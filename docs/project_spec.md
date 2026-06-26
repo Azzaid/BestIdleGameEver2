@@ -104,7 +104,7 @@ Texture asset layout:
 - City building textures and zoom/shift metadata live in `src/assets/buildings/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
 - City wall segment textures and metadata live in `src/assets/wallSegments/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
 - City wall-top/superstructure textures live in `src/assets/wallSuperstructures/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
-- City hex background textures live in `src/assets/hexBackgrounds/<type>/<biome>/<vector>` and are cataloged through `src/data/cityHexBackgrounds.ts`. City state stores a biome plus a per-hex background sprite id/vector; migration rerolls the biome, initial and cleared cells use `claimedTerrain`, and built cells use `buildingUnderlay`.
+- City hex background textures live in `src/assets/hexBackgrounds/<type>/<biome>/<vector>` and are cataloged through `src/data/cityHexBackgrounds.ts`. City state stores a biome, maximum city size, generated terrain vector map, and per-hex background sprite id/vector; migration rerolls the biome and terrain map, initial and cleared cells use `claimedTerrain`, and built cells use `buildingUnderlay`.
 - Tower component textures and metadata live in `src/assets/gunParts/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`; tower part runtime metadata is derived in `src/data/gunParts/partVisualMetadata.ts`.
 - Global event pictures live in `src/assets/events` and are discovered by the global event image catalog.
 - Local editor image writes go through dedicated file upload endpoints (`/entity-sprites`, `/global-event-images`, and `/hex-background-sprites`); JSON definition saves should reference image ids or visual asset ids instead of carrying image bytes.
@@ -332,6 +332,7 @@ City view implementation:
 
 - The City page renders an SVG hex map.
 - City state stores the full generated map, including the one-hex unclaimed ring around the claimed city. Unclaimed cells are identified with `isUnclaimed`; selectors expose claimed-only hexes for upkeep, wall, battle, and progression calculations.
+- Each city has a maximum cell radius determined when it is created. The current implementation sets it from the `maxCitySize` constant and precomputes a coherent terrain vector map through `maxCitySize + 1`.
 - Normal city hexes use city building data.
 - The top hex row is reserved for wall hexes and uses the wall build catalog.
 - Tiles without texture render a colored fallback with the building id so unfinished content remains visible.

@@ -14,6 +14,13 @@ export const selectCityHexes = createSelector(
 
 export const selectCityCellRadius = (state: RootState) => state.city.cellRadius;
 
+export const selectCityMaxCellRadius = (state: RootState) => state.city.maxCellRadius;
+
+export const selectCanExpandCityRadius = createSelector(
+    [selectCityCellRadius, selectCityMaxCellRadius],
+    (cellRadius, maxCellRadius) => cellRadius < maxCellRadius
+);
+
 export const selectCityFootprint = (state: RootState) => state.city.cityFootprint;
 
 export const selectBuiltStructureIds = (state: RootState) => state.city.builtStructureIds ?? [];

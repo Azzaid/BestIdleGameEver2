@@ -7,9 +7,9 @@ import {
     INITIAL_CITY_CELL_RADIUS,
     FOOTPRINT_PER_DEMOLISHED_HEX,
     FOOTPRINT_PER_SURVIVED_SIEGE,
+    maxCitySize,
 } from "../../data/constants.ts";
 import { DEFAULT_BATTLE_BACKGROUND_ID } from "../../models/battle/backgrounds.ts";
-import {coordKey} from "../../pages/City/Components/CityHex/hexUtils.ts";
 import type {CityState} from "../../models/store/city.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
 import {STRUCTURES, STRUCTURES_BY_ID} from "../../data/buildings/index.ts";
@@ -19,15 +19,19 @@ import {
     CITY_HEX_BACKGROUND_TYPES,
     type CityBiome,
     selectCityHexBackgroundSprite,
-    selectHexBackgroundVector,
     selectRandomCityBiome,
 } from "../../models/city/hexBackgrounds.ts";
+import {
+    createCityTerrainVectorMap,
+    getTerrainVectorMapKey,
+    type CityTerrainVectorMap,
+} from "../../models/city/terrainVectors.ts";
 
-const getTerrainBackground = (biome: CityBiome, isUnclaimed: boolean) => selectCityHexBackgroundSprite(
+const getTerrainBackground = (biome: CityBiome, isUnclaimed: boolean, vector: DevelopmentVectorValue) => selectCityHexBackgroundSprite(
     CITY_HEX_BACKGROUND_SPRITE_POOL,
     isUnclaimed ? CITY_HEX_BACKGROUND_TYPES.claimableTerrain : CITY_HEX_BACKGROUND_TYPES.claimedTerrain,
     biome,
-    selectHexBackgroundVector(),
+    vector,
     Math.random,
     DEFAULT_INITIAL_CITY_BIOME,
 );
@@ -41,7 +45,11 @@ const getBuildingUnderlayBackground = (biome: CityBiome, vector: DevelopmentVect
     DEFAULT_INITIAL_CITY_BIOME,
 );
 
-const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS, biome: CityBiome = selectRandomCityBiome()) => {
+const getInitialHexes = ((
+    cityRadius=INITIAL_CITY_CELL_RADIUS,
+    biome: CityBiome = selectRandomCityBiome(),
+    terrainVectorMap: CityTerrainVectorMap = createCityTerrainVectorMap(cityRadius + 1),
+) => {
     const generatedCells: HexCell[] = [];
     const mapRadius = cityRadius + 1;
 
@@ -51,12 +59,13 @@ const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS, biome: CityBiome 
         for (let row = rowMin; row <= rowMax; row++) {
             const isUnclaimed = getAxialDistance({column, row}, {column: 0, row: 0}) > cityRadius;
             const isWall = !isUnclaimed && row === -cityRadius;
-            const background = getTerrainBackground(biome, isUnclaimed);
+            const terrainVector = terrainVectorMap[getTerrainVectorMapKey({column, row})] ?? DEVELOPMENT_VECTORS.medieval;
+            const background = getTerrainBackground(biome, isUnclaimed, terrainVector);
 
             generatedCells.push({
                 column,
                 row,
-                cellKey: coordKey({column, row}),
+                cellKey: getTerrainVectorMapKey({column, row}),
                 isUnclaimed,
                 kind: isWall ? "wall" : "city",
                 buildingKey: null,
@@ -73,10 +82,15 @@ const getInitialHexes = ((cityRadius=INITIAL_CITY_CELL_RADIUS, biome: CityBiome 
     return generatedCells;
 })
 
-const getResizedHexes = (existingHexes: HexCell[], cityRadius: number, biome: CityBiome) => {
+const getResizedHexes = (
+    existingHexes: HexCell[],
+    cityRadius: number,
+    biome: CityBiome,
+    terrainVectorMap: CityTerrainVectorMap,
+) => {
     const existingByKey = new Map(existingHexes.map(hex => [hex.cellKey, hex]));
 
-    return getInitialHexes(cityRadius, biome).map(hex => {
+    return getInitialHexes(cityRadius, biome, terrainVectorMap).map(hex => {
         const existingHex = existingByKey.get(hex.cellKey);
         if (!existingHex || hex.isUnclaimed || existingHex.isUnclaimed || hex.kind === "wall") {
             return hex;
@@ -120,9 +134,13 @@ const getDemolishedHexKeys = (hexes: HexCell[], targetHex: HexCell): string[] =>
 };
 
 const getInitialState = (biome: CityBiome): CityState => {
+    const terrainVectorMap = createCityTerrainVectorMap(maxCitySize + 1);
+
     return {
-        hexes: getInitialHexes(INITIAL_CITY_CELL_RADIUS, biome),
+        hexes: getInitialHexes(INITIAL_CITY_CELL_RADIUS, biome, terrainVectorMap),
         cellRadius: INITIAL_CITY_CELL_RADIUS,
+        maxCellRadius: maxCitySize,
+        terrainVectorMap,
         cityFootprint: 0,
         builtStructureIds: [],
         biome,
@@ -211,12 +229,14 @@ export const citySlice = createSlice({
         retreatCityRadius: (state) => {
             const nextRadius = Math.max(1, state.cellRadius - 1);
             state.cellRadius = nextRadius;
-            state.hexes = getResizedHexes(state.hexes, nextRadius, state.biome);
+            state.hexes = getResizedHexes(state.hexes, nextRadius, state.biome, state.terrainVectorMap);
         },
         expandCityRadius: (state) => {
-            const nextRadius = state.cellRadius + 1;
+            const nextRadius = Math.min(state.maxCellRadius, state.cellRadius + 1);
+            if (nextRadius === state.cellRadius) return;
+
             state.cellRadius = nextRadius;
-            state.hexes = getResizedHexes(state.hexes, nextRadius, state.biome);
+            state.hexes = getResizedHexes(state.hexes, nextRadius, state.biome, state.terrainVectorMap);
         },
         demolishHex: (state, action: PayloadAction<{cellKey: string}>) => {
             const targetHex = state.hexes.find(hex => hex.cellKey === action.payload.cellKey);
@@ -228,7 +248,14 @@ export const citySlice = createSlice({
                 if (!demolishedHexKeys.has(hex.cellKey)) return;
 
                 hex.buildingKey = null;
-                Object.assign(hex, getTerrainBackground(state.biome, false));
+                Object.assign(
+                    hex,
+                    getTerrainBackground(
+                        state.biome,
+                        false,
+                        state.terrainVectorMap[hex.cellKey] ?? DEVELOPMENT_VECTORS.medieval,
+                    ),
+                );
                 hex.spriteKey = null;
                 hex.initialBuildingKey = null;
                 hex.partOfStructureId = null;
