@@ -207,8 +207,10 @@ const CityPage = () => {
 
     return (
         <div className={s.cityPage}>
-            <div className={s.cityContainer}>
-                <CityHex cells={allHexes} biome={cityBiome} onSelect={selectHex}/>
+            <div className={s.cityViewport}>
+                <div className={s.cityContainer}>
+                    <CityHex cells={allHexes} biome={cityBiome} onSelect={selectHex}/>
+                </div>
             </div>
             <GlobalEffectsDrawer
                 activeGlobalModifiers={activeGlobalModifiers}

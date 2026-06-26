@@ -107,6 +107,11 @@ export default function CityHex({
         [preparedCells]
     );
 
+    const cameraBounds = useMemo(
+        () => computePointBounds(preparedCells) ?? cityBounds,
+        [cityBounds, preparedCells],
+    );
+
     // Camera state
     const [zoomFactor, setZoomFactor] = useState(INITIAL_ZOOM_FACTOR);
     const [cameraOffsetX, setCameraOffsetX] = useState(0);
@@ -168,17 +173,17 @@ export default function CityHex({
     }, []);
 
     const clampZoomForCity = useCallback((zoom: number) => {
-        const minZoomThatFits = maxZoomThatFits(cityBounds, viewport.width, viewport.height);
+        const minZoomThatFits = maxZoomThatFits(cameraBounds, viewport.width, viewport.height);
 
         return Math.max(minZoomThatFits, Math.min(MAX_ZOOM_FACTOR, zoom));
-    }, [cityBounds, viewport.height, viewport.width]);
+    }, [cameraBounds, viewport.height, viewport.width]);
 
     const clampCamera = useCallback((offsetX: number, offsetY: number, zoom: number): CameraState => {
         const clamped = clampPan(
             offsetX,
             offsetY,
             zoom,
-            cityBounds,
+            cameraBounds,
             viewport.x,
             viewport.y,
             viewport.width,
@@ -190,7 +195,7 @@ export default function CityHex({
             offsetX: clamped.tx,
             offsetY: clamped.ty,
         };
-    }, [cityBounds, viewport]);
+    }, [cameraBounds, viewport]);
 
     const zoomAtSvgPoint = useCallback((svgPoint: {x: number; y: number}, targetZoom: number) => {
         const zoom = clampZoomForCity(targetZoom);
@@ -758,6 +763,24 @@ function getOutlineKey(cell: PreparedHexCell): string {
     if (cell.kind !== "city" || !cell.partOfStructureId) return cell.cellKey;
 
     return `${cell.partOfStructureId}:${cell.structureCoreCellKey ?? cell.cellKey}`;
+}
+
+function computePointBounds(points: readonly {centerX: number; centerY: number}[]): Bounds | null {
+    if (!points.length) return null;
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const point of points) {
+        minX = Math.min(minX, point.centerX);
+        minY = Math.min(minY, point.centerY);
+        maxX = Math.max(maxX, point.centerX);
+        maxY = Math.max(maxY, point.centerY);
+    }
+
+    return {minX, minY, maxX, maxY};
 }
 
 function getViewExtent(bounds: Bounds): number {

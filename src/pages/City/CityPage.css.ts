@@ -3,6 +3,7 @@ import {vars} from "../../theme/theme.css.ts";
 
 export const cityPage = style({
     position: 'relative',
+    containerType: 'size',
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
@@ -111,17 +112,29 @@ export const globalModifierTitle = style({
     fontSize: '0.96rem',
 });
 
-export const cityContainer = style({
-    flex: '1 1 900px',
-    width: '100%',
-    maxWidth: '900px',
-    maxHeight: 'min(100%, 900px)',
-    aspectRatio:'1/1',     /* ensures square shape */
+export const cityViewport = style({
+    flex: '0 1 min(100cqw, 100cqh, 900px)',
+    height: '100%',
+    minWidth: 0,
+    minHeight: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     '@media': {
         '(max-width: 760px)': {
-            maxWidth: '100%',
-            maxHeight: 'min(78dvh, 100vw)',
+            height: 'auto',
             margin: '0 auto 12px',
+        },
+    },
+});
+
+export const cityContainer = style({
+    width: 'min(100cqw, 100cqh, 900px)',
+    minWidth: 0,
+    aspectRatio: '1 / 1',
+    '@media': {
+        '(max-width: 760px)': {
+            width: 'min(100%, 78dvh)',
         },
     },
 });
