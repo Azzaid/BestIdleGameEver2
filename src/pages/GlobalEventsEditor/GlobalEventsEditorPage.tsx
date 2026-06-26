@@ -1142,7 +1142,7 @@ function createApplyRuleRowFromRule(rule: GlobalModifierApplyRule): ApplyRuleRow
 function createApplyRuleRow(
   type: ApplyRuleType = "addHomogeneousValue",
   stateKey = "",
-  valueId = defaultValueId,
+  valueId: string = defaultValueId,
   valueField: GlobalModifierValueField = "available",
   multiplier = "",
   additive = "",
@@ -1188,7 +1188,7 @@ function createEffectRowFromEffect(effect: EffectTemplate): EffectRow {
 }
 
 function createEffectRow(
-  valueId = defaultValueId,
+  valueId: string = defaultValueId,
   additionalKeywords = "",
   removedKeywords = "",
   additive = createNumericTemplateDraft(undefined),
