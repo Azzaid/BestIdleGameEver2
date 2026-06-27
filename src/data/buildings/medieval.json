@@ -149,6 +149,7 @@
     "kind": "superstructure",
     "description": "A wooden house and tool shed that support woodworking and stoneworking.",
     "keywords": [
+      "building",
       "production",
       "people",
       "gold",
@@ -193,7 +194,12 @@
         ],
         "additive": 10
       }
-    ]
+    ],
+    "visualAssetId": "building_medieval_craftsmans-house",
+    "requiredBuildingSprites": {
+      "buildings.medieval.woodenHouse": "building_medieval_craftsmans-house-from-wooden-house",
+      "buildings.medieval.toolShed": "building_medieval_craftsmans-house-from-tool-shed"
+    }
   },
   {
     "id": "buildings.medieval.market",
