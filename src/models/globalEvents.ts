@@ -38,6 +38,7 @@ export type GlobalSignalMessage = {
 
 export type GlobalEventAction =
   | {type: "applyGlobalModifier"; modifierId: string}
+  | {type: "removeGlobalModifier"; modifierId: string}
   | {type: "abandonCity"}
   | {type: "triggerEnding"; endingId: string}
   | {type: "showCutscene"; cutsceneId: string}

@@ -59,6 +59,9 @@ export const globalEventsSlice = createSlice({
     ) => {
       applyGlobalModifierById(state, action.payload.modifierId, action.payload.context);
     },
+    removeGlobalModifier: (state, action: PayloadAction<string>) => {
+      removeGlobalModifierById(state, action.payload);
+    },
     addGlobalEventFlag: (state, action: PayloadAction<string>) => {
       addUnique(state.flags, action.payload);
     },
@@ -97,6 +100,7 @@ export const {
   dismissGlobalEventModalEntries,
   enqueueGlobalSignal,
   executeGlobalEventActions,
+  removeGlobalModifier,
   removeGlobalEventFlag,
 } = globalEventsSlice.actions;
 
@@ -133,6 +137,11 @@ function executeGlobalEventAction(
 ): void {
   if (action.type === "applyGlobalModifier") {
     applyGlobalModifierById(state, action.modifierId, modifierContext);
+    return;
+  }
+
+  if (action.type === "removeGlobalModifier") {
+    removeGlobalModifierById(state, action.modifierId);
     return;
   }
 
@@ -179,6 +188,13 @@ function applyGlobalModifierById(
     state.activeGlobalModifiers[modifierId],
     context,
   );
+}
+
+function removeGlobalModifierById(
+  state: GlobalEventsState,
+  modifierId: string,
+): void {
+  delete state.activeGlobalModifiers[modifierId];
 }
 
 function addUnique(values: string[], value: string): void {

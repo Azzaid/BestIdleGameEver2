@@ -112,6 +112,16 @@ function createActionEffectLines(action: GlobalEventAction): EffectLine[] {
     }));
   }
 
+  if (action.type === "removeGlobalModifier") {
+    const modifier = GLOBAL_MODIFIERS[action.modifierId];
+    return [{
+      title: modifier?.title ?? action.modifierId,
+      description: modifier?.description
+        ? `Removes persistent global modifier. ${modifier.description}`
+        : "Removes a persistent global modifier.",
+    }];
+  }
+
   if (action.type === "abandonCity") {
     return [{title: "City Abandoned", description: "Ends the current city and prepares the next transition."}];
   }

@@ -18,7 +18,7 @@ export type ResourceKeyword = typeof RESOURCE_KEYWORDS[number];
 export const MECHANIC_KEYWORDS = ["aura","chain","area","singleTarget","scalesWithLevel","slow","harm","push","visibility"] as const;
 export type MechanicKeyword = typeof MECHANIC_KEYWORDS[number];
 
-export const VECTOR_KEYWORDS = ["tech","nature","medieval","aether"] as const;
+export const VECTOR_KEYWORDS = ["neutral","tech","nature","medieval","aether"] as const;
 export type VectorKeyword = typeof VECTOR_KEYWORDS[number];
 
 export const SYNERGY_KEYWORDS = [

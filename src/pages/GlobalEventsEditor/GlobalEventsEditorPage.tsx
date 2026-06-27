@@ -133,6 +133,7 @@ const requirementTypes: RequirementType[] = [
 ];
 const actionTypes: ActionType[] = [
   "applyGlobalModifier",
+  "removeGlobalModifier",
   "abandonCity",
   "triggerEnding",
   "showCutscene",
@@ -890,7 +891,7 @@ function ActionEditor({
                 {actionTypes.map(type => <option key={type} value={type}>{formatLabel(type)}</option>)}
               </select>
             </label>
-            {row.type === "applyGlobalModifier" && modifierIds.length > 0 ? (
+            {(row.type === "applyGlobalModifier" || row.type === "removeGlobalModifier") && modifierIds.length > 0 ? (
               <label className={s.field}>
                 <span className={s.label}>Modifier ID</span>
                 <select className={s.input} value={row.target} onChange={event => updateAction(row.rowId, {target: event.target.value})}>
@@ -1284,7 +1285,7 @@ function createRequirementRow(type: RequirementType = "globalFlagExists", target
 function createAction(row: ActionRow): GlobalEventAction {
   const target = row.target.trim();
 
-  if (row.type === "applyGlobalModifier") return {type: row.type, modifierId: target};
+  if (row.type === "applyGlobalModifier" || row.type === "removeGlobalModifier") return {type: row.type, modifierId: target};
   if (row.type === "triggerEnding") return {type: row.type, endingId: target};
   if (row.type === "showCutscene") return {type: row.type, cutsceneId: target};
   if (row.type === "unlockTechnology") return {type: row.type, technologyId: target};
@@ -1293,7 +1294,7 @@ function createAction(row: ActionRow): GlobalEventAction {
 }
 
 function createActionRowFromAction(action: GlobalEventAction): ActionRow {
-  if (action.type === "applyGlobalModifier") return createActionRow(action.type, action.modifierId);
+  if (action.type === "applyGlobalModifier" || action.type === "removeGlobalModifier") return createActionRow(action.type, action.modifierId);
   if (action.type === "triggerEnding") return createActionRow(action.type, action.endingId);
   if (action.type === "showCutscene") return createActionRow(action.type, action.cutsceneId);
   if (action.type === "unlockTechnology") return createActionRow(action.type, action.technologyId);
@@ -1338,7 +1339,7 @@ function getDefaultRequirementTarget(type: RequirementType): string {
 }
 
 function getActionTargetLabel(type: ActionType): string {
-  if (type === "applyGlobalModifier") return "Modifier ID";
+  if (type === "applyGlobalModifier" || type === "removeGlobalModifier") return "Modifier ID";
   if (type === "triggerEnding") return "Ending ID";
   if (type === "showCutscene") return "Cutscene ID";
   if (type === "unlockTechnology") return "Technology ID";
@@ -1347,7 +1348,7 @@ function getActionTargetLabel(type: ActionType): string {
 }
 
 function getDefaultActionTarget(type: ActionType, modifierIds: readonly string[]): string {
-  if (type === "applyGlobalModifier") return modifierIds[0] ?? "";
+  if (type === "applyGlobalModifier" || type === "removeGlobalModifier") return modifierIds[0] ?? "";
   if (type === "unlockTechnology") return technologyIds[0] ?? "";
   return "";
 }

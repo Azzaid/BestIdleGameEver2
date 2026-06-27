@@ -109,6 +109,10 @@
     "priority": 0,
     "actions": [
       {
+        "type": "removeGlobalModifier",
+        "modifierId": "tiny_settlement"
+      },
+      {
         "type": "applyGlobalModifier",
         "modifierId": "village"
       }
