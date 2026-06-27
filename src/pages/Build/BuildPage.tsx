@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { ColumnDef, ColumnFiltersState, PaginationState, VisibilityState } from '@tanstack/react-table';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import type { ColumnDef, PaginationState, VisibilityState } from '@tanstack/react-table';
 import {
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import * as s from './BuildPage.css.ts';
 import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/gunParts/index.ts';
+import { TOWER_PART_VISUAL_ASSETS } from '../../data/gunParts/partVisualMetadata.ts';
 import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
 import { selectActiveTower, selectActiveTowerDraftAssembly, selectAvailableTowerList, selectHasAnyTowerBuild } from '../../store/towers/selectors.ts';
@@ -32,26 +32,82 @@ import {
 import {homogeneousValueTotalsToUpkeepAmount} from '../../models/homogeneousValueAdapters.ts';
 import {HOMOGENEOUS_VALUE_IDS, getHomogeneousValueDefinition} from '../../data/homogeneousValues/index.ts';
 import {areRequirementsMet, getUnmetRequirements, type Requirement} from '../../models/progression/requirements.ts';
+import {DEVELOPMENT_VECTOR_LABELS, type DevelopmentVectorKey} from '../../models/DevlopmentVector.ts';
+
+type ModifierRow = {
+  key: string;
+  label: string;
+  value: number;
+  valueId: string;
+  additionalKeywords?: readonly string[];
+};
+
+const vectorRowColors: Record<DevelopmentVectorKey, string> = {
+  neutral: 'rgba(150, 150, 150, 0.18)',
+  tech: 'rgba(84, 185, 255, 0.2)',
+  nature: 'rgba(94, 190, 103, 0.2)',
+  medieval: 'rgba(210, 160, 82, 0.2)',
+  aether: 'rgba(172, 112, 255, 0.22)',
+};
 
 function getPartKeywords(part: GunPart) {
   return Array.from(part.keywords);
 }
 
-function formatModifierList(part: GunPart) {
+function getPartModifierRows(part: GunPart): ModifierRow[] {
   const effects = getHomogeneousProductionContributions({
     values: part.values,
   }).filter((effect) => (
     effect.valueId !== HOMOGENEOUS_VALUE_IDS.towerWeight
   ));
-  if (!effects.length) return 'No stat modifiers';
 
   return effects
-    .map((effect) => {
+    .map((effect): ModifierRow => {
       const value = resolveEffectValue(effect);
       const definition = getHomogeneousValueDefinition(effect.valueId);
-      return `${definition.label} ${value > 0 ? '+' : ''}${formatHomogeneousValue(effect.valueId, value, effect.additionalKeywords)}`;
-    })
-    .join(', ');
+      const additionalKeywords = effect.additionalKeywords ?? [];
+
+      return {
+        key: `${effect.valueId}:${additionalKeywords.join('.')}`,
+        label: definition.label,
+        value,
+        valueId: effect.valueId,
+        additionalKeywords,
+      };
+    });
+}
+
+function getModifierDeltaRows(part: GunPart, installedPart?: GunPart): ModifierRow[] {
+  const candidateRows = getPartModifierRows(part);
+  const installedRows = installedPart ? getPartModifierRows(installedPart) : [];
+  const keys = [...new Set([
+    ...candidateRows.map((row) => row.key),
+    ...installedRows.map((row) => row.key),
+  ])];
+
+  return keys.map((key) => {
+    const candidate = candidateRows.find((row) => row.key === key);
+    const installed = installedRows.find((row) => row.key === key);
+    const base = candidate ?? installed!;
+
+    return {
+      ...base,
+      value: (candidate?.value ?? 0) - (installed?.value ?? 0),
+    };
+  }).filter((row) => Math.abs(row.value) > 0.0001);
+}
+
+function formatModifierValue(row: ModifierRow, forceSign = false) {
+  const prefix = forceSign && row.value > 0 ? '+' : '';
+  return `${prefix}${formatHomogeneousValue(row.valueId, row.value, row.additionalKeywords)}`;
+}
+
+function getVectorRowStyle(vector: DevelopmentVectorKey | undefined): CSSProperties {
+  const color = vectorRowColors[vector ?? 'medieval'];
+
+  return {
+    background: `linear-gradient(90deg, ${color}, rgba(255, 255, 255, 0) 34%)`,
+  };
 }
 
 function getPartSupportCost(part: GunPart): UpkeepAmount {
@@ -168,9 +224,10 @@ const BuildPage = () => {
   const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
   const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>(TOWER_PART_SLOT_ORDER[0].key);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 8 });
+  const [detailsPart, setDetailsPart] = useState<GunPart | null>(null);
+  const isNarrowScreen = useMediaQuery('(max-width: 700px)');
   const canModifyTower = !signatureStatus.isBesieged || !hasAnyTowerBuild;
 
   const selectSlot = (slot: TowerPartSlot) => {
@@ -197,6 +254,10 @@ const BuildPage = () => {
     )),
     [activeTab, visibleTowerPartIdSet]
   );
+  const installedSlotPart = useMemo(() => {
+    const installedPartId = activeTower?.selectedPartIds[activeTab];
+    return installedPartId ? TOWER_PARTS.find((part) => part.id === installedPartId) : undefined;
+  }, [activeTab, activeTower?.selectedPartIds]);
 
   useEffect(() => {
     if (availableSlotOptions.some((slotOption) => slotOption.key === activeTab)) return;
@@ -208,7 +269,58 @@ const BuildPage = () => {
     setPagination((current) => ({ ...current, pageIndex: 0 }));
   }, [activeTab, availableSlotOptions]);
 
-  const columns: ColumnDef<GunPart, unknown>[] = useMemo(() => [
+  useEffect(() => {
+    setDetailsPart(null);
+  }, [activeTab]);
+
+  const selectColumn: ColumnDef<GunPart, unknown> = useMemo(() => ({
+    id: 'select',
+    header: () => isNarrowScreen ? null : (
+      <button
+        className={s.clearHeaderButton}
+        type="button"
+        disabled={!selectedPartId || !canModifyTower}
+        title={!canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined}
+        onClick={() => dispatch(clearTowerDraftPart({ slot: activeTab }))}
+      >
+        clear
+      </button>
+    ),
+    enableColumnFilter: false,
+    cell: (info) => {
+      const part = info.row.original;
+      const selected = selectedPartId === part.id;
+      const unlocked = unlockedTowerPartIdSet.has(part.id);
+      const buildRequirementsMet = areRequirementsMet(part.buildRequirements, requirementResolutionData);
+      const blockedTitle = !canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined;
+      const lockedTitle = !unlocked ? 'This part is visible, but not permanently unlocked yet.' : undefined;
+      const buildRequirementsTitle = !buildRequirementsMet
+        ? formatUnmetBuildRequirements(getUnmetRequirements(part.buildRequirements, requirementResolutionData), requirementResolutionData)
+        : undefined;
+
+      return (
+        <button
+          className={`${selected ? s.removeButton : s.installButton} ${isNarrowScreen ? s.compactActionButton : ''}`}
+          disabled={!canModifyTower || (!selected && (!unlocked || !buildRequirementsMet))}
+          title={blockedTitle ?? lockedTitle ?? buildRequirementsTitle ?? (selected ? 'Remove this part from the draft tower.' : 'Install this part.')}
+          onClick={(event) => {
+            event.stopPropagation();
+            if (!canModifyTower || (!selected && (!unlocked || !buildRequirementsMet))) return;
+            if (selected) {
+              dispatch(clearTowerDraftPart({ slot: activeTab }));
+              return;
+            }
+
+            dispatch(selectTowerDraftPart({ slot: activeTab, partId: part.id }));
+          }}
+        >
+          {isNarrowScreen ? (selected ? '-' : '+') : selected ? 'Remove' : 'Install'}
+        </button>
+      );
+    },
+  }), [activeTab, canModifyTower, dispatch, isNarrowScreen, requirementResolutionData, selectedPartId, unlockedTowerPartIdSet]);
+
+  const dataColumns: ColumnDef<GunPart, unknown>[] = useMemo(() => [
     {
       id: 'name',
       accessorKey: 'name',
@@ -222,19 +334,13 @@ const BuildPage = () => {
         );
       },
     },
-    {
-      id: 'vector',
-      accessorKey: 'vector',
-      header: 'Vector',
-      cell: (info) => info.getValue() ?? 'medieval',
-    },
-    {
+    ...(isNarrowScreen ? [] : [{
       id: 'description',
       accessorKey: 'description',
       header: 'Description',
       cell: (info) => info.getValue() ?? '',
-    },
-    {
+    } satisfies ColumnDef<GunPart, unknown>]),
+    ...(isNarrowScreen ? [] : [{
       id: 'keywords',
       accessorFn: (row) => getPartKeywords(row).join(', '),
       header: 'Keywords',
@@ -245,18 +351,37 @@ const BuildPage = () => {
           ))}
         </div>
       ),
-    },
+    } satisfies ColumnDef<GunPart, unknown>]),
     {
       id: 'modifiers',
-      accessorFn: formatModifierList,
+      accessorFn: (row) => getModifierDeltaRows(row, installedSlotPart)
+        .map((modifier) => `${modifier.label} ${formatModifierValue(modifier, true)}`)
+        .join(', '),
       header: 'Modifiers',
-      cell: (info) => info.getValue(),
+      cell: (info) => {
+        const modifiers = getModifierDeltaRows(info.row.original, installedSlotPart);
+
+        if (!modifiers.length) {
+          return <span className={s.emptyText}>No change</span>;
+        }
+
+        return (
+          <div className={s.modifierRows}>
+            {modifiers.map((modifier) => (
+              <span key={modifier.key} className={s.modifierRow}>
+                <span>{modifier.label}</span>
+                <strong>{formatModifierValue(modifier, true)}</strong>
+              </span>
+            ))}
+          </div>
+        );
+      },
     },
     {
       id: 'weight',
       accessorFn: getPartWeight,
       header: 'Weight',
-      cell: (info) => info.getValue(),
+      cell: (info) => <span className={s.weightValue}>{String(info.getValue())}</span>,
     },
     {
       id: 'support',
@@ -291,62 +416,20 @@ const BuildPage = () => {
         );
       },
     },
-    {
-      id: 'select',
-      header: () => (
-        <button
-          className={s.clearHeaderButton}
-          type="button"
-          disabled={!selectedPartId || !canModifyTower}
-          title={!canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined}
-          onClick={() => dispatch(clearTowerDraftPart({ slot: activeTab }))}
-        >
-          clear
-        </button>
-      ),
-      enableColumnFilter: false,
-      cell: (info) => {
-        const part = info.row.original;
-        const selected = selectedPartId === part.id;
-        const unlocked = unlockedTowerPartIdSet.has(part.id);
-        const buildRequirementsMet = areRequirementsMet(part.buildRequirements, requirementResolutionData);
-        const blockedTitle = !canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined;
-        const lockedTitle = !unlocked ? 'This part is visible, but not permanently unlocked yet.' : undefined;
-        const buildRequirementsTitle = !buildRequirementsMet
-          ? formatUnmetBuildRequirements(getUnmetRequirements(part.buildRequirements, requirementResolutionData), requirementResolutionData)
-          : undefined;
+  ], [activeTab, cityResolution.effectiveUpkeep, installedSlotPart, isNarrowScreen, requirementResolutionData, resolvedTower.selectedParts, resolvedTower.supportCost]);
 
-        return (
-          <button
-            className={selected ? s.removeButton : s.installButton}
-            disabled={!canModifyTower || (!selected && (!unlocked || !buildRequirementsMet))}
-            title={blockedTitle ?? lockedTitle ?? buildRequirementsTitle ?? (selected ? 'Remove this part from the draft tower.' : undefined)}
-            onClick={() => {
-              if (!canModifyTower || (!selected && (!unlocked || !buildRequirementsMet))) return;
-              if (selected) {
-                dispatch(clearTowerDraftPart({ slot: activeTab }));
-                return;
-              }
-
-              dispatch(selectTowerDraftPart({ slot: activeTab, partId: part.id }));
-            }}
-          >
-            {selected ? 'Remove' : 'Install'}
-          </button>
-        );
-      },
-    },
-  ], [activeTab, canModifyTower, cityResolution.effectiveUpkeep, dispatch, requirementResolutionData, resolvedTower.selectedParts, resolvedTower.supportCost, selectedPartId, unlockedTowerPartIdSet]);
+  const columns: ColumnDef<GunPart, unknown>[] = useMemo(
+    () => isNarrowScreen ? [selectColumn, ...dataColumns] : [...dataColumns, selectColumn],
+    [dataColumns, isNarrowScreen, selectColumn]
+  );
 
   const table = useReactTable({
     data: activeSlotParts,
     columns,
-    state: { columnFilters, columnVisibility, pagination },
-    onColumnFiltersChange: setColumnFilters,
+    state: { columnVisibility, pagination },
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
@@ -361,12 +444,11 @@ const BuildPage = () => {
     && canModifyTower;
   const actionLabel = hasAnyTowerBuild ? 'Rebuild' : 'Build';
   const draftChanged = JSON.stringify(activeTower?.selectedPartIds ?? {}) !== JSON.stringify(towerDraftAssembly.selectedPartIds);
-  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const filteredRowCount = table.getCoreRowModel().rows.length;
   const firstVisibleRow = filteredRowCount === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
   const lastVisibleRow = Math.min(filteredRowCount, (pagination.pageIndex + 1) * pagination.pageSize);
   const columnLabels: Record<string, string> = {
     name: 'Name',
-    vector: 'Vector',
     description: 'Description',
     keywords: 'Keywords',
     modifiers: 'Modifiers',
@@ -374,6 +456,9 @@ const BuildPage = () => {
     support: 'Support',
     select: 'Install',
   };
+  const detailsModifierRows = detailsPart ? getPartModifierRows(detailsPart) : [];
+  const detailsSupportCost = detailsPart ? getSupportStatus(getPartSupportCost(detailsPart), {}) : [];
+  const detailsPreviewAsset = detailsPart ? TOWER_PART_VISUAL_ASSETS[detailsPart.sprite.textureKey] ?? TOWER_PART_VISUAL_ASSETS[detailsPart.id] : undefined;
   const statRows = [
     ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
     ['Shots/s', resolvedTower.stats.shotsPerSecond.toFixed(2)],
@@ -556,18 +641,13 @@ const BuildPage = () => {
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className={s.tableRow}>
                   {headerGroup.headers.map((header) => (
-                    <th key={header.id} className={s.tableHeaderCell}>
+                    <th
+                      key={header.id}
+                      className={`${s.tableHeaderCell} ${header.column.id === 'weight' ? s.weightHeaderCell : ''}`}
+                    >
                       {header.isPlaceholder ? null : (
                         <div className={s.headerContent}>
                           <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
-                          {header.column.getCanFilter() && header.column.id !== 'select' ? (
-                            <input
-                              className={s.filterInput}
-                              value={(header.column.getFilterValue() as string) ?? ''}
-                              onChange={(event) => header.column.setFilterValue(event.target.value)}
-                              placeholder="Filter"
-                            />
-                          ) : null}
                         </div>
                       )}
                     </th>
@@ -583,9 +663,21 @@ const BuildPage = () => {
                   <tr
                     key={row.id}
                     className={`${s.tableRow} ${selected ? s.selectedRow : ''}`}
+                    style={getVectorRowStyle(row.original.vector)}
+                    onClick={() => setDetailsPart(row.original)}
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setDetailsPart(row.original);
+                      }
+                    }}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className={s.tableCell}>
+                      <td
+                        key={cell.id}
+                        className={`${s.tableCell} ${cell.column.id === 'weight' ? s.weightCell : ''}`}
+                      >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}
@@ -596,7 +688,7 @@ const BuildPage = () => {
               {table.getRowModel().rows.length === 0 ? (
                 <tr className={s.tableRow}>
                   <td className={s.tableCell} colSpan={table.getAllLeafColumns().length}>
-                    No parts match the current filters.
+                    No parts available for this slot.
                   </td>
                 </tr>
               ) : null}
@@ -629,8 +721,78 @@ const BuildPage = () => {
           </div>
         </div>
       </section>
+
+      <div className={`${s.partDetailsShade} ${detailsPart ? s.partDetailsShadeOpen : ''}`} onClick={() => setDetailsPart(null)} />
+      <aside className={`${s.partDetailsSheet} ${detailsPart ? s.partDetailsSheetOpen : ''}`} aria-hidden={!detailsPart}>
+        {detailsPart ? (
+          <>
+            <div className={s.partDetailsHeader}>
+              <div className={s.partPreviewFrame}>
+                {detailsPreviewAsset ? (
+                  <img className={s.partPreviewImage} src={detailsPreviewAsset.src} alt="" />
+                ) : (
+                  <span className={s.emptyText}>No preview</span>
+                )}
+              </div>
+              <div className={s.partDetailsIntro}>
+                <span className={s.partVectorLabel}>{DEVELOPMENT_VECTOR_LABELS[detailsPart.vector ?? 'medieval']}</span>
+                <h2 className={s.partDetailsTitle}>{detailsPart.name}</h2>
+                <p className={s.partDetailsDescription}>{detailsPart.description || 'No description available.'}</p>
+              </div>
+              <button className={s.partDetailsCloseButton} type="button" aria-label="Close part details" onClick={() => setDetailsPart(null)}>x</button>
+            </div>
+
+            <div className={s.partDetailsSection}>
+              <h3 className={s.summaryTitle}>Keywords</h3>
+              <div className={s.keywords}>
+                {getPartKeywords(detailsPart).map((keyword) => (
+                  <span key={keyword} className={s.keyword}>{keyword}</span>
+                ))}
+              </div>
+            </div>
+
+            <div className={s.partDetailsSection}>
+              <h3 className={s.summaryTitle}>Values</h3>
+              <div className={s.valueList}>
+                {detailsModifierRows.length > 0 ? detailsModifierRows.map((modifier) => (
+                  <span key={modifier.key} className={s.valueRow}>
+                    <span>{modifier.label}</span>
+                    <strong>{formatModifierValue(modifier, true)}</strong>
+                  </span>
+                )) : <span className={s.emptyText}>No stat modifiers</span>}
+                <span className={s.valueRow}>
+                  <span>Weight</span>
+                  <strong>{formatResourceAmount(getPartWeight(detailsPart))}</strong>
+                </span>
+                <span className={s.valueRow}>
+                  <span>Support</span>
+                  <strong>{detailsSupportCost.length > 0 ? detailsSupportCost.map((item) => `${item.label} ${item.requiredAmount}`).join(', ') : 'None'}</strong>
+                </span>
+              </div>
+            </div>
+          </>
+        ) : null}
+      </aside>
     </div>
   );
 };
 
 export default BuildPage;
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => (
+    typeof window !== 'undefined' ? window.matchMedia(query).matches : false
+  ));
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(query);
+    const updateMatches = () => setMatches(mediaQuery.matches);
+
+    updateMatches();
+    mediaQuery.addEventListener('change', updateMatches);
+
+    return () => mediaQuery.removeEventListener('change', updateMatches);
+  }, [query]);
+
+  return matches;
+}

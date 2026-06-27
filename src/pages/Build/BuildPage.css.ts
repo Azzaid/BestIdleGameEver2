@@ -351,32 +351,42 @@ export const columnToggle = style({
 export const tableContainer = style({
   maxHeight: '360px',
   overflow: 'auto',
-  padding: '0 8px',
+  padding: '0 6px',
     border: `1px solid ${vars.color.border.default}`,
     borderRadius: '4px',
     backgroundColor: vars.color.background.surface,
   WebkitOverflowScrolling: 'touch',
   '@media': {
     '(max-width: 700px)': {
-      padding: '0 8px',
+      padding: '0 4px',
     },
   },
 });
 
 export const partsTable = style({
   width: '100%',
-  minWidth: '940px',
+  minWidth: '780px',
   borderCollapse: 'separate',
-  borderSpacing: '0 4px',
+  borderSpacing: '0 3px',
+  '@media': {
+    '(max-width: 700px)': {
+      minWidth: '560px',
+    },
+  },
 });
 
 export const tableHead = style({});
 
 export const tableHeaderCell = style({
-  padding: '6px 8px',
+  padding: '4px 6px',
   textAlign: 'left',
-  fontSize: '13px',
+  fontSize: '12px',
   color: vars.color.text.primary,
+});
+
+export const weightHeaderCell = style({
+  width: '58px',
+  textAlign: 'center',
 });
 
 export const clearHeaderButton = style({
@@ -401,25 +411,17 @@ export const headerContent = style({
   gap: '4px',
 });
 
-export const filterInput = style({
-  width: '100%',
-  minWidth: 0,
-  padding: '5px 7px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '3px',
-  backgroundColor: vars.color.background.surface,
-  color: vars.color.text.primary,
-});
-
 export const tableRow = style({
   backgroundColor: vars.color.background.surface,
+  cursor: 'pointer',
 });
 
 export const tableCell = style({
-  padding: '7px 8px',
+  padding: '5px 6px',
   borderTop: `1px solid ${vars.color.border.default}`,
   borderBottom: `1px solid ${vars.color.border.default}`,
-  fontSize: '14px',
+  fontSize: '13px',
+  verticalAlign: 'top',
   selectors: {
     '&:first-child': {
       borderLeft: `1px solid ${vars.color.border.default}`,
@@ -432,6 +434,23 @@ export const tableCell = style({
       borderBottomRightRadius: '3px',
     },
   },
+  '@media': {
+    '(max-width: 700px)': {
+      padding: '4px 5px',
+      fontSize: '12px',
+    },
+  },
+});
+
+export const weightCell = style({
+  width: '58px',
+  textAlign: 'center',
+});
+
+export const weightValue = style({
+  display: 'inline-block',
+  minWidth: '2ch',
+  textAlign: 'center',
 });
 
 export const selectedRow = style({
@@ -448,20 +467,33 @@ export const partNameCell = style({
 export const keywords = style({
   display: 'flex',
   flexWrap: 'wrap',
-  gap: '5px',
+  gap: '4px',
 });
 
 export const keyword = style({
-  padding: '2px 5px',
+  padding: '1px 5px',
   border: `1px solid ${vars.color.border.default}`,
   borderRadius: '3px',
   fontSize: '12px',
   backgroundColor: vars.color.state.selectedBg,
 });
 
+export const modifierRows = style({
+  display: 'grid',
+  gap: '3px',
+});
+
+export const modifierRow = style({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(88px, 1fr) max-content',
+  gap: '8px',
+  alignItems: 'baseline',
+  whiteSpace: 'nowrap',
+});
+
 export const installButton = style({
   minWidth: '78px',
-  padding: '5px 8px',
+  padding: '4px 7px',
   border: `1px solid ${vars.color.border.default}`,
   borderRadius: '3px',
   backgroundColor: vars.color.brand.primary,
@@ -477,7 +509,7 @@ export const installButton = style({
 
 export const removeButton = style({
   minWidth: '78px',
-  padding: '5px 8px',
+  padding: '4px 7px',
   border: `1px solid ${vars.color.state.error}`,
   borderRadius: '3px',
   backgroundColor: vars.color.background.surface,
@@ -508,6 +540,16 @@ export const rebuildButton = style({
       opacity: 0.55,
     },
   },
+});
+
+export const compactActionButton = style({
+  minWidth: '28px',
+  width: '28px',
+  minHeight: '28px',
+  padding: 0,
+  fontSize: '18px',
+  lineHeight: 1,
+  fontWeight: 800,
 });
 
 export const buildButtonCentered = style({
@@ -566,4 +608,146 @@ export const paginationSummary = style({
   fontSize: '13px',
   color: vars.color.text.primary,
   opacity: 0.75,
+});
+
+export const partDetailsShade = style({
+  position: 'fixed',
+  inset: 0,
+  zIndex: 40,
+  pointerEvents: 'none',
+  backgroundColor: 'rgba(0, 0, 0, 0)',
+  transition: 'background-color 160ms ease',
+});
+
+export const partDetailsShadeOpen = style({
+  pointerEvents: 'auto',
+  backgroundColor: 'rgba(0, 0, 0, 0.28)',
+});
+
+export const partDetailsSheet = style({
+  position: 'fixed',
+  left: '50%',
+  bottom: 0,
+  zIndex: 41,
+  display: 'grid',
+  gap: '10px',
+  width: 'min(760px, calc(100vw - 20px))',
+  maxHeight: 'min(76vh, 620px)',
+  overflowY: 'auto',
+  padding: '12px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderBottom: 0,
+  borderRadius: '8px 8px 0 0',
+  backgroundColor: vars.color.background.surface,
+  boxShadow: '0 -14px 32px rgba(0, 0, 0, 0.24)',
+  transform: 'translate(-50%, calc(100% + 18px))',
+  transition: 'transform 190ms ease',
+  pointerEvents: 'none',
+  '@media': {
+    '(max-width: 700px)': {
+      width: '100vw',
+      maxHeight: '82vh',
+      padding: '10px',
+      borderLeft: 0,
+      borderRight: 0,
+    },
+  },
+});
+
+export const partDetailsSheetOpen = style({
+  transform: 'translate(-50%, 0)',
+  pointerEvents: 'auto',
+});
+
+export const partDetailsHeader = style({
+  display: 'grid',
+  gridTemplateColumns: '92px minmax(0, 1fr) max-content',
+  gap: '10px',
+  alignItems: 'start',
+  '@media': {
+    '(max-width: 520px)': {
+      gridTemplateColumns: '70px minmax(0, 1fr) max-content',
+    },
+  },
+});
+
+export const partPreviewFrame = style({
+  display: 'grid',
+  placeItems: 'center',
+  width: '92px',
+  height: '72px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '4px',
+  backgroundColor: vars.color.background.surfaceHover,
+  overflow: 'hidden',
+  '@media': {
+    '(max-width: 520px)': {
+      width: '70px',
+      height: '58px',
+    },
+  },
+});
+
+export const partPreviewImage = style({
+  maxWidth: '88%',
+  maxHeight: '88%',
+  objectFit: 'contain',
+});
+
+export const partDetailsIntro = style({
+  minWidth: 0,
+});
+
+export const partVectorLabel = style({
+  display: 'inline-block',
+  marginBottom: '3px',
+  color: vars.color.text.primary,
+  fontSize: '11px',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  opacity: 0.72,
+});
+
+export const partDetailsTitle = style({
+  margin: 0,
+  color: vars.color.text.heading,
+  fontSize: '18px',
+});
+
+export const partDetailsDescription = style({
+  margin: '4px 0 0',
+  color: vars.color.text.primary,
+  fontSize: '13px',
+  lineHeight: 1.35,
+});
+
+export const partDetailsCloseButton = style({
+  width: '28px',
+  height: '28px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '3px',
+  backgroundColor: vars.color.background.surface,
+  color: vars.color.text.primary,
+  cursor: 'pointer',
+});
+
+export const partDetailsSection = style({
+  display: 'grid',
+  gap: '6px',
+});
+
+export const valueList = style({
+  display: 'grid',
+  gap: '4px',
+});
+
+export const valueRow = style({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr) max-content',
+  gap: '12px',
+  padding: '5px 7px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '4px',
+  backgroundColor: vars.color.background.surfaceHover,
+  fontSize: '13px',
 });
