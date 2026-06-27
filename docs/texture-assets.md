@@ -91,8 +91,9 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 
 1. Add or confirm the monster definition and `sprite.textureKey` in `src/data/enemies/<region>.json`.
 2. Put the PNG in `src/assets/enemies/<region>/<textureKey>.png`.
-3. The runtime catalog in `src/data/enemies/visuals.ts` discovers the file and battle loading registers it under `sprite.textureKey`.
-4. In local debug mode, `/monster-edit/:monsterId` can upload the PNG and set the texture key automatically.
+3. Add or edit the paired metadata JSON at `src/assets/enemies/<region>/<textureKey>.json` when the battle sprite needs explicit sizing or rotation. `targetSpriteSize` controls the rendered battle size, and `rotationDegrees` is applied to the image inside the moving enemy container.
+4. The runtime catalog in `src/data/enemies/visuals.ts` discovers the file and battle loading registers it under `sprite.textureKey`.
+5. In local debug mode, `/monster-edit/:monsterId` can upload the PNG, set the texture key automatically, and save enemy sprite metadata.
 
 ## Add A Global Event Picture
 

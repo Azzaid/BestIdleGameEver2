@@ -201,6 +201,18 @@ export const button = style({
   },
 });
 
+export const buttonGroup = style({
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "6px",
+});
+
+export const pairedFields = style({
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: "6px",
+});
+
 export const primaryButton = style([
   button,
   {

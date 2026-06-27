@@ -57,5 +57,18 @@
     "description": "A small group of survivors struggles to endure in the ruins of the old world.\n\nYou have found a relatively safe place and established a crude settlement. But safety never lasts for long.\n\nThe growing settlement has attracted the attention of nearby monsters.\n\nBuild your first defense tower and hold them back.",
     "imageId": "The_new_begining",
     "imageAlt": "The new begining"
+  },
+  {
+    "id": "back_to_medieval",
+    "title": "Back to medieval",
+    "trigger": {
+      "type": "manual"
+    },
+    "once": true,
+    "priority": 0,
+    "actions": [],
+    "description": "Some people rejected the ways of the old world.\n\nThey chose a simpler life, relying on wood, stone, and the strength of human hands.\n\nWhile others searched for forgotten technologies, ancient magic, or new forms of life, these settlers sought to reclaim the world one piece at a time.\n\nClear the wilderness. Expand your settlement. Bring civilization back to the ruins.",
+    "imageId": "back_to_medieval",
+    "imageAlt": "Back to medieval"
   }
 ]

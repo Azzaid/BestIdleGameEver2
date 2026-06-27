@@ -21,6 +21,7 @@ Endpoints:
 - `PUT /game-files/sample-game-state.json`
 - `POST /entities`
 - `POST /entity-sprites`
+- `POST /entity-sprite-metadata`
 - `DELETE /entity-sprites`
 - `POST /gun-part-metadata`
 - `POST /global-events`
@@ -56,6 +57,21 @@ image=<PNG file>
 ```
 
 Use `kind=projectile` for ammo projectile sprites. Projectile uploads save PNG files under `src/assets/projectiles/{vector}` and do not require metadata.
+
+`POST /entity-sprite-metadata` writes paired sprite metadata JSON for sprite-backed entity types:
+
+```json
+{
+  "kind": "enemy",
+  "vector": "wasteland",
+  "fileStem": "enemy_scrapling",
+  "metadata": {
+    "sourceSpriteSize": {"width": 256, "height": 256},
+    "targetSpriteSize": {"width": 48, "height": 48},
+    "rotationDegrees": -90
+  }
+}
+```
 
 `DELETE /entity-sprites` removes a sprite PNG and paired metadata JSON when present. Send JSON with `kind`, `vector`, and `fileStem`; include `slot` for gun parts.
 

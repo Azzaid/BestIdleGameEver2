@@ -208,6 +208,42 @@ const server = createServer(async (request, response) => {
     return
   }
 
+  if (request.method === 'POST' && url.pathname === '/entity-sprite-metadata') {
+    let payload
+
+    try {
+      const body = await readRequestBody(request)
+      payload = JSON.parse(body)
+    } catch (error) {
+      sendJson(response, 400, { error: 'Request body must be valid JSON' })
+      return
+    }
+
+    const target = resolveSpriteTarget(payload, payload?.fileStem)
+
+    if (!target.ok || !target.metadataPath) {
+      sendJson(response, target.statusCode ?? 400, { error: target.error ?? 'Could not resolve metadata file' })
+      return
+    }
+
+    if (!payload?.metadata || Array.isArray(payload.metadata) || typeof payload.metadata !== 'object') {
+      sendJson(response, 400, { error: 'Sprite metadata must be a JSON object' })
+      return
+    }
+
+    try {
+      await mkdir(target.dir, { recursive: true })
+      await writeFile(target.metadataPath, `${JSON.stringify(payload.metadata, null, 2)}\n`, 'utf8')
+      sendJson(response, 200, {
+        action: 'saved',
+        file: target.relativeMetadataPath,
+      })
+    } catch (error) {
+      sendJson(response, 500, { error: 'Failed to save sprite metadata' })
+    }
+    return
+  }
+
   if (request.method === 'DELETE' && url.pathname === '/entity-sprites') {
     try {
       const body = await readRequestBody(request)
@@ -537,7 +573,7 @@ function resolveSpriteTarget(action, fileStem) {
   }
 
   const imagePath = path.resolve(dir, `${fileStem}.png`)
-  const metadataPath = action.kind === 'enemy' || action.kind === 'projectile'
+  const metadataPath = action.kind === 'projectile'
     ? undefined
     : path.resolve(dir, `${fileStem}.json`)
 

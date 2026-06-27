@@ -3,10 +3,17 @@ import type { EnemyKind } from './enemy.ts';
 import type { MovementController } from './movement.ts';
 import type { World } from './world.ts';
 
+export interface MovementSpawnModifiers {
+    speedMultiplier?: number;
+    wobbleFrequencyMultiplier?: number;
+    wobblePhaseOffsetSeconds?: number;
+}
+
 export type MovementFactory = (
     spawnX: number,
     spawnY: number,
-    world: World
+    world: World,
+    modifiers?: MovementSpawnModifiers,
 ) => MovementController;
 
 /**

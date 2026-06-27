@@ -1,0 +1,11 @@
+{
+  "sourceSpriteSize": {
+    "width": 256,
+    "height": 256
+  },
+  "targetSpriteSize": {
+    "width": 48,
+    "height": 48
+  },
+  "rotationDegrees": -90
+}

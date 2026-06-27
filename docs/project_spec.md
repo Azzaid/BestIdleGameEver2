@@ -627,7 +627,7 @@ Current content layout:
 - `src/pages/Progression/data/` contains progression graph helpers derived from building, research, wall, and tower part requirement data.
 - `src/data/ids.ts` derives grouped content ids from the active atlases for buildings, technologies, tower parts, enemies, wall segments, and wall superstructures. Add runtime ids to the relevant JSON/catalog first, then confirm derived ID and asset coverage in `/ids`.
 - `/ids` is the content audit screen for checking missing definitions, progression rules, and assets by id.
-- `/monster-edit/:monsterId` edits monster entries under `src/data/enemies`. Monster definitions may set `minimumCityVisibilityThreshold`; the battle wave planner only includes monsters whose threshold is at or below the current city visibility/threat value.
+- `/monster-edit/:monsterId` edits monster entries under `src/data/enemies` and saves paired enemy sprite metadata under `src/assets/enemies/<region>`. Monster definitions may set `minimumCityVisibilityThreshold`; the battle wave planner only includes monsters whose threshold is at or below the current city visibility/threat value.
 
 Future content definitions should be data-driven and tag-heavy.
 

@@ -7,6 +7,7 @@ import {
   type EnemyVisualAsset,
 } from "../../data/enemies/visuals.ts";
 import type {EnemyKind} from "../../models/battle/enemy.ts";
+import type {EnemyVisualMetadata} from "../../models/battle/enemyVisualMetadata.ts";
 import * as s from "../EntityCreate/EntityCreatePage.css.ts";
 
 type MonsterRegion = "wasteland";
@@ -58,6 +59,11 @@ type MonsterForm = {
   shotDistance: string;
   keywords: string;
   textureKey: string;
+  sourceSpriteWidth: string;
+  sourceSpriteHeight: string;
+  targetSpriteWidth: string;
+  targetSpriteHeight: string;
+  rotationDegrees: string;
   swarmSize: string;
   swarmSizeMax: string;
   speedPixelsPerSecond: string;
@@ -87,6 +93,7 @@ export default function MonsterEditPage() {
   const generatedTextureKey = getMonsterTextureKey(generatedId);
   const effectiveTextureKey = spriteDraft ? generatedTextureKey : form.textureKey.trim();
   const selectedVisualAsset = effectiveTextureKey ? ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[effectiveTextureKey] : undefined;
+  const visualMetadata = useMemo(() => createEnemyVisualMetadata(form, selectedVisualAsset?.metadata), [form, selectedVisualAsset?.metadata]);
   const visualAssetOptions = useMemo(
     () => ENEMY_VISUAL_ASSETS.filter(asset => asset.region === form.region),
     [form.region],
@@ -110,6 +117,27 @@ export default function MonsterEditPage() {
     if (spriteDraft) URL.revokeObjectURL(spriteDraft.previewUrl);
   }, [spriteDraft]);
 
+  useEffect(() => {
+    if (!selectedVisualAsset?.src || form.sourceSpriteWidth.trim() || form.sourceSpriteHeight.trim()) return;
+
+    let cancelled = false;
+    readImageSize(selectedVisualAsset.src).then(sourceSpriteSize => {
+      if (cancelled) return;
+      setForm(current => ({
+        ...current,
+        ...createMetadataFormFields({
+          ...selectedVisualAsset.metadata,
+          sourceSpriteSize,
+          targetSpriteSize: selectedVisualAsset.metadata?.targetSpriteSize ?? fitSpriteSize(sourceSpriteSize, 48, 48),
+        }),
+      }));
+    }).catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [form.sourceSpriteHeight, form.sourceSpriteWidth, selectedVisualAsset]);
+
   function updateForm<Key extends keyof MonsterForm>(key: Key, value: MonsterForm[Key]) {
     setForm(current => ({...current, [key]: value}));
     setSaveStatus({kind: "idle", message: ""});
@@ -125,6 +153,14 @@ export default function MonsterEditPage() {
           textureKey: generatedTextureKey,
           previousTextureKey: form.textureKey.trim() || undefined,
           spriteDraft,
+          metadata: visualMetadata,
+        })
+        : undefined;
+      const metadataResult = effectiveTextureKey
+        ? await saveMonsterSpriteMetadata({
+          region: form.region,
+          textureKey: effectiveTextureKey,
+          metadata: visualMetadata,
         })
         : undefined;
       const previewToSave = createPreview(form, generatedId, loadedMonster, effectiveTextureKey);
@@ -146,6 +182,7 @@ export default function MonsterEditPage() {
         message: [
           `${responseBody?.action ?? "saved"} in ${responseBody?.file ?? "data file"}`,
           spriteResult?.action ? `sprite ${spriteResult.action}` : "",
+          metadataResult?.file ? `metadata saved in ${metadataResult.file}` : "",
         ].filter(Boolean).join("; "),
       });
       if (spriteDraft) URL.revokeObjectURL(spriteDraft.previewUrl);
@@ -164,7 +201,12 @@ export default function MonsterEditPage() {
   function selectVisualAsset(textureKey: string) {
     if (spriteDraft) URL.revokeObjectURL(spriteDraft.previewUrl);
     setSpriteDraft(null);
-    updateForm("textureKey", textureKey);
+    setForm(current => ({
+      ...current,
+      textureKey,
+      ...createMetadataFormFields(ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[textureKey]?.metadata),
+    }));
+    setSaveStatus({kind: "idle", message: ""});
   }
 
   function removeSprite() {
@@ -177,19 +219,34 @@ export default function MonsterEditPage() {
     updateForm("textureKey", "");
   }
 
-  function setSpriteFile(file: File) {
+  async function setSpriteFile(file: File) {
     if (file.type !== "image/png") {
       setSaveStatus({kind: "error", message: "Sprites must be PNG files."});
       return;
     }
 
     if (spriteDraft) URL.revokeObjectURL(spriteDraft.previewUrl);
+    const previewUrl = URL.createObjectURL(file);
 
     setSpriteDraft({
       file,
-      previewUrl: URL.createObjectURL(file),
+      previewUrl,
     });
     setSaveStatus({kind: "idle", message: ""});
+
+    try {
+      const sourceSpriteSize = await readImageSize(previewUrl);
+      setForm(current => ({
+        ...current,
+        ...createMetadataFormFields({
+          sourceSpriteSize,
+          targetSpriteSize: fitSpriteSize(sourceSpriteSize, 48, 48),
+          rotationDegrees: -90,
+        }),
+      }));
+    } catch {
+      setSaveStatus({kind: "error", message: "Sprite preview could not be measured."});
+    }
   }
 
   return (
@@ -251,7 +308,39 @@ export default function MonsterEditPage() {
           onChange={selectVisualAsset}
           onDropFile={setSpriteFile}
           onRemove={removeSprite}
+          metadata={visualMetadata}
         />
+
+        <section className={s.section}>
+          <div className={s.sectionHeader}>
+            <h2 className={s.sectionTitle}>Visual Tuning</h2>
+          </div>
+          <div className={s.grid}>
+            <label className={s.field}>
+              <span className={s.label}>Rotation</span>
+              <div className={s.buttonGroup}>
+                <button className={s.button} type="button" onClick={() => updateForm("rotationDegrees", String((parseNumberOrFallback(form.rotationDegrees, 0) + 270) % 360))}>-90</button>
+                <button className={s.button} type="button" onClick={() => updateForm("rotationDegrees", "0")}>0</button>
+                <button className={s.button} type="button" onClick={() => updateForm("rotationDegrees", String((parseNumberOrFallback(form.rotationDegrees, 0) + 90) % 360))}>+90</button>
+              </div>
+            </label>
+            <NumberField label="Rotation degrees" value={form.rotationDegrees} onChange={value => updateForm("rotationDegrees", value)} />
+            <label className={s.field}>
+              <span className={s.label}>Target size</span>
+              <span className={s.pairedFields}>
+                <input className={s.input} min={1} type="number" value={form.targetSpriteWidth} onChange={event => updateForm("targetSpriteWidth", event.target.value)} />
+                <input className={s.input} min={1} type="number" value={form.targetSpriteHeight} onChange={event => updateForm("targetSpriteHeight", event.target.value)} />
+              </span>
+            </label>
+            <label className={s.field}>
+              <span className={s.label}>Source size</span>
+              <span className={s.pairedFields}>
+                <input className={s.input} readOnly value={form.sourceSpriteWidth} />
+                <input className={s.input} readOnly value={form.sourceSpriteHeight} />
+              </span>
+            </label>
+          </div>
+        </section>
 
         <section className={s.section}>
           <div className={s.sectionHeader}>
@@ -328,6 +417,7 @@ function MonsterVisualAssetField(props: {
   onChange: (value: string) => void;
   onDropFile: (file: File) => void;
   onRemove: () => void;
+  metadata: EnemyVisualMetadata;
 }) {
   const [query, setQuery] = useState("");
   const previewSrc = props.draft?.previewUrl ?? props.selectedAsset?.src;
@@ -415,7 +505,16 @@ function MonsterVisualAssetField(props: {
         </div>
         <div className={s.visualPreviewBox}>
           {previewSrc ? (
-            <img className={s.visualPreviewImage} src={previewSrc} alt={previewLabel} />
+            <img
+              className={s.visualPreviewImage}
+              src={previewSrc}
+              alt={previewLabel}
+              style={{
+                width: props.metadata.targetSpriteSize?.width,
+                height: props.metadata.targetSpriteSize?.height,
+                transform: `rotate(${props.metadata.rotationDegrees ?? 0}deg)`,
+              }}
+            />
           ) : (
             <p className={s.hint}>No sprite selected.</p>
           )}
@@ -423,6 +522,7 @@ function MonsterVisualAssetField(props: {
             {JSON.stringify({
               textureKey: props.value,
               status: props.draft ? "pending upload" : props.selectedAsset ? "registered" : "missing asset",
+              metadata: props.metadata,
             }, null, 2)}
           </pre>
         </div>
@@ -450,6 +550,7 @@ function createInitialForm(monsterId: string, monster: MonsterDefinition | null)
     shotDistance: stringifyOptionalNumber(source.shotDistance, ""),
     keywords: source.keywords.join(", "),
     textureKey: source.sprite.textureKey,
+    ...createMetadataFormFields(ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[source.sprite.textureKey]?.metadata),
     swarmSize: stringifyOptionalNumber(source.swarmSize, ""),
     swarmSizeMax: stringifyOptionalNumber(source.swarmSizeMax, ""),
     speedPixelsPerSecond: String(source.movement.speedPixelsPerSecond),
@@ -523,12 +624,14 @@ async function saveMonsterSprite(args: {
   textureKey: string;
   previousTextureKey?: string;
   spriteDraft: SpriteDraft;
+  metadata: EnemyVisualMetadata;
 }): Promise<{action?: string; file?: string} | undefined> {
   const formData = new FormData();
   formData.append("kind", "enemy");
   formData.append("vector", args.region);
   formData.append("assetId", args.textureKey);
   formData.append("fileStem", args.textureKey);
+  formData.append("metadata", JSON.stringify(args.metadata));
   if (args.previousTextureKey && args.previousTextureKey !== args.textureKey) {
     formData.append("previousFileStem", args.previousTextureKey);
   }
@@ -542,6 +645,32 @@ async function saveMonsterSprite(args: {
 
   if (!response.ok) {
     throw new Error(responseBody?.error ?? `Sprite upload failed with status ${response.status}.`);
+  }
+
+  return responseBody ?? {};
+}
+
+async function saveMonsterSpriteMetadata(args: {
+  region: MonsterRegion;
+  textureKey: string;
+  metadata: EnemyVisualMetadata;
+}): Promise<{action?: string; file?: string} | undefined> {
+  const response = await fetch(`${localDataServerUrl}/entity-sprite-metadata`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      kind: "enemy",
+      vector: args.region,
+      fileStem: args.textureKey,
+      metadata: args.metadata,
+    }),
+  });
+  const responseBody = await response.json().catch(() => null) as {action?: string; file?: string; error?: string} | null;
+
+  if (!response.ok) {
+    throw new Error(responseBody?.error ?? `Sprite metadata save failed with status ${response.status}.`);
   }
 
   return responseBody ?? {};
@@ -584,6 +713,55 @@ function parseNumberOrFallback(value: string, fallback: number): number {
 
 function stringifyOptionalNumber(value: number | undefined, fallback: string): string {
   return value === undefined || value === null ? fallback : String(value);
+}
+
+function createMetadataFormFields(metadata: EnemyVisualMetadata | undefined): Pick<
+  MonsterForm,
+  "sourceSpriteWidth" | "sourceSpriteHeight" | "targetSpriteWidth" | "targetSpriteHeight" | "rotationDegrees"
+> {
+  return {
+    sourceSpriteWidth: stringifyOptionalNumber(metadata?.sourceSpriteSize?.width, ""),
+    sourceSpriteHeight: stringifyOptionalNumber(metadata?.sourceSpriteSize?.height, ""),
+    targetSpriteWidth: stringifyOptionalNumber(metadata?.targetSpriteSize?.width, "48"),
+    targetSpriteHeight: stringifyOptionalNumber(metadata?.targetSpriteSize?.height, "48"),
+    rotationDegrees: stringifyOptionalNumber(metadata?.rotationDegrees, "-90"),
+  };
+}
+
+function createEnemyVisualMetadata(form: MonsterForm, fallbackMetadata?: EnemyVisualMetadata): EnemyVisualMetadata {
+  return {
+    sourceSpriteSize: {
+      width: parsePositiveNumberOrFallback(form.sourceSpriteWidth, fallbackMetadata?.sourceSpriteSize?.width ?? 1),
+      height: parsePositiveNumberOrFallback(form.sourceSpriteHeight, fallbackMetadata?.sourceSpriteSize?.height ?? 1),
+    },
+    targetSpriteSize: {
+      width: parsePositiveNumberOrFallback(form.targetSpriteWidth, fallbackMetadata?.targetSpriteSize?.width ?? 48),
+      height: parsePositiveNumberOrFallback(form.targetSpriteHeight, fallbackMetadata?.targetSpriteSize?.height ?? 48),
+    },
+    rotationDegrees: parseNumberOrFallback(form.rotationDegrees, fallbackMetadata?.rotationDegrees ?? -90),
+  };
+}
+
+function parsePositiveNumberOrFallback(value: string, fallback: number): number {
+  return Math.max(1, parseNumberOrFallback(value, fallback));
+}
+
+function fitSpriteSize(sourceSpriteSize: {width: number; height: number}, maxWidth: number, maxHeight: number) {
+  const scale = Math.min(maxWidth / sourceSpriteSize.width, maxHeight / sourceSpriteSize.height);
+
+  return {
+    width: Math.max(1, Math.round(sourceSpriteSize.width * scale)),
+    height: Math.max(1, Math.round(sourceSpriteSize.height * scale)),
+  };
+}
+
+function readImageSize(src: string): Promise<{width: number; height: number}> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve({width: image.naturalWidth, height: image.naturalHeight});
+    image.onerror = () => reject(new Error("Image could not be loaded"));
+    image.src = src;
+  });
 }
 
 function normalizeIdPart(value: string): string {

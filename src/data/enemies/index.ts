@@ -1,5 +1,6 @@
 import type {EnemyBlueprint, EnemyBlueprintAtlas} from "../../models/battle/enemyBlueprints.ts";
 import wastelandEnemyDefinitions from "./wasteland.json";
+import {ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY} from "./visuals.ts";
 
 type EnemyDefinition = Omit<EnemyBlueprint, "keywords" | "createMovement"> & {
   keywords: string[];
@@ -26,6 +27,11 @@ function buildEnemies(definitions: readonly EnemyDefinition[]): Record<string, E
     definition.id,
     {
       ...definition,
+      sprite: {
+        ...definition.sprite,
+        targetSpriteSize: ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[definition.sprite.textureKey]?.metadata?.targetSpriteSize,
+        rotationDegrees: ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[definition.sprite.textureKey]?.metadata?.rotationDegrees,
+      },
       keywords: new Set(definition.keywords),
       createMovement: createMovement(definition),
     },
@@ -39,12 +45,12 @@ function createMovement(definition: EnemyDefinition): EnemyBlueprint["createMove
 
   const {speedPixelsPerSecond, wobbleAmplitudePixels = 0} = definition.movement;
 
-  return (spawnX, _spawnY, world) => ({
+  return (spawnX, _spawnY, world, modifiers) => ({
     kind: "wobble",
-    baseSpeedPixelsPerSecond: speedPixelsPerSecond,
+    baseSpeedPixelsPerSecond: speedPixelsPerSecond * (modifiers?.speedMultiplier ?? 1),
     wobbleAmplitudePixels,
-    wobbleFrequencyHz: 0.25,
-    timeAliveSeconds: 0,
+    wobbleFrequencyHz: 0.25 * (modifiers?.wobbleFrequencyMultiplier ?? 1),
+    timeAliveSeconds: modifiers?.wobblePhaseOffsetSeconds ?? 0,
     goalY: world.config.wallContactY,
     initialX: spawnX,
   });

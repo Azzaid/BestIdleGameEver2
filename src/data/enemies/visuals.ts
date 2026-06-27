@@ -1,8 +1,11 @@
+import type { EnemyVisualMetadata } from "../../models/battle/enemyVisualMetadata.ts";
+
 export type EnemyVisualAsset = {
   textureKey: string;
   label: string;
   region: string;
   src: string;
+  metadata?: EnemyVisualMetadata;
 };
 
 const enemyImages = import.meta.glob("../../assets/enemies/**/*.png", {
@@ -10,6 +13,11 @@ const enemyImages = import.meta.glob("../../assets/enemies/**/*.png", {
   query: "?url",
   import: "default",
 }) as Record<string, string>;
+
+const enemyMetadata = import.meta.glob("../../assets/enemies/**/*.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, EnemyVisualMetadata>;
 
 export const ENEMY_VISUAL_ASSETS: readonly EnemyVisualAsset[] = Object.entries(enemyImages)
   .map(([path, src]) => {
@@ -20,6 +28,7 @@ export const ENEMY_VISUAL_ASSETS: readonly EnemyVisualAsset[] = Object.entries(e
       label: titleFromTextureKey(textureKey),
       region: getRegionFromPath(path),
       src,
+      metadata: enemyMetadata[replaceExtension(path, "json")],
     };
   })
   .sort((left, right) => left.region.localeCompare(right.region) || left.label.localeCompare(right.label));
@@ -34,6 +43,10 @@ function getRegionFromPath(path: string): string {
 
 function getFileStem(path: string): string {
   return path.split("/").at(-1)?.replace(/\.png$/i, "") ?? path;
+}
+
+function replaceExtension(path: string, extension: "json" | "png"): string {
+  return path.replace(/\.(json|png)$/i, `.${extension}`);
 }
 
 function titleFromTextureKey(textureKey: string): string {
