@@ -36,5 +36,17 @@
         "multiplier": 0.2
       }
     ]
+  },
+  {
+    "id": "village",
+    "title": "Village",
+    "description": "Few houses more. You started to attract attention.",
+    "applyRules": [],
+    "effects": [
+      {
+        "valueId": "siege.lengthMultiplier",
+        "multiplier": 0.5
+      }
+    ]
   }
 ]

@@ -71,5 +71,48 @@
     "description": "Some people rejected the ways of the old world.\n\nThey chose a simpler life, relying on wood, stone, and the strength of human hands.\n\nWhile others searched for forgotten technologies, ancient magic, or new forms of life, these settlers sought to reclaim the world one piece at a time.\n\nClear the wilderness. Expand your settlement. Bring civilization back to the ruins.",
     "imageId": "back_to_medieval",
     "imageAlt": "Back to medieval"
+  },
+  {
+    "id": "first_siege_over",
+    "title": "First siege is over",
+    "trigger": {
+      "type": "siegeSucceeded"
+    },
+    "once": true,
+    "priority": 0,
+    "actions": [],
+    "description": "A brief moment of peace.\n\nThe first wave has been repelled.\n\nThere will be more.\n\nBut not today.\n\nFor now, the city has earned a little time.\n\nBuild shelters. Gather resources. Strengthen your defenses.\n\nAnd try not to draw too much attention.\n\nOr at least... not before you're ready.",
+    "imageId": "first_siege_over",
+    "imageAlt": "First siege is over"
+  },
+  {
+    "id": "path_of_life",
+    "title": "Path of life",
+    "trigger": {
+      "type": "buildingConstructed",
+      "buildingId": "buildings.nature.wildGarden"
+    },
+    "once": true,
+    "priority": 0,
+    "actions": [],
+    "description": "Some people chose a different path.\n\nInstead of rebuilding the old world, they learned to become part of the new one.\n\nListen to the whispers of the trees. Feel the endless mycelium spreading beneath your feet. Walk among creatures shaped by centuries of mutation and change.\n\nNature endured when empires fell.\n\nBefriend the wild. Guide its growth. Claim the world as your own.",
+    "imageId": "path_of_life",
+    "imageAlt": "Path of life"
+  },
+  {
+    "id": "village",
+    "title": "Village",
+    "trigger": {
+      "type": "cityExpanded"
+    },
+    "once": true,
+    "priority": 0,
+    "actions": [
+      {
+        "type": "applyGlobalModifier",
+        "modifierId": "village"
+      }
+    ],
+    "description": "Few houses more. You starting to attract attention."
   }
 ]
