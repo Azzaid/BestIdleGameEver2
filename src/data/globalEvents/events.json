@@ -62,7 +62,8 @@
     "id": "back_to_medieval",
     "title": "Back to medieval",
     "trigger": {
-      "type": "manual"
+      "type": "buildingConstructed",
+      "buildingId": "buildings.medieval.lumberjackHouse"
     },
     "once": true,
     "priority": 0,
