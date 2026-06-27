@@ -22,7 +22,7 @@
         "additive": 8
       },
       {
-        "valueId": "tower.targetingDistanceLimit",
+        "valueId": "tower.projectileSpeed",
         "additionalKeywords": [
           "production"
         ],

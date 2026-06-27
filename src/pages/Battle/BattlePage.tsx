@@ -33,6 +33,7 @@ import {
     selectMonsterModifierValues,
     selectSiegeModifierValues,
 } from "../../store/homogeneousValues/selectors.ts";
+import type { TowerAssemblyResolved } from "../../models/battle/towerParts.ts";
 
 type BattleMode = "siege" | "pressure";
 
@@ -41,15 +42,56 @@ function toPercent(value: number, max: number) {
     return Math.floor(Math.max(0, Math.min(100, (value / max) * 100)));
 }
 
+function getResolvedTowerBattleKey(tower: TowerAssemblyResolved) {
+    const selectedPartKey = Object.entries(tower.selectedParts)
+        .map(([slot, part]) => `${slot}:${part?.id ?? ""}`)
+        .sort()
+        .join(",");
+    const statsKey = Object.entries(tower.stats)
+        .map(([stat, value]) => `${stat}:${value instanceof Set ? [...value].sort().join(",") : value}`)
+        .sort()
+        .join(",");
+
+    return [
+        selectedPartKey,
+        statsKey,
+        [...tower.keywords].sort().join(","),
+        tower.aimKeywords.join(","),
+        tower.selectedParts.ammo?.projectileSprite?.textureKey ?? "",
+    ].join("|");
+}
+
+function getResolvedTowersBattleKey(towers: TowerAssemblyResolved[]) {
+    return towers.map(getResolvedTowerBattleKey).join("::");
+}
+
+function useStableResolvedBattleTowers(towers: TowerAssemblyResolved[]) {
+    const stableRef = useRef({
+        key: getResolvedTowersBattleKey(towers),
+        towers,
+    });
+    const nextKey = getResolvedTowersBattleKey(towers);
+
+    if (stableRef.current.key !== nextKey) {
+        stableRef.current = {
+            key: nextKey,
+            towers,
+        };
+    }
+
+    return stableRef.current.towers;
+}
+
 const BattlePage = () => {
     const dispatch = useTypedDispatch();
     const resolvedAvailableTowers = useTypedSelector(selectResolvedEffectiveAvailableTowers);
-    const resolvedBattleTowers = useMemo(
+    const resolvedBattleTowersUnstable = useMemo(
         () => resolvedAvailableTowers
             .map(({resolved}) => resolved)
             .filter((resolved) => resolved.warnings.length === 0),
         [resolvedAvailableTowers]
     );
+    const resolvedBattleTowers = useStableResolvedBattleTowers(resolvedBattleTowersUnstable);
     const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
     const citySideHexes = useTypedSelector(selectCitySideHexes);
     const cityHexes = useTypedSelector(selectCityHexes);
@@ -138,56 +180,18 @@ const BattlePage = () => {
     const battlefieldLength = longestTowerRange * BATTLEFIELD_RANGE_MULTIPLIER;
     const battlefieldHeight = battlefieldLength + BATTLE_WALL_APRON_HEIGHT;
     const battleKey = useMemo(() => [
-        targetThreat,
-        initialThreat,
-        threatGrowthPerSecond,
-        siegeDurationSeconds,
-        timeBetweenWavesSeconds,
-        isSiege,
-        wallResolution.resilience,
-        wallResolution.ignoredThreat,
-        wallZoneEffects.pushBackDistance,
-        wallZoneEffects.pushBacksPerSecond,
-        wallZoneEffects.pushBackEffectZoneSize,
-        wallZoneEffects.zoneDotDamage,
-        wallZoneEffects.zoneDotTicksPerSecond,
-        wallZoneEffects.zoneDotZoneSize,
-        monsterMovementModifiers.speedFlat,
-        monsterMovementModifiers.speedMultiplier,
-        monsterMovementModifiers.swayFlat,
-        monsterMovementModifiers.swayMultiplier,
-        simultaneousMonstersLimit,
         wallLogicalWidth,
         battlefieldHeight,
         battleWallSegments
             .map(segment => [
                 segment.cellKey,
                 segment.wallKey ?? "",
-                segment.wallDevelopmentVector?.description ?? "",
+                segment.wallDevelopmentVector ?? "",
                 segment.wallTopKey ?? "",
-                segment.wallTopDevelopmentVector?.description ?? "",
+                segment.wallTopDevelopmentVector ?? "",
             ].join(":"))
             .join("|"),
     ].join(":"), [
-        targetThreat,
-        initialThreat,
-        threatGrowthPerSecond,
-        siegeDurationSeconds,
-        timeBetweenWavesSeconds,
-        isSiege,
-        wallResolution.resilience,
-        wallResolution.ignoredThreat,
-        wallZoneEffects.pushBackDistance,
-        wallZoneEffects.pushBacksPerSecond,
-        wallZoneEffects.pushBackEffectZoneSize,
-        wallZoneEffects.zoneDotDamage,
-        wallZoneEffects.zoneDotTicksPerSecond,
-        wallZoneEffects.zoneDotZoneSize,
-        monsterMovementModifiers.speedFlat,
-        monsterMovementModifiers.speedMultiplier,
-        monsterMovementModifiers.swayFlat,
-        monsterMovementModifiers.swayMultiplier,
-        simultaneousMonstersLimit,
         wallLogicalWidth,
         battlefieldHeight,
         battleWallSegments,

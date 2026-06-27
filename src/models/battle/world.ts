@@ -97,6 +97,7 @@ export interface World {
   defeatedEnemies: number;
   currentThreat: number;
   battleEnded: boolean;
+  lastBattleEndWasHandled: boolean;
   towerReloadRemainingSeconds: Map<EntityId, number>;
   enemyPushBackCooldownRemainingSeconds: Map<EntityId, number>;
   enemyPushBackRemainingSeconds: Map<EntityId, number>;

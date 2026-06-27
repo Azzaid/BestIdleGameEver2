@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { DEVELOPMENT_VECTORS } from "../../models/DevlopmentVector.ts";
 import type { NotificationItem, NotificationScheme, NewNotification } from "../../models/notifications.ts";
 import { subscribeToNotifications } from "../../lib/notifications/eventBus.ts";
 import { vars } from "../../theme/theme.css.ts";
@@ -17,16 +16,6 @@ const styles: StyleMap = {
   congratulation: { accent: "hsl(160 60% 40%)" },
 };
 
-// Safeguard: ensure our runtime symbols match keys we use for styles
-function toSchemeVectorKey(sym: symbol): "neutral" | "tech" | "nature" | "medieval" | "aether" {
-  const desc = String(sym.description);
-  if (desc === "Neutral") return "neutral";
-  if (desc === "Tech") return "tech";
-  if (desc === "Nature") return "nature";
-  if (desc === "Medieval") return "medieval";
-  if (desc === "Aether") return "aether";
-  return "tech";
-}
 const DEFAULT_TOAST_MS = 4000;
 
 export function NotificationCenter() {
@@ -41,7 +30,7 @@ export function NotificationCenter() {
       const { __id, ...rest } = payload as NewNotification & { __id: string };
       const baseScheme = (rest.scheme in styles)
         ? (rest.scheme as NotificationScheme)
-        : toSchemeVectorKey(DEVELOPMENT_VECTORS.tech); // fallback
+        : "tech";
 
       const createdAt = Date.now();
       const toastExpiresAt = createdAt + (rest.durationMs ?? DEFAULT_TOAST_MS);

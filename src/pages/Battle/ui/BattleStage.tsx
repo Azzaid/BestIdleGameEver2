@@ -50,8 +50,65 @@ export function BattleStage(props: {
 }) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const hostRef = useRef<HTMLDivElement>(null);
+    const worldRef = useRef<ReturnType<typeof createWorld> | null>(null);
+    const siegeOutlineRef = useRef<Graphics | null>(null);
+    const lastCompletesWhenThreatTargetReachedRef = useRef(props.completesWhenThreatTargetReached);
+    const runtimePropsRef = useRef({
+        initialThreat: props.initialThreat,
+        targetThreat: props.targetThreat,
+        threatGrowthPerSecond: props.threatGrowthPerSecond,
+        waveThreatToCityThreatRatio: props.waveThreatToCityThreatRatio,
+        simultaneousMonstersLimit: props.simultaneousMonstersLimit,
+        timeBetweenWavesSeconds: props.timeBetweenWavesSeconds,
+        fastForwardWavesWhenCleared: props.fastForwardWavesWhenCleared,
+        completesWhenThreatTargetReached: props.completesWhenThreatTargetReached,
+        wallResilience: props.wallResilience,
+        wallIgnoredThreat: props.wallIgnoredThreat,
+        monsterMovementModifiers: props.monsterMovementModifiers,
+        wallZoneEffects: props.wallZoneEffects,
+        showSiegeOutline: props.showSiegeOutline,
+        onBattleMetrics: props.onBattleMetrics,
+        onBattleEnded: props.onBattleEnded,
+    });
     const aspectRatio = props.battlefieldWidth / props.battlefieldHeight;
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+    const canvasIsReady = canvasSize.width > 0 && canvasSize.height > 0;
+
+    useEffect(() => {
+        runtimePropsRef.current = {
+            initialThreat: props.initialThreat,
+            targetThreat: props.targetThreat,
+            threatGrowthPerSecond: props.threatGrowthPerSecond,
+            waveThreatToCityThreatRatio: props.waveThreatToCityThreatRatio,
+            simultaneousMonstersLimit: props.simultaneousMonstersLimit,
+            timeBetweenWavesSeconds: props.timeBetweenWavesSeconds,
+            fastForwardWavesWhenCleared: props.fastForwardWavesWhenCleared,
+            completesWhenThreatTargetReached: props.completesWhenThreatTargetReached,
+            wallResilience: props.wallResilience,
+            wallIgnoredThreat: props.wallIgnoredThreat,
+            monsterMovementModifiers: props.monsterMovementModifiers,
+            wallZoneEffects: props.wallZoneEffects,
+            showSiegeOutline: props.showSiegeOutline,
+            onBattleMetrics: props.onBattleMetrics,
+            onBattleEnded: props.onBattleEnded,
+        };
+    }, [
+        props.initialThreat,
+        props.targetThreat,
+        props.threatGrowthPerSecond,
+        props.waveThreatToCityThreatRatio,
+        props.simultaneousMonstersLimit,
+        props.timeBetweenWavesSeconds,
+        props.fastForwardWavesWhenCleared,
+        props.completesWhenThreatTargetReached,
+        props.wallResilience,
+        props.wallIgnoredThreat,
+        props.monsterMovementModifiers,
+        props.wallZoneEffects,
+        props.showSiegeOutline,
+        props.onBattleMetrics,
+        props.onBattleEnded,
+    ]);
 
     useEffect(() => {
         const wrapper = wrapperRef.current;
@@ -90,7 +147,7 @@ export function BattleStage(props: {
         let cleanupResize = () => {};
 
         (async () => {
-            if (!hostRef.current || canvasSize.width <= 0 || canvasSize.height <= 0) return;
+            if (!hostRef.current || !canvasIsReady) return;
 
             app = new Application();
 
@@ -108,6 +165,7 @@ export function BattleStage(props: {
                 backgroundId: props.backgroundId,
                 wallSegments: props.wallSegments,
             });
+            const runtimeProps = runtimePropsRef.current;
 
             const viewportWidth = app.renderer.width;
             const viewportHeight = app.renderer.height;
@@ -142,21 +200,22 @@ export function BattleStage(props: {
                 wallY,
                 wallContactY,
                 app,
-                initialThreat: props.initialThreat,
-                targetThreat: props.targetThreat,
-                threatGrowthPerSecond: props.threatGrowthPerSecond,
-                waveThreatToCityThreatRatio: props.waveThreatToCityThreatRatio,
-                simultaneousMonstersLimit: props.simultaneousMonstersLimit,
-                timeBetweenWavesSeconds: props.timeBetweenWavesSeconds,
-                fastForwardWavesWhenCleared: props.fastForwardWavesWhenCleared,
-                completesWhenThreatTargetReached: props.completesWhenThreatTargetReached,
-                wallResilience: props.wallResilience,
-                wallIgnoredThreat: props.wallIgnoredThreat,
-                monsterMovementModifiers: props.monsterMovementModifiers,
-                wallZoneEffects: props.wallZoneEffects,
-                onBattleMetrics: props.onBattleMetrics,
-                onBattleEnded: props.onBattleEnded,
+                initialThreat: runtimeProps.initialThreat,
+                targetThreat: runtimeProps.targetThreat,
+                threatGrowthPerSecond: runtimeProps.threatGrowthPerSecond,
+                waveThreatToCityThreatRatio: runtimeProps.waveThreatToCityThreatRatio,
+                simultaneousMonstersLimit: runtimeProps.simultaneousMonstersLimit,
+                timeBetweenWavesSeconds: runtimeProps.timeBetweenWavesSeconds,
+                fastForwardWavesWhenCleared: runtimeProps.fastForwardWavesWhenCleared,
+                completesWhenThreatTargetReached: runtimeProps.completesWhenThreatTargetReached,
+                wallResilience: runtimeProps.wallResilience,
+                wallIgnoredThreat: runtimeProps.wallIgnoredThreat,
+                monsterMovementModifiers: runtimeProps.monsterMovementModifiers,
+                wallZoneEffects: runtimeProps.wallZoneEffects,
+                onBattleMetrics: runtimeProps.onBattleMetrics,
+                onBattleEnded: runtimeProps.onBattleEnded,
             });
+            worldRef.current = world;
             camera.container.addChild(world.worldLayer);
 
             const backgroundDefinition = BATTLE_BACKGROUNDS[props.backgroundId];
@@ -176,14 +235,14 @@ export function BattleStage(props: {
                 fullBoundsPlaceholder.zIndex = 200;
                 world.worldLayer.addChild(fullBoundsPlaceholder);
 
-                if (props.showSiegeOutline) {
-                    const activeBattlefieldPlaceholder = new Graphics();
-                    activeBattlefieldPlaceholder
-                        .rect(0, 0, props.battlefieldWidth, wallContactY)
-                        .stroke({ color: 0xffd166, width: 2 });
-                    activeBattlefieldPlaceholder.zIndex = 201;
-                    world.worldLayer.addChild(activeBattlefieldPlaceholder);
-                }
+                const activeBattlefieldPlaceholder = new Graphics();
+                activeBattlefieldPlaceholder
+                    .rect(0, 0, props.battlefieldWidth, wallContactY)
+                    .stroke({ color: 0xffd166, width: 2 });
+                activeBattlefieldPlaceholder.zIndex = 201;
+                activeBattlefieldPlaceholder.visible = runtimeProps.showSiegeOutline;
+                world.worldLayer.addChild(activeBattlefieldPlaceholder);
+                siegeOutlineRef.current = activeBattlefieldPlaceholder;
             }
 
             const wallLayer = createBattleWallLayer({
@@ -329,6 +388,8 @@ export function BattleStage(props: {
         })();
 
         return () => {
+            worldRef.current = null;
+            siegeOutlineRef.current = null;
             cleanupInput();
             cleanupResize();
             if (!app) return;
@@ -336,8 +397,7 @@ export function BattleStage(props: {
             app.destroy(true, { children: true, texture: false, textureSource: false, context: true }); // :contentReference[oaicite:3]{index=3}
         };
     }, [
-        canvasSize.height,
-        canvasSize.width,
+        canvasIsReady,
         props.wallLogicalWidth,
         props.wallSegments,
         props.battlefieldWidth,
@@ -345,6 +405,50 @@ export function BattleStage(props: {
         props.wallY,
         props.backgroundId,
         props.resolvedTowers,
+        props.showDebugOutlines,
+    ]);
+
+    useEffect(() => {
+        const world = worldRef.current;
+        if (!world) return;
+
+        const wasCompletingAtThreatTarget = lastCompletesWhenThreatTargetReachedRef.current;
+        lastCompletesWhenThreatTargetReachedRef.current = props.completesWhenThreatTargetReached;
+
+        world.config.initialThreat = props.initialThreat;
+        world.config.targetThreat = props.targetThreat;
+        world.config.threatGrowthPerSecond = props.threatGrowthPerSecond;
+        world.config.waveThreatToCityThreatRatio = props.waveThreatToCityThreatRatio;
+        world.config.simultaneousMonstersLimit = props.simultaneousMonstersLimit;
+        world.config.timeBetweenWavesSeconds = props.timeBetweenWavesSeconds;
+        world.config.fastForwardWavesWhenCleared = props.fastForwardWavesWhenCleared;
+        world.config.completesWhenThreatTargetReached = props.completesWhenThreatTargetReached;
+        world.config.wallResilience = props.wallResilience;
+        world.config.wallIgnoredThreat = props.wallIgnoredThreat;
+        world.config.monsterMovementModifiers = props.monsterMovementModifiers;
+        world.config.wallZoneEffects = props.wallZoneEffects;
+        world.config.onBattleMetrics = props.onBattleMetrics;
+        world.config.onBattleEnded = props.onBattleEnded;
+        world.waveScheduler.config.timeBetweenWavesSeconds = props.timeBetweenWavesSeconds;
+
+        if (siegeOutlineRef.current) {
+            siegeOutlineRef.current.visible = props.showSiegeOutline;
+        }
+
+        if (world.currentThreat > props.targetThreat) {
+            world.currentThreat = props.targetThreat;
+        }
+
+        if (wasCompletingAtThreatTarget && !props.completesWhenThreatTargetReached) {
+            world.battleEnded = false;
+            world.lastBattleEndWasHandled = false;
+            world.waveScheduler.state.enabled = true;
+            world.waveScheduler.state.timeUntilNextWaveSeconds = Math.min(
+                world.waveScheduler.state.timeUntilNextWaveSeconds,
+                props.timeBetweenWavesSeconds
+            );
+        }
+    }, [
         props.initialThreat,
         props.targetThreat,
         props.threatGrowthPerSecond,
@@ -357,7 +461,6 @@ export function BattleStage(props: {
         props.wallIgnoredThreat,
         props.monsterMovementModifiers,
         props.wallZoneEffects,
-        props.showDebugOutlines,
         props.showSiegeOutline,
         props.onBattleMetrics,
         props.onBattleEnded,

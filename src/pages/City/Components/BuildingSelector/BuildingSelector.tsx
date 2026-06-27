@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import * as s from "./BuildingSelector.css.ts";
-import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../../../models/DevlopmentVector.ts";
+import {
+    DEVELOPMENT_VECTOR_LABELS,
+    DEVELOPMENT_VECTORS,
+    type DevelopmentVectorValue,
+} from "../../../../models/DevlopmentVector.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
 import {HexTilePreview} from "./HexTilePreview.tsx";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
@@ -44,16 +48,16 @@ export function BuildingSelector({
     }, [activeVector, availableVectors]);
 
     return (
-        <div className={s.wrapper} data-theme={activeVector.description}>
+        <div className={s.wrapper} data-theme={activeVector}>
             {/* Tabs */}
             <div className={s.tabs} role="tablist" aria-label="Development vectors">
                 {availableVectors.map(({vector, buildings}) => {
                     const count = buildings.length;
                     return (
                         <button
-                            key={vector.description}
+                            key={vector}
                             type="button"
-                            aria-controls={`tab-${vector.description}`}
+                            aria-controls={`tab-${vector}`}
                             aria-expanded={activeVector === vector}
                             role="tab"
                             aria-selected={activeVector === vector}
@@ -62,7 +66,7 @@ export function BuildingSelector({
                             data-vector={vector}
                         >
                             <span className={s.tabDot} aria-hidden />
-                            <span className={s.tabLabel}>{vector.description}</span>
+                            <span className={s.tabLabel}>{DEVELOPMENT_VECTOR_LABELS[vector]}</span>
                             <span className={s.tabCount}>{count}</span>
                         </button>
                     );

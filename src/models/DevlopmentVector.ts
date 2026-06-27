@@ -1,10 +1,18 @@
 export const DEVELOPMENT_VECTORS = {
-    neutral: Symbol('Neutral'),
-    tech: Symbol('Tech'),
-    nature: Symbol('Nature'),
-    medieval: Symbol('Medieval'),
-    aether: Symbol('Aether'),
+    neutral: "neutral",
+    tech: "tech",
+    nature: "nature",
+    medieval: "medieval",
+    aether: "aether",
 } as const;
 
 export type DevelopmentVectorKey = keyof typeof DEVELOPMENT_VECTORS;
 export type DevelopmentVectorValue = typeof DEVELOPMENT_VECTORS[keyof typeof DEVELOPMENT_VECTORS];
+
+export const DEVELOPMENT_VECTOR_LABELS: Record<DevelopmentVectorValue, string> = {
+    [DEVELOPMENT_VECTORS.neutral]: "Neutral",
+    [DEVELOPMENT_VECTORS.tech]: "Tech",
+    [DEVELOPMENT_VECTORS.nature]: "Nature",
+    [DEVELOPMENT_VECTORS.medieval]: "Medieval",
+    [DEVELOPMENT_VECTORS.aether]: "Aether",
+};

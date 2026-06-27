@@ -22,6 +22,9 @@ export function SiegeSystem(world: World, dt: number) {
   if (world.siegePressure > world.config.wallResilience) {
     world.battleEnded = true;
     world.waveScheduler.state.enabled = false;
+    if (world.lastBattleEndWasHandled) return;
+
+    world.lastBattleEndWasHandled = true;
     world.config.onBattleEnded?.({
       ...metrics,
       outcome: "overwhelmed",
@@ -32,6 +35,9 @@ export function SiegeSystem(world: World, dt: number) {
   if (world.config.completesWhenThreatTargetReached && world.currentThreat >= world.config.targetThreat) {
     world.battleEnded = true;
     world.waveScheduler.state.enabled = false;
+    if (world.lastBattleEndWasHandled) return;
+
+    world.lastBattleEndWasHandled = true;
     world.config.onBattleEnded?.({
       ...metrics,
       outcome: "held",

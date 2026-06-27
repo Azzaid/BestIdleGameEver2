@@ -41,7 +41,7 @@ The current app is a frontend-only prototype with multiple routed views:
 - Statistics: sample time-series charts.
 - Debug/content tools: progression graph, ID audit, entity creation, monster editing, gun part editor, and global events editor.
 
-The prototype has no backend and no formal persistence system yet.
+The prototype has no backend. Core Redux gameplay progress is saved in browser `localStorage` and restored on reload.
 
 ## 3. Technical Architecture
 
@@ -660,26 +660,32 @@ Tags should drive future systems wherever possible. Prefer "has tag industrial" 
 
 ## 22. Persistence
 
-Persistence is not implemented yet.
+Core Redux gameplay progress is persisted to browser `localStorage` under a versioned save payload. The store hydrates saved gameplay slices at startup, then subscribes to Redux updates and writes the current gameplay state after changes.
 
-While the game is pre-alpha and has no real saves, internal Redux state shape may change without backward compatibility. Once saves exist, state compatibility should be handled through explicit store migrations rather than preserving legacy runtime fallbacks in gameplay logic.
+The current save includes:
+
+- built structures and city status;
+- researched technologies;
+- tower configurations;
+- support and controlled territory state;
+- unlock state;
+- global event flags, modifiers, endings, cutscene history, and pending event UI state.
+
+The save intentionally excludes debug mode state.
+
+While the game is pre-alpha, internal Redux state shape may change without backward compatibility. Save payloads are versioned so compatibility should be handled through explicit store migrations rather than preserving legacy runtime fallbacks in gameplay logic.
 
 Future save state should store:
 
-- built structures;
-- support allocations;
-- researched technologies;
-- tower configurations;
 - region state;
-- city status;
-- migration and colony history where historically meaningful.
+- migration and colony history where historically meaningful;
+- support allocations beyond current upkeep state.
 
 Prefer storing current state over every past event. Migration records are an intentional exception because abandoned cities, specialists, capitals, and colonies are part of the player's identity.
 
 Potential future sharing:
 
 - JSON build export/import.
-- `localStorage` session saves.
 - File download/upload.
 - URL hash-based build sharing.
 

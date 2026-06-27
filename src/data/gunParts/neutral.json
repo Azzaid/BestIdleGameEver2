@@ -42,14 +42,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 300
+        "additive": 400
       },
       {
         "valueId": "tower.projectileSpread",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 0.7
+        "additive": 3
       },
       {
         "valueId": "tower.weight",
@@ -159,13 +159,6 @@
       },
       {
         "valueId": "tower.projectileSpeed",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": -100
-      },
-      {
-        "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
         ],

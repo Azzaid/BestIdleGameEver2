@@ -24,6 +24,7 @@ export function createWorld(config: WorldConfig): World {
       defeatedEnemies: 0,
       currentThreat: config.initialThreat,
       battleEnded: false,
+      lastBattleEndWasHandled: false,
       towerReloadRemainingSeconds: new Map(),
       enemyPushBackCooldownRemainingSeconds: new Map(),
       enemyPushBackRemainingSeconds: new Map(),
