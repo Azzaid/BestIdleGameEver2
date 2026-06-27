@@ -6,11 +6,13 @@ import type {WallSpriteMetadata} from "../models/sprites/walls/WallSpriteAtlas.t
 import type {WallTopSpriteMetadata} from "../models/sprites/wallTops/WallTopSpriteMetadata.ts";
 
 export type EntityVisualAssetKind = "building" | "wallSegment" | "wallSuperstructure" | "gunPart";
+export type ProjectileVisualAssetKind = "projectile";
+export type VisualAssetKind = EntityVisualAssetKind | ProjectileVisualAssetKind;
 
 type EntityVisualAssetBase<Metadata> = {
   id: string;
   label: string;
-  kind: EntityVisualAssetKind;
+  kind: VisualAssetKind;
   vector: DevelopmentVectorKey;
   src: string;
   metadata?: Metadata;
@@ -37,11 +39,17 @@ export type GunPartVisualAssetOption = EntityVisualAssetBase<TowerPartVisualMeta
   metadata: TowerPartVisualMetadata;
 };
 
+export type ProjectileVisualAsset = EntityVisualAssetBase<undefined> & {
+  kind: "projectile";
+  fileStem: string;
+};
+
 export type EntityVisualAsset =
   | BuildingVisualAsset
   | WallSegmentVisualAsset
   | WallSuperstructureVisualAsset
-  | GunPartVisualAssetOption;
+  | GunPartVisualAssetOption
+  | ProjectileVisualAsset;
 
 const vectorKeys = ["tech", "nature", "medieval", "aether"] as const satisfies readonly DevelopmentVectorKey[];
 
@@ -99,11 +107,18 @@ const gunPartMetadata = import.meta.glob("../assets/gunParts/**/*.json", {
   import: "default",
 }) as Record<string, TowerPartVisualMetadata>;
 
+const projectileImages = import.meta.glob("../assets/projectiles/**/*.png", {
+  eager: true,
+  query: "?url",
+  import: "default",
+}) as Record<string, string>;
+
 export const ENTITY_VISUAL_ASSETS: readonly EntityVisualAsset[] = [
   ...createBuildingVisualAssets(),
   ...createWallSegmentVisualAssets(),
   ...createWallSuperstructureVisualAssets(),
   ...createGunPartVisualAssets(),
+  ...createProjectileVisualAssets(),
 ].sort((left, right) => (
   left.kind.localeCompare(right.kind)
   || left.vector.localeCompare(right.vector)
@@ -111,7 +126,7 @@ export const ENTITY_VISUAL_ASSETS: readonly EntityVisualAsset[] = [
 ));
 
 const entityVisualAssetEntries = ENTITY_VISUAL_ASSETS.flatMap((asset): readonly (readonly [string, EntityVisualAsset])[] => (
-    asset.kind === "building"
+    asset.kind === "building" || asset.kind === "projectile"
       ? [[asset.id, asset] as const, [asset.fileStem, asset] as const]
       : [[asset.id, asset] as const]
   ));
@@ -120,7 +135,7 @@ export const ENTITY_VISUAL_ASSETS_BY_ID = Object.fromEntries(
   entityVisualAssetEntries,
 ) as Record<string, EntityVisualAsset>;
 
-export function getEntityVisualAssetsForKind(kind: EntityVisualAssetKind): EntityVisualAsset[] {
+export function getEntityVisualAssetsForKind(kind: VisualAssetKind): EntityVisualAsset[] {
   return ENTITY_VISUAL_ASSETS.filter(asset => asset.kind === kind);
 }
 
@@ -200,6 +215,24 @@ function createGunPartVisualAssets(): GunPartVisualAssetOption[] {
   });
 }
 
+function createProjectileVisualAssets(): ProjectileVisualAsset[] {
+  return Object.entries(projectileImages).flatMap(([path, src]) => {
+    const vector = getVectorFromPath(path);
+    if (!vector) return [];
+    const fileStem = getFileStem(path);
+    const id = getProjectileId(fileStem, vector);
+
+    return [{
+      id,
+      label: titleFromId(id),
+      kind: "projectile",
+      vector,
+      src,
+      fileStem,
+    }];
+  });
+}
+
 function getGunPartSlot(stem: string): TowerPartSlot | undefined {
   const [, slot] = stem.split("_");
   return towerPartSlots.find(option => option === slot);
@@ -219,6 +252,10 @@ function getWallSuperstructureId(stem: string, vector: DevelopmentVectorKey): st
 
 function getGunPartId(stem: string, vector: DevelopmentVectorKey, slot: TowerPartSlot): string {
   return `gunParts.${vector}.${slot}.${getEntityIdPart(stem, `${vector}_${slot}_`)}`;
+}
+
+function getProjectileId(stem: string, vector: DevelopmentVectorKey): string {
+  return `projectiles.${vector}.${getEntityIdPart(stem, `${vector}_projectile_`)}`;
 }
 
 function getEntityIdPart(stem: string, prefix: string): string {
@@ -245,6 +282,7 @@ function replaceExtension(path: string, extension: "json" | "png"): string {
 function titleFromId(id: string): string {
   return id
     .replace(/^gunParts\./, "")
+    .replace(/^projectiles\./, "")
     .replace(/[_.-]+/g, " ")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .split(" ")

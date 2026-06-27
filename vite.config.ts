@@ -13,6 +13,7 @@ export default defineConfig({
         '**/src/assets/events/**',
         '**/src/assets/gunParts/**',
         '**/src/assets/hexBackgrounds/**',
+        '**/src/assets/projectiles/**',
         '**/src/assets/wallSegments/**',
         '**/src/assets/wallSuperstructures/**',
       ],

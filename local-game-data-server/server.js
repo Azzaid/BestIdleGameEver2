@@ -537,7 +537,7 @@ function resolveSpriteTarget(action, fileStem) {
   }
 
   const imagePath = path.resolve(dir, `${fileStem}.png`)
-  const metadataPath = action.kind === 'enemy'
+  const metadataPath = action.kind === 'enemy' || action.kind === 'projectile'
     ? undefined
     : path.resolve(dir, `${fileStem}.json`)
 
@@ -564,6 +564,7 @@ function resolveSpriteDir(kind, vector) {
     wallSegment: 'wallSegments',
     wallSuperstructure: 'wallSuperstructures',
     gunPart: 'gunParts',
+    projectile: 'projectiles',
   }[kind]
 
   if (!collection) return null

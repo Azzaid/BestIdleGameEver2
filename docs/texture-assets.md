@@ -20,6 +20,7 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - City hex background textures: `src/assets/hexBackgrounds/<type>/<biome>/<vector>/<id>.png`
 - Tower component textures: `src/assets/gunParts/<vector>/<vector>_<slot>_<id>.png`
 - Tower component metadata: `src/assets/gunParts/<vector>/<vector>_<slot>_<id>.json`
+- Ammo projectile textures: `src/assets/projectiles/<vector>/<vector>_projectile_<id>.png`
 - Battle backgrounds: `src/assets/battle/backgrounds/<id>.png`
 - Battle enemy textures: `src/assets/enemies/<region>/<textureKey>.png`
 - Legacy city-wide backgrounds: `src/assets/city/background/<id>.<ext>`
@@ -78,6 +79,13 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 4. Import and map both files in `src/data/entityVisualAssets.ts`; `src/data/gunParts/partVisualMetadata.ts` derives tower part visual metadata from that registry.
 5. Keep tower part metadata JSON limited to sockets, source size, target size, and rotation. Do not duplicate `id` or `spriteId` in the JSON; the visual asset registry key is the Pixi texture alias.
 6. Use `/gun-part-editor` to check sockets and `/ids` to check id/data/asset coverage.
+
+## Add An Ammo Projectile Texture
+
+1. Add or confirm the ammo tower part definition in `src/data/gunParts/<vector>.json`.
+2. Put projectile PNGs in `src/assets/projectiles/<vector>/` using `<vector>_projectile_<id>.png`.
+3. Reference the projectile asset from the ammo definition with `projectileSpriteTextureKey`, using the registry id format `projectiles.<vector>.<id>`.
+4. The entity edit page can upload or select the projectile sprite alongside the ammo part's main tower-component sprite.
 
 ## Add A Battle Enemy Texture
 

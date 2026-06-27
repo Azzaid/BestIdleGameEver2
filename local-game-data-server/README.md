@@ -55,7 +55,9 @@ metadata={"sourceSpriteSize":{"width":80,"height":80},"targetSpriteSize":{"width
 image=<PNG file>
 ```
 
-`DELETE /entity-sprites` removes a sprite PNG and paired metadata JSON. Send JSON with `kind`, `vector`, and `fileStem`; include `slot` for gun parts.
+Use `kind=projectile` for ammo projectile sprites. Projectile uploads save PNG files under `src/assets/projectiles/{vector}` and do not require metadata.
+
+`DELETE /entity-sprites` removes a sprite PNG and paired metadata JSON when present. Send JSON with `kind`, `vector`, and `fileStem`; include `slot` for gun parts.
 
 `POST /gun-part-metadata` writes tower-part socket metadata to `src/assets/gunParts/{vector}/{fileStem}.json`:
 

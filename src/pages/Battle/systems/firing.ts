@@ -1,4 +1,5 @@
 import type { World } from '../../../models/battle/world.ts';
+import type { TowerData } from '../../../models/battle/tower.ts';
 import { createEntityId } from '../core/world';
 import * as PIXI from 'pixi.js';
 import { getProjectileSpawnPosition, predictProjectileAimAngle, shortestAngleDelta } from './towerAim.ts';
@@ -47,8 +48,7 @@ export function FiringSystem(world: World, dt: number) {
         directionRadians: angle,
       });
 
-      const projectile = new PIXI.Graphics();
-      projectile.circle(0, 0, Math.max(1, tower.projectileRadius)).fill(tower.aoeRadius > 0 ? 0xffb347 : 0xeaf2ff);
+      const projectile = createProjectileDisplay(tower);
       projectile.zIndex = 20;
       world.worldLayer.addChild(projectile);
       world.sprites.set(id, projectile);
@@ -58,4 +58,20 @@ export function FiringSystem(world: World, dt: number) {
     world.towerReloadRemainingSeconds.set(towerId, 1 / Math.max(0.0001, tower.shotsPerSecond));
     tower.retargetRemainingSeconds = tower.retargetCooldownSeconds;
   }
+}
+
+function createProjectileDisplay(tower: TowerData): PIXI.ContainerChild {
+  const textureKey = tower.projectileSprite?.textureKey;
+  if (textureKey && PIXI.Assets.cache.has(textureKey)) {
+    const sprite = new PIXI.Sprite(PIXI.Texture.from(textureKey));
+    const diameter = Math.max(2, tower.projectileRadius * 2);
+    sprite.anchor.set(0.5);
+    sprite.width = diameter;
+    sprite.height = diameter;
+    return sprite;
+  }
+
+  const projectile = new PIXI.Graphics();
+  projectile.circle(0, 0, Math.max(1, tower.projectileRadius)).fill(tower.aoeRadius > 0 ? 0xffb347 : 0xeaf2ff);
+  return projectile;
 }

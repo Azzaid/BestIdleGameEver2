@@ -1,4 +1,5 @@
 import type { EntityId } from './common.ts';
+import type { SpriteInfo } from './spriteInfo.ts';
 
 export const INITIAL_TOWER_AIM_RADIANS = -Math.PI / 2;
 
@@ -11,6 +12,7 @@ export interface TowerData {
   projectileSpeed: number;
   projectileRadius: number;
   projectileSpread: number;
+  projectileSprite?: SpriteInfo;
   aoeRadius: number;
   keywords: Set<string>;
   targetingDistanceLimit: number;

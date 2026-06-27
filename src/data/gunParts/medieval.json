@@ -185,7 +185,8 @@
         ],
         "additive": 5
       }
-    ]
+    ],
+    "projectileSpriteTextureKey": "projectiles.medieval.stoneBasket"
   },
   {
     "id": "gunParts.medieval.ammo.pickedStones",
@@ -230,7 +231,8 @@
         ],
         "additive": 1
       }
-    ]
+    ],
+    "projectileSpriteTextureKey": "projectiles.medieval.pickedStones"
   },
   {
     "id": "gunParts.medieval.barrel.carvedLog",
@@ -473,7 +475,8 @@
         ],
         "additive": 1
       }
-    ]
+    ],
+    "projectileSpriteTextureKey": "projectiles.medieval.sharpenedStakes"
   },
   {
     "id": "gunParts.medieval.barrel.boredTimberBarrel",
@@ -613,7 +616,8 @@
         ],
         "additive": 2
       }
-    ]
+    ],
+    "projectileSpriteTextureKey": "projectiles.medieval.baseWoodArrow"
   },
   {
     "id": "gunParts.medieval.platform.woodenRails",

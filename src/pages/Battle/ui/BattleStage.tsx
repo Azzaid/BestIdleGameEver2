@@ -236,6 +236,7 @@ export function BattleStage(props: {
                     projectileSpeed: resolvedTower.stats.projectileSpeed,
                     projectileRadius: resolvedTower.stats.projectileRadius,
                     projectileSpread: resolvedTower.stats.projectileSpread,
+                    projectileSprite: resolvedTower.selectedParts.ammo?.projectileSprite,
                     aoeRadius: resolvedTower.stats.aoeRadius,
                     keywords: new Set(resolvedTower.keywords),
                     targetingDistanceLimit: resolvedTower.stats.targetingDistanceLimit,

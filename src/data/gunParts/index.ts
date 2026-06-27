@@ -22,6 +22,7 @@ type GunPartDefinition = {
   requirements?: Requirement[];
   buildRequirements?: Requirement[];
   spriteTextureKey?: string;
+  projectileSpriteTextureKey?: string;
   aimKeywords?: string[];
   conflictsWithKeywords?: string[];
   values?: HomogeneousValueEffect[];
@@ -96,6 +97,7 @@ function buildTowerParts(vector: DevelopmentVectorKey): GunPart[] {
       requirements: definition.requirements,
       buildRequirements: definition.buildRequirements,
       spriteTextureKey: definition.spriteTextureKey,
+      projectileSpriteTextureKey: definition.projectileSpriteTextureKey,
       aimKeywords: definition.aimKeywords,
       conflictsWithKeywords: definition.conflictsWithKeywords,
       values: definition.values,

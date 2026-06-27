@@ -3,6 +3,7 @@ import { BATTLE_BACKGROUNDS } from './backgrounds.ts';
 import type { BattleBackgroundId } from '../../../models/battle/backgrounds.ts';
 import { TOWER_PARTS } from '../../../data/gunParts/index.ts';
 import { TOWER_PART_VISUAL_ASSETS } from '../../../data/gunParts/partVisualMetadata.ts';
+import { ENTITY_VISUAL_ASSETS_BY_ID } from '../../../data/entityVisualAssets.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import { wallSpriteMetadataAtlas, wallSpritesAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 import { wallTopSpriteMetadataAtlas, wallTopSpritesAtlas } from '../../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
@@ -22,13 +23,28 @@ export async function loadBattleBackground(backgroundId: BattleBackgroundId): Pr
 
 export async function loadTowerPartAssets(): Promise<void> {
     const partIds = new Set(TOWER_PARTS.map((part) => part.id));
-    const assetsToLoad = Object.entries(TOWER_PART_VISUAL_ASSETS)
+    const towerPartAssetsToLoad = Object.entries(TOWER_PART_VISUAL_ASSETS)
         .filter(([partId]) => partIds.has(partId))
         .filter(([partId]) => !Assets.cache.has(partId))
         .map(([partId, asset]) => ({
             alias: partId,
             src: asset.src,
         }));
+    const projectileTextureKeys = new Set(
+        TOWER_PARTS.flatMap((part) => (
+            part.slot === 'ammo' && part.projectileSprite?.textureKey
+                ? [part.projectileSprite.textureKey]
+                : []
+        )),
+    );
+    const projectileAssetsToLoad = [...projectileTextureKeys].flatMap((textureKey) => {
+        if (Assets.cache.has(textureKey)) return [];
+        const asset = ENTITY_VISUAL_ASSETS_BY_ID[textureKey];
+        return asset?.kind === 'projectile'
+            ? [{ alias: textureKey, src: asset.src }]
+            : [];
+    });
+    const assetsToLoad = [...towerPartAssetsToLoad, ...projectileAssetsToLoad];
 
     if (assetsToLoad.length === 0) return;
 

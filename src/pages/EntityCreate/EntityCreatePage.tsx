@@ -18,6 +18,8 @@ import {
   getEntityVisualAssetsForKind,
   type EntityVisualAsset,
   type EntityVisualAssetKind,
+  type ProjectileVisualAsset,
+  type VisualAssetKind,
 } from "../../data/entityVisualAssets.ts";
 import aetherBuildingDefinitions from "../../data/buildings/aether.json";
 import medievalBuildingDefinitions from "../../data/buildings/medieval.json";
@@ -103,6 +105,7 @@ type StoredEntityDefinition = {
   effects?: HomogeneousAdjacencyRule[];
   visualAssetId?: string;
   spriteTextureKey?: string;
+  projectileSpriteTextureKey?: string;
 };
 
 type StoredEntityLookup = {
@@ -125,7 +128,7 @@ type SpriteDraft = {
 };
 
 type SpriteSaveAction = {
-  kind: EntityVisualAssetKind;
+  kind: VisualAssetKind;
   vector: DevelopmentVectorKey;
   slot?: TowerPartSlot;
   assetId: string;
@@ -217,6 +220,9 @@ export default function EntityCreatePage() {
   const [visualAssetId, setVisualAssetId] = useState("");
   const [spriteDraft, setSpriteDraft] = useState<SpriteDraft | null>(null);
   const [removedVisualAssetId, setRemovedVisualAssetId] = useState("");
+  const [projectileVisualAssetId, setProjectileVisualAssetId] = useState("");
+  const [projectileSpriteDraft, setProjectileSpriteDraft] = useState<SpriteDraft | null>(null);
+  const [removedProjectileVisualAssetId, setRemovedProjectileVisualAssetId] = useState("");
   const [providedValueRows, setProvidedValueRows] = useState<ValueRow[]>([]);
   const [upkeepValueRows, setUpkeepValueRows] = useState<ValueRow[]>([]);
   const [effectRows, setEffectRows] = useState<EffectRow[]>([]);
@@ -257,6 +263,24 @@ export default function EntityCreatePage() {
     [vector],
   );
   const selectedVisualAsset = effectiveVisualAssetId ? ENTITY_VISUAL_ASSETS_BY_ID[effectiveVisualAssetId] : undefined;
+  const showProjectileSpriteField = entityType === "gunPart" && partType === "ammo";
+  const generatedProjectileVisualAssetId = showProjectileSpriteField
+    ? getProjectileSpriteAssetId(vector, generatedId)
+    : "";
+  const effectiveProjectileVisualAssetId = projectileSpriteDraft
+    ? generatedProjectileVisualAssetId
+    : removedProjectileVisualAssetId
+      ? ""
+      : projectileVisualAssetId;
+  const projectileVisualAssetOptions = useMemo(
+    () => getEntityVisualAssetsForKind("projectile")
+      .filter((asset): asset is ProjectileVisualAsset => asset.kind === "projectile")
+      .filter(asset => asset.vector === vector),
+    [vector],
+  );
+  const selectedProjectileVisualAsset = effectiveProjectileVisualAssetId
+    ? ENTITY_VISUAL_ASSETS_BY_ID[effectiveProjectileVisualAssetId]
+    : undefined;
   const automaticKeywords = useMemo(
     () => getAutomaticKeywords(entityType, vector, partType),
     [entityType, partType, vector],
@@ -286,6 +310,12 @@ export default function EntityCreatePage() {
   }, [removedVisualAssetId, spriteDraft, visualAssetId, visualAssetOptions]);
 
   useEffect(() => {
+    if (!projectileVisualAssetId || projectileSpriteDraft || removedProjectileVisualAssetId) return;
+    if (projectileVisualAssetOptions.some(asset => asset.id === projectileVisualAssetId) || ENTITY_VISUAL_ASSETS_BY_ID[projectileVisualAssetId]) return;
+    setProjectileVisualAssetId("");
+  }, [projectileSpriteDraft, projectileVisualAssetId, projectileVisualAssetOptions, removedProjectileVisualAssetId]);
+
+  useEffect(() => {
     const sourceBuildingIds = getSourceBuildingIdsForRequirements(requiredBuildingRows.map(row => row.buildingId));
     setRequiredSourceSpriteRows(rows => syncRequiredSourceSpriteRows(rows, sourceBuildingIds));
   }, [requiredBuildingRows]);
@@ -293,6 +323,10 @@ export default function EntityCreatePage() {
   useEffect(() => () => {
     if (spriteDraft) URL.revokeObjectURL(spriteDraft.previewUrl);
   }, [spriteDraft]);
+
+  useEffect(() => () => {
+    if (projectileSpriteDraft) URL.revokeObjectURL(projectileSpriteDraft.previewUrl);
+  }, [projectileSpriteDraft]);
 
   useEffect(() => {
     if (entityId === "new") {
@@ -323,6 +357,7 @@ export default function EntityCreatePage() {
       requiredSourceSpriteRows,
       keywords,
       visualAssetId: effectiveVisualAssetId,
+      projectileVisualAssetId: effectiveProjectileVisualAssetId,
       providedValueRows,
       upkeepValueRows,
       effectRows,
@@ -341,6 +376,7 @@ export default function EntityCreatePage() {
     isSuperstructure,
     keywords,
     effectiveVisualAssetId,
+    effectiveProjectileVisualAssetId,
     partType,
     providedValueRows,
     requiredBuildingRows,
@@ -460,6 +496,9 @@ export default function EntityCreatePage() {
             )}
             {visualAssetKind && (
               <VisualAssetField
+                title="Visual Asset"
+                searchPlaceholder="Search visual assets"
+                emptyHint="Drop a PNG or choose an existing image."
                 options={visualAssetOptions}
                 selectedAsset={selectedVisualAsset}
                 value={effectiveVisualAssetId}
@@ -468,6 +507,21 @@ export default function EntityCreatePage() {
                 onDropFile={setSpriteFile}
                 onMetadataChange={updateSpriteMetadata}
                 onRemove={removeSprite}
+              />
+            )}
+            {showProjectileSpriteField && (
+              <VisualAssetField
+                title="Projectile Sprite"
+                searchPlaceholder="Search projectile sprites"
+                emptyHint="Drop a PNG or choose an existing projectile image."
+                options={projectileVisualAssetOptions}
+                selectedAsset={selectedProjectileVisualAsset}
+                value={effectiveProjectileVisualAssetId}
+                draft={projectileSpriteDraft}
+                onChange={selectProjectileVisualAsset}
+                onDropFile={setProjectileSpriteFile}
+                onMetadataChange={() => {}}
+                onRemove={removeProjectileSprite}
               />
             )}
             <label className={`${s.field} ${s.fullWidth}`}>
@@ -700,6 +754,12 @@ export default function EntityCreatePage() {
     setVisualAssetId(nextVisualAssetId);
   }
 
+  function selectProjectileVisualAsset(nextVisualAssetId: string) {
+    setProjectileSpriteDraft(null);
+    setRemovedProjectileVisualAssetId("");
+    setProjectileVisualAssetId(nextVisualAssetId);
+  }
+
   async function setSpriteFile(file: File) {
     if (!visualAssetKind) return;
 
@@ -716,6 +776,21 @@ export default function EntityCreatePage() {
     } catch (error) {
       setSaveStatus({kind: "error", message: "Could not read the dropped image."});
     }
+  }
+
+  async function setProjectileSpriteFile(file: File) {
+    if (file.type !== "image/png") {
+      setSaveStatus({kind: "error", message: "Projectile sprites must be PNG files."});
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setProjectileSpriteDraft({
+      file,
+      previewUrl,
+    });
+    setRemovedProjectileVisualAssetId("");
+    setSaveStatus({kind: "idle", message: ""});
   }
 
   async function setRequiredSourceSpriteFile(sourceBuildingId: string, file: File) {
@@ -764,6 +839,18 @@ export default function EntityCreatePage() {
     }
   }
 
+  function removeProjectileSprite() {
+    if (projectileSpriteDraft) {
+      setProjectileSpriteDraft(null);
+      return;
+    }
+
+    if (effectiveProjectileVisualAssetId) {
+      setRemovedProjectileVisualAssetId(effectiveProjectileVisualAssetId);
+      setProjectileVisualAssetId("");
+    }
+  }
+
   function updateSpriteMetadata(metadata: SpriteMetadata) {
     setSpriteDraft(currentDraft => currentDraft ? {...currentDraft, metadata} : currentDraft);
   }
@@ -786,6 +873,18 @@ export default function EntityCreatePage() {
         : undefined;
       const spriteResult = spriteAction
         ? await applySpriteSaveAction(spriteAction, spriteDraft)
+        : undefined;
+      const projectileSpriteAction = showProjectileSpriteField
+        ? createProjectileSpriteSaveAction({
+          vector,
+          generatedProjectileVisualAssetId,
+          selectedVisualAssetId: projectileVisualAssetId,
+          removedVisualAssetId: removedProjectileVisualAssetId,
+          spriteDraft: projectileSpriteDraft,
+        })
+        : undefined;
+      const projectileSpriteResult = projectileSpriteAction
+        ? await applySpriteSaveAction(projectileSpriteAction, projectileSpriteDraft)
         : undefined;
       const requiredBuildingSpriteActions = createRequiredBuildingSpriteSaveActions({
         vector,
@@ -823,6 +922,7 @@ export default function EntityCreatePage() {
         requirementRows,
         buildRequirementRows,
         visualAssetId: effectiveVisualAssetId,
+        projectileVisualAssetId: effectiveProjectileVisualAssetId,
         baseDefinition: loadedEntity?.definition ?? null,
       });
       const response = await fetch(`${localDataServerUrl}/entities`, {
@@ -847,12 +947,16 @@ export default function EntityCreatePage() {
         message: [
           `${responseBody?.action ?? "saved"} in ${responseBody?.file ?? "data file"}`,
           spriteResult?.action ? `sprite ${spriteResult.action}` : "",
+          projectileSpriteResult?.action ? `projectile sprite ${projectileSpriteResult.action}` : "",
           requiredBuildingSpriteResults.length ? `${requiredBuildingSpriteResults.length} multistructure sprite${requiredBuildingSpriteResults.length === 1 ? "" : "s"} saved` : "",
         ].filter(Boolean).join("; ") + ".",
       });
       setSpriteDraft(null);
       setRemovedVisualAssetId("");
       setVisualAssetId(effectiveVisualAssetId);
+      setProjectileSpriteDraft(null);
+      setRemovedProjectileVisualAssetId("");
+      setProjectileVisualAssetId(effectiveProjectileVisualAssetId);
       setRequiredSourceSpriteRows(savedRequiredSourceSpriteRows);
     } catch (error) {
       setSaveStatus({
@@ -879,6 +983,9 @@ export default function EntityCreatePage() {
     setVisualAssetId("");
     setSpriteDraft(null);
     setRemovedVisualAssetId("");
+    setProjectileVisualAssetId("");
+    setProjectileSpriteDraft(null);
+    setRemovedProjectileVisualAssetId("");
     setProvidedValueRows([]);
     setUpkeepValueRows([]);
     setEffectRows([]);
@@ -902,6 +1009,9 @@ export default function EntityCreatePage() {
     setVisualAssetId("");
     setSpriteDraft(null);
     setRemovedVisualAssetId("");
+    setProjectileVisualAssetId("");
+    setProjectileSpriteDraft(null);
+    setRemovedProjectileVisualAssetId("");
     setProvidedValueRows([]);
     setUpkeepValueRows([]);
     setEffectRows([]);
@@ -933,6 +1043,9 @@ export default function EntityCreatePage() {
     setVisualAssetId(getStoredVisualAssetId(storedEntity));
     setSpriteDraft(null);
     setRemovedVisualAssetId("");
+    setProjectileVisualAssetId(definition.projectileSpriteTextureKey ?? "");
+    setProjectileSpriteDraft(null);
+    setRemovedProjectileVisualAssetId("");
     setProvidedValueRows(createValueRows(definition.values ?? [], "production"));
     setUpkeepValueRows(createValueRows(definition.values ?? [], "upkeep"));
     setEffectRows(createEffectRows(definition.effects ?? []));
@@ -1155,6 +1268,9 @@ function RequiredBuildingSpriteField(props: {
 }
 
 function VisualAssetField(props: {
+  title: string;
+  searchPlaceholder: string;
+  emptyHint: string;
   options: readonly EntityVisualAsset[];
   selectedAsset: EntityVisualAsset | undefined;
   value: string;
@@ -1202,7 +1318,7 @@ function VisualAssetField(props: {
   return (
     <section className={`${s.section} ${s.fullWidth}`}>
       <div className={s.sectionHeader}>
-        <h2 className={s.sectionTitle}>Visual Asset</h2>
+        <h2 className={s.sectionTitle}>{props.title}</h2>
       </div>
       <div className={s.visualAssetGrid}>
         <div className={s.field}>
@@ -1237,10 +1353,10 @@ function VisualAssetField(props: {
           )}
           <div className={s.multiSelect}>
             <input
-              className={s.multiSearch}
-              value={query}
-              onChange={event => setQuery(event.target.value)}
-              placeholder="Search visual assets"
+          className={s.multiSearch}
+          value={query}
+          onChange={event => setQuery(event.target.value)}
+          placeholder={props.searchPlaceholder}
             />
             {visibleOptions.length > 0 && (
               <div className={s.optionList}>
@@ -1305,7 +1421,7 @@ function VisualAssetField(props: {
               )}
             </>
           ) : (
-            <span className={s.hint}>Drop a PNG or choose an existing image.</span>
+            <span className={s.hint}>{props.emptyHint}</span>
           )}
         </div>
       </div>
@@ -1505,6 +1621,41 @@ function createSpriteSaveAction(args: {
   return undefined;
 }
 
+function createProjectileSpriteSaveAction(args: {
+  vector: DevelopmentVectorKey;
+  generatedProjectileVisualAssetId: string;
+  selectedVisualAssetId: string;
+  removedVisualAssetId: string;
+  spriteDraft: SpriteDraft | null;
+}): SpriteSaveAction | undefined {
+  if (args.spriteDraft) {
+    const fileStem = getProjectileSpriteFileStem(args.vector, args.generatedProjectileVisualAssetId);
+    const previousVisualAssetId = args.selectedVisualAssetId || args.removedVisualAssetId;
+    const previousFileStem = previousVisualAssetId && previousVisualAssetId !== args.generatedProjectileVisualAssetId
+      ? getProjectileSpriteFileStem(args.vector, previousVisualAssetId)
+      : undefined;
+
+    return {
+      kind: "projectile",
+      vector: args.vector,
+      assetId: args.generatedProjectileVisualAssetId,
+      fileStem,
+      previousFileStem,
+    };
+  }
+
+  if (args.removedVisualAssetId) {
+    return {
+      kind: "projectile",
+      vector: args.vector,
+      assetId: args.removedVisualAssetId,
+      fileStem: getProjectileSpriteFileStem(args.vector, args.removedVisualAssetId),
+    };
+  }
+
+  return undefined;
+}
+
 function createRequiredBuildingSpriteSaveActions(args: {
   vector: DevelopmentVectorKey;
   structureId: string;
@@ -1592,6 +1743,10 @@ function getSpriteAssetId(
   return "";
 }
 
+function getProjectileSpriteAssetId(vector: DevelopmentVectorKey, entityId: string): string {
+  return `projectiles.${vector}.${getEntityItemName(entityId)}`;
+}
+
 function getSpriteFileStem(
   entityType: EntityType,
   vector: DevelopmentVectorKey,
@@ -1615,6 +1770,12 @@ function getSpriteFileStem(
   }
 
   return assetId;
+}
+
+function getProjectileSpriteFileStem(vector: DevelopmentVectorKey, assetId: string): string {
+  return assetId.startsWith(`${vector}_projectile_`)
+    ? assetId
+    : `${vector}_projectile_${camelToKebab(getEntityItemName(assetId))}`;
 }
 
 function createDefaultSpriteMetadata(
@@ -1719,6 +1880,7 @@ function createPreview(args: {
   requirementRows: RequirementRow[];
   buildRequirementRows: RequirementRow[];
   visualAssetId: string;
+  projectileVisualAssetId: string;
   baseDefinition: StoredEntityDefinition | null;
 }): Record<string, unknown> {
   const keywords = args.keywords;
@@ -1753,8 +1915,15 @@ function createPreview(args: {
     } else {
       delete preview.spriteTextureKey;
     }
+
+    if (args.partType === "ammo" && args.projectileVisualAssetId) {
+      preview.projectileSpriteTextureKey = args.projectileVisualAssetId;
+    } else {
+      delete preview.projectileSpriteTextureKey;
+    }
   } else {
     delete preview.spriteTextureKey;
+    delete preview.projectileSpriteTextureKey;
     if (args.visualAssetId) {
       preview.visualAssetId = args.visualAssetId;
     } else {

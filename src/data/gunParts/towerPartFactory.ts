@@ -13,6 +13,7 @@ type TowerPartOptions = {
   requirements?: Requirement[];
   buildRequirements?: Requirement[];
   spriteTextureKey?: string;
+  projectileSpriteTextureKey?: string;
   aimKeywords?: string[];
   conflictsWithKeywords?: string[];
   values?: HomogeneousValueEffect[];
@@ -35,6 +36,9 @@ export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPart
       description,
       vector,
       sprite: {textureKey: options.spriteTextureKey ?? id},
+      projectileSprite: slot === "ammo"
+        ? {textureKey: options.projectileSpriteTextureKey ?? options.spriteTextureKey ?? id}
+        : undefined,
       keywords: new Set([...defaultKeywords, slot, ...(options.keywords ?? [])]),
       requirements: options.requirements,
       buildRequirements: options.buildRequirements,
