@@ -70,7 +70,7 @@ export const tabCount = style({
 // List grid
 export const list = style({
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 420px), 1fr))",
     gap: tokens.space.lg,
 });
 
