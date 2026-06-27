@@ -6,21 +6,21 @@ export const backdrop = style({
   inset: 0,
   display: "grid",
   placeItems: "center",
-  padding: "24px",
+  padding: "14px",
   background: vars.color.overlay.scrim,
   zIndex: 120,
 });
 
 export const dialog = style({
   width: "min(760px, 100%)",
-  maxHeight: "min(760px, calc(100vh - 48px))",
+  maxHeight: "min(760px, calc(100vh - 28px))",
   display: "grid",
   gridTemplateRows: "auto 1fr auto",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: 8,
+  borderRadius: 4,
   background: vars.color.background.surface,
   color: vars.color.text.primary,
-  boxShadow: "0 24px 72px rgba(0, 0, 0, 0.36)",
+  boxShadow: "0 14px 36px rgba(0, 0, 0, 0.34)",
   overflow: "hidden",
 });
 
@@ -28,21 +28,21 @@ export const header = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  gap: "12px",
-  padding: "16px 18px",
+  gap: "8px",
+  padding: "10px 12px",
   borderBottom: `1px solid ${vars.color.border.default}`,
 });
 
 export const heading = style({
   margin: 0,
   color: vars.color.text.heading,
-  fontSize: "1.15rem",
+  fontSize: "1rem",
 });
 
 export const closeButton = style({
-  minWidth: "34px",
-  minHeight: "34px",
-  borderRadius: 6,
+  minWidth: "28px",
+  minHeight: "28px",
+  borderRadius: 3,
   border: `1px solid ${vars.color.border.default}`,
   background: vars.color.background.app,
   color: vars.color.text.primary,
@@ -52,28 +52,28 @@ export const closeButton = style({
 
 export const body = style({
   display: "grid",
-  gap: "18px",
-  padding: "18px",
+  gap: "10px",
+  padding: "12px",
   overflowY: "auto",
 });
 
 export const eventBlock = style({
   display: "grid",
-  gap: "12px",
+  gap: "8px",
 });
 
 export const eventImage = style({
   width: "100%",
-  maxHeight: "220px",
+  maxHeight: "180px",
   objectFit: "cover",
-  borderRadius: 8,
+  borderRadius: 4,
   border: `1px solid ${vars.color.border.default}`,
 });
 
 export const eventTitle = style({
   margin: 0,
   color: vars.color.text.heading,
-  fontSize: "1.05rem",
+  fontSize: "0.98rem",
 });
 
 export const eventDescription = style({
@@ -84,7 +84,7 @@ export const eventDescription = style({
 
 export const effectList = style({
   display: "grid",
-  gap: "8px",
+  gap: "6px",
   margin: 0,
   padding: 0,
   listStyle: "none",
@@ -93,9 +93,9 @@ export const effectList = style({
 export const effectItem = style({
   display: "grid",
   gap: "3px",
-  padding: "10px 12px",
+  padding: "7px 9px",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: 8,
+  borderRadius: 4,
   background: vars.color.background.app,
 });
 
@@ -112,14 +112,14 @@ export const effectDescription = style({
 export const footer = style({
   display: "flex",
   justifyContent: "flex-end",
-  padding: "14px 18px",
+  padding: "10px 12px",
   borderTop: `1px solid ${vars.color.border.default}`,
 });
 
 export const primaryButton = style({
-  minHeight: "36px",
-  padding: "8px 14px",
-  borderRadius: 6,
+  minHeight: "30px",
+  padding: "5px 10px",
+  borderRadius: 3,
   border: `1px solid ${vars.color.brand.primary}`,
   background: vars.color.brand.primary,
   color: vars.color.text.inverse,

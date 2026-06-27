@@ -32,26 +32,26 @@ export const tokens = createThemeContract({
 // Concrete values that stay the same for every theme
 const tokenValues = {
     radius: {
-        md: '14px',
-        lg: '18px',
+        md: '6px',
+        lg: '8px',
         pill: '999px',
     },
     space: {
-        xs: '6px',
-        sm: '10px',
-        md: '14px',
-        lg: '20px',
-        xl: '28px',
+        xs: '4px',
+        sm: '6px',
+        md: '8px',
+        lg: '12px',
+        xl: '16px',
     },
     shadow: {
-        card: '0 6px 20px rgba(0,0,0,.15)',
-        inset: 'inset 0 0 0 1px rgba(0,0,0,.06)',
+        card: '0 3px 0 rgba(0,0,0,.18)',
+        inset: 'inset 0 0 0 1px rgba(0,0,0,.08)',
     },
     font: {
-        sm: '12px',
-        md: '14px',
-        lg: '16px',
-        xl: '18px',
+        sm: '11px',
+        md: '13px',
+        lg: '15px',
+        xl: '17px',
     },
 } as const;
 

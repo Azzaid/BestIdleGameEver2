@@ -6,7 +6,7 @@ export const backdrop = style({
     inset: 0,
     display: 'grid',
     placeItems: 'center',
-    padding: '24px',
+    padding: '14px',
     background: vars.color.overlay.scrim,
     zIndex: 40,
 });
@@ -14,13 +14,13 @@ export const backdrop = style({
 export const dialog = style({
     width: 'min(420px, 100%)',
     display: 'grid',
-    gap: '14px',
-    padding: '18px',
+    gap: '10px',
+    padding: '12px',
     border: `1px solid ${vars.color.border.default}`,
-    borderRadius: 8,
+    borderRadius: 4,
     background: vars.color.background.surface,
     color: vars.color.text.primary,
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.28)',
+    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.28)',
 });
 
 export const title = style({
@@ -42,8 +42,8 @@ export const actions = style({
 });
 
 export const secondaryButton = style({
-    padding: '7px 12px',
-    borderRadius: 6,
+    padding: '5px 9px',
+    borderRadius: 3,
     border: `1px solid ${vars.color.border.default}`,
     background: vars.color.background.app,
     color: vars.color.text.primary,
@@ -51,8 +51,8 @@ export const secondaryButton = style({
 });
 
 export const primaryButton = style({
-    padding: '7px 12px',
-    borderRadius: 6,
+    padding: '5px 9px',
+    borderRadius: 3,
     border: `1px solid ${vars.color.border.selected}`,
     background: vars.color.brand.primary,
     color: vars.color.text.primary,

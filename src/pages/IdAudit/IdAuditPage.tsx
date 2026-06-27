@@ -4,6 +4,7 @@ import {Link} from "react-router-dom";
 import {PROGRESSION_RULES} from "../Progression/data/rules.ts";
 import {getRuleForTarget} from "../Progression/data/progression.ts";
 import {BATTLE_ENEMY_BLUEPRINTS} from "../../data/enemies/index.ts";
+import {ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY} from "../../data/enemies/visuals.ts";
 import {
   buildings,
   enemies,
@@ -143,8 +144,10 @@ function createRows(): AuditRow[] {
       name: data?.displayName,
       dataStatus: data ? "ok" : "missing",
       progressionStatus: "none",
-      assetStatus: data?.sprite.textureKey ? "ok" : "missing",
-      notes: data ? `${data.kind} / pressure ${data.pressure}` : "No enemy blueprint",
+      assetStatus: data?.sprite.textureKey && ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[data.sprite.textureKey] ? "ok" : "missing",
+      notes: data
+        ? `${data.kind} / pressure ${data.pressure} / minimum visibility ${data.minimumCityVisibilityThreshold ?? 0} / texture ${data.sprite.textureKey}`
+        : "No enemy blueprint",
     });
   }
 
@@ -372,7 +375,9 @@ export default function IdAuditPage() {
                 <td className={s.cell}><StatusBadge status={row.assetStatus} /></td>
                 <td className={s.cell}>{row.notes}</td>
                 <td className={s.cell}>
-                  {isEditableEntityCategory(row.category) ? (
+                  {row.category === "Enemy" ? (
+                    <Link className={s.editLink} to={`/monster-edit/${encodeURIComponent(row.id)}`}>Edit</Link>
+                  ) : isEditableEntityCategory(row.category) ? (
                     <Link className={s.editLink} to={`/entity-create/${encodeURIComponent(row.id)}`}>Edit</Link>
                   ) : (
                     <span className={s.muted}>N/A</span>

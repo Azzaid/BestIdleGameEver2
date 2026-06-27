@@ -21,6 +21,7 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - Tower component textures: `src/assets/gunParts/<vector>/<vector>_<slot>_<id>.png`
 - Tower component metadata: `src/assets/gunParts/<vector>/<vector>_<slot>_<id>.json`
 - Battle backgrounds: `src/assets/battle/backgrounds/<id>.png`
+- Battle enemy textures: `src/assets/enemies/<region>/<textureKey>.png`
 - Legacy city-wide backgrounds: `src/assets/city/background/<id>.<ext>`
 - Global event pictures: `src/assets/events/<id>.png`
 - Unused images: `src/assets/unused/...`
@@ -77,6 +78,13 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 4. Import and map both files in `src/data/entityVisualAssets.ts`; `src/data/gunParts/partVisualMetadata.ts` derives tower part visual metadata from that registry.
 5. Keep tower part metadata JSON limited to sockets, source size, target size, and rotation. Do not duplicate `id` or `spriteId` in the JSON; the visual asset registry key is the Pixi texture alias.
 6. Use `/gun-part-editor` to check sockets and `/ids` to check id/data/asset coverage.
+
+## Add A Battle Enemy Texture
+
+1. Add or confirm the monster definition and `sprite.textureKey` in `src/data/enemies/<region>.json`.
+2. Put the PNG in `src/assets/enemies/<region>/<textureKey>.png`.
+3. The runtime catalog in `src/data/enemies/visuals.ts` discovers the file and battle loading registers it under `sprite.textureKey`.
+4. In local debug mode, `/monster-edit/:monsterId` can upload the PNG and set the texture key automatically.
 
 ## Add A Global Event Picture
 

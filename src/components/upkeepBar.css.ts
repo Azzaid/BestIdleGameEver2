@@ -3,20 +3,21 @@ import {vars} from "../theme/theme.css.ts";
 
 export const upkeepBar = style({
     display: 'flex',
-    minHeight: '64px',
-    padding: '6px max(12px, env(safe-area-inset-right, 0px)) 6px max(12px, env(safe-area-inset-left, 0px))',
+    minHeight: '46px',
+    padding: '4px max(8px, env(safe-area-inset-right, 0px)) 4px max(8px, env(safe-area-inset-left, 0px))',
     width: '100%',
     boxSizing: 'border-box',
     backgroundColor: vars.color.background.navbar,
     color: vars.color.text.heading,
-    gap: '16px',
+    gap: '10px',
     alignItems: 'center',
+    borderBottom: `1px solid ${vars.color.border.strong}`,
     overflow: 'visible',
     '@media': {
         '(max-width: 760px)': {
-            minHeight: '52px',
-            gap: '10px',
-            padding: '5px max(8px, env(safe-area-inset-right, 0px)) 5px max(8px, env(safe-area-inset-left, 0px))',
+            minHeight: '42px',
+            gap: '8px',
+            padding: '4px max(6px, env(safe-area-inset-right, 0px)) 4px max(6px, env(safe-area-inset-left, 0px))',
             alignItems: 'stretch',
         },
         '(max-width: 520px)': {
@@ -40,7 +41,7 @@ export const rightSlot = style({
 export const resourceGroup = style({
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: '10px',
     flex: '1 1 0',
     minWidth: 0,
     overflowX: 'auto',
@@ -53,7 +54,7 @@ export const resourceGroup = style({
     },
     '@media': {
         '(max-width: 760px)': {
-            gap: '10px',
+            gap: '8px',
         },
     },
 });
@@ -62,12 +63,12 @@ export const rightGroup = style({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: '16px',
+    gap: '10px',
     flex: '1 1 0',
     minWidth: 0,
     '@media': {
         '(max-width: 760px)': {
-            gap: '10px',
+            gap: '8px',
         },
         '(max-width: 520px)': {
             flexBasis: '100%',
@@ -79,6 +80,7 @@ export const vectorCard = style({
     display: 'grid',
     gap: '2px',
     flex: '0 0 auto',
+    fontSize: '0.9rem',
     '@media': {
         '(max-width: 520px)': {
             fontSize: '0.86rem',
@@ -92,9 +94,9 @@ export const aetherMeterSlot = style({
 
 export const natureBalanceWrap = style({
     position: 'relative',
-    flex: '0 0 54px',
-    width: '54px',
-    height: '54px',
+    flex: '0 0 42px',
+    width: '42px',
+    height: '42px',
     display: 'grid',
     placeItems: 'center',
     border: 0,
@@ -106,23 +108,23 @@ export const natureBalanceWrap = style({
     },
     '@media': {
         '(max-width: 520px)': {
-            flexBasis: '44px',
-            width: '44px',
-            height: '44px',
+            flexBasis: '38px',
+            width: '38px',
+            height: '38px',
         },
     },
 });
 
 export const natureBalanceSvg = style({
-    width: '54px',
-    height: '54px',
+    width: '42px',
+    height: '42px',
     display: 'block',
     overflow: 'visible',
     filter: 'drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2))',
     '@media': {
         '(max-width: 520px)': {
-            width: '44px',
-            height: '44px',
+            width: '38px',
+            height: '38px',
         },
     },
 });
@@ -155,12 +157,12 @@ export const natureTooltip = style({
     minWidth: '180px',
     display: 'grid',
     gap: '6px',
-    padding: '10px',
+    padding: '8px',
     border: `1px solid ${vars.color.border.default}`,
-    borderRadius: 8,
+    borderRadius: 4,
     background: vars.color.background.surface,
     color: vars.color.text.primary,
-    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.24)',
+    boxShadow: '0 8px 18px rgba(0, 0, 0, 0.22)',
     opacity: 0,
     pointerEvents: 'none',
     transform: 'translate(-50%, -4px)',
@@ -213,8 +215,8 @@ export const resourceText = style({});
 
 export const aetherOrbWrap = style({
     position: 'relative',
-    width: '44px',
-    height: '44px',
+    width: '36px',
+    height: '36px',
     border: 0,
     borderRadius: '50%',
     outline: 'none',
@@ -225,22 +227,22 @@ export const aetherOrbWrap = style({
     },
     '@media': {
         '(max-width: 520px)': {
-            width: '38px',
-            height: '38px',
+            width: '34px',
+            height: '34px',
         },
     },
 });
 
 export const aetherOrb = style({
-    width: '44px',
-    height: '44px',
+    width: '36px',
+    height: '36px',
     borderRadius: '50%',
     border: `1px solid ${vars.color.border.default}`,
-    boxShadow: `inset -7px -8px 12px rgba(0, 0, 0, 0.2), inset 5px 6px 12px rgba(255, 255, 255, 0.42), 0 5px 14px rgba(0, 0, 0, 0.22)`,
+    boxShadow: `inset -5px -6px 9px rgba(0, 0, 0, 0.22), inset 4px 5px 9px rgba(255, 255, 255, 0.34), 0 3px 8px rgba(0, 0, 0, 0.2)`,
     '@media': {
         '(max-width: 520px)': {
-            width: '38px',
-            height: '38px',
+            width: '34px',
+            height: '34px',
         },
     },
 });
@@ -252,12 +254,12 @@ export const aetherTooltip = style({
     minWidth: '190px',
     display: 'grid',
     gap: '6px',
-    padding: '10px',
+    padding: '8px',
     border: `1px solid ${vars.color.border.default}`,
-    borderRadius: 8,
+    borderRadius: 4,
     background: vars.color.background.surface,
     color: vars.color.text.primary,
-    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.24)',
+    boxShadow: '0 8px 18px rgba(0, 0, 0, 0.22)',
     opacity: 0,
     transform: 'translate(-50%, -4px)',
     pointerEvents: 'none',
@@ -298,8 +300,8 @@ export const aetherTooltipRow = style({
 
 export const signatureMeter = style({
     position: 'relative',
-    flex: '0 0 clamp(240px, 32vw, 420px)',
-    width: 'clamp(240px, 32vw, 420px)',
+    flex: '0 0 clamp(220px, 30vw, 380px)',
+    width: 'clamp(220px, 30vw, 380px)',
     maxWidth: 'calc(100vw - 24px)',
     display: 'grid',
     gap: '4px',
@@ -333,8 +335,8 @@ export const signatureMeterTitleSiege = style([
 ]);
 
 export const signatureTrack = style({
-    height: '12px',
-    borderRadius: '999px',
+    height: '10px',
+    borderRadius: '3px',
     overflow: 'hidden',
     background: 'rgb(43 48 55 / 0.24)',
     border: `1px solid ${vars.color.border.default}`,
@@ -343,7 +345,7 @@ export const signatureTrack = style({
 export const signatureFill = style({
     height: '100%',
     maxWidth: '100%',
-    borderRadius: '999px',
+    borderRadius: '3px',
     transition: 'width 180ms ease, background-color 180ms ease',
 });
 
@@ -354,12 +356,12 @@ export const signatureTooltip = style({
     minWidth: '230px',
     display: 'grid',
     gap: '6px',
-    padding: '10px',
+    padding: '8px',
     border: `1px solid ${vars.color.border.default}`,
-    borderRadius: 8,
+    borderRadius: 4,
     background: vars.color.background.surface,
     color: vars.color.text.primary,
-    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.24)',
+    boxShadow: '0 8px 18px rgba(0, 0, 0, 0.22)',
     opacity: 0,
     pointerEvents: 'none',
     transform: 'translate(-50%, -4px)',

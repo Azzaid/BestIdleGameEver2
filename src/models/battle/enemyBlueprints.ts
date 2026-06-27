@@ -20,6 +20,7 @@ export interface EnemyBlueprint {
     // Planner knobs
     strengthCost: number;        // how much of the wave "budget" this unit consumes
     selectionWeight?: number;    // relative chance when planner randomly picks candidates
+    minimumCityVisibilityThreshold?: number;
 
     // Battle stats
     kind: EnemyKind;             // 'melee' | 'ranged'

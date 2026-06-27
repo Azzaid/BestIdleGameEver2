@@ -2,6 +2,7 @@
   {
     "id": "enemies.wasteland.scrapling",
     "displayName": "Scrapling",
+    "minimumCityVisibilityThreshold": 0,
     "strengthCost": 8,
     "selectionWeight": 5,
     "kind": "melee",
@@ -27,6 +28,7 @@
   {
     "id": "enemies.wasteland.platedCrawler",
     "displayName": "Plated Crawler",
+    "minimumCityVisibilityThreshold": 100,
     "strengthCost": 22,
     "selectionWeight": 2,
     "kind": "melee",
@@ -49,6 +51,7 @@
   {
     "id": "enemies.wasteland.ridgeSpitter",
     "displayName": "Ridge Spitter",
+    "minimumCityVisibilityThreshold": 100,
     "strengthCost": 18,
     "selectionWeight": 2.5,
     "kind": "ranged",

@@ -537,7 +537,9 @@ function resolveSpriteTarget(action, fileStem) {
   }
 
   const imagePath = path.resolve(dir, `${fileStem}.png`)
-  const metadataPath = path.resolve(dir, `${fileStem}.json`)
+  const metadataPath = action.kind === 'enemy'
+    ? undefined
+    : path.resolve(dir, `${fileStem}.json`)
 
   if (!imagePath.startsWith(`${dir}${path.sep}`) || (metadataPath && !metadataPath.startsWith(`${dir}${path.sep}`))) {
     return { ok: false, statusCode: 400, error: 'Resolved sprite path is outside the asset directory' }
@@ -558,6 +560,7 @@ function resolveSpriteDir(kind, vector) {
 
   const collection = {
     building: 'buildings',
+    enemy: 'enemies',
     wallSegment: 'wallSegments',
     wallSuperstructure: 'wallSuperstructures',
     gunPart: 'gunParts',

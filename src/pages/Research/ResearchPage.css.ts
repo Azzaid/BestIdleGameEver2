@@ -1,14 +1,15 @@
 import { style } from '@vanilla-extract/css';
+import { vars } from '../../theme/theme.css.ts';
 
 export const researchPage = style({
-  padding: '20px max(20px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px))',
+  padding: '10px max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px))',
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
   minHeight: 0,
   '@media': {
     '(max-width: 700px)': {
-      padding: '10px max(10px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px))',
+      padding: '6px max(6px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px))',
     },
   },
 });
@@ -17,27 +18,28 @@ export const researchHeader = style({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  marginBottom: '20px',
-  gap: '10px',
+  marginBottom: '8px',
+  gap: '6px',
   flexWrap: 'wrap',
   '@media': {
     '(max-width: 700px)': {
-      marginBottom: '10px',
+      marginBottom: '6px',
     },
   },
 });
 
 export const researchPoints = style({
-  fontSize: '18px',
+  fontSize: '14px',
   fontWeight: 'bold',
-  padding: '10px 15px',
-  backgroundColor: '#f0f0f0',
-  borderRadius: '5px',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  padding: '6px 9px',
+  backgroundColor: vars.color.background.surface,
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '3px',
+  boxShadow: '0 2px 0 rgba(0, 0, 0, 0.12)',
   '@media': {
     '(max-width: 700px)': {
-      fontSize: '15px',
-      padding: '7px 10px',
+      fontSize: '13px',
+      padding: '5px 8px',
     },
   },
 });
@@ -45,10 +47,12 @@ export const researchPoints = style({
 export const researchFilters = style({});
 
 export const researchSelect = style({
-  padding: '8px 12px',
-  borderRadius: '4px',
-  border: '1px solid #ccc',
-  fontSize: '16px',
+  padding: '5px 8px',
+  borderRadius: '3px',
+  border: `1px solid ${vars.color.border.default}`,
+  background: vars.color.background.surface,
+  color: vars.color.text.primary,
+  fontSize: '13px',
   maxWidth: '100%',
 });
 
@@ -57,8 +61,9 @@ export const researchTree = style({
   width: '100%',
   height: '100%',
   maxHeight: '100%',
-  backgroundColor: '#f5f5f5',
-  borderRadius: '8px',
+  backgroundColor: vars.color.background.app,
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '4px',
   overflow: 'hidden',
   overscrollBehavior: 'contain',
   touchAction: 'none',
@@ -67,29 +72,29 @@ export const researchTree = style({
 
 export const researchTreeControls = style({
   position: 'absolute',
-  top: '12px',
-  right: '12px',
+  top: '8px',
+  right: '8px',
   zIndex: 2,
   display: 'flex',
-  gap: '8px',
+  gap: '6px',
   '@media': {
     '(max-width: 700px)': {
-      top: '8px',
-      right: '8px',
-      gap: '6px',
+      top: '6px',
+      right: '6px',
+      gap: '4px',
     },
   },
 });
 
 export const researchTreeControl = style({
-  minHeight: '32px',
-  padding: '4px 10px',
-  borderRadius: '6px',
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.16)',
+  minHeight: '28px',
+  padding: '3px 8px',
+  borderRadius: '3px',
+  boxShadow: '0 2px 0 rgba(0, 0, 0, 0.14)',
   '@media': {
     '(max-width: 700px)': {
-      minHeight: '38px',
-      padding: '4px 8px',
+      minHeight: '32px',
+      padding: '3px 7px',
     },
   },
 });
@@ -125,77 +130,79 @@ export const nodeLabel = style({
 
 export const researchNode = style({
   position: 'absolute',
-  width: '150px',
-  backgroundColor: 'white',
-  borderRadius: '8px',
-  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
-  padding: '10px',
-  transition: 'all 0.2s ease',
+  width: '132px',
+  backgroundColor: vars.color.background.surface,
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '4px',
+  boxShadow: '0 2px 0 rgba(0, 0, 0, 0.16)',
+  padding: '7px',
+  transition: 'transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease',
   cursor: 'pointer',
   selectors: {
     '&:hover': {
-      transform: 'translateY(-3px)',
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+      transform: 'translateY(-1px)',
+      borderColor: vars.color.border.selected,
+      boxShadow: '0 3px 0 rgba(0, 0, 0, 0.18)',
     },
   },
 });
 
 export const researchNodeLocked = style({
-  backgroundColor: '#e0e0e0',
-  color: '#888',
+  backgroundColor: vars.color.background.navbar,
+  color: vars.color.text.muted,
   cursor: 'not-allowed',
 });
 
 export const researchNodeUnlocked = style({
-  border: '2px solid #4CAF50',
+  border: `2px solid ${vars.color.state.success}`,
 });
 
 export const researchNodeResearched = style({
-  backgroundColor: '#e8f5e9',
-  border: '2px solid #2E7D32',
+  backgroundColor: vars.color.state.selectedBg,
+  border: `2px solid ${vars.color.state.success}`,
 });
 
 export const nodeContent = style({});
 
 export const nodeContentTitle = style({
-  margin: '0 0 5px 0',
-  fontSize: '16px',
+  margin: '0 0 3px 0',
+  fontSize: '13px',
 });
 
 export const nodeContentP = style({
-  margin: '0 0 8px 0',
-  fontSize: '12px',
-  color: '#666',
+  margin: '0 0 5px 0',
+  fontSize: '11px',
+  color: vars.color.text.muted,
 });
 
 export const nodeCost = style({
   fontWeight: 'bold',
-  fontSize: '14px',
-  marginBottom: '5px',
+  fontSize: '12px',
+  marginBottom: '3px',
 });
 
 export const nodeCategory = style({
-  fontSize: '12px',
-  color: '#555',
-  backgroundColor: '#eee',
-  padding: '2px 6px',
-  borderRadius: '10px',
+  fontSize: '11px',
+  color: vars.color.text.muted,
+  backgroundColor: vars.color.background.app,
+  padding: '1px 5px',
+  borderRadius: '3px',
   display: 'inline-block',
-  marginBottom: '5px',
+  marginBottom: '3px',
 });
 
 export const nodeKeywords = style({
   display: 'flex',
   flexWrap: 'wrap',
-  gap: '4px',
+  gap: '3px',
 });
 
 export const keyword = style({
-  backgroundColor: '#e0e0e0',
-  color: '#555',
+  backgroundColor: vars.color.background.app,
+  color: vars.color.text.muted,
   fontSize: '10px',
-  padding: '2px 6px',
-  borderRadius: '10px',
+  padding: '1px 5px',
+  borderRadius: '3px',
 });
 
 export const connections = style({
@@ -214,10 +221,10 @@ export const connection = style({
 });
 
 export const connectionLocked = style({
-  stroke: '#aaa',
+  stroke: vars.color.border.strong,
 });
 
 export const connectionResearched = style({
-  stroke: '#4CAF50',
+  stroke: vars.color.state.success,
   strokeDasharray: 'none',
 });

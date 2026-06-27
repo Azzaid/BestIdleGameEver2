@@ -3,10 +3,10 @@ import {vars} from "../../theme/theme.css.ts";
 
 export const page = style({
   display: "grid",
-  gridTemplateColumns: "320px minmax(0, 1fr)",
-  gap: "14px",
+  gridTemplateColumns: "288px minmax(0, 1fr)",
+  gap: "8px",
   minHeight: "100%",
-  padding: "14px",
+  padding: "8px",
   background: vars.color.background.app,
   color: vars.color.text.primary,
   "@media": {
@@ -19,11 +19,11 @@ export const page = style({
 export const panel = style({
   display: "grid",
   alignContent: "start",
-  gap: "12px",
+  gap: "8px",
   minWidth: 0,
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "8px",
-  padding: "12px",
+  borderRadius: "4px",
+  padding: "8px",
   background: vars.color.background.surface,
 });
 
@@ -35,7 +35,7 @@ export const header = style({
 export const title = style({
   margin: 0,
   color: vars.color.text.heading,
-  fontSize: "1.2rem",
+  fontSize: "1rem",
 });
 
 export const subtitle = style({
@@ -46,7 +46,7 @@ export const subtitle = style({
 
 export const form = style({
   display: "grid",
-  gap: "10px",
+  gap: "6px",
 });
 
 export const field = style({
@@ -62,11 +62,11 @@ export const label = style({
 });
 
 export const input = style({
-  minHeight: "34px",
+  minHeight: "30px",
   minWidth: 0,
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "6px",
-  padding: "6px 8px",
+  borderRadius: "3px",
+  padding: "5px 7px",
   background: vars.color.background.app,
   color: vars.color.text.primary,
 });
@@ -75,10 +75,10 @@ export const button = style({
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  minHeight: "34px",
+  minHeight: "30px",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "6px",
-  padding: "6px 10px",
+  borderRadius: "3px",
+  padding: "5px 8px",
   background: vars.color.brand.primary,
   color: vars.color.text.inverse,
   cursor: "pointer",
@@ -105,7 +105,7 @@ export const error = style({
 export const filterGrid = style({
   display: "grid",
   gridTemplateColumns: "minmax(180px, 1fr) repeat(3, minmax(150px, 0.6fr))",
-  gap: "10px",
+  gap: "6px",
   "@media": {
     "(max-width: 980px)": {
       gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -124,7 +124,7 @@ export const summary = style({
 export const tableWrap = style({
   overflow: "auto",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "8px",
+  borderRadius: "4px",
   background: vars.color.background.surface,
 });
 
@@ -135,7 +135,7 @@ export const table = style({
 });
 
 export const headCell = style({
-  padding: "10px 12px",
+  padding: "7px 9px",
   borderBottom: `1px solid ${vars.color.border.default}`,
   background: vars.color.background.app,
   color: vars.color.text.heading,

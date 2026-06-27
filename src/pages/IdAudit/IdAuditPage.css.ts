@@ -3,8 +3,8 @@ import {vars} from "../../theme/theme.css.ts";
 
 export const page = style({
   display: "grid",
-  gap: "16px",
-  padding: "20px",
+  gap: "10px",
+  padding: "10px",
   color: vars.color.text.primary,
 });
 
@@ -12,13 +12,13 @@ export const header = style({
   display: "flex",
   alignItems: "end",
   justifyContent: "space-between",
-  gap: "16px",
+  gap: "10px",
 });
 
 export const title = style({
   margin: 0,
   color: vars.color.text.heading,
-  fontSize: "1.6rem",
+  fontSize: "1.25rem",
 });
 
 export const subtitle = style({
@@ -29,15 +29,15 @@ export const subtitle = style({
 export const summary = style({
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-  gap: "10px",
+  gap: "6px",
 });
 
 export const summaryItem = style({
   display: "grid",
-  gap: "4px",
-  padding: "12px",
+  gap: "3px",
+  padding: "8px",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "8px",
+  borderRadius: "4px",
   background: vars.color.background.surface,
 });
 
@@ -50,25 +50,25 @@ export const summaryLabel = style({
 
 export const summaryValue = style({
   color: vars.color.text.heading,
-  fontSize: "1.4rem",
+  fontSize: "1.1rem",
   fontWeight: 800,
 });
 
 export const tableWrap = style({
   overflow: "auto",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "8px",
+  borderRadius: "4px",
   background: vars.color.background.surface,
 });
 
 export const filters = style({
   display: "grid",
   gridTemplateColumns: "minmax(220px, 1.4fr) repeat(4, minmax(150px, 1fr)) auto",
-  gap: "10px",
+  gap: "6px",
   alignItems: "end",
-  padding: "12px",
+  padding: "8px",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "8px",
+  borderRadius: "4px",
   background: vars.color.background.surface,
   "@media": {
     "(max-width: 1100px)": {
@@ -79,7 +79,7 @@ export const filters = style({
 
 export const field = style({
   display: "grid",
-  gap: "6px",
+  gap: "4px",
 });
 
 export const filterLabel = style({
@@ -90,10 +90,10 @@ export const filterLabel = style({
 });
 
 export const input = style({
-  minHeight: "36px",
+  minHeight: "30px",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "6px",
-  padding: "6px 8px",
+  borderRadius: "3px",
+  padding: "5px 7px",
   background: vars.color.background.app,
   color: vars.color.text.primary,
 });
@@ -101,9 +101,9 @@ export const input = style({
 export const toggle = style({
   display: "inline-flex",
   alignItems: "center",
-  gap: "8px",
-  minHeight: "36px",
-  padding: "6px 8px",
+  gap: "6px",
+  minHeight: "30px",
+  padding: "5px 7px",
   color: vars.color.text.primary,
   fontWeight: 700,
   whiteSpace: "nowrap",
@@ -116,7 +116,7 @@ export const table = style({
 });
 
 export const headCell = style({
-  padding: "10px 12px",
+  padding: "7px 9px",
   borderBottom: `1px solid ${vars.color.border.default}`,
   background: vars.color.background.app,
   color: vars.color.text.heading,
@@ -126,7 +126,7 @@ export const headCell = style({
 });
 
 export const cell = style({
-  padding: "10px 12px",
+  padding: "7px 9px",
   borderBottom: `1px solid ${vars.color.border.default}`,
   verticalAlign: "top",
 });
@@ -143,9 +143,9 @@ export const muted = style({
 export const okBadge = style({
   display: "inline-flex",
   alignItems: "center",
-  minHeight: "24px",
-  padding: "2px 8px",
-  borderRadius: "999px",
+  minHeight: "20px",
+  padding: "1px 6px",
+  borderRadius: "3px",
   background: vars.color.state.success,
   color: vars.color.text.inverse,
   fontSize: "0.78rem",
@@ -155,9 +155,9 @@ export const okBadge = style({
 export const missingBadge = style({
   display: "inline-flex",
   alignItems: "center",
-  minHeight: "24px",
-  padding: "2px 8px",
-  borderRadius: "999px",
+  minHeight: "20px",
+  padding: "1px 6px",
+  borderRadius: "3px",
   background: vars.color.state.error,
   color: vars.color.text.inverse,
   fontSize: "0.78rem",
@@ -167,9 +167,9 @@ export const missingBadge = style({
 export const neutralBadge = style({
   display: "inline-flex",
   alignItems: "center",
-  minHeight: "24px",
-  padding: "2px 8px",
-  borderRadius: "999px",
+  minHeight: "20px",
+  padding: "1px 6px",
+  borderRadius: "3px",
   border: `1px solid ${vars.color.border.default}`,
   color: vars.color.text.muted,
   fontSize: "0.78rem",
@@ -180,10 +180,10 @@ export const editLink = style({
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  minHeight: "28px",
-  padding: "4px 9px",
+  minHeight: "24px",
+  padding: "3px 7px",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "6px",
+  borderRadius: "3px",
   color: vars.color.text.primary,
   textDecoration: "none",
   fontWeight: 700,

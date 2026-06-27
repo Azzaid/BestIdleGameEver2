@@ -6,6 +6,8 @@ import { TOWER_PART_VISUAL_ASSETS } from '../../../data/gunParts/partVisualMetad
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import { wallSpriteMetadataAtlas, wallSpritesAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 import { wallTopSpriteMetadataAtlas, wallTopSpritesAtlas } from '../../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
+import { BATTLE_ENEMY_BLUEPRINTS } from '../../../data/enemies/index.ts';
+import { ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY } from '../../../data/enemies/visuals.ts';
 
 export async function loadBattleBackground(backgroundId: BattleBackgroundId): Promise<void> {
     const background = BATTLE_BACKGROUNDS[backgroundId];
@@ -68,11 +70,29 @@ export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): P
     await Assets.load(assetsToLoad);
 }
 
+export async function loadEnemyAssets(): Promise<void> {
+    const textureKeys = new Set(Object.values(BATTLE_ENEMY_BLUEPRINTS).map(enemy => enemy.sprite.textureKey));
+    const assetsToLoad = [...textureKeys].flatMap(textureKey => {
+        if (Assets.cache.has(textureKey)) return [];
+
+        const asset = ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[textureKey];
+        return asset ? [{
+            alias: textureKey,
+            src: asset.src,
+        }] : [];
+    });
+
+    if (assetsToLoad.length === 0) return;
+
+    await Assets.load(assetsToLoad);
+}
+
 /** Loads only assets needed by the current battle scene. */
 export async function loadBattleAssets(args?: {
     backgroundId?: BattleBackgroundId;
     wallSegments?: BattleWallSegment[];
 }): Promise<void> {
+    await loadEnemyAssets();
     await loadTowerPartAssets();
     await loadBattleWallAssets(args?.wallSegments ?? []);
 

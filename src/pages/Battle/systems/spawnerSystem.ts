@@ -60,6 +60,7 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
             underfillTolerance: 0.1,
             overfillTolerance: 0.05,
             maxUnits: Math.min(500, remainingMonsterSlots),
+            cityVisibility: world.currentThreat,
         });
         const cappedPicks = plan.picks.slice(0, remainingMonsterSlots);
         const cappedPlan = {

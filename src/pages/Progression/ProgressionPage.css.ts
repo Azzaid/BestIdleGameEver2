@@ -3,7 +3,7 @@ import {vars} from "../../theme/theme.css.ts";
 
 export const page = style({
   display: "grid",
-  gridTemplateColumns: "280px minmax(0, 1fr) 320px",
+  gridTemplateColumns: "248px minmax(0, 1fr) 288px",
   height: "100%",
   minHeight: 0,
   overflow: "hidden",
@@ -14,7 +14,7 @@ export const page = style({
 export const panel = style({
   minHeight: 0,
   overflow: "auto",
-  padding: "16px",
+  padding: "10px",
   borderRight: `1px solid ${vars.color.border.default}`,
   background: vars.color.background.surface,
 });
@@ -38,15 +38,15 @@ export const canvas = style({
 });
 
 export const heading = style({
-  margin: "0 0 12px",
-  fontSize: "1rem",
+  margin: "0 0 8px",
+  fontSize: "0.95rem",
   color: vars.color.text.heading,
 });
 
 export const field = style({
   display: "grid",
   gap: "6px",
-  marginBottom: "14px",
+  marginBottom: "8px",
 });
 
 export const label = style({
@@ -57,22 +57,22 @@ export const label = style({
 });
 
 export const input = style({
-  minHeight: "36px",
+  minHeight: "30px",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "6px",
-  padding: "6px 8px",
+  borderRadius: "3px",
+  padding: "5px 7px",
   background: vars.color.background.surface,
   color: vars.color.text.primary,
 });
 
 export const checkList = style({
   display: "grid",
-  gap: "8px",
+  gap: "6px",
 });
 
 export const checkItem = style({
   display: "flex",
-  gap: "8px",
+  gap: "6px",
   alignItems: "center",
   fontSize: "0.9rem",
 });
@@ -88,8 +88,8 @@ export const muted = style({
 
 export const warning = style({
   marginTop: "14px",
-  padding: "10px",
-  borderRadius: "6px",
+  padding: "7px",
+  borderRadius: "4px",
   border: `1px solid ${vars.color.state.warning}`,
   background: vars.color.background.surface,
 });

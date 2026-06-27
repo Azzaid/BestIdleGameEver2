@@ -39,7 +39,7 @@ The current app is a frontend-only prototype with multiple routed views:
 - Research: radial research tree with unlockable nodes and vector coloring.
 - City: SVG hex city visualization with clickable city and wall tiles, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
 - Statistics: sample time-series charts.
-- Debug/content tools: progression graph, ID audit, entity creation, gun part editor, and global events editor.
+- Debug/content tools: progression graph, ID audit, entity creation, monster editing, gun part editor, and global events editor.
 
 The prototype has no backend and no formal persistence system yet.
 
@@ -70,7 +70,7 @@ Primary routes:
 - `/research` renders research.
 - `/city` renders the city view.
 - `/statistics` renders charts.
-- `/progression`, `/ids`, `/entity-create/:entityId`, `/gun-part-editor`, and `/global-events` are debug-mode tools.
+- `/progression`, `/ids`, `/entity-create/:entityId`, `/monster-edit/:monsterId`, `/gun-part-editor`, and `/global-events` are debug-mode tools.
 
 Important directories:
 
@@ -626,6 +626,7 @@ Current content layout:
 - `src/pages/Progression/data/` contains progression graph helpers derived from building, research, wall, and tower part requirement data.
 - `src/data/ids.ts` derives grouped content ids from the active atlases for buildings, technologies, tower parts, enemies, wall segments, and wall superstructures. Add runtime ids to the relevant JSON/catalog first, then confirm derived ID and asset coverage in `/ids`.
 - `/ids` is the content audit screen for checking missing definitions, progression rules, and assets by id.
+- `/monster-edit/:monsterId` edits monster entries under `src/data/enemies`. Monster definitions may set `minimumCityVisibilityThreshold`; the battle wave planner only includes monsters whose threshold is at or below the current city visibility/threat value.
 
 Future content definitions should be data-driven and tag-heavy.
 

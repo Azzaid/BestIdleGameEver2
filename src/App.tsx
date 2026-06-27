@@ -15,6 +15,7 @@ import ProgressionPage from './pages/Progression/ProgressionPage.tsx'
 import GunPartEditorPage from './pages/GunPartEditor/GunPartEditorPage.tsx'
 import IdAuditPage from './pages/IdAudit/IdAuditPage.tsx'
 import EntityCreatePage from './pages/EntityCreate/EntityCreatePage.tsx'
+import MonsterEditPage from './pages/MonsterEdit/MonsterEditPage.tsx'
 import GlobalEventsEditorPage from './pages/GlobalEventsEditor/GlobalEventsEditorPage.tsx'
 import HexBackgroundEditorPage from './pages/HexBackgroundEditor/HexBackgroundEditorPage.tsx'
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
@@ -139,6 +140,9 @@ function AppFrame() {
                                       <Link className={appTheme.navBarLink} to="/entity-create/new">Entity Create</Link>
                                   </li>
                                   <li>
+                                      <Link className={appTheme.navBarLink} to="/monster-edit/new">Monster Edit</Link>
+                                  </li>
+                                  <li>
                                       <Link className={appTheme.navBarLink} to="/gun-part-editor">Part Editor</Link>
                                   </li>
                                   <li>
@@ -179,6 +183,8 @@ function AppFrame() {
                           <Route path="/ids" element={isDebugToolsEnabled ? <IdAuditPage /> : <Navigate to="/battle" replace />} />
                           <Route path="/entity-create" element={<Navigate to="/entity-create/new" replace />} />
                           <Route path="/entity-create/:entityId" element={isDebugToolsEnabled ? <EntityCreatePage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/monster-edit" element={<Navigate to="/monster-edit/new" replace />} />
+                          <Route path="/monster-edit/:monsterId" element={isDebugToolsEnabled ? <MonsterEditPage /> : <Navigate to="/battle" replace />} />
                           <Route path="/global-events" element={isDebugToolsEnabled ? <GlobalEventsEditorPage /> : <Navigate to="/battle" replace />} />
                           <Route path="/hex-background-editor" element={isDebugToolsEnabled ? <HexBackgroundEditorPage /> : <Navigate to="/battle" replace />} />
                       </Routes>

@@ -70,21 +70,27 @@ export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProp
 
     let disposed = false;
     let app: Application | null = null;
+    let resizeObserver: ResizeObserver | null = null;
 
     const mountPreview = async () => {
-      app = new Application();
-      await app.init({
-        resizeTo: hostElement,
+      const initialWidth = Math.max(1, hostElement.clientWidth);
+      const initialHeight = Math.max(1, hostElement.clientHeight);
+
+      const previewApp = new Application();
+      await previewApp.init({
+        width: initialWidth,
+        height: initialHeight,
         backgroundAlpha: 0,
         antialias: true,
       });
 
       if (disposed) {
-        app.destroy(true);
+        previewApp.destroy(true);
         return;
       }
 
-      hostElement.appendChild(app.canvas);
+      app = previewApp;
+      hostElement.appendChild(previewApp.canvas);
       await loadBattleAssets({
         backgroundId: DEFAULT_BATTLE_BACKGROUND_ID,
         wallSegments: [previewWallSegment],
@@ -109,10 +115,11 @@ export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProp
 
       const resizePreview = () => {
         if (!app) return;
-        const width = app.renderer.width;
-        const height = app.renderer.height;
+        const width = Math.max(1, hostElement.clientWidth);
+        const height = Math.max(1, hostElement.clientHeight);
         const scale = Math.min(1.8, Math.max(1.25, Math.min(width / 320, height / 300) * 1.5));
 
+        app.renderer.resize(width, height);
         background.width = width;
         background.height = height;
         background.tileScale.set(scale * 0.45);
@@ -122,13 +129,15 @@ export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProp
       };
 
       resizePreview();
-      app.renderer.on('resize', resizePreview);
+      resizeObserver = new ResizeObserver(resizePreview);
+      resizeObserver.observe(hostElement);
     };
 
     void mountPreview();
 
     return () => {
       disposed = true;
+      resizeObserver?.disconnect();
       if (app) {
         app.destroy(true, { children: true, texture: false, textureSource: false, context: true });
       }

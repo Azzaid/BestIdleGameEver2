@@ -3,7 +3,7 @@ import {vars} from "../../theme/theme.css.ts";
 
 export const page = style({
   display: "grid",
-  gridTemplateColumns: "280px minmax(0, 1fr)",
+  gridTemplateColumns: "250px minmax(0, 1fr)",
   minHeight: "100%",
   background: vars.color.background.app,
   color: vars.color.text.primary,
@@ -17,8 +17,8 @@ export const page = style({
 export const sidebar = style({
   display: "grid",
   alignContent: "start",
-  gap: "10px",
-  padding: "12px",
+  gap: "6px",
+  padding: "8px",
   borderRight: `1px solid ${vars.color.border.default}`,
   background: vars.color.background.surface,
   "@media": {
@@ -32,9 +32,9 @@ export const sidebar = style({
 export const content = style({
   display: "grid",
   alignContent: "start",
-  gap: "12px",
+  gap: "8px",
   minWidth: 0,
-  padding: "12px",
+  padding: "8px",
 });
 
 export const header = style({
@@ -45,7 +45,7 @@ export const header = style({
 export const title = style({
   margin: 0,
   color: vars.color.text.heading,
-  fontSize: "1.15rem",
+  fontSize: "1rem",
 });
 
 export const subtitle = style({
@@ -64,10 +64,10 @@ export const button = style({
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  minHeight: "32px",
+  minHeight: "28px",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "6px",
-  padding: "6px 9px",
+  borderRadius: "3px",
+  padding: "4px 7px",
   background: vars.color.background.app,
   color: vars.color.text.primary,
   cursor: "pointer",
@@ -102,8 +102,8 @@ export const listItem = style({
   gap: "2px",
   width: "100%",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "6px",
-  padding: "8px",
+  borderRadius: "3px",
+  padding: "6px",
   background: vars.color.background.app,
   color: vars.color.text.primary,
   cursor: "pointer",

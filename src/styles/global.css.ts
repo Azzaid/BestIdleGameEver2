@@ -3,7 +3,7 @@ import { vars } from '../theme/theme.css.ts';
 
 globalStyle(':root', {
   fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-  lineHeight: '1.5',
+  lineHeight: '1.35',
   fontWeight: '400',
   color: vars.color.text.primary,
   backgroundColor: vars.color.background.app,
@@ -36,26 +36,26 @@ globalStyle('body', {
 });
 
 globalStyle('h1', {
-  fontSize: '2em',
-  lineHeight: '1.2',
-  marginBottom: '20px',
-  color: vars.color.text.heading,
-});
-
-globalStyle('h2', {
-  fontSize: '1.5em',
-  marginBottom: '15px',
-  color: vars.color.text.heading,
-});
-
-globalStyle('h3', {
-  fontSize: '1.2em',
+  fontSize: '1.55em',
+  lineHeight: '1.1',
   marginBottom: '10px',
   color: vars.color.text.heading,
 });
 
+globalStyle('h2', {
+  fontSize: '1.25em',
+  marginBottom: '8px',
+  color: vars.color.text.heading,
+});
+
+globalStyle('h3', {
+  fontSize: '1.05em',
+  marginBottom: '6px',
+  color: vars.color.text.heading,
+});
+
 globalStyle('p', {
-  marginBottom: '15px',
+  marginBottom: '8px',
 });
 
 globalStyle('a', {
@@ -68,20 +68,21 @@ globalStyle('a:hover', {
 });
 
 globalStyle('button', {
-  borderRadius: '4px',
+  borderRadius: '3px',
   border: '1px solid transparent',
-  padding: '8px 16px',
-  minHeight: '36px',
-  fontSize: '14px',
-  fontWeight: '500',
+  padding: '5px 10px',
+  minHeight: '30px',
+  fontSize: '13px',
+  fontWeight: '700',
   fontFamily: 'inherit',
   backgroundColor: vars.color.brand.primary,
   color: vars.color.text.primary,
   cursor: 'pointer',
-  transition: 'background-color 0.2s',
+  transition: 'background-color 0.12s, border-color 0.12s, transform 0.08s',
+  boxShadow: 'inset 0 0 0 1px rgb(255 255 255 / 0.12)',
   '@media': {
     '(max-width: 700px)': {
-      minHeight: '44px',
+      minHeight: '34px',
     },
   },
 });
@@ -91,8 +92,8 @@ globalStyle('button:hover', {
 });
 
 globalStyle('button:focus, button:focus-visible', {
-  outline: `2px solid ${vars.color.border.focus}`,
-  outlineOffset: '2px',
+  outline: `1px solid ${vars.color.border.focus}`,
+  outlineOffset: '1px',
 });
 
 globalStyle('#root', {
@@ -104,6 +105,15 @@ globalStyle('#root', {
 
 globalStyle('input, select, textarea, button', {
   font: 'inherit',
+});
+
+globalStyle('input, select, textarea', {
+  minHeight: '30px',
+  padding: '5px 8px',
+  borderRadius: '3px',
+  border: `1px solid ${vars.color.border.default}`,
+  backgroundColor: vars.color.background.surface,
+  color: vars.color.text.primary,
 });
 
 globalStyle('.text-center', { textAlign: 'center' });

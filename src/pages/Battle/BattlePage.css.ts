@@ -32,8 +32,8 @@ export const battleShellSiege = style({
       zIndex: 1,
       pointerEvents: 'none',
       border: `2px solid ${vars.color.state.warning}`,
-      borderRadius: '8px',
-      boxShadow: `inset 0 0 36px color-mix(in srgb, ${vars.color.state.warning} 28%, transparent)`,
+      borderRadius: '4px',
+      boxShadow: `inset 0 0 24px color-mix(in srgb, ${vars.color.state.warning} 24%, transparent)`,
       opacity: 0.75,
     },
   },
@@ -41,19 +41,19 @@ export const battleShellSiege = style({
 
 export const battleHud = style({
   position: 'absolute',
-  top: '52px',
-  left: '12px',
+  top: '42px',
+  left: '8px',
   zIndex: 2,
   display: 'flex',
   flexWrap: 'wrap',
-  gap: '8px',
+  gap: '6px',
   color: vars.color.text.primary,
   '@media': {
     '(max-width: 700px)': {
-      top: '42px',
-      left: '8px',
-      right: '8px',
-      gap: '6px',
+      top: '36px',
+      left: '6px',
+      right: '6px',
+      gap: '4px',
     },
   },
 });
@@ -62,19 +62,19 @@ export const battleProgress = style({
   position: 'absolute',
   left: '50%',
   zIndex: 2,
-  width: 'min(720px, calc(100% - 32px))',
+  width: 'min(720px, calc(100% - 20px))',
   transform: 'translateX(-50%)',
   display: 'grid',
-  gap: '6px',
+  gap: '4px',
   pointerEvents: 'none',
 });
 
 export const siegeProgress = style({
-  top: '12px',
+  top: '8px',
 });
 
 export const pressureProgress = style({
-  bottom: '12px',
+  bottom: '8px',
 });
 
 export const progressLabel = style({
@@ -86,10 +86,10 @@ export const progressLabel = style({
 });
 
 export const progressTrack = style({
-  height: '12px',
+  height: '9px',
   overflow: 'hidden',
   border: `1px solid ${vars.color.border.strong}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   backgroundColor: 'color-mix(in srgb, black 34%, transparent)',
   boxShadow: vars.color.shadow.card,
 });
@@ -117,16 +117,16 @@ export const pressureProgressFill = style([
 export const battleMetric = style({
   display: 'grid',
   gap: '2px',
-  minWidth: '128px',
-  padding: '8px 10px',
+  minWidth: '112px',
+  padding: '6px 8px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   backgroundColor: vars.color.background.surface,
   boxShadow: vars.color.shadow.card,
   '@media': {
     '(max-width: 700px)': {
-      minWidth: '96px',
-      padding: '6px 8px',
+      minWidth: '88px',
+      padding: '5px 7px',
     },
   },
 });
@@ -140,7 +140,7 @@ export const battleMetricLabel = style({
 
 export const battleMetricValue = style({
   color: vars.color.text.heading,
-  fontSize: '1.1rem',
+  fontSize: '1rem',
   fontWeight: 800,
   '@media': {
     '(max-width: 700px)': {
@@ -152,13 +152,13 @@ export const battleMetricValue = style({
 export const battleNotice = style({
   position: 'absolute',
   left: '50%',
-  bottom: 'max(42px, env(safe-area-inset-bottom, 0px))',
+  bottom: 'max(34px, env(safe-area-inset-bottom, 0px))',
   zIndex: 2,
-  width: 'min(680px, calc(100% - 32px))',
+  width: 'min(680px, calc(100% - 20px))',
   transform: 'translateX(-50%)',
-  padding: '12px 14px',
+  padding: '8px 10px',
   border: `1px solid ${vars.color.border.strong}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   backgroundColor: vars.color.background.surface,
   boxShadow: vars.color.shadow.popover,
   color: vars.color.text.heading,
@@ -166,8 +166,8 @@ export const battleNotice = style({
   textAlign: 'center',
   '@media': {
     '(max-width: 700px)': {
-      bottom: 'max(34px, env(safe-area-inset-bottom, 0px))',
-      padding: '10px 12px',
+      bottom: 'max(28px, env(safe-area-inset-bottom, 0px))',
+      padding: '7px 9px',
       fontSize: '0.9rem',
     },
   },
@@ -177,8 +177,8 @@ export const battleLocked = style({
   display: 'grid',
   placeItems: 'center',
   alignContent: 'center',
-  gap: '12px',
-  padding: 'clamp(18px, 6vw, 32px)',
+  gap: '8px',
+  padding: 'clamp(12px, 5vw, 22px)',
   textAlign: 'center',
   color: vars.color.text.primary,
 });
@@ -186,7 +186,7 @@ export const battleLocked = style({
 export const battleLockedTitle = style({
   margin: 0,
   color: vars.color.text.heading,
-  fontSize: 'clamp(1.45rem, 8vw, 2rem)',
+  fontSize: 'clamp(1.25rem, 7vw, 1.65rem)',
 });
 
 export const battleLockedText = style({
@@ -198,9 +198,9 @@ export const battleLockedLink = style({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: '40px',
-  padding: '8px 14px',
-  borderRadius: '6px',
+  minHeight: '32px',
+  padding: '6px 10px',
+  borderRadius: '3px',
   border: `1px solid ${vars.color.brand.primary}`,
   background: vars.color.brand.primary,
   color: vars.color.text.inverse,

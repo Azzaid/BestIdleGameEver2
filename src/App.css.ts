@@ -12,15 +12,16 @@ export const appContainer = style({
 export const appNav = style({
   backgroundColor: vars.color.background.navbar,
   boxSizing: 'border-box',
-  minHeight: 'calc(36px + env(safe-area-inset-top, 0px))',
-  maxHeight: 'calc(48px + env(safe-area-inset-top, 0px))',
-  padding: 'env(safe-area-inset-top, 0px) max(10px, env(safe-area-inset-right, 0px)) 0 max(10px, env(safe-area-inset-left, 0px))',
+  minHeight: 'calc(30px + env(safe-area-inset-top, 0px))',
+  maxHeight: 'calc(38px + env(safe-area-inset-top, 0px))',
+  padding: 'env(safe-area-inset-top, 0px) max(6px, env(safe-area-inset-right, 0px)) 0 max(6px, env(safe-area-inset-left, 0px))',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  gap: '8px',
+  gap: '6px',
   overflow: 'hidden',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  borderBottom: `1px solid ${vars.color.border.strong}`,
+  boxShadow: '0 2px 0 rgba(0, 0, 0, 0.12)',
   zIndex: 100,
   transition: 'min-height 140ms ease, max-height 140ms ease, padding 140ms ease, opacity 100ms ease, transform 140ms ease, box-shadow 140ms ease',
 });
@@ -53,7 +54,7 @@ export const appTitle = style({
 export const navLeft = style({
   display: 'flex',
   alignItems: 'center',
-  gap: '10px',
+  gap: '6px',
   minWidth: 0,
   flex: '0 0 auto',
 });
@@ -61,13 +62,13 @@ export const navLeft = style({
 export const debugToggle = style({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '5px',
-  minHeight: '26px',
-  padding: '2px 7px',
+  gap: '4px',
+  minHeight: '24px',
+  padding: '2px 6px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   color: vars.color.text.primary,
-  fontSize: '0.78rem',
+  fontSize: '0.72rem',
   fontWeight: 700,
   cursor: 'pointer',
   userSelect: 'none',
@@ -105,13 +106,13 @@ export const navBarItem = style({
 export const navBarLink = style({
         display: 'block',
         textDecoration: 'none',
-        minHeight: '36px',
-        padding: '8px 10px',
-        transition: 'background-color 0.2s',
+        minHeight: '30px',
+        padding: '5px 8px',
+        transition: 'background-color 0.12s',
         whiteSpace: 'nowrap',
-        fontSize: '0.84rem',
+        fontSize: '0.78rem',
         fontWeight: 700,
-        lineHeight: '20px',
+        lineHeight: '18px',
     selectors: {
         '&:hover': {
             backgroundColor: vars.color.border.focus,
@@ -119,8 +120,8 @@ export const navBarLink = style({
     },
     '@media': {
       '(max-width: 700px)': {
-        minHeight: '44px',
-        padding: '12px 11px',
+        minHeight: '34px',
+        padding: '8px 9px',
       },
     },
 });
@@ -154,10 +155,10 @@ export const blockedPage = style({
   display: 'grid',
   placeItems: 'center',
   alignContent: 'center',
-  gap: '12px',
+  gap: '8px',
   minHeight: '100%',
-  padding: 'clamp(18px, 5vw, 32px)',
-  paddingBottom: 'max(clamp(18px, 5vw, 32px), env(safe-area-inset-bottom, 0px))',
+  padding: 'clamp(12px, 4vw, 20px)',
+  paddingBottom: 'max(clamp(12px, 4vw, 20px), env(safe-area-inset-bottom, 0px))',
   color: vars.color.text.primary,
   textAlign: 'center',
 });
@@ -165,7 +166,7 @@ export const blockedPage = style({
 export const blockedTitle = style({
   margin: 0,
   color: vars.color.state.error,
-  fontSize: 'clamp(1.5rem, 7vw, 2rem)',
+  fontSize: 'clamp(1.25rem, 6vw, 1.6rem)',
 });
 
 export const blockedText = style({
@@ -178,9 +179,9 @@ export const blockedLink = style({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: '40px',
-  padding: '8px 14px',
-  borderRadius: '6px',
+  minHeight: '32px',
+  padding: '6px 10px',
+  borderRadius: '3px',
   border: `1px solid ${vars.color.brand.primary}`,
   background: vars.color.brand.primary,
   color: vars.color.text.inverse,

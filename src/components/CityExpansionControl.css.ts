@@ -4,12 +4,12 @@ import {vars} from "../theme/theme.css.ts";
 export const controlGroup = style({
     display: "flex",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
 });
 
 export const expandButton = style({
-    padding: '7px 12px',
-    borderRadius: 6,
+    padding: '5px 9px',
+    borderRadius: 3,
     border: `1px solid ${vars.color.border.selected}`,
     background: vars.color.brand.primary,
     color: vars.color.text.primary,

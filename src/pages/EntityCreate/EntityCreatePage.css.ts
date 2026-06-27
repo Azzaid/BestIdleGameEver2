@@ -5,14 +5,14 @@ export const page = style({
   display: "grid",
   gap: "10px",
   minHeight: "100%",
-  padding: "12px",
+  padding: "8px",
   color: vars.color.text.primary,
 });
 
 export const formPanel = style({
   display: "grid",
   alignContent: "start",
-  gap: "10px",
+  gap: "8px",
 });
 
 export const previewPanel = style({
@@ -29,7 +29,7 @@ export const header = style({
 export const title = style({
   margin: 0,
   color: vars.color.text.heading,
-  fontSize: "1.15rem",
+  fontSize: "1rem",
 });
 
 export const subtitle = style({
@@ -493,7 +493,7 @@ export const requiredSpriteDropZone = style({
   minHeight: "82px",
   border: `1px dashed ${vars.color.border.default}`,
   borderRadius: "8px",
-  padding: "10px",
+  padding: "7px",
   background: vars.color.background.app,
   cursor: "pointer",
   textAlign: "center",
@@ -514,7 +514,7 @@ export const visualPreviewBox = style({
   gap: "8px",
   minHeight: "120px",
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: "8px",
+  borderRadius: "4px",
   padding: "8px",
   background: vars.color.background.app,
 });
@@ -524,7 +524,7 @@ export const visualPreviewImage = style({
   maxWidth: "100%",
   maxHeight: "180px",
   objectFit: "contain",
-  borderRadius: "6px",
+  borderRadius: "3px",
   background: vars.color.background.surface,
 });
 

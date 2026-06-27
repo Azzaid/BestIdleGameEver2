@@ -40,4 +40,5 @@ export interface WavePlannerOptions {
     underfillTolerance?: number;
     overfillTolerance?: number;
     maxUnits?: number;
+    cityVisibility?: number;
 }

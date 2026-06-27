@@ -17,9 +17,13 @@ export function planWaveComposition(
     const overfill = options.overfillTolerance ?? 0.05;
     const maxUnits = options.maxUnits ?? 200;
 
+    const cityVisibility = options.cityVisibility ?? Infinity;
     const candidates = enemyIds
         .map(id => blueprints[id])
-        .filter(Boolean);
+        .filter((blueprint): blueprint is EnemyBlueprint => (
+            Boolean(blueprint)
+            && (blueprint.minimumCityVisibilityThreshold ?? 0) <= cityVisibility
+        ));
 
     if (candidates.length === 0) {
         return { picks: [], totalStrength: 0 };

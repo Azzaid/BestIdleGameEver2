@@ -3,17 +3,17 @@ import { vars } from '../../theme/theme.css.ts';
 
 export const page = style({
   display: 'grid',
-  gridTemplateColumns: 'minmax(300px, 380px) minmax(0, 1fr)',
-  gap: '16px',
+  gridTemplateColumns: 'minmax(280px, 340px) minmax(0, 1fr)',
+  gap: '10px',
   minHeight: '100%',
-  padding: '16px',
+  padding: '10px',
   color: vars.color.text.primary,
 });
 
 export const panel = style({
   minWidth: 0,
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '8px',
+  borderRadius: '4px',
   background: vars.color.background.surface,
   boxShadow: vars.color.shadow.card,
 });
@@ -29,7 +29,7 @@ export const tableHeader = style({
   display: 'flex',
   flexDirection: 'column',
   gap: '4px',
-  padding: '14px',
+  padding: '9px',
   borderBottom: `1px solid ${vars.color.border.default}`,
 });
 
@@ -102,8 +102,8 @@ export const muted = style({
 
 export const editorGrid = style({
   display: 'grid',
-  gridTemplateRows: 'auto minmax(360px, 1fr) auto',
-  gap: '16px',
+  gridTemplateRows: 'auto minmax(320px, 1fr) auto',
+  gap: '10px',
   minWidth: 0,
 });
 
@@ -112,8 +112,8 @@ export const controlsPanel = style([
   {
     display: 'grid',
     gridTemplateColumns: 'repeat(6, minmax(110px, 1fr))',
-    gap: '12px',
-    padding: '14px',
+    gap: '8px',
+    padding: '9px',
     alignItems: 'end',
   },
 ]);
@@ -133,11 +133,11 @@ export const label = style({
 });
 
 export const input = style({
-  minHeight: '36px',
+  minHeight: '30px',
   minWidth: 0,
-  padding: '7px 9px',
+  padding: '5px 7px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   background: vars.color.background.app,
   color: vars.color.text.primary,
   font: 'inherit',
@@ -228,7 +228,7 @@ export const svg = style({
 
 export const emptyStage = style({
   maxWidth: '460px',
-  padding: '28px',
+  padding: '14px',
   color: vars.color.text.muted,
   textAlign: 'center',
 });
@@ -257,15 +257,15 @@ export const socketsPanel = style({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
   gap: '8px',
-  padding: '10px',
+  padding: '7px',
   borderTop: `1px solid ${vars.color.border.default}`,
   background: vars.color.background.surface,
 });
 
 export const socketMapPanel = style({
   display: 'grid',
-  gap: '8px',
-  padding: '10px',
+  gap: '6px',
+  padding: '7px',
   borderTop: `1px solid ${vars.color.border.default}`,
   background: vars.color.background.surface,
 });
@@ -274,7 +274,7 @@ export const socketMapHeader = style({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: '12px',
+  gap: '8px',
   flexWrap: 'wrap',
 });
 
@@ -413,13 +413,13 @@ export const jsonHeader = style({
   justifyContent: 'space-between',
   gap: '10px',
   flexWrap: 'wrap',
-  padding: '12px 14px',
+  padding: '8px 10px',
   borderBottom: `1px solid ${vars.color.border.default}`,
 });
 
 export const jsonOutput = style({
   margin: 0,
-  padding: '14px',
+  padding: '9px',
   overflow: 'auto',
   background: vars.color.background.app,
   color: vars.color.text.primary,
@@ -431,7 +431,7 @@ export const noAssetBadge = style({
   display: 'inline-flex',
   width: 'max-content',
   padding: '2px 6px',
-  borderRadius: '6px',
+  borderRadius: '3px',
   background: vars.color.state.warning,
   color: vars.color.text.inverse,
   fontSize: '0.72rem',

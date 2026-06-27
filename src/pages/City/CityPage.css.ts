@@ -8,7 +8,7 @@ export const cityPage = style({
     flexWrap: 'wrap',
     alignItems: 'flex-start',
     justifyContent: 'center',
-    gap: '12px',
+    gap: '6px',
     height: '100%',
     minHeight: 0,
     overflow: 'hidden',
@@ -19,7 +19,7 @@ export const cityPage = style({
             display: 'block',
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch',
-            padding: '8px max(8px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px))',
+            padding: '6px max(6px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px))',
         },
     },
 });
@@ -29,7 +29,7 @@ export const globalEffectsShell = style({
     top: 0,
     right: 0,
     zIndex: 5,
-    width: 'min(452px, calc(100% - 48px))',
+    width: 'min(420px, calc(100% - 36px))',
     height: '100%',
     display: 'grid',
     gridTemplateColumns: '32px 1fr',
@@ -56,7 +56,7 @@ export const globalEffectsToggle = style({
     alignSelf: 'start',
     border: `1px solid ${vars.color.border.default}`,
     borderRight: 0,
-    borderRadius: '8px 0 0 8px',
+    borderRadius: '4px 0 0 4px',
     background: vars.color.background.surface,
     color: vars.color.text.heading,
     cursor: 'pointer',
@@ -71,45 +71,45 @@ export const globalEffectsToggle = style({
 export const globalEffectsPanel = style({
     display: 'grid',
     alignContent: 'start',
-    gap: '12px',
+    gap: '8px',
     height: '100%',
     minHeight: 0,
     overflowY: 'auto',
-    padding: '16px',
+    padding: '10px',
     border: `1px solid ${vars.color.border.default}`,
     background: vars.color.background.surface,
     color: vars.color.text.primary,
-    borderRadius: '8px 0 0 8px',
-    boxShadow: '0 16px 40px rgba(0, 0, 0, 0.28)',
+    borderRadius: '4px 0 0 4px',
+    boxShadow: '0 8px 18px rgba(0, 0, 0, 0.24)',
     scrollbarGutter: 'stable',
 });
 
 export const globalModifierList = style({
     display: 'grid',
     alignContent: 'start',
-    gap: '10px',
+    gap: '6px',
 });
 
 export const globalModifierCard = style({
     display: 'grid',
-    gap: '8px',
-    padding: '10px',
+    gap: '6px',
+    padding: '7px',
     border: `1px solid ${vars.color.border.default}`,
     background: vars.color.background.app,
-    borderRadius: 8,
+    borderRadius: 4,
 });
 
 export const globalModifierHeader = style({
     display: 'flex',
     alignItems: 'baseline',
     justifyContent: 'space-between',
-    gap: '12px',
+    gap: '8px',
 });
 
 export const globalModifierTitle = style({
     margin: 0,
     color: vars.color.text.heading,
-    fontSize: '0.96rem',
+    fontSize: '0.86rem',
 });
 
 export const cityViewport = style({
@@ -123,7 +123,7 @@ export const cityViewport = style({
     '@media': {
         '(max-width: 760px)': {
             height: 'auto',
-            margin: '0 auto 12px',
+            margin: '0 auto 8px',
         },
     },
 });
@@ -140,12 +140,12 @@ export const cityContainer = style({
 });
 
 export const buildingSelectorContainer = style({
-    flex: '1 1 240px',
-    minWidth: '240px',
+    flex: '1 1 220px',
+    minWidth: '220px',
     maxHeight: '100%',
     minHeight: 0,
     display: 'grid',
-    gap: '12px',
+    gap: '8px',
     overflowY: 'auto',
     scrollbarGutter: 'stable',
     '@media': {
@@ -159,15 +159,15 @@ export const buildingSelectorContainer = style({
 
 export const selectionPanel = style({
     display: 'grid',
-    gap: '12px',
-    padding: '16px',
+    gap: '8px',
+    padding: '10px',
     border: `1px solid ${vars.color.border.default}`,
     background: vars.color.background.surface,
     color: vars.color.text.primary,
-    borderRadius: 8,
+    borderRadius: 4,
     '@media': {
         '(max-width: 520px)': {
-            padding: '12px',
+            padding: '8px',
         },
     },
 });
@@ -176,13 +176,13 @@ export const selectionHeader = style({
     display: 'flex',
     alignItems: 'baseline',
     justifyContent: 'space-between',
-    gap: '12px',
+    gap: '8px',
     flexWrap: 'wrap',
 });
 
 export const selectionTitle = style({
     margin: 0,
-    fontSize: '1.2rem',
+    fontSize: '1rem',
     color: vars.color.text.heading,
 });
 
@@ -194,21 +194,21 @@ export const selectionCoordinates = style({
 
 export const statSection = style({
     display: 'grid',
-    gap: '10px',
-    paddingTop: '10px',
+    gap: '6px',
+    paddingTop: '6px',
     borderTop: `1px solid ${vars.color.border.default}`,
 });
 
 export const statHeading = style({
     margin: 0,
-    fontSize: '1rem',
+    fontSize: '0.9rem',
     color: vars.color.text.heading,
 });
 
 export const sideBySideStats = style({
     display: 'grid',
     gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-    gap: '12px',
+    gap: '8px',
     '@media': {
         '(max-width: 520px)': {
             gridTemplateColumns: '1fr',
@@ -217,7 +217,7 @@ export const sideBySideStats = style({
 });
 
 export const metricTitle = style({
-    margin: '0 0 6px',
+    margin: '0 0 3px',
     fontSize: '0.86rem',
     color: vars.color.text.muted,
 });
@@ -231,7 +231,7 @@ export const metricList = style({
 export const metricRow = style({
     display: 'flex',
     justifyContent: 'space-between',
-    gap: '12px',
+    gap: '8px',
 });
 
 export const emptyStats = style({
@@ -252,11 +252,11 @@ export const multistructureStatus = style({
 
 export const multistructureCandidate = style({
     display: 'grid',
-    gap: '8px',
-    padding: '10px',
+    gap: '6px',
+    padding: '7px',
     border: `1px solid ${vars.color.border.default}`,
     background: vars.color.background.app,
-    borderRadius: 8,
+    borderRadius: 4,
 });
 
 export const structureListTitle = style({
@@ -277,12 +277,12 @@ export const structureList = style({
 
 export const wallSelector = style({
     display: 'grid',
-    gap: '12px',
+    gap: '8px',
 });
 
 export const wallCategory = style({
     display: 'grid',
-    gap: '8px',
+    gap: '6px',
 });
 
 export const wallCategoryTitle = style({
@@ -293,18 +293,18 @@ export const wallCategoryTitle = style({
 
 export const wallCardList = style({
     display: 'grid',
-    gap: '8px',
+    gap: '6px',
 });
 
 export const wallCard = style({
     display: 'grid',
     gridTemplateColumns: '1fr auto',
-    gap: '12px',
+    gap: '8px',
     alignItems: 'start',
-    padding: '12px',
+    padding: '8px',
     border: `1px solid ${vars.color.border.default}`,
     background: vars.color.background.surface,
-    borderRadius: 8,
+    borderRadius: 4,
     color: vars.color.text.primary,
     '@media': {
         '(max-width: 520px)': {
@@ -314,14 +314,14 @@ export const wallCard = style({
 });
 
 export const wallCardTitle = style({
-    margin: '0 0 8px',
+    margin: '0 0 5px',
     color: vars.color.text.heading,
     fontSize: '0.95rem',
 });
 
 export const wallBuildButton = style({
-    padding: '6px 12px',
-    borderRadius: 6,
+    padding: '5px 9px',
+    borderRadius: 3,
     border: `1px solid ${vars.color.border.selected}`,
     background: vars.color.brand.primary,
     color: vars.color.text.primary,
@@ -336,8 +336,8 @@ export const wallBuildButton = style({
 
 export const demolishButton = style({
     justifySelf: 'start',
-    padding: '6px 12px',
-    borderRadius: 6,
+    padding: '5px 9px',
+    borderRadius: 3,
     border: `1px solid ${vars.color.border.default}`,
     background: vars.color.background.app,
     color: vars.color.text.primary,
@@ -356,9 +356,9 @@ export const demolishButton = style({
 
 export const buildingLockedNote = style({
     margin: 0,
-    padding: '12px',
+    padding: '8px',
     border: `1px solid ${vars.color.border.default}`,
-    borderRadius: 8,
+    borderRadius: 4,
     background: vars.color.background.surface,
     color: vars.color.text.muted,
     lineHeight: 1.4,

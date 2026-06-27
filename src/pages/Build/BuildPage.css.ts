@@ -4,14 +4,14 @@ import { vars } from '../../theme/theme.css.ts';
 export const buildPage = style({
   display: 'flex',
   flexDirection: 'column',
-  gap: '18px',
+  gap: '10px',
   maxWidth: '1280px',
   margin: '0 auto',
-  padding: '16px max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))',
+  padding: '10px max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px))',
   '@media': {
     '(max-width: 700px)': {
-      gap: '12px',
-      padding: '10px max(10px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px))',
+      gap: '8px',
+      padding: '6px max(6px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px))',
     },
   },
 });
@@ -24,7 +24,7 @@ export const towerSelector = style({
   display: 'flex',
   gap: '2px',
   overflowX: 'auto',
-  padding: '6px 8px 0',
+  padding: '4px 6px 0',
   WebkitOverflowScrolling: 'touch',
   scrollbarWidth: 'none',
   selectors: {
@@ -38,11 +38,11 @@ export const towerSelectorButton = style({
   display: 'inline-flex',
   alignItems: 'center',
   maxWidth: '180px',
-  minHeight: '32px',
-  padding: '6px 12px',
+  minHeight: '28px',
+  padding: '4px 9px',
   border: `1px solid ${vars.color.border.default}`,
   borderBottom: 0,
-  borderRadius: '6px 6px 0 0',
+  borderRadius: '4px 4px 0 0',
   backgroundColor: vars.color.background.surface,
   color: vars.color.text.primary,
   cursor: 'pointer',
@@ -74,7 +74,7 @@ export const assemblyGrid = style({
   gridTemplateColumns: 'minmax(260px, 1fr) minmax(0, 2fr)',
     backgroundColor: vars.color.background.surface,
     border: `1px solid ${vars.color.border.default}`,
-    borderRadius: '8px',
+    borderRadius: '4px',
   gap: 0,
   alignItems: 'stretch',
   '@media': {
@@ -86,7 +86,7 @@ export const assemblyGrid = style({
 
 export const towerPreview = style({
   display: 'flex',
-  minHeight: '340px',
+  minHeight: '300px',
   borderRight: `1px solid ${vars.color.border.default}`,
   '@media': {
     '(max-width: 900px)': {
@@ -94,7 +94,7 @@ export const towerPreview = style({
       borderBottom: `1px solid ${vars.color.border.default}`,
     },
     '(max-width: 700px)': {
-      minHeight: '260px',
+      minHeight: '220px',
     },
   },
 });
@@ -102,13 +102,13 @@ export const towerPreview = style({
 export const towerImage = style({
   flex: 1,
   position: 'relative',
-  minHeight: '340px',
+  minHeight: '300px',
   overflow: 'hidden',
-  borderRadius: '8px',
+  borderRadius: '4px',
   background: `linear-gradient(180deg, ${vars.color.background.surface}, ${vars.color.background.surfaceHover})`,
   '@media': {
     '(max-width: 700px)': {
-      minHeight: '260px',
+      minHeight: '220px',
     },
   },
 });
@@ -116,11 +116,11 @@ export const towerImage = style({
 export const slotButton = style({
   display: 'inline-flex',
   alignItems: 'center',
-  minHeight: '30px',
-  padding: '5px 10px',
+  minHeight: '26px',
+  padding: '4px 8px',
   border: `1px solid ${vars.color.border.default}`,
   borderBottom: 0,
-  borderRadius: '6px 6px 0 0',
+  borderRadius: '4px 4px 0 0',
   backgroundColor: vars.color.background.surface,
   color: vars.color.text.primary,
   cursor: 'pointer',
@@ -147,12 +147,12 @@ export const slotLabel = style({
 export const towerStats = style({
   display: 'flex',
   flexDirection: 'column',
-  padding: '16px',
-    borderRadius: '8px',
+  padding: '10px',
+    borderRadius: '4px',
   backgroundColor: vars.color.background.surface,
   '@media': {
     '(max-width: 700px)': {
-      padding: '12px',
+      padding: '8px',
     },
   },
 });
@@ -162,7 +162,7 @@ export const slotStrip = style({
   gap: '2px',
   position: 'relative',
   overflowX: 'auto',
-  padding: '6px 8px 0',
+  padding: '4px 6px 0',
   WebkitOverflowScrolling: 'touch',
   scrollbarWidth: 'none',
   selectors: {
@@ -174,21 +174,21 @@ export const slotStrip = style({
 
 export const panelTitle = style({
   margin: 0,
-  fontSize: '20px',
+  fontSize: '16px',
 });
 
 export const statsGrid = style({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))',
-  gap: '8px',
-  marginTop: '14px',
+  gap: '6px',
+  marginTop: '8px',
 });
 
 export const statItem = style({
-  minHeight: '64px',
-  padding: '10px',
+  minHeight: '48px',
+  padding: '7px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '4px',
 });
 
 export const statLabel = style({
@@ -199,19 +199,19 @@ export const statLabel = style({
 
 export const statValue = style({
   display: 'block',
-  marginTop: '4px',
-  fontSize: '16px',
+  marginTop: '2px',
+  fontSize: '14px',
 });
 
 export const summaryBlock = style({
-  marginTop: '16px',
+  marginTop: '10px',
 });
 
 export const statsActions = style({
   display: 'flex',
-  gap: '10px',
+  gap: '6px',
   marginTop: 'auto',
-  paddingTop: '18px',
+  paddingTop: '10px',
   '@media': {
     '(max-width: 520px)': {
       flexDirection: 'column',
@@ -224,8 +224,8 @@ export const statsActionsCentered = style({
 });
 
 export const summaryTitle = style({
-  margin: '0 0 8px',
-  fontSize: '15px',
+  margin: '0 0 5px',
+  fontSize: '13px',
 });
 
 export const inlineList = style({
@@ -235,16 +235,16 @@ export const inlineList = style({
 });
 
 export const costPill = style({
-  padding: '4px 8px',
+  padding: '2px 6px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '999px',
+  borderRadius: '3px',
   fontSize: '12px',
 });
 
 export const missingCostPill = style({
-  padding: '4px 8px',
+  padding: '2px 6px',
   border: `1px solid ${vars.color.state.error}`,
-  borderRadius: '999px',
+  borderRadius: '3px',
   color: vars.color.state.error,
   fontSize: '12px',
   fontWeight: 700,
@@ -257,27 +257,27 @@ export const emptyText = style({
 
 export const synergyList = style({
   display: 'grid',
-  gap: '8px',
+  gap: '5px',
 });
 
 export const synergyItem = style({
   display: 'grid',
   gap: '3px',
-  padding: '8px',
+  padding: '6px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '4px',
   backgroundColor: vars.color.state.selectedBg,
 });
 
 export const warningList = style({
   display: 'grid',
-  gap: '6px',
+  gap: '4px',
 });
 
 export const warningItem = style({
-  padding: '7px 8px',
+  padding: '5px 7px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '4px',
   color: vars.color.text.primary,
   backgroundColor: vars.color.state.selectedBg,
 });
@@ -297,11 +297,11 @@ export const columnDropdownSummary = style({
   alignItems: 'center',
   justifyContent: 'center',
   width: '34px',
-  minHeight: '30px',
-  padding: '5px 9px',
+  minHeight: '26px',
+  padding: '4px 7px',
   border: `1px solid ${vars.color.border.default}`,
   borderBottom: 0,
-  borderRadius: '6px 6px 0 0',
+  borderRadius: '4px 4px 0 0',
   backgroundColor: vars.color.background.surface,
   color: vars.color.text.primary,
   fontSize: '13px',
@@ -326,13 +326,13 @@ export const columnDropdownMenu = style({
   right: 0,
   zIndex: 10,
   display: 'grid',
-  gap: '8px',
+  gap: '6px',
   minWidth: '180px',
-  padding: '10px',
+  padding: '8px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '4px',
   backgroundColor: vars.color.background.surface,
-  boxShadow: '0 10px 24px rgba(0, 0, 0, 0.18)',
+  boxShadow: '0 8px 18px rgba(0, 0, 0, 0.18)',
 });
 
 export const gearIcon = style({
@@ -351,9 +351,9 @@ export const columnToggle = style({
 export const tableContainer = style({
   maxHeight: '360px',
   overflow: 'auto',
-  padding: '0 16px',
+  padding: '0 8px',
     border: `1px solid ${vars.color.border.default}`,
-    borderRadius: '8px',
+    borderRadius: '4px',
     backgroundColor: vars.color.background.surface,
   WebkitOverflowScrolling: 'touch',
   '@media': {
@@ -367,23 +367,23 @@ export const partsTable = style({
   width: '100%',
   minWidth: '940px',
   borderCollapse: 'separate',
-  borderSpacing: '0 8px',
+  borderSpacing: '0 4px',
 });
 
 export const tableHead = style({});
 
 export const tableHeaderCell = style({
-  padding: '8px 10px',
+  padding: '6px 8px',
   textAlign: 'left',
   fontSize: '13px',
   color: vars.color.text.primary,
 });
 
 export const clearHeaderButton = style({
-  minHeight: '28px',
-  padding: '4px 9px',
+  minHeight: '24px',
+  padding: '3px 7px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   backgroundColor: vars.color.background.surface,
   color: vars.color.text.primary,
   cursor: 'pointer',
@@ -398,15 +398,15 @@ export const clearHeaderButton = style({
 
 export const headerContent = style({
   display: 'grid',
-  gap: '6px',
+  gap: '4px',
 });
 
 export const filterInput = style({
   width: '100%',
   minWidth: 0,
-  padding: '6px 8px',
+  padding: '5px 7px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   backgroundColor: vars.color.background.surface,
   color: vars.color.text.primary,
 });
@@ -416,20 +416,20 @@ export const tableRow = style({
 });
 
 export const tableCell = style({
-  padding: '10px',
+  padding: '7px 8px',
   borderTop: `1px solid ${vars.color.border.default}`,
   borderBottom: `1px solid ${vars.color.border.default}`,
   fontSize: '14px',
   selectors: {
     '&:first-child': {
       borderLeft: `1px solid ${vars.color.border.default}`,
-      borderTopLeftRadius: '6px',
-      borderBottomLeftRadius: '6px',
+      borderTopLeftRadius: '3px',
+      borderBottomLeftRadius: '3px',
     },
     '&:last-child': {
       borderRight: `1px solid ${vars.color.border.default}`,
-      borderTopRightRadius: '6px',
-      borderBottomRightRadius: '6px',
+      borderTopRightRadius: '3px',
+      borderBottomRightRadius: '3px',
     },
   },
 });
@@ -441,7 +441,7 @@ export const selectedRow = style({
 export const partNameCell = style({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '6px',
   flexWrap: 'wrap',
 });
 
@@ -452,18 +452,18 @@ export const keywords = style({
 });
 
 export const keyword = style({
-  padding: '3px 7px',
+  padding: '2px 5px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '999px',
+  borderRadius: '3px',
   fontSize: '12px',
   backgroundColor: vars.color.state.selectedBg,
 });
 
 export const installButton = style({
   minWidth: '78px',
-  padding: '7px 10px',
+  padding: '5px 8px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   backgroundColor: vars.color.brand.primary,
   color: vars.color.text.inverse,
   cursor: 'pointer',
@@ -477,9 +477,9 @@ export const installButton = style({
 
 export const removeButton = style({
   minWidth: '78px',
-  padding: '7px 10px',
+  padding: '5px 8px',
   border: `1px solid ${vars.color.state.error}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   backgroundColor: vars.color.background.surface,
   color: vars.color.state.error,
   cursor: 'pointer',
@@ -494,10 +494,10 @@ export const removeButton = style({
 
 export const rebuildButton = style({
   flex: 1,
-  minHeight: '40px',
-  padding: '8px 12px',
+  minHeight: '32px',
+  padding: '6px 10px',
   border: `1px solid ${vars.color.brand.primary}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   backgroundColor: vars.color.brand.primary,
   color: vars.color.text.inverse,
   fontWeight: 700,
@@ -516,10 +516,10 @@ export const buildButtonCentered = style({
 
 export const cancelButton = style({
   flex: 1,
-  minHeight: '40px',
-  padding: '8px 12px',
+  minHeight: '32px',
+  padding: '6px 10px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   backgroundColor: vars.color.background.surface,
   color: vars.color.text.primary,
   cursor: 'pointer',
@@ -535,22 +535,22 @@ export const paginationBar = style({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  gap: '12px',
-  padding: '12px 16px 16px',
+  gap: '8px',
+  padding: '8px 10px 10px',
   flexWrap: 'wrap',
 });
 
 export const paginationControls = style({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '6px',
 });
 
 export const paginationButton = style({
-  minHeight: '34px',
-  padding: '6px 10px',
+  minHeight: '28px',
+  padding: '4px 8px',
   border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '6px',
+  borderRadius: '3px',
   backgroundColor: vars.color.background.surface,
   color: vars.color.text.primary,
   cursor: 'pointer',
