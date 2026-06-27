@@ -93,6 +93,7 @@ Content data layout:
 - `src/data/wallSegments` and `src/data/wallSuperstructures` use independent atlas patterns keyed by development vector. Wall hexes store those two layers separately.
 - `src/data/gunParts` exposes a vector-keyed tower part atlas and flattened helpers for build resolution.
 - `src/data/research` uses a technology factory with keyworded definitions, then exposes a vector-keyed research atlas and flattened helpers for the research tree. Research visual grouping is derived from vector keywords such as `medieval`, `nature`, `aether`, and `tech`.
+- Development-vector catalogs include a neutral starter vector alongside the four themed branches. Neutral starter buildings, walls, wall-top mounts, and tower parts keep their legacy `*.medieval.*` entity ids for requirement compatibility, but their runtime vector is `neutral`; building neutral entities does not replace the hex's existing terrain background with a building-underlay background.
 - `src/pages/Progression/data` contains the derived progression catalog, graph helpers, and page-local progression types used by `/progression` and the `/ids` audit coverage view.
 - `src/data/enemies` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
 - `src/data/globalEvents` and `src/data/globalModifiers` define event content, event images, flags, and global modifiers.

@@ -9,6 +9,7 @@ export type ThemeName = DevelopmentVectorKey | "default";
 
 // Object with both property access *and* array access
 export const THEME_NAMES = {
+    neutral: "neutral",
     tech: "tech",
     nature: "nature",
     medieval: "medieval",

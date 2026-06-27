@@ -7,6 +7,7 @@ import {createWallSegmentFactory} from "./wallSegmentFactory.ts";
 import aetherWallSegmentDefinitions from "./aether.json";
 import medievalWallSegmentDefinitions from "./medieval.json";
 import natureWallSegmentDefinitions from "./nature.json";
+import neutralWallSegmentDefinitions from "./neutral.json";
 import techWallSegmentDefinitions from "./tech.json";
 
 type WallSegmentDefinition = {
@@ -21,6 +22,7 @@ type WallSegmentDefinition = {
 };
 
 const wallSegmentDefinitionsByVector: Record<DevelopmentVectorKey, readonly WallSegmentDefinition[]> = {
+    neutral: neutralWallSegmentDefinitions as readonly WallSegmentDefinition[],
     tech: techWallSegmentDefinitions as readonly WallSegmentDefinition[],
     nature: natureWallSegmentDefinitions as readonly WallSegmentDefinition[],
     medieval: medievalWallSegmentDefinitions as readonly WallSegmentDefinition[],
@@ -28,6 +30,7 @@ const wallSegmentDefinitionsByVector: Record<DevelopmentVectorKey, readonly Wall
 };
 
 export const WALL_SEGMENTS_ATLAS: WallBuildingAtlas = {
+    [DEVELOPMENT_VECTORS.neutral]: buildWallSegments("neutral"),
     [DEVELOPMENT_VECTORS.tech]: buildWallSegments("tech"),
     [DEVELOPMENT_VECTORS.nature]: buildWallSegments("nature"),
     [DEVELOPMENT_VECTORS.medieval]: buildWallSegments("medieval"),

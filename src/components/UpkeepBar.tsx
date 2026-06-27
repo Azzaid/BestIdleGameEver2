@@ -43,7 +43,7 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
         <div className={s.upkeepBar}>
             <div className={s.resourceGroup}>
                 {Object.values(DEVELOPMENT_VECTORS).map(vector => {
-                    if (vector === DEVELOPMENT_VECTORS.aether) {
+                    if (vector === DEVELOPMENT_VECTORS.neutral || vector === DEVELOPMENT_VECTORS.aether) {
                         return null;
                     }
 

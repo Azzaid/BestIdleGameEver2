@@ -6,7 +6,7 @@ import oldStumpTowerBaseMetadata from "../../../assets/wallSuperstructures/medie
 import oldStumpTowerBaseUrl from "../../../assets/wallSuperstructures/medieval/walltop_medieval_old-stump.png";
 
 export const medievalWallTopSprites: SpriteList<WallTopSpriteMetadata> = {
-    [superstructures.medieval.oldStump]: {
+    [superstructures.neutral.oldStump]: {
         src: oldStumpTowerBaseUrl,
         metadata: oldStumpTowerBaseMetadata,
     },

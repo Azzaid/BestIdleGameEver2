@@ -39,6 +39,7 @@ const NODE_KIND_LABELS: Record<ProgressionNodeKind, string> = {
 };
 
 const VECTOR_COLORS: Record<DevelopmentVectorKey, string> = {
+  neutral: "#8f8778",
   tech: "#3f7fd9",
   nature: "#419a5a",
   medieval: "#b98135",

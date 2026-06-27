@@ -7,6 +7,7 @@ import {createBuildingFactory} from "./buildingFactory.ts";
 import aetherBuildingDefinitions from "./aether.json";
 import medievalBuildingDefinitions from "./medieval.json";
 import natureBuildingDefinitions from "./nature.json";
+import neutralBuildingDefinitions from "./neutral.json";
 import techBuildingDefinitions from "./tech.json";
 
 type BuildingDefinition = {
@@ -27,6 +28,7 @@ type BuildingDefinition = {
 };
 
 const definitionsByVector: Record<DevelopmentVectorKey, readonly BuildingDefinition[]> = {
+  neutral: neutralBuildingDefinitions as readonly BuildingDefinition[],
   tech: techBuildingDefinitions as readonly BuildingDefinition[],
   nature: natureBuildingDefinitions as readonly BuildingDefinition[],
   medieval: medievalBuildingDefinitions as readonly BuildingDefinition[],
@@ -44,6 +46,7 @@ export type StructureDefinition = {
 };
 
 export const BUILDINGS_ATLAS: BuildingAtlas = {
+  [DEVELOPMENT_VECTORS.neutral]: buildBuildings("neutral"),
   [DEVELOPMENT_VECTORS.tech]: buildBuildings("tech"),
   [DEVELOPMENT_VECTORS.nature]: buildBuildings("nature"),
   [DEVELOPMENT_VECTORS.medieval]: buildBuildings("medieval"),

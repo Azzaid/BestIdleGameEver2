@@ -1,7 +1,7 @@
 import {type DevelopmentVectorKey} from "../../../models/DevlopmentVector.ts";
 import type {ProgressionNodeKind, ProgressionNodeRef} from "./types.ts";
 
-const VECTOR_KEYS: readonly DevelopmentVectorKey[] = ["tech", "nature", "medieval", "aether"];
+const VECTOR_KEYS: readonly DevelopmentVectorKey[] = ["neutral", "tech", "nature", "medieval", "aether"];
 
 export function getProgressionNodeRefFromId(id: string): ProgressionNodeRef {
   return {

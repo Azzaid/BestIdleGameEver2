@@ -10,6 +10,7 @@ export type ResourceKeyword =
     | "atmosphere"
     | "display_bar"
     | "display_orb"
+    | "neutral"
     | "medieval"
     | "tech"
     | "nature"
@@ -115,6 +116,7 @@ export const RESOURCE_DEFINITIONS: Record<UpkeepTypesValue, ResourceDefinition> 
 };
 
 export const UPKEEP_TYPES_BY_VECTOR = {
+    [DEVELOPMENT_VECTORS.neutral]: [],
     [DEVELOPMENT_VECTORS.tech]: [UPKEEP_TYPES.power, UPKEEP_TYPES.compute],
     [DEVELOPMENT_VECTORS.nature]: [UPKEEP_TYPES.fungi, UPKEEP_TYPES.plants, UPKEEP_TYPES.animals],
     [DEVELOPMENT_VECTORS.medieval]: [UPKEEP_TYPES.people, UPKEEP_TYPES.gold],

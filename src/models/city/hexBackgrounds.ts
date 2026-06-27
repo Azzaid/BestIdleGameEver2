@@ -55,7 +55,8 @@ export type CityHexBackgroundSelection = {
     backgroundDevelopmentVector: DevelopmentVectorValue;
 };
 
-const developmentVectorValues = Object.values(DEVELOPMENT_VECTORS);
+const developmentVectorValues = Object.values(DEVELOPMENT_VECTORS)
+    .filter(vector => vector !== DEVELOPMENT_VECTORS.neutral);
 const cityBiomeValues = Object.values(CITY_BIOMES);
 
 export function selectRandomCityBiome(random = Math.random): CityBiome {

@@ -72,10 +72,10 @@ const getInitialHexes = ((
                 developmentVector: DEVELOPMENT_VECTORS.medieval,
                 backgroundSpriteId: background.backgroundSpriteId,
                 backgroundDevelopmentVector: background.backgroundDevelopmentVector,
-                wallKey: isWall ? walls.medieval.scrapBarricade : null,
-                wallDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
-                wallTopKey: column === 0 && isWall ? superstructures.medieval.oldStump : null,
-                wallTopDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
+                wallKey: isWall ? walls.neutral.scrapBarricade : null,
+                wallDevelopmentVector: DEVELOPMENT_VECTORS.neutral,
+                wallTopKey: column === 0 && isWall ? superstructures.neutral.oldStump : null,
+                wallTopDevelopmentVector: DEVELOPMENT_VECTORS.neutral,
             });
         }
     }
@@ -164,29 +164,36 @@ export const citySlice = createSlice({
             const currentHex = state.hexes[hexToBuildIndex];
             if (currentHex.isUnclaimed || currentHex.kind !== "city" || currentHex.buildingKey || currentHex.partOfStructureId) return;
 
+            const background = action.payload.developmentVector === DEVELOPMENT_VECTORS.neutral
+                ? {
+                    backgroundSpriteId: currentHex.backgroundSpriteId,
+                    backgroundDevelopmentVector: currentHex.backgroundDevelopmentVector,
+                }
+                : getBuildingUnderlayBackground(state.biome, action.payload.developmentVector);
+
             state.hexes[hexToBuildIndex] = {
                 ...action.payload,
                 kind: currentHex.kind,
-                ...getBuildingUnderlayBackground(state.biome, action.payload.developmentVector),
+                ...background,
                 spriteKey: null,
                 initialBuildingKey: null,
                 partOfStructureId: null,
                 structureCoreCellKey: null,
             };
         },
-        buildWall: (state, action: PayloadAction<{cellKey: string; wallKey: string}>) => {
+        buildWall: (state, action: PayloadAction<{cellKey: string; wallKey: string; developmentVector: DevelopmentVectorValue}>) => {
             const hex = state.hexes.find(cell => cell.cellKey === action.payload.cellKey);
             if (!hex || hex.isUnclaimed || hex.kind !== "wall") return;
 
             hex.wallKey = action.payload.wallKey;
-            hex.wallDevelopmentVector = DEVELOPMENT_VECTORS.medieval;
+            hex.wallDevelopmentVector = action.payload.developmentVector;
         },
-        buildWallTop: (state, action: PayloadAction<{cellKey: string; wallTopKey: string}>) => {
+        buildWallTop: (state, action: PayloadAction<{cellKey: string; wallTopKey: string; developmentVector: DevelopmentVectorValue}>) => {
             const hex = state.hexes.find(cell => cell.cellKey === action.payload.cellKey);
             if (!hex || hex.isUnclaimed || hex.kind !== "wall") return;
 
             hex.wallTopKey = action.payload.wallTopKey;
-            hex.wallTopDevelopmentVector = DEVELOPMENT_VECTORS.medieval;
+            hex.wallTopDevelopmentVector = action.payload.developmentVector;
         },
         buildMultistructure: (state, action: PayloadAction<{ coreCellKey: string; structureId: string }>) => {
             const { coreCellKey, structureId } = action.payload;
@@ -215,7 +222,9 @@ export const citySlice = createSlice({
                 const initialBuildingKey = hex.initialBuildingKey ?? hex.buildingKey;
                 hex.buildingKey = structureId;
                 hex.developmentVector = DEVELOPMENT_VECTORS[structureDef.vector];
-                Object.assign(hex, getBuildingUnderlayBackground(state.biome, hex.developmentVector));
+                if (hex.developmentVector !== DEVELOPMENT_VECTORS.neutral) {
+                    Object.assign(hex, getBuildingUnderlayBackground(state.biome, hex.developmentVector));
+                }
                 hex.initialBuildingKey = initialBuildingKey;
                 hex.partOfStructureId = structureId;
                 hex.structureCoreCellKey = coreCellKey;

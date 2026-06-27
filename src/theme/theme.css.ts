@@ -1,7 +1,7 @@
 /* 
  * theme.css.ts — semantic color tokens + multiple themes (vanilla-extract)
  *
- * Themes included: default, tech, nature, medieval, aether
+ * Themes included: default, neutral, tech, nature, medieval, aether
  * Contract: role-based tokens under `vars` (background, text, brand, state, border, shadow, overlay)
  */
 import { createGlobalTheme, createThemeContract } from '@vanilla-extract/css'
@@ -102,6 +102,53 @@ export const vars = createThemeContract({
 
 const themes: Record<ThemeName, Theme> = {
     [THEME_NAMES.default]: {
+        color: {
+            background: {
+                app: 'hsl(42 20% 97%)',
+                surface: 'hsl(42 22% 99%)',
+                surfaceHover: 'hsl(42 22% 98%)',
+                navbar: 'hsl(42 20% 94%)',
+            },
+            border: {
+                default: 'hsl(42 15% 80%)',
+                strong: 'hsl(42 18% 68%)',
+                focus: 'hsl(32 35% 58%)',
+                selected: 'hsl(32 22% 49%)',
+            },
+            brand: {
+                primary: 'hsl(32 22% 49%)',
+                primaryHover: 'hsl(32 22% 54%)',
+                primaryActive: 'hsl(32 22% 43%)',
+                secondary: 'hsl(18 30% 45%)',
+                secondaryHover: 'hsl(18 30% 50%)',
+            },
+            text: {
+                primary: 'hsl(220 15% 30%)',
+                heading: 'hsl(220 25% 20%)',
+                muted: 'hsl(220 10% 48%)',
+                inverse: 'hsl(0 0% 100%)',
+                link: 'hsl(32 22% 49%)',
+                linkHover: 'hsl(32 22% 54%)',
+            },
+            state: {
+                selectedBg: 'hsl(32 22% 49% / 0.12)',
+                selectedBorder: 'hsl(32 22% 49%)',
+                success: 'hsl(140 60% 35%)',
+                warning: 'hsl(40 90% 50%)',
+                error: 'hsl(0 75% 50%)',
+                info: 'hsl(210 80% 45%)',
+            },
+            overlay: {
+                scrim: 'hsl(42 20% 10% / 0.50)',
+            },
+            shadow: {
+                card: '0 4px 24px hsl(220 20% 20% / 0.08)',
+                popover: '0 8px 30px hsl(220 20% 20% / 0.14)',
+            },
+        },
+    },
+
+    [THEME_NAMES.neutral]: {
         color: {
             background: {
                 app: 'hsl(42 20% 97%)',
@@ -340,6 +387,7 @@ const themes: Record<ThemeName, Theme> = {
 /* Register default and attribute-scoped themes */
 createGlobalTheme(':root', vars, themes.default)
 createGlobalTheme(`[data-theme="${THEME_NAMES.default}"]`, vars, themes.default)
+createGlobalTheme(`[data-theme="${THEME_NAMES.neutral}"]`, vars, themes.neutral)
 createGlobalTheme(`[data-theme="${THEME_NAMES.tech}"]`, vars, themes.tech)
 createGlobalTheme(`[data-theme="${THEME_NAMES.nature}"]`, vars, themes.nature)
 createGlobalTheme(`[data-theme="${THEME_NAMES.medieval}"]`, vars, themes.medieval)

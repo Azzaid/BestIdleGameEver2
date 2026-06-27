@@ -16,14 +16,14 @@ import { BATTLE_BACKGROUNDS } from '../Battle/assets/backgrounds.ts';
 
 const previewWallSegment: BattleWallSegment = {
   cellKey: 'tower-preview-wall',
-  wallKey: walls.medieval.scrapBarricade,
-  wallDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
-  wallTopKey: superstructures.medieval.oldStump,
-  wallTopDevelopmentVector: DEVELOPMENT_VECTORS.medieval,
+  wallKey: walls.neutral.scrapBarricade,
+  wallDevelopmentVector: DEVELOPMENT_VECTORS.neutral,
+  wallTopKey: superstructures.neutral.oldStump,
+  wallTopDevelopmentVector: DEVELOPMENT_VECTORS.neutral,
 };
 
-const wallMetadata = wallSpriteMetadataAtlas[DEVELOPMENT_VECTORS.medieval][walls.medieval.scrapBarricade];
-const wallTopMetadata = wallTopSpriteMetadataAtlas[DEVELOPMENT_VECTORS.medieval][superstructures.medieval.oldStump];
+const wallMetadata = wallSpriteMetadataAtlas[DEVELOPMENT_VECTORS.neutral][walls.neutral.scrapBarricade];
+const wallTopMetadata = wallTopSpriteMetadataAtlas[DEVELOPMENT_VECTORS.neutral][superstructures.neutral.oldStump];
 const previewSegmentSize = 190;
 const previewCityToBattleScale = previewSegmentSize / CITY_HEX_SIZE;
 
@@ -31,7 +31,7 @@ function createMountedTowerPreview(towerVisualDefinition: ReturnType<typeof crea
   const scene = new Container();
   scene.sortableChildren = true;
 
-  const wall = new Sprite(Texture.from(walls.medieval.scrapBarricade));
+  const wall = new Sprite(Texture.from(walls.neutral.scrapBarricade));
   wall.anchor.set(0.5);
   wall.width = wallMetadata.targetSpriteSize.width * previewCityToBattleScale;
   wall.height = wallMetadata.targetSpriteSize.height * previewCityToBattleScale;
@@ -39,7 +39,7 @@ function createMountedTowerPreview(towerVisualDefinition: ReturnType<typeof crea
   wall.zIndex = 1;
   scene.addChild(wall);
 
-  const towerBase = new Sprite(Texture.from(superstructures.medieval.oldStump));
+  const towerBase = new Sprite(Texture.from(superstructures.neutral.oldStump));
   towerBase.anchor.set(0.5);
   towerBase.width = wallTopMetadata.targetSpriteSize.width * previewCityToBattleScale;
   towerBase.height = wallTopMetadata.targetSpriteSize.height * previewCityToBattleScale;

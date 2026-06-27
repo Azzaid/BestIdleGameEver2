@@ -1,4 +1,5 @@
 export const DEVELOPMENT_VECTORS = {
+    neutral: Symbol('Neutral'),
     tech: Symbol('Tech'),
     nature: Symbol('Nature'),
     medieval: Symbol('Medieval'),

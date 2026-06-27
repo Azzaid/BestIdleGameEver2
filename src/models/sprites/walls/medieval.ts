@@ -6,7 +6,7 @@ import scrapWallMetadata from "../../../assets/wallSegments/medieval/wall_mediev
 import scrapWallUrl from "../../../assets/wallSegments/medieval/wall_medieval_scrap-barricade.png";
 
 export const medievalWallSprites: SpriteList<WallSpriteMetadata> = {
-    [walls.medieval.scrapBarricade]: {
+    [walls.neutral.scrapBarricade]: {
         src: scrapWallUrl,
         metadata: scrapWallMetadata,
     },

@@ -1,0 +1,191 @@
+[
+  {
+    "id": "gunParts.medieval.launchSystem.crudeSling",
+    "slot": "launchSystem",
+    "name": "Primitive Launcher",
+    "description": "Crude slingshot. It is a bit rough, but it works.",
+    "keywords": [
+      "rough",
+      "wood"
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 300
+      },
+      {
+        "valueId": "tower.shotsPerSecond",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.burstCount",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 300
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 0.7
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "tower.retargetCooldownSeconds",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.rotationSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1.5
+      }
+    ]
+  },
+  {
+    "id": "gunParts.medieval.barrel.hollowedTrunk",
+    "slot": "barrel",
+    "name": "Hollow trunk",
+    "description": "Old hollow trunk found near the city walls.",
+    "keywords": [
+      "gunPart",
+      "barrel",
+      "rough",
+      "wood"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.foraging"
+      },
+      {
+        "type": "buildingKeywordExists",
+        "keyword": "scavenger"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -0.15
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      }
+    ],
+    "spriteTextureKey": "gunParts.medieval.barrel.hollowedTrunk"
+  },
+  {
+    "id": "gunParts.medieval.ammo.stoneBasket",
+    "slot": "ammo",
+    "name": "Stone Basket",
+    "description": "A basket stones.",
+    "keywords": [
+      "stone"
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -100
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -100
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "tower.projectileRadius",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      }
+    ],
+    "projectileSpriteTextureKey": "projectiles.medieval.stoneBasket"
+  }
+]

@@ -1,4 +1,4 @@
-import type {DevelopmentVectorKey} from "../models/DevlopmentVector.ts";
+import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../models/DevlopmentVector.ts";
 import {
   CITY_BIOMES,
   CITY_HEX_BACKGROUND_TYPES,
@@ -16,7 +16,7 @@ const hexBackgroundImages = import.meta.glob("../assets/hexBackgrounds/**/*.png"
 
 const typeValues = Object.values(CITY_HEX_BACKGROUND_TYPES);
 const biomeValues = Object.values(CITY_BIOMES);
-const vectorKeys = ["tech", "nature", "medieval", "aether"] as const satisfies readonly DevelopmentVectorKey[];
+const vectorKeys = Object.keys(DEVELOPMENT_VECTORS) as DevelopmentVectorKey[];
 
 export const CITY_HEX_BACKGROUND_SPRITES: readonly CityHexBackgroundSprite[] = Object.entries(hexBackgroundImages)
   .flatMap(([path, src]) => {

@@ -163,15 +163,27 @@ const CityPage = () => {
     const handleWallBuildingSelect = (buildingKey: string) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
         if (!unlockedWallSegmentIdSet.has(buildingKey)) return;
-        if (!areRequirementsMet(WALL_SEGMENT_BUILDINGS[buildingKey]?.buildRequirements, requirementResolutionData)) return;
-        dispatch(buildWall({cellKey: selectedHex.cellKey, wallKey: buildingKey}))
+        const wallBuilding = WALL_SEGMENT_BUILDINGS[buildingKey];
+        if (!wallBuilding) return;
+        if (!areRequirementsMet(wallBuilding.buildRequirements, requirementResolutionData)) return;
+        dispatch(buildWall({
+            cellKey: selectedHex.cellKey,
+            wallKey: buildingKey,
+            developmentVector: wallBuilding.vector ?? DEVELOPMENT_VECTORS.medieval,
+        }))
     };
 
     const handleWallTopBuildingSelect = (buildingKey: string) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
         if (!unlockedWallSuperstructureIdSet.has(buildingKey)) return;
-        if (!areRequirementsMet(WALL_TOWER_BUILDINGS[buildingKey]?.buildRequirements, requirementResolutionData)) return;
-        dispatch(buildWallTop({cellKey: selectedHex.cellKey, wallTopKey: buildingKey}))
+        const wallTopBuilding = WALL_TOWER_BUILDINGS[buildingKey];
+        if (!wallTopBuilding) return;
+        if (!areRequirementsMet(wallTopBuilding.buildRequirements, requirementResolutionData)) return;
+        dispatch(buildWallTop({
+            cellKey: selectedHex.cellKey,
+            wallTopKey: buildingKey,
+            developmentVector: wallTopBuilding.vector ?? DEVELOPMENT_VECTORS.medieval,
+        }))
     };
 
     const handleDemolishSelectedHex = () => {

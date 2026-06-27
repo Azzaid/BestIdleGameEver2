@@ -24,6 +24,7 @@ import {
 import aetherBuildingDefinitions from "../../data/buildings/aether.json";
 import medievalBuildingDefinitions from "../../data/buildings/medieval.json";
 import natureBuildingDefinitions from "../../data/buildings/nature.json";
+import neutralBuildingDefinitions from "../../data/buildings/neutral.json";
 import techBuildingDefinitions from "../../data/buildings/tech.json";
 import aetherResearchDefinitions from "../../data/research/aether.json";
 import medievalResearchDefinitions from "../../data/research/medieval.json";
@@ -32,14 +33,17 @@ import techResearchDefinitions from "../../data/research/tech.json";
 import aetherWallSegmentDefinitions from "../../data/wallSegments/aether.json";
 import medievalWallSegmentDefinitions from "../../data/wallSegments/medieval.json";
 import natureWallSegmentDefinitions from "../../data/wallSegments/nature.json";
+import neutralWallSegmentDefinitions from "../../data/wallSegments/neutral.json";
 import techWallSegmentDefinitions from "../../data/wallSegments/tech.json";
 import aetherWallSuperstructureDefinitions from "../../data/wallSuperstructures/aether.json";
 import medievalWallSuperstructureDefinitions from "../../data/wallSuperstructures/medieval.json";
 import natureWallSuperstructureDefinitions from "../../data/wallSuperstructures/nature.json";
+import neutralWallSuperstructureDefinitions from "../../data/wallSuperstructures/neutral.json";
 import techWallSuperstructureDefinitions from "../../data/wallSuperstructures/tech.json";
 import aetherGunPartDefinitions from "../../data/gunParts/aether.json";
 import medievalGunPartDefinitions from "../../data/gunParts/medieval.json";
 import natureGunPartDefinitions from "../../data/gunParts/nature.json";
+import neutralGunPartDefinitions from "../../data/gunParts/neutral.json";
 import techGunPartDefinitions from "../../data/gunParts/tech.json";
 import * as s from "./EntityCreatePage.css.ts";
 
@@ -173,30 +177,35 @@ let nextRowId = 1;
 
 const rawDefinitionsByType: Record<EntityType, Record<DevelopmentVectorKey, readonly StoredEntityDefinition[]>> = {
   research: {
+    neutral: [],
     tech: techResearchDefinitions as readonly StoredEntityDefinition[],
     nature: natureResearchDefinitions as readonly StoredEntityDefinition[],
     medieval: medievalResearchDefinitions as readonly StoredEntityDefinition[],
     aether: aetherResearchDefinitions as readonly StoredEntityDefinition[],
   },
   wallSegment: {
+    neutral: neutralWallSegmentDefinitions as readonly StoredEntityDefinition[],
     tech: techWallSegmentDefinitions as readonly StoredEntityDefinition[],
     nature: natureWallSegmentDefinitions as readonly StoredEntityDefinition[],
     medieval: medievalWallSegmentDefinitions as readonly StoredEntityDefinition[],
     aether: aetherWallSegmentDefinitions as readonly StoredEntityDefinition[],
   },
   wallSuperstructure: {
+    neutral: neutralWallSuperstructureDefinitions as readonly StoredEntityDefinition[],
     tech: techWallSuperstructureDefinitions as readonly StoredEntityDefinition[],
     nature: natureWallSuperstructureDefinitions as readonly StoredEntityDefinition[],
     medieval: medievalWallSuperstructureDefinitions as readonly StoredEntityDefinition[],
     aether: aetherWallSuperstructureDefinitions as readonly StoredEntityDefinition[],
   },
   building: {
+    neutral: neutralBuildingDefinitions as readonly StoredEntityDefinition[],
     tech: techBuildingDefinitions as readonly StoredEntityDefinition[],
     nature: natureBuildingDefinitions as readonly StoredEntityDefinition[],
     medieval: medievalBuildingDefinitions as readonly StoredEntityDefinition[],
     aether: aetherBuildingDefinitions as readonly StoredEntityDefinition[],
   },
   gunPart: {
+    neutral: neutralGunPartDefinitions as readonly StoredEntityDefinition[],
     tech: techGunPartDefinitions as readonly StoredEntityDefinition[],
     nature: natureGunPartDefinitions as readonly StoredEntityDefinition[],
     medieval: medievalGunPartDefinitions as readonly StoredEntityDefinition[],
@@ -2038,7 +2047,20 @@ function findStoredEntity(id: string): StoredEntityLookup | null {
   const inferred = inferEntityPartsFromId(id);
   const definitions = rawDefinitionsByType[inferred.entityType][inferred.vector];
   const definition = definitions.find(item => item.id === id);
-  if (!definition) return null;
+  if (!definition) {
+    for (const vector of vectorOptions) {
+      const crossVectorDefinition = rawDefinitionsByType[inferred.entityType][vector].find(item => item.id === id);
+      if (crossVectorDefinition) {
+        return {
+          entityType: inferred.entityType,
+          vector,
+          definition: crossVectorDefinition,
+        };
+      }
+    }
+
+    return null;
+  }
 
   return {
     entityType: inferred.entityType,
@@ -2081,7 +2103,7 @@ function getVisualAssetKind(entityType: EntityType): EntityVisualAssetKind | nul
 }
 
 function isDevelopmentVectorKey(value: string | undefined): value is DevelopmentVectorKey {
-  return value === "tech" || value === "nature" || value === "medieval" || value === "aether";
+  return vectorOptions.includes(value as DevelopmentVectorKey);
 }
 
 function isTowerPartSlot(value: string | undefined): value is TowerPartSlot {

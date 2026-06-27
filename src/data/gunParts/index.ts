@@ -10,6 +10,7 @@ import type {Requirement} from "../../models/progression/requirements.ts";
 import aetherTowerPartDefinitions from "./aether.json";
 import medievalTowerPartDefinitions from "./medieval.json";
 import natureTowerPartDefinitions from "./nature.json";
+import neutralTowerPartDefinitions from "./neutral.json";
 import techTowerPartDefinitions from "./tech.json";
 import {createTowerPartFactory} from "./towerPartFactory.ts";
 
@@ -30,6 +31,7 @@ type GunPartDefinition = {
 };
 
 const definitionsByVector: Record<DevelopmentVectorKey, readonly GunPartDefinition[]> = {
+  neutral: neutralTowerPartDefinitions as readonly GunPartDefinition[],
   tech: techTowerPartDefinitions as readonly GunPartDefinition[],
   nature: natureTowerPartDefinitions as readonly GunPartDefinition[],
   medieval: medievalTowerPartDefinitions as readonly GunPartDefinition[],
@@ -52,6 +54,7 @@ export const REQUIRED_TOWER_PART_SLOTS: TowerPartSlot[] = [
 ];
 
 export const TOWER_PART_DEFINITIONS: GunPart[] = [
+  ...buildTowerParts("neutral"),
   ...buildTowerParts("tech"),
   ...buildTowerParts("nature"),
   ...buildTowerParts("medieval"),
@@ -62,6 +65,7 @@ export const TOWER_SYNERGY_RULES: TowerSynergyRule[] = [
 ];
 
 const createEmptyTowerPartsAtlas = (): TowerPartsAtlas => ({
+  neutral: {},
   tech: {},
   nature: {},
   medieval: {},

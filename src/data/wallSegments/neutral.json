@@ -1,0 +1,16 @@
+[
+  {
+    "id": "wallSegments.medieval.scrapBarricade",
+    "name": "Scrap barricade",
+    "description": "Just a pile of scrap an rubbish to fen off attackers",
+    "values": [
+      {
+        "valueId": "wall.resilience",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 6
+      }
+    ]
+  }
+]

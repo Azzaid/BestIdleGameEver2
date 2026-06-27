@@ -21,7 +21,7 @@ export function BuildingSelector({
                                      blocked = false,
                                  blockedReason,
                                  }: BuildingSelectorProps) {
-    const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.medieval);
+    const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.neutral);
     const availableVectors = useMemo(() => (
         Object.values(DEVELOPMENT_VECTORS)
             .map(vector => ({

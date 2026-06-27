@@ -1,4 +1,4 @@
-import type {DevelopmentVectorKey} from "../models/DevlopmentVector.ts";
+import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../models/DevlopmentVector.ts";
 import type {TowerPartSlot} from "../models/battle/towerParts.ts";
 import type {TowerPartVisualMetadata} from "../models/battle/towerPartVisualMetadata.ts";
 import type {BuildingSpriteMetadata} from "../models/sprites/buildings/BuildingSpriteMetadata.ts";
@@ -51,7 +51,7 @@ export type EntityVisualAsset =
   | GunPartVisualAssetOption
   | ProjectileVisualAsset;
 
-const vectorKeys = ["tech", "nature", "medieval", "aether"] as const satisfies readonly DevelopmentVectorKey[];
+const vectorKeys = Object.keys(DEVELOPMENT_VECTORS) as DevelopmentVectorKey[];
 
 const towerPartSlots = [
   "platform",

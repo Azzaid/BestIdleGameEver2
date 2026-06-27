@@ -27,7 +27,7 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - Global event pictures: `src/assets/events/<id>.png`
 - Unused images: `src/assets/unused/...`
 
-Use the development vector folder names from `src/models/DevlopmentVector.ts`: `tech`, `nature`, `medieval`, and `aether`.
+Use the development vector folder names from `src/models/DevlopmentVector.ts`: `neutral`, `tech`, `nature`, `medieval`, and `aether`. Neutral starter content currently reuses legacy medieval texture file names and IDs where needed for compatibility.
 Use the city hex background type folder names from `src/models/city/hexBackgrounds.ts`: `claimedTerrain`, `buildingUnderlay`, `claimableTerrain`, and `unclaimableTerrain`.
 Use the biome folder names from `src/models/city/hexBackgrounds.ts`: `alpine`, `floodplain`, `swamp`, `steppe`, `rocky`, `volcanic`, `coastal`, `tundra`, and `ancientForest`.
 Use kebab-case for the file `<id>` segment. The editor derives game IDs from these filenames, for example `wall_medieval_scrap-barricade.png` maps to `wallSegments.medieval.scrapBarricade`.

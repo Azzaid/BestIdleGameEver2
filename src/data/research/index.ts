@@ -30,6 +30,7 @@ type ResearchDefinition = {
 };
 
 const definitionsByVector: Record<DevelopmentVectorKey, readonly ResearchDefinition[]> = {
+  neutral: [],
   tech: techResearchDefinitions as readonly ResearchDefinition[],
   nature: natureResearchDefinitions as readonly ResearchDefinition[],
   medieval: medievalResearchDefinitions as readonly ResearchDefinition[],
@@ -38,7 +39,7 @@ const definitionsByVector: Record<DevelopmentVectorKey, readonly ResearchDefinit
 
 const researchDefinitions: ResearchDB = Object.assign(
   {},
-  ...(["tech", "nature", "medieval", "aether"] as const).map(buildResearch),
+  ...(Object.keys(definitionsByVector) as DevelopmentVectorKey[]).map(buildResearch),
 );
 
 export const researchTree: ResearchDB = Object.fromEntries(
@@ -60,6 +61,7 @@ const requiredResearchById = Object.fromEntries(
 export const researchGraphValidationErrors = validateResearchGraph(researchTree, requiredResearchById);
 
 const createEmptyResearchAtlas = (): ResearchAtlas => ({
+  neutral: {},
   tech: {},
   nature: {},
   medieval: {},

@@ -1,7 +1,7 @@
 import {BUILDINGS_ATLAS} from "../../../data/buildings/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../../data/wallSegments/index.ts";
 import {WALL_TOWER_BUILDINGS} from "../../../data/wallSuperstructures/index.ts";
-import {DEVELOPMENT_VECTORS} from "../../../models/DevlopmentVector.ts";
+import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey, type DevelopmentVectorValue} from "../../../models/DevlopmentVector.ts";
 import {researchGraphValidationErrors, researchTree} from "../../../data/research/index.ts";
 import {TOWER_PARTS} from "../../../data/gunParts/index.ts";
 import {buildProgressionGraph, validateProgressionGraph} from "./progression.ts";
@@ -14,7 +14,7 @@ const buildingEntries = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string,
     for (const building of Object.values(BUILDINGS_ATLAS[vector])) {
       entries[building.id] = {
         name: building.name,
-        vector: getProgressionNodeVectorFromId(building.id),
+        vector: getDevelopmentVectorKey(building.vector),
       };
     }
     return entries;
@@ -25,7 +25,7 @@ const buildingEntries = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string,
 for (const wallBuilding of Object.values(WALL_SEGMENT_BUILDINGS)) {
   buildingEntries[wallBuilding.id] = {
     name: wallBuilding.name,
-    vector: getProgressionNodeVectorFromId(wallBuilding.id),
+    vector: wallBuilding.vector ? getDevelopmentVectorKey(wallBuilding.vector) : getProgressionNodeVectorFromId(wallBuilding.id),
   };
 }
 
@@ -37,13 +37,15 @@ export const PROGRESSION_REGISTRY: ProgressionRegistry = {
   buildings: buildingEntries,
   towerParts: Object.fromEntries(TOWER_PARTS.map(part => [
     part.id,
-    {name: part.name, vector: getProgressionNodeVectorFromId(part.id)},
+    {name: part.name, vector: part.vector ?? getProgressionNodeVectorFromId(part.id)},
   ])),
   structures: Object.fromEntries(Object.values(WALL_TOWER_BUILDINGS).map(wallSuperstructure => [
     wallSuperstructure.id,
     {
       name: wallSuperstructure.name,
-      vector: getProgressionNodeVectorFromId(wallSuperstructure.id),
+      vector: wallSuperstructure.vector
+        ? getDevelopmentVectorKey(wallSuperstructure.vector)
+        : getProgressionNodeVectorFromId(wallSuperstructure.id),
     },
   ])),
 };
@@ -54,3 +56,8 @@ export const PROGRESSION_VALIDATION_ERRORS = [
   ...validateProgressionGraph(PROGRESSION_RULES, PROGRESSION_REGISTRY),
   ...researchGraphValidationErrors,
 ];
+
+function getDevelopmentVectorKey(vector: DevelopmentVectorValue): DevelopmentVectorKey | undefined {
+  return Object.entries(DEVELOPMENT_VECTORS)
+    .find(([, value]) => value === vector)?.[0] as DevelopmentVectorKey | undefined;
+}

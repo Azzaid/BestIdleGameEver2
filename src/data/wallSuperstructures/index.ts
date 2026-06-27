@@ -6,6 +6,7 @@ import type {Requirement} from "../../models/progression/requirements.ts";
 import aetherWallSuperstructureDefinitions from "./aether.json";
 import medievalWallSuperstructureDefinitions from "./medieval.json";
 import natureWallSuperstructureDefinitions from "./nature.json";
+import neutralWallSuperstructureDefinitions from "./neutral.json";
 import techWallSuperstructureDefinitions from "./tech.json";
 import {createWallSuperstructureFactory} from "./wallSuperstructureFactory.ts";
 
@@ -21,6 +22,7 @@ type WallSuperstructureDefinition = {
 };
 
 const definitionsByVector: Record<DevelopmentVectorKey, readonly WallSuperstructureDefinition[]> = {
+  neutral: neutralWallSuperstructureDefinitions as readonly WallSuperstructureDefinition[],
   tech: techWallSuperstructureDefinitions as readonly WallSuperstructureDefinition[],
   nature: natureWallSuperstructureDefinitions as readonly WallSuperstructureDefinition[],
   medieval: medievalWallSuperstructureDefinitions as readonly WallSuperstructureDefinition[],
@@ -28,6 +30,7 @@ const definitionsByVector: Record<DevelopmentVectorKey, readonly WallSuperstruct
 };
 
 export const WALL_SUPERSTRUCTURES_ATLAS: WallBuildingAtlas = {
+  [DEVELOPMENT_VECTORS.neutral]: buildWallSuperstructures("neutral"),
   [DEVELOPMENT_VECTORS.tech]: buildWallSuperstructures("tech"),
   [DEVELOPMENT_VECTORS.nature]: buildWallSuperstructures("nature"),
   [DEVELOPMENT_VECTORS.medieval]: buildWallSuperstructures("medieval"),

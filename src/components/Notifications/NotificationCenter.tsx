@@ -7,6 +7,7 @@ import { vars } from "../../theme/theme.css.ts";
 type StyleMap = Record<NotificationScheme, { accent: string }>;
 
 const styles: StyleMap = {
+  neutral:        { accent: "hsl(32 22% 49%)" },
   tech:           { accent: "hsl(200 80% 45%)" },
   nature:         { accent: "hsl(140 28% 35%)" },
   medieval:       { accent: "hsl(354 42% 36%)" },
@@ -17,8 +18,9 @@ const styles: StyleMap = {
 };
 
 // Safeguard: ensure our runtime symbols match keys we use for styles
-function toSchemeVectorKey(sym: symbol): "tech" | "nature" | "medieval" | "aether" {
+function toSchemeVectorKey(sym: symbol): "neutral" | "tech" | "nature" | "medieval" | "aether" {
   const desc = String(sym.description);
+  if (desc === "Neutral") return "neutral";
   if (desc === "Tech") return "tech";
   if (desc === "Nature") return "nature";
   if (desc === "Medieval") return "medieval";
