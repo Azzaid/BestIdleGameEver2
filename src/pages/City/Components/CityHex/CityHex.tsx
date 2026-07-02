@@ -415,6 +415,7 @@ export default function CityHex({
     return (
         <svg
             ref={svgRef}
+            data-nav-scroll-ignore="true"
             viewBox={`${-viewExtent} ${-viewExtent} ${viewExtent * 2} ${viewExtent * 2}`}
             onMouseMove={handleMouseMove}
             onClick={handleClick}

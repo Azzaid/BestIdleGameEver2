@@ -29,6 +29,7 @@ Endpoints:
 - `DELETE /global-event-images`
 - `POST /hex-background-sprites`
 - `POST /global-modifiers`
+- `POST /homogeneous-values`
 
 Only `.json` files inside this folder's `data` directory are readable or writable.
 
@@ -96,4 +97,5 @@ Use `kind=projectile` for ammo projectile sprites. Projectile uploads save PNG f
 `DELETE /global-event-images` removes an event PNG. Send JSON with `fileStem`.
 `POST /hex-background-sprites` saves a PNG under `src/assets/hexBackgrounds/{type}/{biome}/{vector}/{fileStem}.png`. Send it as `multipart/form-data` with `type`, `biome`, `vector`, `fileStem`, and an `image` file field.
 `POST /global-modifiers` writes modifier definitions to `src/data/globalModifiers/modifiers.json`.
-Both endpoints append new definitions and update existing definitions with the same ID.
+Global event and modifier endpoints append new definitions and update existing definitions with the same ID.
+`POST /homogeneous-values` updates existing homogeneous value definitions in `src/data/homogeneousValues/index.ts`.

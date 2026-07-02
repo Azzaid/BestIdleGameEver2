@@ -539,6 +539,16 @@ function validateHomogeneousValueDefinitions(definitions: readonly HomogeneousVa
         if (displayKeywords.length > 0) {
             throw new Error(`Homogeneous value ${definition.id} must use displayMethod instead of display keywords: ${displayKeywords.join(", ")}`);
         }
+
+        if (definition.resolutionMethod === "diminishingReturn") {
+            if (definition.diminishingReturnPower === undefined) {
+                throw new Error(`Homogeneous value ${definition.id} must define diminishingReturnPower when using diminishingReturn resolution.`);
+            }
+
+            if (!Number.isFinite(definition.diminishingReturnPower) || definition.diminishingReturnPower <= 0) {
+                throw new Error(`Homogeneous value ${definition.id} must define a positive finite diminishingReturnPower.`);
+            }
+        }
     }
 }
 

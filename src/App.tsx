@@ -18,6 +18,7 @@ import EntityCreatePage from './pages/EntityCreate/EntityCreatePage.tsx'
 import MonsterEditPage from './pages/MonsterEdit/MonsterEditPage.tsx'
 import GlobalEventsEditorPage from './pages/GlobalEventsEditor/GlobalEventsEditorPage.tsx'
 import HexBackgroundEditorPage from './pages/HexBackgroundEditor/HexBackgroundEditorPage.tsx'
+import HomogeneousValuesEditorPage from './pages/HomogeneousValuesEditor/HomogeneousValuesEditorPage.tsx'
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedDispatch, useTypedSelector} from "./store/hooks.ts";
 import {selectCitySignatureStatus} from "./store/upkeep/selectors.ts";
@@ -56,7 +57,35 @@ function AppFrame() {
     lastScrollTopRef.current = contentRef.current?.scrollTop ?? 0;
   }, [location.pathname]);
 
+  useEffect(() => {
+    const contentElement = contentRef.current;
+    if (!contentElement) return;
+
+    const showNavWhenContentDoesNotScroll = () => {
+      if (!hasVerticalOverflow(contentElement)) {
+        setIsNavHidden(false);
+      }
+    };
+
+    showNavWhenContentDoesNotScroll();
+
+    const resizeObserver = new ResizeObserver(showNavWhenContentDoesNotScroll);
+    resizeObserver.observe(contentElement);
+    window.addEventListener("resize", showNavWhenContentDoesNotScroll);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", showNavWhenContentDoesNotScroll);
+    };
+  }, []);
+
   const updateNavForDirection = (deltaY: number, currentScrollTop = contentRef.current?.scrollTop ?? 0) => {
+    const contentElement = contentRef.current;
+    if (!contentElement || !hasVerticalOverflow(contentElement)) {
+      setIsNavHidden(false);
+      return;
+    }
+
     if (currentScrollTop <= 12 && deltaY <= 0) {
       setIsNavHidden(false);
       return;
@@ -79,6 +108,14 @@ function AppFrame() {
   };
 
   const handleContentWheel = (event: WheelEvent<HTMLElement>) => {
+    const target = event.target;
+    if (
+      event.defaultPrevented
+      || (target instanceof Element && target.closest('[data-nav-scroll-ignore="true"]'))
+    ) {
+      return;
+    }
+
     updateNavForDirection(event.deltaY);
   };
 
@@ -149,6 +186,9 @@ function AppFrame() {
                                       <Link className={appTheme.navBarLink} to="/global-events">Global Events</Link>
                                   </li>
                                   <li>
+                                      <Link className={appTheme.navBarLink} to="/homogeneous-values">Values</Link>
+                                  </li>
+                                  <li>
                                       <Link className={appTheme.navBarLink} to="/hex-background-editor">Hex Backgrounds</Link>
                                   </li>
                               </>
@@ -186,11 +226,16 @@ function AppFrame() {
                           <Route path="/monster-edit" element={<Navigate to="/monster-edit/new" replace />} />
                           <Route path="/monster-edit/:monsterId" element={isDebugToolsEnabled ? <MonsterEditPage /> : <Navigate to="/battle" replace />} />
                           <Route path="/global-events" element={isDebugToolsEnabled ? <GlobalEventsEditorPage /> : <Navigate to="/battle" replace />} />
+                          <Route path="/homogeneous-values" element={isDebugToolsEnabled ? <HomogeneousValuesEditorPage /> : <Navigate to="/battle" replace />} />
                           <Route path="/hex-background-editor" element={isDebugToolsEnabled ? <HexBackgroundEditorPage /> : <Navigate to="/battle" replace />} />
                       </Routes>
                   </main>
               </div>
   )
+}
+
+function hasVerticalOverflow(element: HTMLElement) {
+  return element.scrollHeight - element.clientHeight > 1;
 }
 
 function App() {

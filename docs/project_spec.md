@@ -39,7 +39,7 @@ The current app is a frontend-only prototype with multiple routed views:
 - Research: radial research tree with unlockable nodes and vector coloring.
 - City: SVG hex city visualization with clickable city and wall tiles, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
 - Statistics: sample time-series charts.
-- Debug/content tools: progression graph, ID audit, entity creation, monster editing, gun part editor, and global events editor.
+- Debug/content tools: progression graph, ID audit, entity creation, monster editing, gun part editor, global events editor, and homogeneous values editor.
 
 The prototype has no backend. Core Redux gameplay progress is saved in browser `localStorage` and restored on reload.
 
@@ -70,7 +70,7 @@ Primary routes:
 - `/research` renders research.
 - `/city` renders the city view.
 - `/statistics` renders charts.
-- `/progression`, `/ids`, `/entity-create/:entityId`, `/monster-edit/:monsterId`, `/gun-part-editor`, and `/global-events` are debug-mode tools.
+- `/progression`, `/ids`, `/entity-create/:entityId`, `/monster-edit/:monsterId`, `/gun-part-editor`, `/global-events`, and `/homogeneous-values` are debug-mode tools.
 
 Important directories:
 
@@ -108,7 +108,7 @@ Texture asset layout:
 - City hex background textures live in `src/assets/hexBackgrounds/<type>/<biome>/<vector>` and are cataloged through `src/data/cityHexBackgrounds.ts`. City state stores a biome, maximum city size, generated terrain vector map, and per-hex background sprite id/vector; migration rerolls the biome and terrain map, initial and cleared cells use `claimedTerrain`, and built cells use `buildingUnderlay`.
 - Tower component textures and metadata live in `src/assets/gunParts/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`; tower part runtime metadata is derived in `src/data/gunParts/partVisualMetadata.ts`. Ammo projectile textures live in `src/assets/projectiles/<vector>` and are referenced from ammo definitions with `projectileSpriteTextureKey`.
 - Global event pictures live in `src/assets/events` and are discovered by the global event image catalog.
-- Local editor image writes go through dedicated file upload endpoints (`/entity-sprites`, `/global-event-images`, and `/hex-background-sprites`); JSON definition saves should reference image ids or visual asset ids instead of carrying image bytes.
+- Local editor image writes go through dedicated file upload endpoints (`/entity-sprites`, `/global-event-images`, and `/hex-background-sprites`); JSON definition saves should reference image ids or visual asset ids instead of carrying image bytes. Homogeneous value definition edits go through `/homogeneous-values` because the registry is TypeScript-backed.
 - Images not currently loaded by code belong under `src/assets/unused`.
 
 Future architecture direction:
@@ -241,7 +241,7 @@ Current resources by vector:
 
 The shared upkeep bar includes a Nature/Biology balance indicator beside the threat meter. It renders Fungi, Plants, and Animals as a three-axis triangular balance shape, while Bio Complexity controls the center-to-edge emerald fill from empty at 0 to fully filled at 1000. Nature also derives Bio Disbalance as the difference between the highest and lowest Fungi, Plants, and Animals values.
 
-Homogeneous value definitions include keywords such as `resource`, `output`, `support`, `atmosphere`, `aether`, and `display_orb`. They also carry first-class `displayMethod`, `resolutionMethod`, and `roundingMethod` metadata. The default rounding method is `twoDigitsAfterZero`; People and Gold currently round up. Modifiers can target entity keywords, entity types, value keywords, and contribution role keywords, so a production bonus can affect ordinary support, magical outputs, wall stats, siege modifiers, monster modifiers, or later value groups through the same resolver. Display formatting metadata must not be placed in keywords or used for gameplay checks.
+Homogeneous value definitions include keywords such as `resource`, `output`, `support`, `atmosphere`, `aether`, and `display_orb`. They also carry first-class `displayMethod`, `resolutionMethod`, `roundingMethod`, and optional diminishing-return metadata. The default rounding method is `twoDigitsAfterZero`; People and Gold currently round up. The `diminishingReturn` resolution method requires `diminishingReturnPower` and resolves production with `Math.pow(total, diminishingReturnPower)`, for example `0.8` for softened scaling. Modifiers can target entity keywords, entity types, value keywords, and contribution role keywords, so a production bonus can affect ordinary support, magical outputs, wall stats, siege modifiers, monster modifiers, or later value groups through the same resolver. Display formatting metadata must not be placed in keywords or used for gameplay checks.
 
 Important rules:
 

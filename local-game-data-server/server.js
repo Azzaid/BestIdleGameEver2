@@ -328,6 +328,45 @@ const server = createServer(async (request, response) => {
     return
   }
 
+  if (request.method === 'POST' && url.pathname === '/homogeneous-values') {
+    let definition
+
+    try {
+      const body = await readRequestBody(request)
+      const payload = JSON.parse(body)
+      definition = payload?.definition ?? payload
+    } catch (error) {
+      sendJson(response, 400, { error: 'Request body must be valid JSON' })
+      return
+    }
+
+    if (!definition || Array.isArray(definition) || typeof definition !== 'object') {
+      sendJson(response, 400, { error: 'Definition must be a JSON object' })
+      return
+    }
+
+    if (typeof definition.id !== 'string' || !definition.id.trim()) {
+      sendJson(response, 400, { error: 'Definition id must be a non-empty string' })
+      return
+    }
+
+    const targetFile = path.resolve(gameDataDir, 'homogeneousValues', 'index.ts')
+
+    try {
+      const source = await readFile(targetFile, 'utf8')
+      const nextSource = updateHomogeneousValueDefinitionSource(source, definition)
+      await writeFile(targetFile, nextSource, 'utf8')
+      sendJson(response, 200, {
+        action: 'updated',
+        definition,
+        file: path.relative(path.join(__dirname, '..'), targetFile).replaceAll(path.sep, '/'),
+      })
+    } catch (error) {
+      sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to save homogeneous value definition' })
+    }
+    return
+  }
+
   if (request.method === 'POST' && url.pathname === '/global-event-images') {
     try {
       const upload = await readMultipartFormData(request)
@@ -483,6 +522,193 @@ function resolveEntityFile(entity) {
     filePath,
     relativePath: path.relative(path.join(__dirname, '..'), filePath).replaceAll(path.sep, '/'),
   }
+}
+
+function updateHomogeneousValueDefinitionSource(source, definition) {
+  const startMarker = 'export const HOMOGENEOUS_VALUE_DEFINITIONS = {'
+  const endMarker = '} as const satisfies Record<HomogeneousValueId, HomogeneousValueDefinition>;'
+  const startIndex = source.indexOf(startMarker)
+  const endIndex = source.indexOf(endMarker, startIndex)
+
+  if (startIndex === -1 || endIndex === -1) {
+    const error = new Error('Could not find HOMOGENEOUS_VALUE_DEFINITIONS in homogeneousValues/index.ts')
+    error.statusCode = 500
+    throw error
+  }
+
+  const bodyStart = startIndex + startMarker.length
+  const body = source.slice(bodyStart, endIndex)
+  const idConstants = getHomogeneousValueIdConstants(source)
+  const entry = findHomogeneousValueDefinitionEntry(body, definition.id, idConstants)
+
+  if (!entry) {
+    const error = new Error(`Homogeneous value "${definition.id}" was not found. Create the id constant manually before editing it here.`)
+    error.statusCode = 404
+    throw error
+  }
+
+  const formattedEntry = formatHomogeneousValueDefinition(entry.key, definition)
+
+  return [
+    source.slice(0, bodyStart + entry.start),
+    formattedEntry,
+    source.slice(bodyStart + entry.end),
+  ].join('')
+}
+
+function getHomogeneousValueIdConstants(source) {
+  const startMarker = 'export const HOMOGENEOUS_VALUE_IDS = {'
+  const endMarker = '} as const satisfies Record<string, HomogeneousValueId>;'
+  const startIndex = source.indexOf(startMarker)
+  const endIndex = source.indexOf(endMarker, startIndex)
+  const constants = new Map()
+
+  if (startIndex === -1 || endIndex === -1) return constants
+
+  const body = source.slice(startIndex + startMarker.length, endIndex)
+  const idPattern = /^\s*([A-Za-z_$][\w$]*)\s*:\s*"([^"]+)"/gm
+  let match
+
+  while ((match = idPattern.exec(body)) !== null) {
+    constants.set(match[1], match[2])
+  }
+
+  return constants
+}
+
+function findHomogeneousValueDefinitionEntry(body, id, idConstants) {
+  let cursor = 0
+
+  while (cursor < body.length) {
+    while (cursor < body.length && /[\s,]/.test(body[cursor])) cursor += 1
+    if (cursor >= body.length) return null
+
+    const entryStart = findLineIndentStart(body, cursor)
+    const keyEnd = findTopLevelKeyEnd(body, cursor)
+    if (keyEnd === -1) return null
+
+    const key = body.slice(cursor, keyEnd).trim()
+    cursor = keyEnd + 1
+    while (cursor < body.length && /\s/.test(body[cursor])) cursor += 1
+
+    if (body[cursor] !== '{') return null
+
+    const objectEnd = findMatchingBrace(body, cursor)
+    if (objectEnd === -1) return null
+
+    cursor = objectEnd + 1
+    while (cursor < body.length && /\s/.test(body[cursor])) cursor += 1
+    if (body[cursor] === ',') cursor += 1
+
+    const entryEnd = cursor
+    if (resolveHomogeneousValueDefinitionKey(key, idConstants) === id) {
+      return {
+        start: entryStart,
+        end: entryEnd,
+        key,
+      }
+    }
+  }
+
+  return null
+}
+
+function findLineIndentStart(source, cursor) {
+  const lineStart = source.lastIndexOf('\n', cursor - 1) + 1
+  return lineStart >= 0 ? lineStart : cursor
+}
+
+function findTopLevelKeyEnd(source, start) {
+  let bracketDepth = 0
+  let quote = ''
+
+  for (let index = start; index < source.length; index += 1) {
+    const character = source[index]
+    const previous = source[index - 1]
+
+    if (quote) {
+      if (character === quote && previous !== '\\') quote = ''
+      continue
+    }
+
+    if (character === '"' || character === "'") {
+      quote = character
+      continue
+    }
+
+    if (character === '[') bracketDepth += 1
+    if (character === ']') bracketDepth -= 1
+    if (character === ':' && bracketDepth === 0) return index
+  }
+
+  return -1
+}
+
+function findMatchingBrace(source, start) {
+  let depth = 0
+  let quote = ''
+
+  for (let index = start; index < source.length; index += 1) {
+    const character = source[index]
+    const previous = source[index - 1]
+
+    if (quote) {
+      if (character === quote && previous !== '\\') quote = ''
+      continue
+    }
+
+    if (character === '"' || character === "'") {
+      quote = character
+      continue
+    }
+
+    if (character === '{') depth += 1
+    if (character === '}') {
+      depth -= 1
+      if (depth === 0) return index
+    }
+  }
+
+  return -1
+}
+
+function resolveHomogeneousValueDefinitionKey(key, idConstants) {
+  const constantKey = key.match(/^\[HOMOGENEOUS_VALUE_IDS\.([A-Za-z_$][\w$]*)\]$/)?.[1]
+  if (constantKey) return idConstants.get(constantKey)
+
+  return key.match(/^"([^"]+)"$/)?.[1]
+}
+
+function formatHomogeneousValueDefinition(key, definition) {
+  const lines = [
+    `    ${key}: {`,
+    `        id: ${key.startsWith('[HOMOGENEOUS_VALUE_IDS.') ? key.slice(1, -1) : JSON.stringify(definition.id)},`,
+    `        label: ${JSON.stringify(definition.label ?? definition.id)},`,
+    `        keywords: ${JSON.stringify(Array.isArray(definition.keywords) ? definition.keywords : [])},`,
+    `        displayMethod: ${JSON.stringify(definition.displayMethod ?? 'default')},`,
+  ]
+
+  if (definition.resolutionMethod && definition.resolutionMethod !== 'sum') {
+    lines.push(`        resolutionMethod: ${JSON.stringify(definition.resolutionMethod)},`)
+  }
+
+  if (definition.resolutionMethod === 'diminishingReturn') {
+    lines.push(`        diminishingReturnPower: ${formatNumber(definition.diminishingReturnPower ?? 1)},`)
+  }
+
+  if (definition.roundingMethod && definition.roundingMethod !== 'twoDigitsAfterZero') {
+    lines.push(`        roundingMethod: ${JSON.stringify(definition.roundingMethod)},`)
+  }
+
+  lines.push(`        initialValue: ${formatNumber(definition.initialValue ?? 0)},`)
+  lines.push('    },')
+
+  return lines.join('\n')
+}
+
+function formatNumber(value) {
+  const number = Number(value)
+  return Number.isFinite(number) ? String(number) : '0'
 }
 
 async function saveSpriteUpload(fields, imageFile) {

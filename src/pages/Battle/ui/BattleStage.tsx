@@ -467,7 +467,11 @@ export function BattleStage(props: {
     ]);
 
     return (
-        <div ref={wrapperRef} style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}>
+        <div
+            ref={wrapperRef}
+            data-nav-scroll-ignore="true"
+            style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}
+        >
             <div ref={hostRef} style={hostStyle} />
         </div>
     );

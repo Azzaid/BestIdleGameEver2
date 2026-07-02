@@ -376,7 +376,7 @@ function resolveEntityValues(entity: ResolvedEntityDraft): HomogeneousResolvedEn
         for (const contributionAccumulator of contributionAccumulators) {
             if (!matchesValueKeywords(contributionAccumulator.keywords, modifier)) continue;
 
-            contributionAccumulator.additive = resolveFlatModifierValue(
+            contributionAccumulator.additive = resolveAdditiveContributionValue(
                 contributionAccumulator.additive,
                 modifier.additive ?? 0,
                 getHomogeneousValueResolveType(contributionAccumulator.valueId),
@@ -437,7 +437,7 @@ function groupHomogeneousValueEffects(
         const existing = accumulators.get(key);
 
         if (existing) {
-            existing.additive = resolveFlatModifierValue(
+            existing.additive = resolveAdditiveContributionValue(
                 existing.additive,
                 effect.additive ?? 0,
                 getHomogeneousValueResolveType(effect.valueId),
@@ -596,6 +596,10 @@ function getHomogeneousValueResolveType(valueId: HomogeneousValueId): Homogeneou
     return homogeneousValueDefinitions[valueId]?.resolutionMethod ?? "sum";
 }
 
+function getHomogeneousValueDiminishingReturnPower(valueId: HomogeneousValueId): number {
+    return homogeneousValueDefinitions[valueId]?.diminishingReturnPower ?? 1;
+}
+
 function resolveAccumulatorValue(
     accumulator: EffectAccumulator,
     baseValue: number,
@@ -605,12 +609,26 @@ function resolveAccumulatorValue(
         return accumulator.additive * accumulator.multiplier;
     }
 
-    const flatValue = resolveFlatModifierValue(baseValue, accumulator.additive, resolveType);
+    if (resolveType === "diminishingReturn") {
+        return resolveFlatModifierValue(
+            baseValue,
+            accumulator.additive * accumulator.multiplier,
+            resolveType,
+            getHomogeneousValueDiminishingReturnPower(accumulator.valueId),
+        );
+    }
+
+    const flatValue = resolveFlatModifierValue(
+        baseValue,
+        accumulator.additive,
+        resolveType,
+        getHomogeneousValueDiminishingReturnPower(accumulator.valueId),
+    );
 
     return flatValue * accumulator.multiplier;
 }
 
-function resolveFlatModifierValue(
+function resolveAdditiveContributionValue(
     baseValue: number,
     additive: number,
     resolveType: HomogeneousValueResolveType,
@@ -621,6 +639,27 @@ function resolveFlatModifierValue(
 
     if (resolveType === "maximum") {
         return Math.max(baseValue, additive);
+    }
+
+    return baseValue + additive;
+}
+
+function resolveFlatModifierValue(
+    baseValue: number,
+    additive: number,
+    resolveType: HomogeneousValueResolveType,
+    diminishingReturnPower = 1,
+): number {
+    if (resolveType === "minimum") {
+        return Math.min(baseValue, additive);
+    }
+
+    if (resolveType === "maximum") {
+        return Math.max(baseValue, additive);
+    }
+
+    if (resolveType === "diminishingReturn") {
+        return Math.pow(baseValue + additive, diminishingReturnPower);
     }
 
     return baseValue + additive;
@@ -647,6 +686,8 @@ function toResolvedHomogeneousValueEffect(accumulator: EffectAccumulator): Homog
     const roundedResolvedValue = roundHomogeneousValue(accumulator.valueId, resolvedValue);
     const additive = accumulator.roleKeyword === "production" && resolveType === "sum"
         ? roundedResolvedValue - initialValue
+        : accumulator.roleKeyword === "production" && resolveType === "diminishingReturn"
+            ? accumulator.additive * accumulator.multiplier
         : roundedResolvedValue;
 
     return toHomogeneousValueEffect({

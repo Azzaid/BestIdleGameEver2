@@ -13,7 +13,7 @@ export type HomogeneousResolvedValue = {
 
 export type HomogeneousResolvedValueMap = Record<HomogeneousValueId, HomogeneousResolvedValue>;
 
-export const HOMOGENEOUS_VALUE_RESOLVE_TYPES = ["sum", "minimum", "maximum"] as const;
+export const HOMOGENEOUS_VALUE_RESOLVE_TYPES = ["sum", "minimum", "maximum", "diminishingReturn"] as const;
 export type HomogeneousValueResolveType = typeof HOMOGENEOUS_VALUE_RESOLVE_TYPES[number];
 
 export const HOMOGENEOUS_VALUE_DISPLAY_METHODS = [
@@ -46,6 +46,7 @@ export type HomogeneousValueDefinition = {
     keywords: string[];
     displayMethod: HomogeneousValueDisplayMethod;
     resolutionMethod?: HomogeneousValueResolveType;
+    diminishingReturnPower?: number;
     roundingMethod?: HomogeneousValueRoundingMethod;
     initialValue: number;
 };

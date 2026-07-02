@@ -253,7 +253,12 @@ export default function ResearchPage() {
     }, [applyZoom, minZoom, zoom]);
 
     return (
-        <div ref={viewportRef} className={s.researchTree} onWheelCapture={handleWheelZoom}>
+        <div
+            ref={viewportRef}
+            className={s.researchTree}
+            data-nav-scroll-ignore="true"
+            onWheelCapture={handleWheelZoom}
+        >
             <div className={s.researchTreeControls}>
                 <button type="button" className={s.researchTreeControl} onClick={fitCanvas}>Fit</button>
                 <button type="button" className={s.researchTreeControl} onClick={centerCanvas}>Center</button>
