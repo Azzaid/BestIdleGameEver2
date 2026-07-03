@@ -42,6 +42,7 @@ export interface GunPart extends RequirementGate {
   description?: string;
   vector?: DevelopmentVectorKey;
   sprite: SpriteInfo;
+  zIndex: number;
   projectileSprite?: SpriteInfo;
   keywords: Set<string>;
   aimKeywords?: string[];

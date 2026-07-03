@@ -80,6 +80,8 @@
     "kind": "building",
     "description": "A planned growing field for deliberate plant cultivation.",
     "keywords": [
+      "nature",
+      "building",
       "farm",
       "boost"
     ],
@@ -91,24 +93,23 @@
     ],
     "values": [
       {
-        "valueId": "resource.people",
-        "additionalKeywords": [
-          "upkeep"
-        ],
-        "additive": 1
-      },
-      {
         "valueId": "city.signature",
         "additionalKeywords": [
           "production"
         ],
         "additive": 4
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
       }
     ],
     "effects": [
       {
         "radius": 1,
-        "requiredBuildingKeywords": [],
         "requiredValueKeywords": [
           "resource",
           "people"
@@ -116,7 +117,8 @@
         "multiplier": 1.25
       }
     ],
-    "adjacencyDescription": "Neighboring buildings can sustain 25% more people."
+    "adjacencyDescription": "Neighboring buildings can sustain 25% more people.",
+    "visualAssetId": "building_nature_field"
   },
   {
     "id": "buildings.nature.mycelium",

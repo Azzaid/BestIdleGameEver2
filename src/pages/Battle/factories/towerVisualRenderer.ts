@@ -108,23 +108,25 @@ function createPartDisplay(
 function buildNode(
   nodeDefinition: TowerVisualNodeDefinition,
   options: Required<TowerVisualRenderOptions>,
-  partContainers: Map<string, PIXI.Container>
+  partContainers: Map<string, PIXI.Container>,
+  rootContainer: PIXI.Container,
+  nodePosition: TowerVisualPoint
 ) {
   const part = nodeDefinition.part;
   const partContainer = new PIXI.Container();
   partContainer.sortableChildren = true;
   partContainer.zIndex = part.renderLayer ?? 0;
   partContainer.label = part.id;
+  partContainer.position.set(nodePosition.x, nodePosition.y);
 
   if (part.visible !== false) {
     const partDisplay = createPartDisplay(part, options);
-    partDisplay.zIndex = part.renderLayer ?? 0;
     partContainer.addChild(partDisplay);
   }
   partContainers.set(part.id, partContainer);
+  rootContainer.addChild(partContainer);
 
   for (const attachment of nodeDefinition.attachments ?? []) {
-    const childContainer = buildNode(attachment.child, options, partContainers);
     const parentSocketPosition = getSafePoint(
       part.outputSockets[attachment.parentSocket],
       `Tower visual part "${part.id}" is missing output socket "${attachment.parentSocket}". Using part origin.`,
@@ -136,11 +138,16 @@ function buildNode(
       options.warn
     );
 
-    childContainer.position.set(
-      parentSocketPosition.x - childRootSocketPosition.x,
-      parentSocketPosition.y - childRootSocketPosition.y
+    buildNode(
+      attachment.child,
+      options,
+      partContainers,
+      rootContainer,
+      {
+        x: nodePosition.x + parentSocketPosition.x - childRootSocketPosition.x,
+        y: nodePosition.y + parentSocketPosition.y - childRootSocketPosition.y,
+      }
     );
-    partContainer.addChild(childContainer);
   }
 
   return partContainer;
@@ -161,7 +168,7 @@ export function buildTowerVisualContainer(
   container.sortableChildren = true;
 
   const partContainers = new Map<string, PIXI.Container>();
-  container.addChild(buildNode(towerVisualDefinition.root, options, partContainers));
+  buildNode(towerVisualDefinition.root, options, partContainers, container, { x: 0, y: 0 });
 
   return { container, partContainers };
 }

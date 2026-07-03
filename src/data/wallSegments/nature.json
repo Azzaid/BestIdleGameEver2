@@ -25,5 +25,13 @@
         "additive": 10
       }
     ]
+  },
+  {
+    "id": "wallSegments.nature.livingWoodPalisade",
+    "visualAssetId": "wallSegments.nature.livingWoodPalisade",
+    "name": "Living Wood Palisade",
+    "keywords": [
+      "wallSegment"
+    ]
   }
 ]

@@ -1,25 +1,15 @@
 {
   "sourceSpriteSize": {
-    "width": 233,
-    "height": 214
+    "width": 154,
+    "height": 462
   },
   "targetSpriteSize": {
-    "width": 87,
+    "width": 27,
     "height": 80
   },
-  "rotationDegrees": 90,
   "inputSocket": {
-    "x": 117,
-    "y": 104
+    "x": 77,
+    "y": 231
   },
-  "outputSockets": {
-    "attachmentMount": {
-      "x": 119,
-      "y": 104
-    },
-    "muzzle": {
-      "x": 122,
-      "y": 0
-    }
-  }
+  "outputSockets": {}
 }

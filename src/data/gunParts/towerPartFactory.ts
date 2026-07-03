@@ -2,6 +2,7 @@ import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 import type {GunPart, TowerPartSlot} from "../../models/battle/towerParts.ts";
+import {DEFAULT_TOWER_PART_Z_INDEX} from "./renderLayers.ts";
 
 type TowerPartFactoryOptions = {
   vector: DevelopmentVectorKey;
@@ -14,6 +15,7 @@ type TowerPartOptions = {
   buildRequirements?: Requirement[];
   spriteTextureKey?: string;
   projectileSpriteTextureKey?: string;
+  zIndex?: number;
   aimKeywords?: string[];
   conflictsWithKeywords?: string[];
   values?: HomogeneousValueEffect[];
@@ -36,6 +38,7 @@ export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPart
       description,
       vector,
       sprite: {textureKey: options.spriteTextureKey ?? id},
+      zIndex: options.zIndex ?? DEFAULT_TOWER_PART_Z_INDEX[slot],
       projectileSprite: slot === "ammo"
         ? {textureKey: options.projectileSpriteTextureKey ?? options.spriteTextureKey ?? id}
         : undefined,

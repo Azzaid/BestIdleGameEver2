@@ -62,6 +62,7 @@
     "kind": "superstructure",
     "description": "A house with a fields around. Peacefull and happy.",
     "keywords": [
+      "building",
       "production",
       "people",
       "plants",
@@ -105,7 +106,12 @@
         ],
         "additive": 7
       }
-    ]
+    ],
+    "visualAssetId": "building_medieval_farm",
+    "requiredBuildingSprites": {
+      "buildings.medieval.woodenHouse": "building_medieval_farm-from-wooden-house",
+      "buildings.nature.field": "building_medieval_farm-from-field"
+    }
   },
   {
     "id": "buildings.medieval.woodenHouse",
