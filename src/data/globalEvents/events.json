@@ -90,7 +90,7 @@
     "title": "Path of life",
     "trigger": {
       "type": "buildingConstructed",
-      "buildingId": "buildings.nature.wildGarden"
+      "buildingId": "buildings.nature.herbalistHut"
     },
     "once": true,
     "priority": 0,

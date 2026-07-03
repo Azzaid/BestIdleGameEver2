@@ -1,0 +1,21 @@
+{
+  "sourceSpriteSize": {
+    "width": 165,
+    "height": 218
+  },
+  "targetSpriteSize": {
+    "width": 61,
+    "height": 80
+  },
+  "rotationDegrees": 180,
+  "inputSocket": {
+    "x": 87,
+    "y": 8
+  },
+  "outputSockets": {
+    "feed": {
+      "x": 85,
+      "y": 8
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {Canvas, CanvasPosition, Edge, type CanvasDirection, type CanvasRef, type EdgeProps, type ElkRoot, type NodeProps} from "reaflow";
+import {Link} from "react-router-dom";
 import {
   PROGRESSION_GRAPH,
   PROGRESSION_VALIDATION_ERRORS,
@@ -16,6 +17,12 @@ import {TOWER_PARTS_BY_ID} from "../../data/gunParts/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
 import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
 import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
+import {ENTITY_VISUAL_ASSETS_BY_ID} from "../../data/entityVisualAssets.ts";
+import type {Building} from "../../models/city/Building.ts";
+import {BUILDING_TYPES, type BuildingTypesValue} from "../../models/city/BuildingTypes.ts";
+import type {WallBuilding} from "../../models/city/Wall.ts";
+import type {ResearchNodeData} from "../../models/research/ResearchNode.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 import * as s from "./ProgressionPage.css.ts";
 
@@ -65,6 +72,20 @@ type ProgressionCanvasEdge = {
   from: string;
   to: string;
   data: ProgressionEdge;
+};
+
+type DetailRow = {
+  label: string;
+  value: string;
+};
+
+type SelectedItemDetails = {
+  description?: string;
+  keywords: readonly string[];
+  stats: DetailRow[];
+  spriteSrc?: string;
+  spriteLabel?: string;
+  editPath: string;
 };
 
 function getFitMinZoom(layout: ElkRoot | null, viewport: { width: number; height: number }): number {
@@ -156,6 +177,7 @@ export default function ProgressionPage() {
   const selectedKey = selectedNode ? getGraphNodeKey(selectedNode) : "";
   const incoming = PROGRESSION_GRAPH.edges.filter(edge => getGraphNodeKey(edge.to) === selectedKey);
   const outgoing = PROGRESSION_GRAPH.edges.filter(edge => getGraphNodeKey(edge.from) === selectedKey);
+  const selectedDetails = selectedNode ? getSelectedItemDetails(selectedNode) : undefined;
 
   const layoutOptions = useMemo(() => ({
     "elk.algorithm": "layered",
@@ -403,6 +425,25 @@ export default function ProgressionPage() {
         {selectedNode ? (
           <>
             <p className={s.muted}>{NODE_KIND_LABELS[selectedNode.kind]} - {selectedNode.id}</p>
+            <div className={s.previewArea}>
+              {selectedDetails?.spriteSrc ? (
+                <img
+                  className={s.spritePreview}
+                  src={selectedDetails.spriteSrc}
+                  alt={selectedDetails.spriteLabel ?? selectedNode.name}
+                />
+              ) : (
+                <div className={s.emptyPreview}>No sprite</div>
+              )}
+            </div>
+            <Link className={s.editButton} to={selectedDetails?.editPath ?? `/entity-create/${encodeURIComponent(selectedNode.id)}`}>
+              Edit Entity
+            </Link>
+            {selectedDetails?.description ? (
+              <p className={s.description}>{selectedDetails.description}</p>
+            ) : null}
+            <StatsList rows={selectedDetails?.stats ?? []} />
+            <TagList title="Keywords" tags={selectedDetails?.keywords ?? []} />
             <RequirementList node={selectedNode} />
             <DetailList title="Requires" edges={incoming} emptyText="No graph requirements." />
             <DetailList title="Unlocks / Enables" edges={outgoing} emptyText="No outgoing unlocks." useTarget />
@@ -410,6 +451,39 @@ export default function ProgressionPage() {
         ) : null}
       </aside>
     </section>
+  );
+}
+
+function StatsList({rows}: {rows: readonly DetailRow[]}) {
+  return (
+    <div className={s.field}>
+      <span className={s.label}>Stats</span>
+      {rows.length ? (
+        <dl className={s.statList}>
+          {rows.map((row, index) => (
+            <div className={s.statRow} key={`${row.label}:${index}`}>
+              <dt className={s.statTerm}>{row.label}</dt>
+              <dd className={s.statValue}>{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p className={s.muted}>No stats defined.</p>
+      )}
+    </div>
+  );
+}
+
+function TagList({title, tags}: {title: string; tags: readonly string[]}) {
+  if (!tags.length) return null;
+
+  return (
+    <div className={s.field}>
+      <span className={s.label}>{title}</span>
+      <div className={s.tagList}>
+        {tags.map(tag => <span className={s.tag} key={tag}>{tag}</span>)}
+      </div>
+    </div>
   );
 }
 
@@ -548,6 +622,164 @@ function findContentRequirements(node: ProgressionGraphNode): readonly Requireme
   if (node.kind === "structure") return WALL_TOWER_BUILDINGS[node.id]?.requirements;
 
   return undefined;
+}
+
+function getSelectedItemDetails(node: ProgressionGraphNode): SelectedItemDetails {
+  const baseStats: DetailRow[] = [
+    {label: "Type", value: NODE_KIND_LABELS[node.kind]},
+    {label: "Vector", value: node.vector ?? "unknown"},
+  ];
+
+  if (node.kind === "research") {
+    const research = researchTree[node.id];
+    return {
+      description: research?.summary,
+      keywords: research?.keywords ?? [],
+      stats: [
+        ...baseStats,
+        ...getResearchStats(research),
+        ...getValueRows(research?.values),
+        ...getEffectRows(research?.effects),
+      ],
+      editPath: `/entity-create/${encodeURIComponent(node.id)}`,
+    };
+  }
+
+  if (node.kind === "towerPart") {
+    const part = TOWER_PARTS_BY_ID[node.id];
+    const asset = getVisualAsset(part?.sprite.textureKey ?? node.id);
+
+    return {
+      description: part?.description,
+      keywords: part ? [...part.keywords] : [],
+      stats: [
+        ...baseStats,
+        {label: "Slot", value: part?.slot ?? "unknown"},
+        ...getValueRows(part?.values),
+        ...getEffectRows(part?.effects),
+        ...getOptionalListRow("Aim", part?.aimKeywords),
+        ...getOptionalListRow("Conflicts", part?.conflictsWithKeywords),
+      ],
+      spriteSrc: asset?.src,
+      spriteLabel: asset?.label,
+      editPath: `/entity-create/${encodeURIComponent(node.id)}`,
+    };
+  }
+
+  const building = findBuildingContent(node);
+  const asset = getVisualAsset(getBuildingVisualAssetId(building) ?? node.id);
+
+  return {
+    description: building?.description,
+    keywords: building?.keywords ?? [],
+    stats: [
+      ...baseStats,
+      {label: "Building Type", value: formatBuildingType(building?.type)},
+      ...getBuildingStats(building),
+      ...getValueRows(building?.values),
+      ...getEffectRows(building?.effects),
+    ],
+    spriteSrc: asset?.src,
+    spriteLabel: asset?.label,
+    editPath: `/entity-create/${encodeURIComponent(node.id)}`,
+  };
+}
+
+function findBuildingContent(node: ProgressionGraphNode): Building | WallBuilding | undefined {
+  if (node.kind === "structure") return WALL_TOWER_BUILDINGS[node.id];
+
+  const regularBuilding = Object.values(DEVELOPMENT_VECTORS)
+    .map(vector => BUILDINGS_ATLAS[vector][node.id])
+    .find(Boolean);
+
+  return regularBuilding
+    ?? WALL_SEGMENT_BUILDINGS[node.id]
+    ?? WALL_TOWER_BUILDINGS[node.id];
+}
+
+function getVisualAsset(id: string | undefined) {
+  if (!id) return undefined;
+  return ENTITY_VISUAL_ASSETS_BY_ID[id];
+}
+
+function getBuildingVisualAssetId(building: Building | WallBuilding | undefined): string | undefined {
+  if (!building || !("visualAssetId" in building)) return undefined;
+  return building.visualAssetId;
+}
+
+function formatBuildingType(type: BuildingTypesValue | undefined): string {
+  if (type === BUILDING_TYPES.produce) return "Produce";
+  if (type === BUILDING_TYPES.research) return "Research";
+  if (type === BUILDING_TYPES.wallSegment) return "Wall Segment";
+  if (type === BUILDING_TYPES.tower) return "Tower";
+
+  return "unknown";
+}
+
+function getResearchStats(research: ResearchNodeData | undefined): DetailRow[] {
+  if (!research) return [];
+
+  return [
+    {label: "Parent", value: research.parentId ?? "root"},
+    ...getOptionalListRow("Unlocks", research.unlocks),
+    ...getOptionalListRow("Also Requires", research.alsoRequires),
+    ...getOptionalListRow("Buildings", research.requiredBuildings),
+    ...getOptionalListRow("Structures", research.requiredStructures),
+    ...getOptionalNumberRow("Biodiversity", research.requiredBiodiversity),
+  ];
+}
+
+function getBuildingStats(building: Building | WallBuilding | undefined): DetailRow[] {
+  if (!building) return [];
+
+  const rows: DetailRow[] = [];
+  if ("isMultiHex" in building) rows.push({label: "Multi-Hex", value: building.isMultiHex ? "yes" : "no"});
+  if ("isMultistructure" in building) rows.push({label: "Multi-Structure", value: building.isMultistructure ? "yes" : "no"});
+  if ("adjacencyDescription" in building) rows.push({label: "Adjacency", value: building.adjacencyDescription});
+
+  return rows;
+}
+
+function getValueRows(values: readonly HomogeneousValueEffect[] | undefined): DetailRow[] {
+  return (values ?? []).map(value => ({
+    label: getHomogeneousValueDefinition(value.valueId).label,
+    value: formatValueEffect(value),
+  }));
+}
+
+function getEffectRows(effects: readonly HomogeneousAdjacencyRule[] | undefined): DetailRow[] {
+  return (effects ?? []).map((effect, index) => ({
+    label: `Adjacency ${index + 1}`,
+    value: [
+      effect.radius ? `radius ${effect.radius}` : undefined,
+      effect.requiredBuildingKeywords?.length ? `near ${effect.requiredBuildingKeywords.join(", ")}` : undefined,
+      effect.requiredValueKeywords?.length ? `values ${effect.requiredValueKeywords.join(", ")}` : undefined,
+      formatNumericEffect(effect),
+    ].filter(Boolean).join("; "),
+  }));
+}
+
+function getOptionalListRow(label: string, values: readonly string[] | undefined): DetailRow[] {
+  return values?.length ? [{label, value: values.join(", ")}] : [];
+}
+
+function getOptionalNumberRow(label: string, value: number | undefined): DetailRow[] {
+  return value === undefined ? [] : [{label, value: String(value)}];
+}
+
+function formatValueEffect(value: HomogeneousValueEffect): string {
+  return [
+    formatNumericEffect(value),
+    value.additionalKeywords?.length ? `adds ${value.additionalKeywords.join(", ")}` : undefined,
+    value.removedKeywords?.length ? `removes ${value.removedKeywords.join(", ")}` : undefined,
+  ].filter(Boolean).join("; ") || "configured";
+}
+
+function formatNumericEffect(value: Pick<HomogeneousValueEffect, "additive" | "multiplier">): string {
+  return [
+    value.additive === undefined || value.additive === null ? undefined : `+${value.additive}`,
+    value.multiplier === undefined || value.multiplier === null ? undefined : `x${value.multiplier}`,
+  ].filter(Boolean).join(" ");
 }
 
 function formatRequirement(requirement: Requirement): string {

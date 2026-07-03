@@ -1,0 +1,15 @@
+{
+  "sourceSpriteSize": {
+    "width": 233,
+    "height": 214
+  },
+  "targetSpriteSize": {
+    "width": 87,
+    "height": 80
+  },
+  "inputSocket": {
+    "x": 117,
+    "y": 107
+  },
+  "outputSockets": {}
+}

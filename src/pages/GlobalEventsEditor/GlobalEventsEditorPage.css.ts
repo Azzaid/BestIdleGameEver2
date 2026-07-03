@@ -377,7 +377,6 @@ export const imageCard = style({
 
 export const imageThumb = style({
   width: "100%",
-  height: "138px",
   objectFit: "cover",
   borderRadius: "6px",
   background: vars.color.background.surface,

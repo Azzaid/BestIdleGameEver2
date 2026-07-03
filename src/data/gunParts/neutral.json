@@ -142,11 +142,14 @@
     "spriteTextureKey": "gunParts.medieval.barrel.hollowedTrunk"
   },
   {
-    "id": "gunParts.medieval.ammo.stoneBasket",
+    "id": "gunParts.neutral.ammo.stoneBasket",
     "slot": "ammo",
     "name": "Stone Basket",
     "description": "A basket stones.",
     "keywords": [
+      "neutral",
+      "gunPart",
+      "ammo",
       "stone"
     ],
     "values": [
@@ -179,6 +182,7 @@
         "additive": 5
       }
     ],
-    "projectileSpriteTextureKey": "projectiles.medieval.stoneBasket"
+    "projectileSpriteTextureKey": "projectiles.neutral.stoneBasket",
+    "spriteTextureKey": "gunParts.neutral.ammo.stoneBasket"
   }
 ]

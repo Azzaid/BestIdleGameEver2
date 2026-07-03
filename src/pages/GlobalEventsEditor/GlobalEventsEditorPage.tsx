@@ -584,13 +584,6 @@ function EventImageField({
             </select>
           </label>
         </div>
-        <div className={s.imagePreviewBox}>
-          {imageSrc ? (
-            <img className={s.imagePreview} src={imageSrc} alt={imageLabel} />
-          ) : (
-            <span className={s.hint}>Drop a PNG or choose an existing picture.</span>
-          )}
-        </div>
       </div>
     </section>
   );

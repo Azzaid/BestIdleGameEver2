@@ -5,6 +5,8 @@
     "name": "Hand picked stones",
     "description": "A basket of carefully picked stones heavy stones with sharp edges",
     "keywords": [
+      "gunPart",
+      "ammo",
       "stone"
     ],
     "requirements": [
@@ -43,7 +45,7 @@
         "additive": 1
       }
     ],
-    "projectileSpriteTextureKey": "projectiles.medieval.pickedStones"
+    "spriteTextureKey": "gunParts.medieval.ammo.pickedStones"
   },
   {
     "id": "gunParts.medieval.barrel.carvedLog",
@@ -125,6 +127,8 @@
     "name": "Hand drawn trebuchet",
     "description": "Flexible planks and a bit of rope. Basically a big bow attached to a gun platform.",
     "keywords": [
+      "gunPart",
+      "launchSystem",
       "rough",
       "wood"
     ],
@@ -209,7 +213,8 @@
         ],
         "additive": 2
       }
-    ]
+    ],
+    "spriteTextureKey": "gunParts.medieval.launchSystem.handTrebuchet"
   },
   {
     "id": "gunParts.medieval.ammo.sharpenedStakes",
@@ -217,6 +222,8 @@
     "name": "Sharpened stakes",
     "description": "Bunch or thick sticks sharpened by axe",
     "keywords": [
+      "gunPart",
+      "ammo",
       "stone"
     ],
     "requirements": [
@@ -287,7 +294,7 @@
         "additive": 1
       }
     ],
-    "projectileSpriteTextureKey": "projectiles.medieval.sharpenedStakes"
+    "spriteTextureKey": "gunParts.medieval.ammo.sharpenedStakes"
   },
   {
     "id": "gunParts.medieval.barrel.boredTimberBarrel",
@@ -295,6 +302,8 @@
     "name": "Bored timber barrel",
     "description": "Whole three bored and sanded from inside",
     "keywords": [
+      "gunPart",
+      "barrel",
       "wood"
     ],
     "requirements": [
@@ -357,7 +366,8 @@
         ],
         "additive": 3
       }
-    ]
+    ],
+    "spriteTextureKey": "gunParts.medieval.barrel.boredTimberBarrel"
   },
   {
     "id": "gunParts.medieval.ammo.baseWoodArrow",
@@ -365,6 +375,8 @@
     "name": "Wooden arrows",
     "description": "Simple but carefully crafted",
     "keywords": [
+      "gunPart",
+      "ammo",
       "wood"
     ],
     "requirements": [
@@ -428,7 +440,7 @@
         "additive": 2
       }
     ],
-    "projectileSpriteTextureKey": "projectiles.medieval.baseWoodArrow"
+    "spriteTextureKey": "gunParts.medieval.ammo.baseWoodArrow"
   },
   {
     "id": "gunParts.medieval.platform.woodenRails",
@@ -436,6 +448,8 @@
     "name": "Wooden rails",
     "description": "Set of rails to aid in tower rotation",
     "keywords": [
+      "gunPart",
+      "platform",
       "wood"
     ],
     "requirements": [
@@ -470,7 +484,8 @@
         ],
         "additive": 2
       }
-    ]
+    ],
+    "spriteTextureKey": "gunParts.medieval.platform.woodenRails"
   },
   {
     "id": "gunParts.medieval.loadingSystem.leverLoader",
@@ -478,6 +493,8 @@
     "name": "Lever loader",
     "description": "Clever lever loading mechanism allows to load ammo faster",
     "keywords": [
+      "gunPart",
+      "loadingSystem",
       "wood"
     ],
     "requirements": [
@@ -512,7 +529,8 @@
         ],
         "additive": 5
       }
-    ]
+    ],
+    "spriteTextureKey": "gunParts.medieval.loadingSystem.leverLoader"
   },
   {
     "id": "gunParts.medieval.barrel.stoneRails",
@@ -520,6 +538,8 @@
     "name": "Stone rails",
     "description": "Set of stone rails to guide projectile.",
     "keywords": [
+      "gunPart",
+      "barrel",
       "stone"
     ],
     "requirements": [
@@ -582,7 +602,8 @@
         ],
         "additive": 3
       }
-    ]
+    ],
+    "spriteTextureKey": "gunParts.medieval.barrel.stoneRails"
   },
   {
     "id": "gunParts.medieval.aimSystem.makeshiftWoodenAim",
@@ -646,6 +667,8 @@
     "name": "Stone rails",
     "description": "Set of stone rails to aid in tower rotation",
     "keywords": [
+      "gunPart",
+      "platform",
       "stone"
     ],
     "requirements": [
@@ -687,7 +710,8 @@
         ],
         "additive": 3
       }
-    ]
+    ],
+    "spriteTextureKey": "gunParts.medieval.platform.stoneRails"
   },
   {
     "id": "gunParts.medieval.loadingSystem.counterweightLoader",
@@ -740,6 +764,7 @@
         ],
         "multiplier": 1.2
       }
-    ]
+    ],
+    "spriteTextureKey": "gunParts.medieval.loadingSystem.counterweightLoader"
   }
 ]

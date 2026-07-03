@@ -13,7 +13,7 @@ export const backdrop = style({
 
 export const dialog = style({
   width: "min(760px, 100%)",
-  maxHeight: "min(760px, calc(100vh - 28px))",
+  maxHeight: "calc(100vh - 28px)",
   display: "grid",
   gridTemplateRows: "auto 1fr auto",
   border: `1px solid ${vars.color.border.default}`,
@@ -64,7 +64,6 @@ export const eventBlock = style({
 
 export const eventImage = style({
   width: "100%",
-  maxHeight: "180px",
   objectFit: "cover",
   borderRadius: 4,
   border: `1px solid ${vars.color.border.default}`,

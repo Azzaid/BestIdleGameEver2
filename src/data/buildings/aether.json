@@ -119,6 +119,8 @@
     "kind": "building",
     "description": "A dwelling protected by charms, talismans, and simple magical rituals. The inhabitants often cannot explain why it feels safer and more comfortable, only that it does.",
     "keywords": [
+      "aether",
+      "building",
       "production",
       "people",
       "manaFlows",
@@ -159,20 +161,21 @@
         "additive": 10
       },
       {
-        "valueId": "resource.gold",
-        "additionalKeywords": [
-          "upkeep"
-        ],
-        "additive": 2
-      },
-      {
         "valueId": "city.signature",
         "additionalKeywords": [
           "production"
         ],
         "additive": 8
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 2
       }
-    ]
+    ],
+    "visualAssetId": "building_aether_warded-home"
   },
   {
     "id": "buildings.aether.runedHouse",

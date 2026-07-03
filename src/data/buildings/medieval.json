@@ -247,6 +247,7 @@
     "kind": "building",
     "description": "Durable housing that supports people and gold while keeping city signature lower than wood.",
     "keywords": [
+      "building",
       "production",
       "people",
       "gold",
@@ -267,20 +268,21 @@
         "additive": 10
       },
       {
-        "valueId": "resource.gold",
-        "additionalKeywords": [
-          "upkeep"
-        ],
-        "additive": 1
-      },
-      {
         "valueId": "city.signature",
         "additionalKeywords": [
           "production"
         ],
         "additive": 7
+      },
+      {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
       }
-    ]
+    ],
+    "visualAssetId": "building_medieval_stone-house"
   },
   {
     "id": "buildings.medieval.university",
