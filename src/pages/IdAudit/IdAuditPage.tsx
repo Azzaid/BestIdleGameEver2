@@ -1,5 +1,5 @@
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
-import {useMemo, useState} from "react";
+import {useMemo} from "react";
 import {Link} from "react-router-dom";
 import {PROGRESSION_RULES} from "../Progression/data/rules.ts";
 import {getRuleForTarget} from "../Progression/data/progression.ts";
@@ -30,6 +30,9 @@ import {
   getProducedValues,
   resolveHomogeneousValueContributions,
 } from "../../models/homogeneousValueResolution.ts";
+import {useDevToolsDispatch, useDevToolsSelector} from "../../devtools/store/hooks.ts";
+import {selectIdAuditFilters} from "../../devtools/store/selectors.ts";
+import {setIdAuditFilters, type IdAuditStatusFilter} from "../../devtools/store/state.ts";
 import * as s from "./IdAuditPage.css.ts";
 
 type AuditStatus = "ok" | "missing" | "none";
@@ -44,8 +47,6 @@ type AuditRow = {
   assetStatus: AuditStatus;
   notes: string;
 };
-
-type StatusFilter = AuditStatus | "any";
 
 const metadataModules = import.meta.glob("../../assets/gunParts/**/*.json", {
   eager: true,
@@ -261,12 +262,15 @@ function createUnregisteredRow(category: string, id: string, name?: string): Aud
 }
 
 export default function IdAuditPage() {
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [dataFilter, setDataFilter] = useState<StatusFilter>("any");
-  const [progressionFilter, setProgressionFilter] = useState<StatusFilter>("any");
-  const [assetFilter, setAssetFilter] = useState<StatusFilter>("any");
-  const [problemsOnly, setProblemsOnly] = useState(false);
+  const dispatch = useDevToolsDispatch();
+  const {
+    search,
+    categoryFilter,
+    dataFilter,
+    progressionFilter,
+    assetFilter,
+    problemsOnly,
+  } = useDevToolsSelector(selectIdAuditFilters);
   const registeredRows = useMemo(() => createRows(), []);
   const rows = useMemo(() => [...registeredRows, ...getUnregisteredRows(registeredRows)], [registeredRows]);
   const categories = useMemo(() => [...new Set(rows.map(row => row.category))].sort(), [rows]);
@@ -324,25 +328,41 @@ export default function IdAuditPage() {
           <input
             className={s.input}
             value={search}
-            onChange={event => setSearch(event.target.value)}
+            onChange={event => dispatch(setIdAuditFilters({search: event.target.value}))}
             placeholder="Path, id, name, notes"
           />
         </label>
         <label className={s.field}>
           <span className={s.filterLabel}>Category</span>
-          <select className={s.input} value={categoryFilter} onChange={event => setCategoryFilter(event.target.value)}>
+          <select
+            className={s.input}
+            value={categoryFilter}
+            onChange={event => dispatch(setIdAuditFilters({categoryFilter: event.target.value}))}
+          >
             <option value="all">All categories</option>
             {categories.map(category => <option key={category} value={category}>{category}</option>)}
           </select>
         </label>
-        <StatusSelect label="Data" value={dataFilter} onChange={setDataFilter} />
-        <StatusSelect label="Progression" value={progressionFilter} onChange={setProgressionFilter} />
-        <StatusSelect label="Assets" value={assetFilter} onChange={setAssetFilter} />
+        <StatusSelect
+          label="Data"
+          value={dataFilter}
+          onChange={value => dispatch(setIdAuditFilters({dataFilter: value}))}
+        />
+        <StatusSelect
+          label="Progression"
+          value={progressionFilter}
+          onChange={value => dispatch(setIdAuditFilters({progressionFilter: value}))}
+        />
+        <StatusSelect
+          label="Assets"
+          value={assetFilter}
+          onChange={value => dispatch(setIdAuditFilters({assetFilter: value}))}
+        />
         <label className={s.toggle}>
           <input
             type="checkbox"
             checked={problemsOnly}
-            onChange={event => setProblemsOnly(event.target.checked)}
+            onChange={event => dispatch(setIdAuditFilters({problemsOnly: event.target.checked}))}
           />
           Problems only
         </label>
@@ -406,13 +426,13 @@ function StatusSelect({
   onChange,
 }: {
   label: string;
-  value: StatusFilter;
-  onChange: (value: StatusFilter) => void;
+  value: IdAuditStatusFilter;
+  onChange: (value: IdAuditStatusFilter) => void;
 }) {
   return (
     <label className={s.field}>
       <span className={s.filterLabel}>{label}</span>
-      <select className={s.input} value={value} onChange={event => onChange(event.target.value as StatusFilter)}>
+      <select className={s.input} value={value} onChange={event => onChange(event.target.value as IdAuditStatusFilter)}>
         <option value="any">Any</option>
         <option value="ok">OK</option>
         <option value="missing">Missing</option>

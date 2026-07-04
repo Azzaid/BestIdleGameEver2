@@ -6,17 +6,4 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 export default defineConfig({
   base: './',
   plugins: [react(), vanillaExtractPlugin()],
-  server: {
-    watch: {
-      ignored: [
-        '**/src/assets/buildings/**',
-        '**/src/assets/events/**',
-        '**/src/assets/gunParts/**',
-        '**/src/assets/hexBackgrounds/**',
-        '**/src/assets/projectiles/**',
-        '**/src/assets/wallSegments/**',
-        '**/src/assets/wallSuperstructures/**',
-      ],
-    },
-  },
 })

@@ -1,9 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { loadPersistedDebugMode } from "./persistence.ts";
 
 const debugSlice = createSlice({
     name: "debug",
     initialState: {
-        enabled: false,
+        enabled: loadPersistedDebugMode(),
     },
     reducers: {
         toggleDebugMode: (state) => {

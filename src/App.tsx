@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type TouchEvent, type UIEvent, type WheelEvent } from 'react'
-import { HashRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useRef, useState, type TouchEvent, type UIEvent, type WheelEvent } from 'react'
+import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
 import {Provider} from "react-redux";
 import {store} from "./store";
 import { ThemeProvider } from './theme/ThemeProvider'
@@ -11,14 +11,6 @@ import BuildPage from './pages/Build/BuildPage'
 import ResearchPage from './pages/Research/ResearchPage'
 import CityPage from './pages/City/CityPage'
 import StatisticsPage from './pages/Statistics/StatisticsPage'
-import ProgressionPage from './pages/Progression/ProgressionPage.tsx'
-import GunPartEditorPage from './pages/GunPartEditor/GunPartEditorPage.tsx'
-import IdAuditPage from './pages/IdAudit/IdAuditPage.tsx'
-import EntityCreatePage from './pages/EntityCreate/EntityCreatePage.tsx'
-import MonsterEditPage from './pages/MonsterEdit/MonsterEditPage.tsx'
-import GlobalEventsEditorPage from './pages/GlobalEventsEditor/GlobalEventsEditorPage.tsx'
-import HexBackgroundEditorPage from './pages/HexBackgroundEditor/HexBackgroundEditorPage.tsx'
-import HomogeneousValuesEditorPage from './pages/HomogeneousValuesEditor/HomogeneousValuesEditorPage.tsx'
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedDispatch, useTypedSelector} from "./store/hooks.ts";
 import {selectCitySignatureStatus} from "./store/upkeep/selectors.ts";
@@ -31,6 +23,14 @@ import {CityExpansionControl} from "./components/CityExpansionControl.tsx";
 import {useContentAutoUnlock} from "./hooks/useContentAutoUnlock.ts";
 import {GlobalEventModal} from "./components/GlobalEvents/GlobalEventModal.tsx";
 import {useGlobalEventSignals} from "./components/GlobalEvents/useGlobalEventSignals.ts";
+
+const DevToolsNavLinks = import.meta.env.DEV
+    ? lazy(() => import("./devtools/DevToolsNavLinks.tsx"))
+    : null;
+
+const DevToolsRouteGate = import.meta.env.DEV
+    ? lazy(() => import("./devtools/DevToolsRouteGate.tsx"))
+    : null;
 
 function AppFrame() {
   const dispatch = useTypedDispatch();
@@ -165,33 +165,10 @@ function AppFrame() {
                           <li>
                               <Link className={appTheme.navBarLink} to="/statistics">Statistics</Link>
                           </li>
-                          {isDebugToolsEnabled && (
-                              <>
-                                  <li>
-                                      <Link className={appTheme.navBarLink} to="/progression">Progression</Link>
-                                  </li>
-                                  <li>
-                                      <Link className={appTheme.navBarLink} to="/ids">IDs</Link>
-                                  </li>
-                                  <li>
-                                      <Link className={appTheme.navBarLink} to="/entity-create/new">Entity Create</Link>
-                                  </li>
-                                  <li>
-                                      <Link className={appTheme.navBarLink} to="/monster-edit/new">Monster Edit</Link>
-                                  </li>
-                                  <li>
-                                      <Link className={appTheme.navBarLink} to="/gun-part-editor">Part Editor</Link>
-                                  </li>
-                                  <li>
-                                      <Link className={appTheme.navBarLink} to="/global-events">Global Events</Link>
-                                  </li>
-                                  <li>
-                                      <Link className={appTheme.navBarLink} to="/homogeneous-values">Values</Link>
-                                  </li>
-                                  <li>
-                                      <Link className={appTheme.navBarLink} to="/hex-background-editor">Hex Backgrounds</Link>
-                                  </li>
-                              </>
+                          {isDebugToolsEnabled && DevToolsNavLinks && (
+                              <Suspense fallback={null}>
+                                  <DevToolsNavLinks />
+                              </Suspense>
                           )}
                       </ul>
                       <div className={appTheme.themeSwitcher}>
@@ -218,16 +195,16 @@ function AppFrame() {
                           <Route path="/research" element={signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />} />
                           <Route path="/city" element={<CityPage />} />
                           <Route path="/statistics" element={<StatisticsPage />} />
-                          <Route path="/progression" element={isDebugToolsEnabled ? <ProgressionPage /> : <Navigate to="/battle" replace />} />
-                          <Route path="/gun-part-editor" element={isDebugToolsEnabled ? <GunPartEditorPage /> : <Navigate to="/battle" replace />} />
-                          <Route path="/ids" element={isDebugToolsEnabled ? <IdAuditPage /> : <Navigate to="/battle" replace />} />
-                          <Route path="/entity-create" element={<Navigate to="/entity-create/new" replace />} />
-                          <Route path="/entity-create/:entityId" element={isDebugToolsEnabled ? <EntityCreatePage /> : <Navigate to="/battle" replace />} />
-                          <Route path="/monster-edit" element={<Navigate to="/monster-edit/new" replace />} />
-                          <Route path="/monster-edit/:monsterId" element={isDebugToolsEnabled ? <MonsterEditPage /> : <Navigate to="/battle" replace />} />
-                          <Route path="/global-events" element={isDebugToolsEnabled ? <GlobalEventsEditorPage /> : <Navigate to="/battle" replace />} />
-                          <Route path="/homogeneous-values" element={isDebugToolsEnabled ? <HomogeneousValuesEditorPage /> : <Navigate to="/battle" replace />} />
-                          <Route path="/hex-background-editor" element={isDebugToolsEnabled ? <HexBackgroundEditorPage /> : <Navigate to="/battle" replace />} />
+                          {DevToolsRouteGate && (
+                              <Route
+                                  path="/*"
+                                  element={(
+                                      <Suspense fallback={null}>
+                                          <DevToolsRouteGate enabled={isDebugToolsEnabled} />
+                                      </Suspense>
+                                  )}
+                              />
+                          )}
                       </Routes>
                   </main>
               </div>

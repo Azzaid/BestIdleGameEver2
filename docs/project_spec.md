@@ -39,7 +39,7 @@ The current app is a frontend-only prototype with multiple routed views:
 - Research: radial research tree with unlockable nodes and vector coloring.
 - City: SVG hex city visualization with clickable city and wall tiles, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
 - Statistics: sample time-series charts.
-- Debug/content tools: progression graph, ID audit, entity creation, monster editing, gun part editor, global events editor, and homogeneous values editor.
+- Debug/content tools: progression graph, ID audit, entity creation, monster editing, gun part editor, global events editor, homogeneous values editor, and hex background editor. These tools are development-only surfaces and are kept behind `import.meta.env.DEV` route and import boundaries.
 
 The prototype has no backend. Core Redux gameplay progress is saved in browser `localStorage` and restored on reload.
 
@@ -59,8 +59,9 @@ Current stack:
 Entry points and app shell:
 
 - `src/main.tsx` loads global styles and renders the app.
-- `src/App.tsx` wires `Provider`, `ThemeProvider`, `HashRouter`, navigation, routes, debug route gating, content auto-unlock hooks, global event signals/modals, and the shared upkeep bar.
+- `src/App.tsx` wires `Provider`, `ThemeProvider`, `HashRouter`, navigation, game routes, lazy development-tool route gating, content auto-unlock hooks, global event signals/modals, and the shared upkeep bar.
 - `src/store` contains Redux setup, slices, typed hooks, and selectors.
+- `src/devtools` contains development-only route/nav modules and devtools UI state. Devtools UI state is persisted separately from the gameplay save and should not be added to the game Redux persistence payload.
 - `src/theme` contains the vanilla-extract theme contract and runtime theme provider.
 
 Primary routes:
@@ -70,7 +71,7 @@ Primary routes:
 - `/research` renders research.
 - `/city` renders the city view.
 - `/statistics` renders charts.
-- `/progression`, `/ids`, `/entity-create/:entityId`, `/monster-edit/:monsterId`, `/gun-part-editor`, `/global-events`, and `/homogeneous-values` are debug-mode tools.
+- `/progression`, `/ids`, `/entity-create/:entityId`, `/monster-edit/:monsterId`, `/gun-part-editor`, `/global-events`, `/homogeneous-values`, and `/hex-background-editor` are debug-mode tools available only in development builds.
 
 Important directories:
 
@@ -109,6 +110,7 @@ Texture asset layout:
 - Tower component textures and metadata live in `src/assets/gunParts/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`; tower part runtime metadata is derived in `src/data/gunParts/partVisualMetadata.ts`. Ammo projectile textures live in `src/assets/projectiles/<vector>` and are referenced from ammo definitions with `projectileSpriteTextureKey`.
 - Global event pictures live in `src/assets/events` and are discovered by the global event image catalog.
 - Local editor image writes go through dedicated file upload endpoints (`/entity-sprites`, `/global-event-images`, and `/hex-background-sprites`); JSON definition saves should reference image ids or visual asset ids instead of carrying image bytes. Homogeneous value definition edits go through `/homogeneous-values` because the registry is TypeScript-backed.
+- The Vite dev server watches active asset folders so editor-written images can trigger reload/HMR and refresh discovered `import.meta.glob` catalogs without a dev server restart.
 - Images not currently loaded by code belong under `src/assets/unused`.
 
 Future architecture direction:
@@ -660,7 +662,7 @@ Tags should drive future systems wherever possible. Prefer "has tag industrial" 
 
 ## 22. Persistence
 
-Core Redux gameplay progress is persisted to browser `localStorage` under a versioned save payload. The store hydrates saved gameplay slices at startup, then subscribes to Redux updates and writes the current gameplay state after changes.
+Core Redux gameplay progress is persisted to browser `localStorage` under a versioned save payload. The store hydrates saved gameplay slices at startup, then subscribes to Redux updates and writes the current gameplay state after changes. Development-tool UI state uses separate localStorage keys and must not be mixed into the player save payload.
 
 The current save includes:
 
@@ -671,7 +673,7 @@ The current save includes:
 - unlock state;
 - global event flags, modifiers, endings, cutscene history, and pending event UI state.
 
-The save intentionally excludes debug mode state.
+The player save intentionally excludes debug mode and editor UI state. Debug mode is persisted separately for development so Vite-triggered reloads do not drop the user out of dev-only routes.
 
 While the game is pre-alpha, internal Redux state shape may change without backward compatibility. Save payloads are versioned so compatibility should be handled through explicit store migrations rather than preserving legacy runtime fallbacks in gameplay logic.
 
