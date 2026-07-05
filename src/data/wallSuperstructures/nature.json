@@ -1,21 +1,15 @@
 [
   {
-    "id": "wallSuperstructures.nature.graspingRoots",
-    "name": "Grasping roots",
-    "description": "Living roots wind over the wall, dragging attackers down and shoving them back from the city.",
+    "id": "wallSuperstructures.nature.tentacleSquid",
+    "name": "Tentacle squid",
+    "description": "Small and weak. But when careffuly rooted onto the wall can push back creatures ten times heavier than itself.",
     "keywords": [
+      "nature",
+      "wallSuperstructure",
       "slow",
       "push"
     ],
     "values": [
-      {
-        "valueId": "monster.speedMultiplier",
-        "additionalKeywords": [
-          "production",
-          "slow"
-        ],
-        "additive": -0.2
-      },
       {
         "valueId": "wall.pushBackDistance",
         "additionalKeywords": [
@@ -30,7 +24,7 @@
           "production",
           "push"
         ],
-        "additive": 0.5
+        "additive": 0.3
       },
       {
         "valueId": "wall.pushBackEffectZoneSize",
@@ -40,6 +34,7 @@
         ],
         "additive": 96
       }
-    ]
+    ],
+    "visualAssetId": "wallSuperstructures.nature.tentacleSquid"
   }
 ]

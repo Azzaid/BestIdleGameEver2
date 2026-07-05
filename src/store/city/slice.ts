@@ -27,6 +27,8 @@ import {
     type CityTerrainVectorMap,
 } from "../../models/city/terrainVectors.ts";
 
+const UNCLAIMED_REVEAL_RING_COUNT = 2;
+
 const getTerrainBackground = (biome: CityBiome, isUnclaimed: boolean, vector: DevelopmentVectorValue) => selectCityHexBackgroundSprite(
     CITY_HEX_BACKGROUND_SPRITE_POOL,
     isUnclaimed ? CITY_HEX_BACKGROUND_TYPES.claimableTerrain : CITY_HEX_BACKGROUND_TYPES.claimedTerrain,
@@ -48,10 +50,10 @@ const getBuildingUnderlayBackground = (biome: CityBiome, vector: DevelopmentVect
 const getInitialHexes = ((
     cityRadius=INITIAL_CITY_CELL_RADIUS,
     biome: CityBiome = selectRandomCityBiome(),
-    terrainVectorMap: CityTerrainVectorMap = createCityTerrainVectorMap(cityRadius + 1),
+    terrainVectorMap: CityTerrainVectorMap = createCityTerrainVectorMap(cityRadius + UNCLAIMED_REVEAL_RING_COUNT),
 ) => {
     const generatedCells: HexCell[] = [];
-    const mapRadius = cityRadius + 1;
+    const mapRadius = cityRadius + UNCLAIMED_REVEAL_RING_COUNT;
 
     for (let column = -mapRadius; column <= mapRadius; column++) {
         const rowMin = Math.max(-mapRadius, -column - mapRadius);
@@ -134,7 +136,7 @@ const getDemolishedHexKeys = (hexes: HexCell[], targetHex: HexCell): string[] =>
 };
 
 const getInitialState = (biome: CityBiome): CityState => {
-    const terrainVectorMap = createCityTerrainVectorMap(maxCitySize + 1);
+    const terrainVectorMap = createCityTerrainVectorMap(maxCitySize + UNCLAIMED_REVEAL_RING_COUNT);
 
     return {
         hexes: getInitialHexes(INITIAL_CITY_CELL_RADIUS, biome, terrainVectorMap),

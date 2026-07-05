@@ -175,7 +175,7 @@ Changing IDs casually makes content harder to migrate, breaks saved state, and w
 As of 2026-06-24:
 
 - The browser app uses React, TypeScript, Redux Toolkit, vanilla-extract, Vite, React Router hash routing, and Pixi.js.
-- Main player routes are Battle, Tower, Research, City, and Statistics.
+- Main player routes are Battle, Tower, Research, City, and History.
 - Debug routes include Progression, IDs, Entity Create, Gun Part Editor, and Global Events.
 - Content is already largely data-driven for buildings, research, towers, walls, enemies, events, and modifiers.
 - Homogeneous value resolution is implemented and used by city, towers, walls, research/global modifiers, upkeep, unlocks, and battle-adjacent state.

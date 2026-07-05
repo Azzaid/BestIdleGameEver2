@@ -17,11 +17,11 @@ The goal is to ensure the game feels like a single coherent system rather than s
 
 Current implementation note, 2026-06-24:
 
-- The app shell uses hash-routed pages for Battle, Tower, Research, City, and Statistics.
+- The app shell uses hash-routed pages for Battle, Tower, Research, City, and History.
 - The shared upkeep/signature bar appears outside Battle and includes city expansion controls on the City route.
 - Build and Research navigation become blocked during siege when the city has an effective tower build and debug mode is off.
 - Debug mode exposes Progression, IDs, Entity Create, Gun Part Editor, and Global Events tools.
-- Notifications and the global event modal are mounted at the app shell level.
+- Notifications are mounted at the app shell level, and force-level global events navigate to History.
 
 ---
 

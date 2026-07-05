@@ -38,7 +38,7 @@ The current app is a frontend-only prototype with multiple routed views:
 - Build: tower assembly from component slots with resolved stats, support costs, warnings, keywords, and synergies.
 - Research: radial research tree with unlockable nodes and vector coloring.
 - City: SVG hex city visualization with clickable city and wall tiles, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
-- Statistics: sample time-series charts.
+- History: happened global events with remembered new-event scrolling and foreseen event hints.
 - Debug/content tools: progression graph, ID audit, entity creation, monster editing, gun part editor, global events editor, homogeneous values editor, and hex background editor. These tools are development-only surfaces and are kept behind `import.meta.env.DEV` route and import boundaries.
 
 The prototype has no backend. Core Redux gameplay progress is saved in browser `localStorage` and restored on reload.
@@ -59,7 +59,7 @@ Current stack:
 Entry points and app shell:
 
 - `src/main.tsx` loads global styles and renders the app.
-- `src/App.tsx` wires `Provider`, `ThemeProvider`, `HashRouter`, navigation, game routes, lazy development-tool route gating, content auto-unlock hooks, global event signals/modals, and the shared upkeep bar.
+- `src/App.tsx` wires `Provider`, `ThemeProvider`, `HashRouter`, navigation, game routes, lazy development-tool route gating, content auto-unlock hooks, global event signals/history navigation, notifications, and the shared upkeep bar.
 - `src/store` contains Redux setup, slices, typed hooks, and selectors.
 - `src/devtools` contains development-only route/nav modules and devtools UI state. Devtools UI state is persisted separately from the gameplay save and should not be added to the game Redux persistence payload.
 - `src/theme` contains the vanilla-extract theme contract and runtime theme provider.
@@ -70,7 +70,7 @@ Primary routes:
 - `/build` renders tower assembly.
 - `/research` renders research.
 - `/city` renders the city view.
-- `/statistics` renders charts.
+- `/history` renders happened global events and foreseen event hints.
 - `/progression`, `/ids`, `/entity-create/:entityId`, `/monster-edit/:monsterId`, `/gun-part-editor`, `/global-events`, `/homogeneous-values`, and `/hex-background-editor` are debug-mode tools available only in development builds.
 
 Important directories:
@@ -226,9 +226,9 @@ Tower parts use the same `values` and `effects` fields as other homogeneous enti
 
 Unlocked technologies may contribute city-wide homogeneous values and effects. Technology effects are assigned `radius: Infinity` by the technology factory, and technology homogeneous sources are included in effective city resolution alongside buildings, walls, and towers.
 
-Global events use `GlobalEventDefinition` data to unify migrations, catastrophes, endings, cutscenes, and later meta-game events. A global event is driven by a trigger, requirements, optional blocking requirements, and actions. Events should decide that an action happens, but should not calculate gameplay values or effects directly.
+Global events use `GlobalEventDefinition` data to unify migrations, catastrophes, endings, cutscenes, and later meta-game events. A global event is driven by a trigger, requirements, optional blocking requirements, notification level, optional hint text, optional foreseen event ids, and actions. Events should decide that an action happens, but should not calculate gameplay values or effects directly.
 
-Runtime event triggering flows through the global signal system. Gameplay code emits domain-level messages such as game start, city expansion, migration, building discovery, building construction, technology unlock, siege start, siege success, siege failure, and requirements changed. The global event signal hook is the single processor that compares pending messages against global event definitions, checks requirements against current state or an attached message snapshot, applies actions, and opens global event modals. Direct feature-level execution of global events should be avoided; features should emit signals instead.
+Runtime event triggering flows through the global signal system. Gameplay code emits domain-level messages such as game start, city expansion, migration, building discovery, building construction, technology unlock, siege start, siege success, siege failure, and requirements changed. The global event signal hook is the single processor that compares pending messages against global event definitions, checks requirements against current state or an attached message snapshot, applies actions, updates unique executed event ids, appends happened event history entries, updates foreseen-event ids, emits notifications, and redirects force-level events to the History page. Direct feature-level execution of global events should be avoided; features should emit signals instead.
 
 Persistent meta-game bonuses use `GlobalModifierDefinition` data. Applying a global modifier loads the existing modifier instance from Redux save state, creates it if missing, runs the modifier's `applyRules`, updates internal state, and saves the same instance back under its modifier id. Reapplying the same modifier updates accumulated state instead of creating duplicates. Global events can also remove an active global modifier by id, which deletes its saved instance and removes its homogeneous effects from later city resolution. Global modifier effects are generated from the current modifier state and enter effective city resolution as standard homogeneous value effects, alongside technology effects.
 
@@ -334,8 +334,8 @@ Building data convention:
 City view implementation:
 
 - The City page renders an SVG hex map.
-- City state stores the full generated map, including the one-hex unclaimed ring around the claimed city. Unclaimed cells are identified with `isUnclaimed`; selectors expose claimed-only hexes for upkeep, wall, battle, and progression calculations.
-- Each city has a maximum cell radius determined when it is created. The current implementation sets it from the `maxCitySize` constant and precomputes a coherent terrain vector map through `maxCitySize + 1`.
+- City state stores the full generated map, including two unclaimed rings around the claimed city. Unclaimed cells are identified with `isUnclaimed`; selectors expose claimed-only hexes for upkeep, wall, battle, and progression calculations.
+- Each city has a maximum cell radius determined when it is created. The current implementation sets it from the `maxCitySize` constant and precomputes a coherent terrain vector map through `maxCitySize + 2`.
 - Normal city hexes use city building data.
 - The top hex row is reserved for wall hexes and uses the wall build catalog.
 - Tiles without texture render a colored fallback with the building id so unfinished content remains visible.
@@ -604,19 +604,6 @@ UI principles:
 
 Prefer explaining outcomes over exposing unexplained formulas.
 
-## 20. Statistics
-
-The current Statistics page draws simple sample time-series line graphs for damage, gold, and accuracy on canvas.
-
-Future statistics should focus on understanding:
-
-- tower behavior and targeting choices;
-- support production, use, and deficits;
-- threat and containment margin over time;
-- wall pressure contributors;
-- battle replays or post-battle lessons;
-- city/district efficiency.
-
 ## 21. Data and Content Direction
 
 Current content layout:
@@ -671,7 +658,7 @@ The current save includes:
 - tower configurations;
 - support and controlled territory state;
 - unlock state;
-- global event flags, modifiers, endings, cutscene history, and pending event UI state.
+- global event flags, modifiers, endings, cutscene history, happened event history, foreseen event hints, and the last seen History event.
 
 The player save intentionally excludes debug mode and editor UI state. Debug mode is persisted separately for development so Vite-triggered reloads do not drop the user out of dev-only routes.
 

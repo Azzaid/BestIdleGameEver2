@@ -1,6 +1,8 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {useEffect, useMemo, useRef} from "react";
+import {useNavigate} from "react-router-dom";
 import {GLOBAL_EVENT_LIST} from "../../data/globalEvents/index.ts";
+import {sendNotification} from "../../lib/notifications/eventBus.ts";
 import {
   getRunnableGlobalEvents,
   type GlobalEventDefinition,
@@ -115,6 +117,7 @@ function useQueueDerivedSignals(): void {
 
 function useProcessPendingSignals(): void {
   const dispatch = useTypedDispatch();
+  const navigate = useNavigate();
   const pendingSignalMessages = useTypedSelector(selectPendingGlobalSignals);
   const executedEventIds = useTypedSelector(selectExecutedGlobalEventIds);
   const requirementData = useTypedSelector(selectRequirementResolutionData);
@@ -136,11 +139,25 @@ function useProcessPendingSignals(): void {
         eventId: event.id,
         actions: event.actions,
         modifierContext: context,
+        eventsToForesee: event.eventsToForesee,
       }))));
+      for (const {event} of runnableEventMessages) {
+        if (event.notificationLevel !== "notify") continue;
+
+        sendNotification({
+          title: event.title,
+          message: event.hint ?? event.description ?? "A global event occurred.",
+          imageUrl: event.imageSrc,
+          scheme: "tech",
+        });
+      }
+      if (runnableEventMessages.some(({event}) => (event.notificationLevel ?? "force") === "force")) {
+        navigate("/history");
+      }
     }
 
     dispatch(clearPendingGlobalSignals());
-  }, [dispatch, pendingSignalMessages.length, runnableEventMessages]);
+  }, [dispatch, navigate, pendingSignalMessages.length, runnableEventMessages]);
 }
 
 function getRunnableEventsForSignals(

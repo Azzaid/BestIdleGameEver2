@@ -3,6 +3,7 @@ import type {
   EffectTemplate,
   GlobalEventAction,
   GlobalEventDefinition,
+  GlobalEventNotificationLevel,
   GlobalEventTrigger,
   GlobalModifierApplyRule,
   GlobalModifierNumericTemplate,
@@ -32,6 +33,9 @@ type EventDraft = {
   id: string;
   title: string;
   description: string;
+  notificationLevel: GlobalEventNotificationLevel;
+  hint: string;
+  eventsToForesee: string;
   imageId: "" | GlobalEventImageId;
   imageAlt: string;
   triggerType: TriggerType;
@@ -148,6 +152,7 @@ const applyRuleTypes: ApplyRuleType[] = [
   "maxStateValue",
 ];
 const modifierValueFields: GlobalModifierValueField[] = ["available", "produced", "upkeep"];
+const notificationLevels: GlobalEventNotificationLevel[] = ["silent", "notify", "force"];
 const imageOptions: {value: "" | GlobalEventImageId; label: string}[] = [
   {value: "", label: "No image"},
   ...GLOBAL_EVENT_IMAGE_OPTIONS.map(image => ({value: image.id, label: image.label})),
@@ -449,9 +454,29 @@ function EventEditor({
         <div className={s.grid}>
           <TextField label="ID" value={draft.id} onChange={value => onChange({id: normalizeId(value)})} />
           <TextField label="Title" value={draft.title} onChange={title => onChange({title})} />
+          <label className={s.field}>
+            <span className={s.label}>Notification Level</span>
+            <select
+              className={s.input}
+              value={draft.notificationLevel}
+              onChange={event => onChange({notificationLevel: event.target.value as GlobalEventNotificationLevel})}
+            >
+              {notificationLevels.map(level => <option key={level} value={level}>{formatLabel(level)}</option>)}
+            </select>
+          </label>
+          <TextField
+            label="Events to foresee"
+            value={draft.eventsToForesee}
+            onChange={eventsToForesee => onChange({eventsToForesee})}
+            placeholder="event_id, other_event_id"
+          />
           <label className={`${s.field} ${s.fullWidth}`}>
             <span className={s.label}>Description</span>
             <textarea className={s.textarea} value={draft.description} onChange={event => onChange({description: event.target.value})} />
+          </label>
+          <label className={`${s.field} ${s.fullWidth}`}>
+            <span className={s.label}>Hint</span>
+            <textarea className={s.textarea} value={draft.hint} onChange={event => onChange({hint: event.target.value})} />
           </label>
           <EventImageField
             imageId={draft.imageId}
@@ -918,17 +943,19 @@ function TextField({
   label,
   value,
   type = "text",
+  placeholder,
   onChange,
 }: {
   label: string;
   value: string;
   type?: "text" | "number";
+  placeholder?: string;
   onChange: (value: string) => void;
 }) {
   return (
     <label className={s.field}>
       <span className={s.label}>{label}</span>
-      <input className={s.input} type={type} value={value} onChange={event => onChange(event.target.value)} />
+      <input className={s.input} type={type} value={value} placeholder={placeholder} onChange={event => onChange(event.target.value)} />
     </label>
   );
 }
@@ -996,6 +1023,9 @@ function createEventDraft(definition: GlobalEventJsonDefinition): EventDraft {
     id: definition.id,
     title: definition.title,
     description: definition.description ?? "",
+    notificationLevel: definition.notificationLevel ?? "force",
+    hint: definition.hint ?? "",
+    eventsToForesee: definition.eventsToForesee?.join(", ") ?? "",
     imageId: definition.imageId ?? "",
     imageAlt: definition.imageAlt ?? "",
     triggerType: definition.trigger.type,
@@ -1029,6 +1059,10 @@ function createEventDefinition(draft: EventDraft): GlobalEventJsonDefinition {
   };
 
   if (draft.description.trim()) definition.description = draft.description.trim();
+  definition.notificationLevel = draft.notificationLevel;
+  if (draft.hint.trim()) definition.hint = draft.hint.trim();
+  const eventsToForesee = parseKeywordList(draft.eventsToForesee);
+  if (eventsToForesee.length) definition.eventsToForesee = eventsToForesee;
   if (draft.imageId) definition.imageId = draft.imageId;
   if (draft.imageAlt.trim()) definition.imageAlt = draft.imageAlt.trim();
   if (draft.requirements.length) definition.requirements = draft.requirements.map(createRequirement);

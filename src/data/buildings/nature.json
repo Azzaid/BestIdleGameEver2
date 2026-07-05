@@ -126,6 +126,8 @@
     "kind": "building",
     "description": "Part of wild mycelium. Interesting what it can grow into.",
     "keywords": [
+      "nature",
+      "building",
       "fungi",
       "boost"
     ],
@@ -163,7 +165,8 @@
         "multiplier": 1.25
       }
     ],
-    "adjacencyDescription": "Neighboring fungi get stronger"
+    "adjacencyDescription": "Neighboring fungi get stronger",
+    "visualAssetId": "building_nature_mycelium"
   },
   {
     "id": "buildings.nature.saplings",
@@ -171,6 +174,8 @@
     "kind": "building",
     "description": "Field of saplings growing in the wild. They are not very tall, but they are very strong.",
     "keywords": [
+      "nature",
+      "building",
       "plants",
       "boost"
     ],
@@ -187,6 +192,13 @@
           "production"
         ],
         "additive": 4
+      },
+      {
+        "valueId": "resource.plants",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
       }
     ],
     "effects": [
@@ -201,7 +213,8 @@
         "multiplier": 1.25
       }
     ],
-    "adjacencyDescription": "Neighboring plants get stronger"
+    "adjacencyDescription": "Neighboring plants get stronger",
+    "visualAssetId": "building_nature_saplings"
   },
   {
     "id": "buildings.nature.meadow",
@@ -209,6 +222,8 @@
     "kind": "building",
     "description": "A small meadow full of small wild animals.",
     "keywords": [
+      "nature",
+      "building",
       "animals",
       "boost"
     ],
@@ -225,6 +240,13 @@
           "production"
         ],
         "additive": 4
+      },
+      {
+        "valueId": "resource.animals",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
       }
     ],
     "effects": [
@@ -239,6 +261,7 @@
         "multiplier": 1.25
       }
     ],
-    "adjacencyDescription": "Neighboring animals get stronger"
+    "adjacencyDescription": "Neighboring animals get stronger",
+    "visualAssetId": "building_nature_meadow"
   }
 ]

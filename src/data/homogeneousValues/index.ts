@@ -347,15 +347,19 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
     [HOMOGENEOUS_VALUE_IDS.wallPushBackDistance]: {
         id: HOMOGENEOUS_VALUE_IDS.wallPushBackDistance,
         label: "Wall Push Back Distance",
-        keywords: ["wall", "push", "pushBack", "distance"],
+        keywords: ["wall","push","pushBack","distance"],
         displayMethod: "distance",
+        resolutionMethod: "diminishingReturn",
+        diminishingReturnPower: 0.8,
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.wallPushBacksPerSecond]: {
         id: HOMOGENEOUS_VALUE_IDS.wallPushBacksPerSecond,
         label: "Wall Push Backs Per Second",
-        keywords: ["wall", "push", "pushBack", "rate"],
+        keywords: ["wall","push","pushBack","rate"],
         displayMethod: "default",
+        resolutionMethod: "diminishingReturn",
+        diminishingReturnPower: 0.8,
         initialValue: 0,
     },
     [HOMOGENEOUS_VALUE_IDS.wallPushBackEffectZoneSize]: {

@@ -10,7 +10,7 @@ If a mechanic does not strengthen any loop, it probably should not exist.
 
 Current implementation note, 2026-06-24:
 
-- The current prototype implements the city, research, tower design, wall, battle, upkeep/signature, unlock, global event, and statistics surfaces.
+- The current prototype implements the city, research, tower design, wall, battle, upkeep/signature, unlock, global event, and history surfaces.
 - Migration, colonies, capitals, regional travel, crises as full systems, endings, and megaprojects remain design-direction material unless represented as data stubs or global-event experiments.
 - The practical implemented loop is: place city/wall content, resolve support and signature, unlock research/content, assemble towers, trigger siege when signature exceeds controlled territory, fight in Battle, then expand controlled territory.
 

@@ -80,7 +80,7 @@ Everything should ultimately be represented through data or resolved from data t
 
 Current route/data surfaces:
 
-- Player routes: Battle, Tower, Research, City, Statistics.
+- Player routes: Battle, Tower, Research, City.
 - Debug routes: Progression, IDs, Entity Create, Gun Part Editor, Global Events.
 - Data catalogs: `src/data/buildings`, `src/data/research`, `src/data/gunParts`, `src/data/wallSegments`, `src/data/wallSuperstructures`, `src/data/enemies`, `src/data/globalEvents`, `src/data/globalModifiers`.
 - Derived ID catalog: `src/data/ids.ts`.

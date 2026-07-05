@@ -15,17 +15,20 @@ type ExecuteGlobalEventPayload = {
   eventId: string;
   actions: GlobalEventAction[];
   modifierContext: GlobalModifierApplyContext;
+  eventsToForesee?: string[];
 };
 
 const initialState: GlobalEventsState = {
   flags: [],
   executedEventIds: [],
+  eventHistoryEntries: [],
+  foreseenEventIds: [],
+  lastSeenHistoryEntryId: undefined,
   activeGlobalModifiers: {},
   triggeredEndingIds: [],
   shownCutsceneIds: [],
   pendingTechnologyUnlockIds: [],
   pendingSignals: [],
-  pendingModalEntries: [],
   pendingAbandonCity: false,
 };
 
@@ -37,18 +40,30 @@ export const globalEventsSlice = createSlice({
       state,
       action: PayloadAction<ExecuteGlobalEventPayload>,
     ) => {
+      state.eventHistoryEntries ??= state.executedEventIds.map((eventId, index) => ({
+        id: `legacy:${index}:${eventId}`,
+        eventId,
+      }));
+      state.foreseenEventIds ??= [];
+
+      state.eventHistoryEntries.push({
+        id: `event:${state.eventHistoryEntries.length}:${action.payload.eventId}`,
+        eventId: action.payload.eventId,
+      });
+
       if (!state.executedEventIds.includes(action.payload.eventId)) {
         state.executedEventIds.push(action.payload.eventId);
+      }
+
+      state.foreseenEventIds = state.foreseenEventIds.filter(eventId => eventId !== action.payload.eventId);
+      for (const eventId of action.payload.eventsToForesee ?? []) {
+        if (eventId !== action.payload.eventId) addUnique(state.foreseenEventIds, eventId);
       }
 
       for (const eventAction of action.payload.actions) {
         executeGlobalEventAction(state, eventAction, action.payload.modifierContext);
       }
 
-      state.pendingModalEntries.push({
-        eventId: action.payload.eventId,
-        actions: action.payload.actions,
-      });
     },
     applyGlobalModifier: (
       state,
@@ -86,8 +101,8 @@ export const globalEventsSlice = createSlice({
     clearPendingAbandonCity: (state) => {
       state.pendingAbandonCity = false;
     },
-    dismissGlobalEventModalEntries: (state) => {
-      state.pendingModalEntries = [];
+    markGlobalHistorySeen: (state, action: PayloadAction<string | undefined>) => {
+      state.lastSeenHistoryEntryId = action.payload;
     },
   },
 });
@@ -97,9 +112,9 @@ export const {
   applyGlobalModifier,
   clearPendingGlobalSignals,
   clearPendingAbandonCity,
-  dismissGlobalEventModalEntries,
   enqueueGlobalSignal,
   executeGlobalEventActions,
+  markGlobalHistorySeen,
   removeGlobalModifier,
   removeGlobalEventFlag,
 } = globalEventsSlice.actions;

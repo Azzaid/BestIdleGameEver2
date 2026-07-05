@@ -46,10 +46,15 @@ export type GlobalEventAction =
   | {type: "addFlag"; flagId: string}
   | {type: "removeFlag"; flagId: string};
 
+export type GlobalEventNotificationLevel = "silent" | "notify" | "force";
+
 export type GlobalEventDefinition = {
   id: string;
   title: string;
   description?: string;
+  notificationLevel?: GlobalEventNotificationLevel;
+  hint?: string;
+  eventsToForesee?: string[];
   imageSrc?: string;
   imageAlt?: string;
   trigger: GlobalEventTrigger;

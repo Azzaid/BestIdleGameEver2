@@ -10,7 +10,7 @@ import BattlePage from './pages/Battle/BattlePage'
 import BuildPage from './pages/Build/BuildPage'
 import ResearchPage from './pages/Research/ResearchPage'
 import CityPage from './pages/City/CityPage'
-import StatisticsPage from './pages/Statistics/StatisticsPage'
+import HistoryPage from './pages/History/HistoryPage.tsx'
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedDispatch, useTypedSelector} from "./store/hooks.ts";
 import {selectCitySignatureStatus} from "./store/upkeep/selectors.ts";
@@ -21,7 +21,6 @@ import { NotificationCenter } from "./components/Notifications/NotificationCente
 import { useResearchAutoUnlock } from "./pages/Research/useResearchAutoUnlock.ts";
 import {CityExpansionControl} from "./components/CityExpansionControl.tsx";
 import {useContentAutoUnlock} from "./hooks/useContentAutoUnlock.ts";
-import {GlobalEventModal} from "./components/GlobalEvents/GlobalEventModal.tsx";
 import {useGlobalEventSignals} from "./components/GlobalEvents/useGlobalEventSignals.ts";
 
 const DevToolsNavLinks = import.meta.env.DEV
@@ -163,7 +162,7 @@ function AppFrame() {
                               <Link className={appTheme.navBarLink} to="/city">City</Link>
                           </li>
                           <li>
-                              <Link className={appTheme.navBarLink} to="/statistics">Statistics</Link>
+                              <Link className={appTheme.navBarLink} to="/history">History</Link>
                           </li>
                           {isDebugToolsEnabled && DevToolsNavLinks && (
                               <Suspense fallback={null}>
@@ -176,7 +175,6 @@ function AppFrame() {
                       </div>
                   </nav>
                   <NotificationCenter />
-                  <GlobalEventModal />
                   {shouldShowUpkeepBar && (
                       <UpkeepBar rightSlot={shouldShowCityExpansionControl ? <CityExpansionControl /> : undefined}/>
                   )}
@@ -194,7 +192,7 @@ function AppFrame() {
                           <Route path="/build" element={isBuildBlocked ? <BlockedPage title="Build Blocked" /> : <BuildPage/>} />
                           <Route path="/research" element={signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />} />
                           <Route path="/city" element={<CityPage />} />
-                          <Route path="/statistics" element={<StatisticsPage />} />
+                          <Route path="/history" element={<HistoryPage />} />
                           {DevToolsRouteGate && (
                               <Route
                                   path="/*"

@@ -10,7 +10,7 @@ import {
     type CityBiome,
 } from "../../../../models/city/hexBackgrounds.ts";
 import {
-    axialCoordinateToPixelPosition, clampPan,
+    axialCoordinateToPixelPosition, axialDistance, clampPan,
     computeCityBounds,
     getHexagonPolygonPoints, maxZoomThatFits,
     pixelPositionToAxialCoordinate,
@@ -33,6 +33,7 @@ const HEX_BACKGROUND_PADDING = 1.04;
 const HEX_BACKGROUND_WIDTH = hexWidth * HEX_BACKGROUND_PADDING;
 const HEX_BACKGROUND_HEIGHT = HEX_RADIUS_PX * 2 * HEX_BACKGROUND_PADDING;
 const UNCLAIMED_LAND_SHADE_OPACITY = 0.32;
+const OUTER_UNCLAIMED_LAND_SHADE_OPACITY = 0.54;
 const INITIAL_ZOOM_FACTOR = 1.35;
 const MAX_ZOOM_FACTOR = 5;
 const WHEEL_ZOOM_IN_FACTOR = 1.12;
@@ -102,14 +103,28 @@ export default function CityHex({
 
     const cellsByKey = useMemo(() => new Map(cells.map(cell => [cell.cellKey, cell])), [cells]);
 
-    const cityBounds = useMemo(
-        () => computeCityBounds(preparedCells, HEX_RADIUS_PX),
-        [preparedCells]
+    const claimedRadius = useMemo(
+        () => preparedCells.reduce((radius, cell) => (
+            cell.isUnclaimed
+                ? radius
+                : Math.max(radius, axialDistance({column: 0, row: 0}, cell))
+        ), 0),
+        [preparedCells],
+    );
+
+    const cameraCells = useMemo(
+        () => preparedCells.filter(cell => axialDistance({column: 0, row: 0}, cell) <= claimedRadius + 1),
+        [claimedRadius, preparedCells],
+    );
+
+    const viewBounds = useMemo(
+        () => computeCityBounds(cameraCells.length ? cameraCells : preparedCells, HEX_RADIUS_PX),
+        [cameraCells, preparedCells]
     );
 
     const cameraBounds = useMemo(
-        () => computePointBounds(preparedCells) ?? cityBounds,
-        [cityBounds, preparedCells],
+        () => computePointBounds(cameraCells) ?? viewBounds,
+        [cameraCells, viewBounds],
     );
 
     // Camera state
@@ -149,7 +164,7 @@ export default function CityHex({
     const selectedOutlineKey = selectedPreparedCell ? getOutlineKey(selectedPreparedCell) : null;
     const hoveredOutlineKey = hoveredPreparedCell ? getOutlineKey(hoveredPreparedCell) : null;
 
-    const viewExtent = getViewExtent(cityBounds);
+    const viewExtent = getViewExtent(viewBounds);
     const viewBoxX = -viewExtent;
     const viewBoxY = -viewExtent;
     const viewBoxW = viewExtent * 2;
@@ -514,6 +529,9 @@ export default function CityHex({
                         : buildingKey;
                     const fallbackFill = getFallbackFill(fallbackName ?? cellKey, kind);
                     const visibleHexSides = HEX_SIDE_DEFINITIONS.filter(side => !isSharedStructureSide(cell, side, cellsByKey));
+                    const unclaimedShadeOpacity = axialDistance({column: 0, row: 0}, cell) > claimedRadius + 1
+                        ? OUTER_UNCLAIMED_LAND_SHADE_OPACITY
+                        : UNCLAIMED_LAND_SHADE_OPACITY;
 
                     return (
                         <g
@@ -618,7 +636,7 @@ export default function CityHex({
                                 <use
                                     href="#hexagonPath"
                                     fill="#050508"
-                                    opacity={UNCLAIMED_LAND_SHADE_OPACITY}
+                                    opacity={unclaimedShadeOpacity}
                                     clipPath={`url(#${clipId})`}
                                 />
                             )}
