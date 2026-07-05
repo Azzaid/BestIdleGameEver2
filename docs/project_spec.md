@@ -100,6 +100,7 @@ Content data layout:
 - `src/data/globalEvents` and `src/data/globalModifiers` define event content, event images, flags, and global modifiers.
 - `src/data/ids.ts` derives grouped content IDs from the active atlases for buildings, research, gun parts, enemies, walls, and superstructures.
 - `/ids` renders an audit table that compares registered ids against data definitions, progression rules, and available assets.
+- Content auto-unlock notifications are batched when several buildings, tower parts, walls, or superstructures unlock together. Discovery notifications append notification-style History entries; temporary visibility changes remain notification-only, and paired "now available" messages are suppressed when discovery already covered the same item.
 
 Texture asset layout:
 
@@ -226,9 +227,9 @@ Tower parts use the same `values` and `effects` fields as other homogeneous enti
 
 Unlocked technologies may contribute city-wide homogeneous values and effects. Technology effects are assigned `radius: Infinity` by the technology factory, and technology homogeneous sources are included in effective city resolution alongside buildings, walls, and towers.
 
-Global events use `GlobalEventDefinition` data to unify migrations, catastrophes, endings, cutscenes, and later meta-game events. A global event is driven by a trigger, requirements, optional blocking requirements, notification level, optional hint text, optional foreseen event ids, and actions. Events should decide that an action happens, but should not calculate gameplay values or effects directly.
+Global events use `GlobalEventDefinition` data to unify migrations, catastrophes, endings, cutscenes, victories, and later meta-game events. A global event is driven by a trigger, requirements, optional blocking requirements, notification level, optional hint text, optional foreseen event ids, and actions. Events should decide that an action happens, but should not calculate gameplay values or effects directly.
 
-Runtime event triggering flows through the global signal system. Gameplay code emits domain-level messages such as game start, city expansion, migration, building discovery, building construction, technology unlock, siege start, siege success, siege failure, and requirements changed. The global event signal hook is the single processor that compares pending messages against global event definitions, checks requirements against current state or an attached message snapshot, applies actions, updates unique executed event ids, appends happened event history entries, updates foreseen-event ids, emits notifications, and redirects force-level events to the History page. Direct feature-level execution of global events should be avoided; features should emit signals instead.
+Runtime event triggering flows through the global signal system. Gameplay code emits domain-level messages such as game start, city expansion, migration, building discovery, building construction, technology unlock, siege start, siege success, siege failure, and requirements changed. The global event signal hook is the single processor that compares pending messages against global event definitions, checks requirements against current state or an attached message snapshot, applies actions, updates unique executed event ids, appends every happened event to History, updates foreseen-event ids, emits notifications and a History nav marker for notify-level events, redirects force-level events to the History page, and opens a full-screen VFX overlay for victory-level events. Silent events still enter History, but do not raise player-facing UI by themselves. Direct feature-level execution of global events should be avoided; features should emit signals instead.
 
 Persistent meta-game bonuses use `GlobalModifierDefinition` data. Applying a global modifier loads the existing modifier instance from Redux save state, creates it if missing, runs the modifier's `applyRules`, updates internal state, and saves the same instance back under its modifier id. Reapplying the same modifier updates accumulated state instead of creating duplicates. Global events can also remove an active global modifier by id, which deletes its saved instance and removes its homogeneous effects from later city resolution. Global modifier effects are generated from the current modifier state and enter effective city resolution as standard homogeneous value effects, alongside technology effects.
 
@@ -371,8 +372,9 @@ Current battle/wall behavior:
 - Battle uses a growing threat counter instead of a player-facing wave counter.
 - Threat starts at 80% of current city signature and grows until it reaches city signature or the siege breaks the wall line.
 - If the city is not besieged, battle still runs as constant wall pressure with threat locked to current city signature.
-- Enemies stop once their hit radius reaches the wall.
-- Stopped enemies add siege pressure equal to their pressure reduced by the wall's ignored threat.
+- Melee enemies stop once their hit radius reaches the wall. Ranged enemies with `shotDistance` stop when their hit radius reaches that distance from the wall.
+- Stopped melee enemies and ranged enemies at their shot distance add siege pressure equal to their pressure reduced by the wall's ignored threat.
+- `randomLines` monster movement picks a new downward-and-sideways trajectory every `sameTrajectoryTimeSeconds`, using `speedPixelsPerSecond` for forward movement and `wobbleAmplitudePixels` as the sideways speed scale.
 - Wall push-back and zone DoT values affect enemies inside rectangular battlefield zones measured upward from the wall contact line. Push-back speed is derived from push-back distance so the configured distance is covered over 0.5 seconds.
 - If combined siege pressure exceeds combined wall resilience, battle ends before the city signature target and the city retreats by one radius.
 - On retreat, cells outside the new radius are lost and the new top row is rebuilt as wall.
@@ -413,6 +415,8 @@ Current implementation:
 - `src/models/battle/resolveTowerAssembly.ts` resolves stats, support costs, keywords, targeting behavior, warnings, and synergies.
 - Build and Battle share resolved tower state.
 - Tower projectile radius, projectile spread, trigger tolerance, maximum range, minimum range, and maximum rotation angle are resolved as homogeneous tower values alongside damage, speed, range, reload, rotation, and area. Maximum range, minimum range, and maximum rotation angle default to unlimited when no source contributes them. If multiple sources contribute maximum range or maximum rotation angle, the lower value wins; if multiple sources contribute minimum range, the higher value wins.
+- Monster armor is a flat reduction from incoming battle damage resolved through the damage resolver. `armorPiercing` ignores half of this flat armor value, while `ignoreArmor` bypasses it completely.
+- Wall zone DoT damage carries runtime damage keywords from wall entities that contribute `wall.zoneDotDamage`, plus the `additionalKeywords` on those damage contributions. This lets wall superstructures such as poisonous spore mushrooms mark their DoT as `poison`, `antiAir`, `armorPiercing`, or `ignoreArmor`.
 - Gun stat values from tower parts stay inside the specific mounted gun assembly. Only city-scoped tower-part values enter city homogeneous totals, which prevents stats such as projectile damage from being summed into the city and reused by other towers.
 - Shared tower content starts in `src/data/gunParts`, with tower parts split by development vector.
 - Battle is blocked until the player assembles the first tower and commits it with Rebuild.
@@ -456,7 +460,7 @@ Current implementation:
 - Node content is structured with summary, unlocks, costs, and notes.
 - Technologies auto-unlock when their prerequisite technologies, city buildings, built multistructures, upkeep, Aether atmosphere, and siege-state requirements are satisfied.
 - Research nodes show whether they are locked, currently unlocking, or researched; the page no longer exposes a manual research purchase button.
-- Newly unlocked technologies emit app notifications through the shared notification center.
+- Newly unlocked technologies emit app notifications through the shared notification center and append notification-style entries to History.
 - Node internals render through custom SVG/HTML foreignObject content.
 - The Progression page renders a content dependency graph. Every node is colored by development vector. Shape communicates content type: buildings are square, superstructures are rectangular, technologies are heavily rounded rectangles, and tower parts are circular.
 - Aether progression requirements use atmospheric states instead of raw numbers: Veil, Mana Flows, and Death. Each level is derived from the unified resource output total divided by city hex count, rounded down and clamped to levels 1 through 5. Biology progression requirements expose Biodiversity as a decimal value with two digits.
@@ -658,7 +662,7 @@ The current save includes:
 - tower configurations;
 - support and controlled territory state;
 - unlock state;
-- global event flags, modifiers, endings, cutscene history, happened event history, foreseen event hints, and the last seen History event.
+- global event flags, modifiers, endings, cutscene history, happened event history, foreseen event hints, unseen notify-level history markers, pending victory overlays, and the last seen History event.
 
 The player save intentionally excludes debug mode and editor UI state. Debug mode is persisted separately for development so Vite-triggered reloads do not drop the user out of dev-only routes.
 

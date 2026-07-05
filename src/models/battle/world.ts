@@ -24,6 +24,7 @@ export interface WallZoneEffects {
   zoneDotDamage: number;
   zoneDotTicksPerSecond: number;
   zoneDotZoneSize: number;
+  zoneDotKeywords: readonly string[];
 }
 
 export interface ProjectileInfo {

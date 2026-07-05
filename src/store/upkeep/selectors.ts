@@ -121,6 +121,7 @@ export const selectEffectiveWallResolution = createSelector(
             zoneDotDamage: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage] ?? 0,
             zoneDotTicksPerSecond: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotTicksPerSecond] ?? 0,
             zoneDotZoneSize: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0,
+            zoneDotKeywords: collectWallZoneDotKeywords(cityResolution.resolvedWallSegments),
             homogeneousValues,
             homogeneousResolvedValues: resolvedWallValues,
         };
@@ -209,6 +210,21 @@ function createTowerEntities(
             effects: resolved.effects,
         };
     });
+}
+
+function collectWallZoneDotKeywords(wallEntities: readonly HomogeneousResolvedEntity[]): string[] {
+    return [...new Set(wallEntities.flatMap((entity) => {
+        const dotDamageContributions = entity.resolvedContributions.filter((value) => (
+            value.valueId === HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage
+        ));
+
+        if (dotDamageContributions.length === 0) return [];
+
+        return [
+            ...entity.effectiveKeywords,
+            ...dotDamageContributions.flatMap((value) => value.additionalKeywords ?? []),
+        ];
+    }))].sort();
 }
 
 function getTowerEntityId(towerId: string): string {

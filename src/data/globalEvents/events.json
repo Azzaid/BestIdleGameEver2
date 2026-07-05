@@ -118,5 +118,32 @@
       }
     ],
     "description": "Few houses more. You starting to attract attention."
+  },
+  {
+    "id": "power_of_man",
+    "title": "Power of man",
+    "trigger": {
+      "type": "buildingConstructed",
+      "buildingId": "buildings.medieval.university"
+    },
+    "once": true,
+    "priority": 0,
+    "actions": [],
+    "description": "Your empire has grown vast and strong.\n\nThe wilderness has been reclaimed. Roads are safe once more. Borders are watched day and night.\n\nFar from the frontier, people have begun to forget what it means to carry a sword.\n\nService on the border is no longer a duty. It has become a profession, rewarded with gold instead of necessity.\n\nIn a world where life was cheap and only strength endured, you carved out a place where ordinary people could simply live.\n\nA sanctuary.\n\nWill it endure?\n\nOr will plague, forgotten magic, or the relics of the old world one day bring it to ruin?\n\nOnly time will answer.\n\nFor now, those who dream of another path may leave the safety of the Empire.\n\nBeyond the frontier, the wilderness still awaits.",
+    "notificationLevel": "victory",
+    "imageId": "power_of_man",
+    "imageAlt": "Power of man",
+    "requirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.people",
+        "amount": 100
+      },
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.gold",
+        "amount": 100
+      }
+    ]
   }
 ]

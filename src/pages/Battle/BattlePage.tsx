@@ -110,6 +110,7 @@ const BattlePage = () => {
         zoneDotDamage: wallResolution.zoneDotDamage,
         zoneDotTicksPerSecond: wallResolution.zoneDotTicksPerSecond,
         zoneDotZoneSize: wallResolution.zoneDotZoneSize,
+        zoneDotKeywords: wallResolution.zoneDotKeywords,
     }), [
         wallResolution.pushBackDistance,
         wallResolution.pushBacksPerSecond,
@@ -117,6 +118,7 @@ const BattlePage = () => {
         wallResolution.zoneDotDamage,
         wallResolution.zoneDotTicksPerSecond,
         wallResolution.zoneDotZoneSize,
+        wallResolution.zoneDotKeywords,
     ]);
     const monsterMovementModifiers = useMemo(() => ({
         speedFlat: monsterModifierValues.speedFlat,

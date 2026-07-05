@@ -3,11 +3,11 @@
     "id": "enemies.wasteland.scrapling",
     "displayName": "Scrapling",
     "minimumCityVisibilityThreshold": 0,
-    "strengthCost": 8,
-    "selectionWeight": 5,
+    "strengthCost": 5,
+    "selectionWeight": 7,
     "kind": "melee",
     "pressure": 2,
-    "maxHitPoints": 2,
+    "maxHitPoints": 10,
     "armor": 0,
     "hitRadius": 12,
     "keywords": [
@@ -21,7 +21,7 @@
     "swarmSizeMax": 5,
     "movement": {
       "kind": "wallboundWobble",
-      "speedPixelsPerSecond": 58,
+      "speedPixelsPerSecond": 65,
       "wobbleAmplitudePixels": 14
     }
   },
@@ -29,12 +29,12 @@
     "id": "enemies.wasteland.platedCrawler",
     "displayName": "Plated Crawler",
     "minimumCityVisibilityThreshold": 100,
-    "strengthCost": 22,
+    "strengthCost": 15,
     "selectionWeight": 2,
     "kind": "melee",
-    "pressure": 8,
-    "maxHitPoints": 10,
-    "armor": 3,
+    "pressure": 15,
+    "maxHitPoints": 30,
+    "armor": 5,
     "hitRadius": 18,
     "keywords": [
       "armored"
@@ -43,7 +43,7 @@
       "textureKey": "enemy_plated_crawler"
     },
     "movement": {
-      "kind": "wallboundWobble",
+      "kind": "straight",
       "speedPixelsPerSecond": 34,
       "wobbleAmplitudePixels": 6
     }
@@ -56,8 +56,8 @@
     "selectionWeight": 2.5,
     "kind": "ranged",
     "pressure": 5,
-    "maxHitPoints": 4,
-    "armor": 1,
+    "maxHitPoints": 15,
+    "armor": 0,
     "hitRadius": 15,
     "keywords": [
       "ranged"
@@ -67,9 +67,10 @@
     },
     "shotDistance": 180,
     "movement": {
-      "kind": "wallboundWobble",
-      "speedPixelsPerSecond": 42,
-      "wobbleAmplitudePixels": 10
+      "kind": "randomLines",
+      "speedPixelsPerSecond": 70,
+      "wobbleAmplitudePixels": 60,
+      "sameTrajectoryTimeSeconds": 3
     }
   }
 ]

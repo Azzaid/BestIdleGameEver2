@@ -30,6 +30,7 @@ export type WallResolution = {
     zoneDotDamage: number;
     zoneDotTicksPerSecond: number;
     zoneDotZoneSize: number;
+    zoneDotKeywords: string[];
     homogeneousValues: Record<string, number>;
     homogeneousResolvedValues: HomogeneousResolvedValueMap;
 };

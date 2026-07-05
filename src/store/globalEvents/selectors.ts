@@ -6,7 +6,7 @@ import {
   type GlobalSignalMessage,
 } from "../../models/globalEvents.ts";
 import type {RootState} from "../../models/store/appStore.ts";
-import type {GlobalEventHistoryEntry} from "../../models/store/globalEvents.ts";
+import type {GlobalEventHistoryEntry, VictoryEventEntry} from "../../models/store/globalEvents.ts";
 import {selectRequirementResolutionData} from "../unlocks/selectors.ts";
 
 export const selectGlobalEventFlags = (state: RootState): string[] => state.globalEvents.flags;
@@ -19,6 +19,7 @@ export const selectGlobalEventHistoryEntries = (state: RootState): GlobalEventHi
   }))
 );
 export const selectForeseenGlobalEventIds = (state: RootState): string[] => state.globalEvents.foreseenEventIds ?? [];
+export const selectUnseenHistoryEntryIds = (state: RootState): string[] => state.globalEvents.unseenHistoryEntryIds ?? [];
 export const selectLastSeenHistoryEntryId = (state: RootState): string | undefined => state.globalEvents.lastSeenHistoryEntryId;
 export const selectActiveGlobalModifiers = (state: RootState) => state.globalEvents.activeGlobalModifiers;
 export const selectTriggeredEndingIds = (state: RootState): string[] => state.globalEvents.triggeredEndingIds;
@@ -26,6 +27,7 @@ export const selectShownCutsceneIds = (state: RootState): string[] => state.glob
 export const selectPendingTechnologyUnlockIds = (state: RootState): string[] => state.globalEvents.pendingTechnologyUnlockIds;
 export const selectPendingGlobalSignals = (state: RootState): GlobalSignalMessage[] => state.globalEvents.pendingSignals;
 export const selectPendingAbandonCity = (state: RootState): boolean => state.globalEvents.pendingAbandonCity;
+export const selectPendingVictoryEvent = (state: RootState): VictoryEventEntry | undefined => state.globalEvents.pendingVictoryEvent;
 
 export const selectGlobalModifierHomogeneousEntities = createSelector(
   [selectActiveGlobalModifiers],

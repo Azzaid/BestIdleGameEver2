@@ -46,7 +46,7 @@ export type GlobalEventAction =
   | {type: "addFlag"; flagId: string}
   | {type: "removeFlag"; flagId: string};
 
-export type GlobalEventNotificationLevel = "silent" | "notify" | "force";
+export type GlobalEventNotificationLevel = "silent" | "notify" | "force" | "victory";
 
 export type GlobalEventDefinition = {
   id: string;

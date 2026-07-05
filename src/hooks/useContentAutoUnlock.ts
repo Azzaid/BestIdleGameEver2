@@ -4,8 +4,10 @@ import {TOWER_PARTS_BY_ID} from "../data/gunParts/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../data/wallSegments/index.ts";
 import {WALL_TOWER_BUILDINGS} from "../data/wallSuperstructures/index.ts";
 import {DEVELOPMENT_VECTORS} from "../models/DevlopmentVector.ts";
+import type {NewNotification} from "../models/notifications.ts";
 import {sendNotification} from "../lib/notifications/eventBus.ts";
 import {useTypedDispatch, useTypedSelector} from "../store/hooks.ts";
+import {addNotificationHistoryEntry} from "../store/globalEvents/slice.ts";
 import {
   selectUnlockableBuildingIds,
   selectUnlockableTowerPartIds,
@@ -45,6 +47,7 @@ export function useContentAutoUnlock(): void {
   const previousVisibleIdsRef = useRef(new Set<string>());
   const initializedVisibleIdsRef = useRef(false);
   const notifiedUnlockIdsRef = useRef(new Set<string>());
+  const suppressAvailableNotificationIdsRef = useRef(new Set<string>());
 
   const buildingNamesById = useMemo(() => {
     return Object.fromEntries(
@@ -56,43 +59,57 @@ export function useContentAutoUnlock(): void {
 
   useEffect(() => {
     const notify = initializedUnlockIdsRef.current;
+    const discoveredNotifications: ContentNotification[] = [];
 
-    unlockNewIds({
+    discoveredNotifications.push(...unlockNewIds({
       unlockableIds: unlockableBuildingIds,
       unlockedIds: unlockedBuildingIds,
       action: ids => dispatch(unlockBuildings(ids)),
       kind: "Building",
+      keyPrefix: "building",
       getName: id => buildingNamesById[id] ?? id,
       notifiedIds: notifiedUnlockIdsRef.current,
       notify,
-    });
-    unlockNewIds({
+    }));
+    discoveredNotifications.push(...unlockNewIds({
       unlockableIds: unlockableTowerPartIds,
       unlockedIds: unlockedTowerPartIds,
       action: ids => dispatch(unlockTowerParts(ids)),
       kind: "Tower part",
+      keyPrefix: "towerPart",
       getName: id => TOWER_PARTS_BY_ID[id]?.name ?? id,
       notifiedIds: notifiedUnlockIdsRef.current,
       notify,
-    });
-    unlockNewIds({
+    }));
+    discoveredNotifications.push(...unlockNewIds({
       unlockableIds: unlockableWallSegmentIds,
       unlockedIds: unlockedWallSegmentIds,
       action: ids => dispatch(unlockWallSegments(ids)),
       kind: "Wall segment",
+      keyPrefix: "wallSegment",
       getName: id => WALL_SEGMENT_BUILDINGS[id]?.name ?? id,
       notifiedIds: notifiedUnlockIdsRef.current,
       notify,
-    });
-    unlockNewIds({
+    }));
+    discoveredNotifications.push(...unlockNewIds({
       unlockableIds: unlockableWallSuperstructureIds,
       unlockedIds: unlockedWallSuperstructureIds,
       action: ids => dispatch(unlockWallSuperstructures(ids)),
       kind: "Tower",
+      keyPrefix: "wallSuperstructure",
       getName: id => WALL_TOWER_BUILDINGS[id]?.name ?? id,
       notifiedIds: notifiedUnlockIdsRef.current,
       notify,
-    });
+    }));
+
+    for (const notification of groupContentNotifications(discoveredNotifications, "discovered")) {
+      sendNotification(notification);
+      dispatch(addNotificationHistoryEntry(notification));
+    }
+
+    for (const notification of discoveredNotifications) {
+      suppressAvailableNotificationIdsRef.current.add(notification.visibilityKey);
+    }
 
     initializedUnlockIdsRef.current = true;
   }, [
@@ -109,6 +126,7 @@ export function useContentAutoUnlock(): void {
   ]);
 
   useEffect(() => {
+    const availableNotifications: ContentNotification[] = [];
     const currentVisibleIds = new Set([
       ...visibleBuildingIds.map(id => `building:${id}`),
       ...visibleTowerPartIds.map(id => `towerPart:${id}`),
@@ -124,14 +142,17 @@ export function useContentAutoUnlock(): void {
 
     for (const visibleId of currentVisibleIds) {
       if (!previousVisibleIdsRef.current.has(visibleId)) {
+        if (suppressAvailableNotificationIdsRef.current.delete(visibleId)) continue;
+
         const [kind, id] = visibleId.split(":");
         const name = getVisibleContentName(kind, id, buildingNamesById);
         const label = getVisibleContentKindLabel(kind);
 
-        sendNotification({
+        availableNotifications.push({
           title: `${label} now available`,
           message: `${name} is now available.`,
           scheme: "congratulation",
+          visibilityKey: visibleId,
         });
       }
     }
@@ -143,11 +164,16 @@ export function useContentAutoUnlock(): void {
       const name = getVisibleContentName(kind, id, buildingNamesById);
       const label = getVisibleContentKindLabel(kind);
 
-      sendNotification({
+      availableNotifications.push({
         title: `${label} no longer available`,
         message: `${name} is no longer available.`,
         scheme: "warning",
+        visibilityKey: previousVisibleId,
       });
+    }
+
+    for (const notification of groupContentNotifications(availableNotifications, "availability")) {
+      sendNotification(notification);
     }
 
     previousVisibleIdsRef.current = currentVisibleIds;
@@ -160,34 +186,91 @@ export function useContentAutoUnlock(): void {
   ]);
 }
 
+type ContentNotification = NewNotification & {
+  name?: string;
+  itemLabel?: string;
+  visibilityKey: string;
+};
+
 function unlockNewIds(options: {
   unlockableIds: readonly string[];
   unlockedIds: readonly string[];
   action: (ids: string[]) => void;
   kind: string;
+  keyPrefix: string;
   getName: (id: string) => string;
   notifiedIds: Set<string>;
   notify: boolean;
-}) {
+}): ContentNotification[] {
   const unlocked = new Set(options.unlockedIds);
   const newIds = options.unlockableIds.filter(id => !unlocked.has(id));
-  if (!newIds.length) return;
+  if (!newIds.length) return [];
 
   options.action(newIds);
 
-  if (!options.notify) return;
+  if (!options.notify) return [];
 
+  const notifications: ContentNotification[] = [];
   for (const id of newIds) {
     const notificationId = `${options.kind}:${id}`;
     if (options.notifiedIds.has(notificationId)) continue;
 
     options.notifiedIds.add(notificationId);
-    sendNotification({
+    notifications.push({
       title: `${options.kind} discovered`,
       message: `${options.getName(id)} discovered.`,
       scheme: "congratulation",
+      name: options.getName(id),
+      itemLabel: getDiscoveryItemLabel(options.keyPrefix),
+      visibilityKey: `${options.keyPrefix}:${id}`,
     });
   }
+
+  return notifications;
+}
+
+function groupContentNotifications(
+  notifications: readonly ContentNotification[],
+  mode: "discovered" | "availability",
+): NewNotification[] {
+  if (notifications.length === 0) return [];
+  if (notifications.length === 1) return [stripVisibilityKey(notifications[0])];
+
+  const title = mode === "discovered"
+    ? `${notifications.length} content items discovered`
+    : `${notifications.length} content availability changes`;
+  const message = mode === "discovered"
+    ? notifications
+      .map(notification => `- ${notification.name ?? notification.message} ${notification.itemLabel ?? "item"}`)
+      .join("\n")
+    : notifications
+      .map(notification => notification.message)
+      .join(" ");
+  const hasWarning = notifications.some(notification => notification.scheme === "warning");
+
+  return [{
+    title,
+    message,
+    scheme: hasWarning ? "warning" : "congratulation",
+  }];
+}
+
+function stripVisibilityKey(notification: ContentNotification): NewNotification {
+  return {
+    title: notification.title,
+    message: notification.message,
+    imageUrl: notification.imageUrl,
+    scheme: notification.scheme,
+    durationMs: notification.durationMs,
+  };
+}
+
+function getDiscoveryItemLabel(keyPrefix: string): string {
+  if (keyPrefix === "building") return "building";
+  if (keyPrefix === "towerPart") return "part";
+  if (keyPrefix === "wallSegment") return "wall";
+  if (keyPrefix === "wallSuperstructure") return "tower";
+  return "item";
 }
 
 function getVisibleContentName(

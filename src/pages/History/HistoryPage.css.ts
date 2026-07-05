@@ -2,72 +2,82 @@ import {style} from "@vanilla-extract/css";
 import {vars} from "../../theme/theme.css.ts";
 
 export const page = style({
-  position: "relative",
   minHeight: "100%",
-  padding: "14px 14px 92px",
+  padding: "18px 14px",
   background: vars.color.background.app,
   color: vars.color.text.primary,
 });
 
+export const book = style({
+  display: "grid",
+  maxWidth: "920px",
+  margin: "0 auto",
+  border: `1px solid ${vars.color.border.strong}`,
+  borderRadius: 6,
+  background: vars.color.background.surface,
+  boxShadow: vars.color.shadow.card,
+  overflow: "hidden",
+});
+
 export const header = style({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginBottom: "12px",
+  display: "grid",
+  gap: "2px",
+  padding: "18px 22px 16px",
+  borderBottom: `1px solid ${vars.color.border.default}`,
+  background: vars.color.background.navbar,
+});
+
+export const kicker = style({
+  margin: 0,
+  color: vars.color.text.muted,
+  fontFamily: "ui-monospace, SFMono-Regular, Consolas, Liberation Mono, monospace",
+  fontSize: "0.72rem",
+  fontWeight: 800,
+  textTransform: "uppercase",
 });
 
 export const title = style({
   margin: 0,
   color: vars.color.text.heading,
-  fontSize: "1.25rem",
+  fontSize: "1.35rem",
 });
 
 export const timeline = style({
   display: "grid",
-  gap: "10px",
-  maxWidth: "920px",
-  margin: "0 auto",
+  padding: "0 22px",
 });
 
 export const emptyState = style({
   margin: 0,
-  padding: "14px",
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: 6,
-  background: vars.color.background.surface,
+  padding: "18px 0",
   color: vars.color.text.muted,
 });
 
 export const eventCard = style({
   display: "grid",
-  gridTemplateColumns: "minmax(180px, 280px) minmax(0, 1fr)",
   gap: "12px",
-  scrollMarginTop: "76px",
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: 6,
-  background: vars.color.background.surface,
-  overflow: "hidden",
-  transition: "border-color 180ms ease, box-shadow 180ms ease",
-  "@media": {
-    "(max-width: 720px)": {
-      gridTemplateColumns: "1fr",
-    },
-  },
+  scrollMarginTop: "56px",
+  padding: "18px 0",
+  borderBottom: `1px solid ${vars.color.border.default}`,
+  background: "transparent",
+  transition: "background-color 180ms ease, box-shadow 180ms ease",
 });
 
 export const eventCardHighlighted = style([
   eventCard,
   {
-    borderColor: vars.color.brand.primary,
-    boxShadow: `0 0 0 2px ${vars.color.border.focus}`,
+    background: vars.color.state.selectedBg,
+    boxShadow: `inset 3px 0 0 ${vars.color.brand.primary}`,
   },
 ]);
 
 export const eventImage = style({
   width: "100%",
-  height: "100%",
-  minHeight: "190px",
+  maxHeight: "420px",
+  aspectRatio: "16 / 9",
   objectFit: "cover",
+  borderRadius: 4,
+  border: `1px solid ${vars.color.border.default}`,
   background: vars.color.background.app,
 });
 
@@ -75,16 +85,16 @@ export const eventContent = style({
   display: "grid",
   alignContent: "start",
   gap: "8px",
-  padding: "12px",
+  minWidth: 0,
 });
 
 export const eventMeta = style({
   display: "flex",
-  gap: "8px",
+  gap: "10px",
   flexWrap: "wrap",
   color: vars.color.text.muted,
   fontFamily: "ui-monospace, SFMono-Regular, Consolas, Liberation Mono, monospace",
-  fontSize: "0.76rem",
+  fontSize: "0.74rem",
   textTransform: "uppercase",
 });
 
@@ -97,42 +107,32 @@ export const eventTitle = style({
 export const eventDescription = style({
   margin: 0,
   color: vars.color.text.primary,
-  lineHeight: 1.48,
+  lineHeight: 1.55,
   whiteSpace: "pre-line",
 });
 
 export const eventHint = style({
-  margin: 0,
+  margin: "2px 0 0",
   padding: "8px 10px",
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: 4,
+  borderLeft: `3px solid ${vars.color.border.focus}`,
   background: vars.color.background.app,
   color: vars.color.text.muted,
-  lineHeight: 1.4,
+  lineHeight: 1.45,
 });
 
 export const foreseenPanel = style({
-  position: "fixed",
-  left: "50%",
-  bottom: 0,
-  zIndex: 80,
   display: "grid",
-  width: "min(720px, calc(100vw - 20px))",
-  maxHeight: "42px",
+  margin: "0 22px",
+  maxHeight: "44px",
   overflow: "hidden",
-  transform: "translateX(-50%)",
-  border: `1px solid ${vars.color.border.default}`,
-  borderBottom: 0,
-  borderRadius: "6px 6px 0 0",
-  background: vars.color.background.surface,
-  boxShadow: vars.color.shadow.popover,
+  borderBottom: `1px solid ${vars.color.border.default}`,
   transition: "max-height 180ms ease",
 });
 
 export const foreseenPanelOpen = style([
   foreseenPanel,
   {
-    maxHeight: "min(46vh, 360px)",
+    maxHeight: "360px",
   },
 ]);
 
@@ -140,22 +140,22 @@ export const foreseenToggle = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  minHeight: "42px",
+  minHeight: "44px",
   border: 0,
-  borderBottom: `1px solid ${vars.color.border.default}`,
-  padding: "8px 12px",
-  background: vars.color.background.navbar,
+  padding: 0,
+  background: "transparent",
   color: vars.color.text.heading,
   cursor: "pointer",
   fontWeight: 800,
+  textAlign: "left",
 });
 
 export const foreseenContent = style({
   display: "grid",
-  gap: "8px",
-  maxHeight: "calc(min(46vh, 360px) - 42px)",
+  gap: "10px",
+  maxHeight: "316px",
   overflowY: "auto",
-  padding: "10px",
+  padding: "0 0 16px",
 });
 
 export const foreseenEmpty = style({
@@ -166,20 +166,19 @@ export const foreseenEmpty = style({
 export const foreseenItem = style({
   display: "grid",
   gap: "4px",
-  padding: "8px 10px",
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: 4,
-  background: vars.color.background.app,
+  padding: "0 0 10px 12px",
+  borderLeft: `3px solid ${vars.color.border.focus}`,
 });
 
 export const foreseenTitle = style({
   margin: 0,
   color: vars.color.text.heading,
-  fontSize: "0.9rem",
+  fontSize: "0.94rem",
 });
 
 export const foreseenHint = style({
   margin: 0,
   color: vars.color.text.muted,
-  lineHeight: 1.4,
+  lineHeight: 1.45,
+  whiteSpace: "pre-line",
 });

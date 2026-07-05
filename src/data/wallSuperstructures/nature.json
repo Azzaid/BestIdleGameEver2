@@ -33,8 +33,81 @@
           "push"
         ],
         "additive": 96
+      },
+      {
+        "valueId": "resource.animals",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
       }
     ],
-    "visualAssetId": "wallSuperstructures.nature.tentacleSquid"
+    "visualAssetId": "wallSuperstructures.nature.tentacleSquid",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.tentacles"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueLessThan",
+        "valueId": "nature.bioDisbalance",
+        "amount": 3
+      }
+    ]
+  },
+  {
+    "id": "wallSuperstructures.nature.toxicPuffShrooms",
+    "visualAssetId": "wallSuperstructures.nature.toxicPuffShrooms",
+    "name": "New Entity",
+    "keywords": [
+      "nature",
+      "wallSuperstructure"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.mushrooms"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueLessThan",
+        "valueId": "nature.bioDisbalance",
+        "amount": 3
+      }
+    ],
+    "values": [
+      {
+        "valueId": "wall.zoneDotDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "wall.zoneDotTicksPerSecond",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 0.3
+      },
+      {
+        "valueId": "wall.zoneDotZoneSize",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 50
+      },
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      }
+    ],
+    "description": "Tiny but deadly. Lets just hope thad wind will blow in the enemy dirrection."
   }
 ]

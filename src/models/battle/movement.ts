@@ -23,8 +23,11 @@ export interface MovementWobble extends MovementBase {
 export interface MovementPolyline extends MovementBase {
   kind: 'polyline';
   speedPixelsPerSecond: number;
-  waypoints: Vector2[];
-  currentIndex: number;
+  lateralSpeedPixelsPerSecond: number;
+  sameTrajectoryTimeSeconds: number;
+  trajectoryRemainingSeconds: number;
+  currentTarget: Vector2 | null;
+  bounds?: { x0: number; y0: number; x1: number; y1: number };
 }
 
 export interface MovementWander extends MovementBase {

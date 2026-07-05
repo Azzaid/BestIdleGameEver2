@@ -36,26 +36,36 @@ export function MonsterMovementSystem(world: World, dt: number) {
         break;
       }
       case 'polyline': {
-        const waypoint = movement.waypoints[movement.currentIndex];
-        if (waypoint) {
-          const deltaX = waypoint.x - transform.position.x;
-          const deltaY = waypoint.y - transform.position.y;
-          const distanceToWaypoint = Math.hypot(deltaX, deltaY);
-          const stepDistance = getMonsterMovementSpeed(world, movement.speedPixelsPerSecond) * dt;
-          const directionRadians = Math.atan2(deltaY, deltaX);
-
-          if (distanceToWaypoint <= stepDistance) {
-            transform.position.x = waypoint.x;
-            transform.position.y = waypoint.y;
-            movement.currentIndex++;
-          } else {
-            transform.position.x += (deltaX / distanceToWaypoint) * stepDistance;
-            transform.position.y += (deltaY / distanceToWaypoint) * stepDistance;
-          }
-
-          transform.rotationRadians = directionRadians;
-          applyMonsterSway(world, entityId, movement, transform, directionRadians, dt);
+        if (!movement.currentTarget || movement.trajectoryRemainingSeconds <= 0) {
+          movement.currentTarget = createRandomPolylineTarget(movement, transform);
+          movement.trajectoryRemainingSeconds = Math.max(0.05, movement.sameTrajectoryTimeSeconds);
         }
+
+        const deltaX = movement.currentTarget.x - transform.position.x;
+        const deltaY = movement.currentTarget.y - transform.position.y;
+        const distanceToTarget = Math.hypot(deltaX, deltaY);
+        if (distanceToTarget <= 1e-3) {
+          movement.currentTarget = null;
+          movement.trajectoryRemainingSeconds = 0;
+          break;
+        }
+
+        const stepSeconds = Math.min(dt, movement.trajectoryRemainingSeconds);
+        const stepDistance = getMonsterMovementSpeed(world, movement.speedPixelsPerSecond) * stepSeconds;
+        const directionRadians = Math.atan2(deltaY, deltaX);
+
+        if (distanceToTarget <= stepDistance) {
+          transform.position.x = movement.currentTarget.x;
+          transform.position.y = movement.currentTarget.y;
+          movement.currentTarget = null;
+          movement.trajectoryRemainingSeconds = 0;
+        } else {
+          transform.position.x += (deltaX / distanceToTarget) * stepDistance;
+          transform.position.y += (deltaY / distanceToTarget) * stepDistance;
+          movement.trajectoryRemainingSeconds -= stepSeconds;
+        }
+        transform.rotationRadians = directionRadians;
+        applyMonsterSway(world, entityId, movement, transform, directionRadians, stepSeconds);
         break;
       }
       case 'wander': {
@@ -126,7 +136,7 @@ export function MonsterMovementSystem(world: World, dt: number) {
       }
     }
 
-    stopEnemyAtWall(world, entityId, enemy.hitRadius);
+    stopEnemyAtEngagementLine(world, entityId, enemy.hitRadius, getEnemyWallEngagementDistance(enemy.kind, enemy.shotDistance));
   }
 }
 
@@ -138,6 +148,35 @@ function getMonsterMovementSpeed(world: World, baseSpeed: number) {
 function getMonsterSwayAmplitude(world: World, baseSwayAmplitude: number) {
   const { swayFlat, swayMultiplier } = world.config.monsterMovementModifiers;
   return Math.max(0, (baseSwayAmplitude + swayFlat) * swayMultiplier);
+}
+
+function createRandomPolylineTarget(
+  movement: Extract<MovementController, {kind: 'polyline'}>,
+  transform: Transform,
+) {
+  const sameTrajectoryTimeSeconds = Math.max(0.05, movement.sameTrajectoryTimeSeconds);
+  const forwardDistance = movement.speedPixelsPerSecond * sameTrajectoryTimeSeconds * randomBetween(0.5, 1);
+  const lateralDistance = movement.lateralSpeedPixelsPerSecond * sameTrajectoryTimeSeconds * randomBetween(0.5, 1);
+  const lateralSign = Math.random() < 0.5 ? -1 : 1;
+  const target = {
+    x: transform.position.x + lateralDistance * lateralSign,
+    y: transform.position.y + forwardDistance,
+  };
+
+  if (!movement.bounds) return target;
+
+  return {
+    x: clamp(target.x, movement.bounds.x0, movement.bounds.x1),
+    y: clamp(target.y, movement.bounds.y0, movement.bounds.y1),
+  };
+}
+
+function randomBetween(min: number, max: number) {
+  return min + Math.random() * (max - min);
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(value, max));
 }
 
 function applyMonsterSway(
@@ -166,13 +205,19 @@ function applyMonsterSway(
   transform.position.y += Math.sin(movementDirectionRadians + Math.PI / 2) * swayDelta;
 }
 
-function stopEnemyAtWall(world: World, entityId: number, enemyHitRadius: number) {
+function stopEnemyAtEngagementLine(world: World, entityId: number, enemyHitRadius: number, wallEngagementDistance: number) {
   const transform = world.transforms.get(entityId);
   if (!transform) return;
 
-  const wallContactY = world.config.wallContactY - enemyHitRadius;
-  if (transform.position.y < wallContactY) return;
+  const engagementY = world.config.wallContactY - wallEngagementDistance - enemyHitRadius;
+  if (transform.position.y < engagementY) return;
 
-  transform.position.y = wallContactY;
+  transform.position.y = engagementY;
   transform.rotationRadians = Math.PI / 2;
+}
+
+function getEnemyWallEngagementDistance(enemyKind: string, shotDistance: number | undefined) {
+  if (enemyKind !== 'ranged') return 0;
+
+  return Math.max(0, shotDistance ?? 0);
 }

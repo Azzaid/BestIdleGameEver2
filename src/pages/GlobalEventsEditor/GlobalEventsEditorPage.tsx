@@ -152,7 +152,7 @@ const applyRuleTypes: ApplyRuleType[] = [
   "maxStateValue",
 ];
 const modifierValueFields: GlobalModifierValueField[] = ["available", "produced", "upkeep"];
-const notificationLevels: GlobalEventNotificationLevel[] = ["silent", "notify", "force"];
+const notificationLevels: GlobalEventNotificationLevel[] = ["silent", "notify", "force", "victory"];
 const imageOptions: {value: "" | GlobalEventImageId; label: string}[] = [
   {value: "", label: "No image"},
   ...GLOBAL_EVENT_IMAGE_OPTIONS.map(image => ({value: image.id, label: image.label})),

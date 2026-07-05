@@ -3,12 +3,14 @@ import {GLOBAL_MODIFIERS} from "../../data/globalModifiers/index.ts";
 import {
   applyGlobalModifierDefinition,
   type GlobalEventAction,
+  type GlobalEventNotificationLevel,
   type GlobalSignal,
   type GlobalSignalMessage,
   type GlobalModifierApplyContext,
 } from "../../models/globalEvents.ts";
 import type {RootState} from "../../models/store/appStore.ts";
 import type {GlobalEventsState} from "../../models/store/globalEvents.ts";
+import type {NewNotification} from "../../models/notifications.ts";
 import {purchaseTech} from "../research/slice.ts";
 
 type ExecuteGlobalEventPayload = {
@@ -16,6 +18,11 @@ type ExecuteGlobalEventPayload = {
   actions: GlobalEventAction[];
   modifierContext: GlobalModifierApplyContext;
   eventsToForesee?: string[];
+  notificationLevel?: GlobalEventNotificationLevel;
+};
+
+type AddNotificationHistoryEntryPayload = NewNotification & {
+  silent?: boolean;
 };
 
 const initialState: GlobalEventsState = {
@@ -23,6 +30,7 @@ const initialState: GlobalEventsState = {
   executedEventIds: [],
   eventHistoryEntries: [],
   foreseenEventIds: [],
+  unseenHistoryEntryIds: [],
   lastSeenHistoryEntryId: undefined,
   activeGlobalModifiers: {},
   triggeredEndingIds: [],
@@ -30,6 +38,7 @@ const initialState: GlobalEventsState = {
   pendingTechnologyUnlockIds: [],
   pendingSignals: [],
   pendingAbandonCity: false,
+  pendingVictoryEvent: undefined,
 };
 
 export const globalEventsSlice = createSlice({
@@ -40,16 +49,19 @@ export const globalEventsSlice = createSlice({
       state,
       action: PayloadAction<ExecuteGlobalEventPayload>,
     ) => {
-      state.eventHistoryEntries ??= state.executedEventIds.map((eventId, index) => ({
-        id: `legacy:${index}:${eventId}`,
-        eventId,
-      }));
-      state.foreseenEventIds ??= [];
+      ensureGlobalEventHistoryState(state);
 
+      const historyEntryId = `event:${state.eventHistoryEntries.length}:${action.payload.eventId}`;
       state.eventHistoryEntries.push({
-        id: `event:${state.eventHistoryEntries.length}:${action.payload.eventId}`,
+        id: historyEntryId,
         eventId: action.payload.eventId,
       });
+      if (action.payload.notificationLevel === "notify" || action.payload.notificationLevel === "victory") {
+        addUnique(state.unseenHistoryEntryIds, historyEntryId);
+      }
+      if (action.payload.notificationLevel === "victory") {
+        state.pendingVictoryEvent = {eventId: action.payload.eventId};
+      }
 
       if (!state.executedEventIds.includes(action.payload.eventId)) {
         state.executedEventIds.push(action.payload.eventId);
@@ -63,7 +75,6 @@ export const globalEventsSlice = createSlice({
       for (const eventAction of action.payload.actions) {
         executeGlobalEventAction(state, eventAction, action.payload.modifierContext);
       }
-
     },
     applyGlobalModifier: (
       state,
@@ -101,17 +112,47 @@ export const globalEventsSlice = createSlice({
     clearPendingAbandonCity: (state) => {
       state.pendingAbandonCity = false;
     },
+    clearPendingVictoryEvent: (state) => {
+      state.pendingVictoryEvent = undefined;
+    },
+    addNotificationHistoryEntry: (state, action: PayloadAction<AddNotificationHistoryEntryPayload>) => {
+      ensureGlobalEventHistoryState(state);
+
+      const historyEntryId = `notification:${state.eventHistoryEntries.length}:${normalizeHistoryId(action.payload.title)}`;
+      state.eventHistoryEntries.push({
+        id: historyEntryId,
+        title: action.payload.title,
+        message: action.payload.message,
+        imageUrl: action.payload.imageUrl,
+        scheme: action.payload.scheme,
+      });
+      if (!action.payload.silent) addUnique(state.unseenHistoryEntryIds, historyEntryId);
+    },
     markGlobalHistorySeen: (state, action: PayloadAction<string | undefined>) => {
+      ensureGlobalEventHistoryState(state);
+
       state.lastSeenHistoryEntryId = action.payload;
+      if (!action.payload) {
+        state.unseenHistoryEntryIds = [];
+        return;
+      }
+
+      const seenEntryIndex = state.eventHistoryEntries.findIndex(entry => entry.id === action.payload);
+      if (seenEntryIndex < 0) return;
+
+      const seenEntryIds = new Set(state.eventHistoryEntries.slice(0, seenEntryIndex + 1).map(entry => entry.id));
+      state.unseenHistoryEntryIds = state.unseenHistoryEntryIds.filter(entryId => !seenEntryIds.has(entryId));
     },
   },
 });
 
 export const {
+  addNotificationHistoryEntry,
   addGlobalEventFlag,
   applyGlobalModifier,
   clearPendingGlobalSignals,
   clearPendingAbandonCity,
+  clearPendingVictoryEvent,
   enqueueGlobalSignal,
   executeGlobalEventActions,
   markGlobalHistorySeen,
@@ -214,6 +255,19 @@ function removeGlobalModifierById(
 
 function addUnique(values: string[], value: string): void {
   if (!values.includes(value)) values.push(value);
+}
+
+function ensureGlobalEventHistoryState(state: GlobalEventsState): void {
+  state.eventHistoryEntries ??= state.executedEventIds.map((eventId, index) => ({
+    id: `legacy:${index}:${eventId}`,
+    eventId,
+  }));
+  state.foreseenEventIds ??= [];
+  state.unseenHistoryEntryIds ??= [];
+}
+
+function normalizeHistoryId(value: string): string {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "entry";
 }
 
 function getSignalKey(signal: GlobalSignal): string {

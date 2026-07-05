@@ -140,6 +140,7 @@ function useProcessPendingSignals(): void {
         actions: event.actions,
         modifierContext: context,
         eventsToForesee: event.eventsToForesee,
+        notificationLevel: event.notificationLevel,
       }))));
       for (const {event} of runnableEventMessages) {
         if (event.notificationLevel !== "notify") continue;

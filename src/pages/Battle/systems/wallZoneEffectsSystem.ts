@@ -1,4 +1,5 @@
 import type { World } from '../../../models/battle/world.ts';
+import { applyDamageModifiers } from '../keywords/damageResolver';
 
 const PUSH_BACK_DURATION_SECONDS = 0.5;
 
@@ -42,10 +43,12 @@ function updatePushBacks(world: World, dt: number) {
 }
 
 function updateZoneDots(world: World, dt: number) {
-  const { zoneDotDamage, zoneDotTicksPerSecond, zoneDotZoneSize } = world.config.wallZoneEffects;
+  const { zoneDotDamage, zoneDotTicksPerSecond, zoneDotZoneSize, zoneDotKeywords } = world.config.wallZoneEffects;
   if (zoneDotDamage <= 0 || zoneDotTicksPerSecond <= 0 || zoneDotZoneSize <= 0) return;
 
-  for (const [enemyId] of world.enemiesData) {
+  const damageKeywords = new Set(zoneDotKeywords);
+
+  for (const [enemyId, enemy] of world.enemiesData) {
     if (world.toRemove.has(enemyId)) continue;
 
     const health = world.healths.get(enemyId);
@@ -59,7 +62,8 @@ function updateZoneDots(world: World, dt: number) {
     const nextProgress = (world.enemyZoneDotProgress.get(enemyId) ?? 0) + zoneDotTicksPerSecond * dt;
     const ticks = Math.floor(nextProgress);
     if (ticks > 0) {
-      health.hitPoints -= zoneDotDamage * ticks;
+      const damagePerTick = applyDamageModifiers({ baseDamage: zoneDotDamage, keywords: damageKeywords }, enemy, health);
+      health.hitPoints -= damagePerTick * ticks;
     }
 
     world.enemyZoneDotProgress.set(enemyId, nextProgress - ticks);

@@ -296,6 +296,7 @@
     "kind": "superstructure",
     "description": "A civic center for science",
     "keywords": [
+      "building",
       "science",
       "naturalSciences"
     ],
@@ -317,6 +318,13 @@
     ],
     "values": [
       {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 26
+      },
+      {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
@@ -329,15 +337,12 @@
           "upkeep"
         ],
         "additive": 50
-      },
-      {
-        "valueId": "city.signature",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 26
       }
-    ]
+    ],
+    "visualAssetId": "building_medieval_university",
+    "requiredBuildingSprites": {
+      "buildings.medieval.stoneHouse": "building_medieval_university-from-stone-house"
+    }
   },
   {
     "id": "buildings.medieval.workshop",
@@ -345,6 +350,7 @@
     "kind": "building",
     "description": "A focused craft building that improves nearby production but disrupts Aether work.",
     "keywords": [
+      "building",
       "production",
       "gold",
       "craft"
@@ -364,6 +370,13 @@
         "additive": 7
       },
       {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 22
+      },
+      {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
@@ -376,16 +389,10 @@
           "upkeep"
         ],
         "additive": 3
-      },
-      {
-        "valueId": "city.signature",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 22
       }
     ],
-    "adjacencyDescription": "+25% production in adjacent buildings; -25% Aether production in adjacent buildings."
+    "adjacencyDescription": "+25% production in adjacent buildings; -25% Aether production in adjacent buildings.",
+    "visualAssetId": "building_medieval_workshop"
   },
   {
     "id": "buildings.medieval.engineersHouse",
@@ -393,6 +400,7 @@
     "kind": "superstructure",
     "description": "A workshop and stone house combined into an engineering household.",
     "keywords": [
+      "building",
       "production",
       "people",
       "gold",
@@ -434,7 +442,12 @@
         ],
         "additive": 24
       }
-    ]
+    ],
+    "visualAssetId": "building_medieval_engineers-house",
+    "requiredBuildingSprites": {
+      "buildings.medieval.stoneHouse": "building_medieval_engineers-house-from-stone-house",
+      "buildings.medieval.workshop": "building_medieval_engineers-house-from-workshop"
+    }
   },
   {
     "id": "buildings.medieval.barracks",

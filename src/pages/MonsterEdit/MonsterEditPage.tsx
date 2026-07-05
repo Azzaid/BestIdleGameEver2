@@ -11,11 +11,13 @@ import type {EnemyVisualMetadata} from "../../models/battle/enemyVisualMetadata.
 import * as s from "../EntityCreate/EntityCreatePage.css.ts";
 
 type MonsterRegion = "wasteland";
+type MonsterMovementKind = "wallboundWobble" | "straight" | "randomLines" | "blink";
 
 type MonsterMovementDefinition = {
-  kind: "wallboundWobble";
+  kind: MonsterMovementKind;
   speedPixelsPerSecond: number;
   wobbleAmplitudePixels?: number;
+  sameTrajectoryTimeSeconds?: number;
 };
 
 type MonsterDefinition = {
@@ -66,8 +68,10 @@ type MonsterForm = {
   rotationDegrees: string;
   swarmSize: string;
   swarmSizeMax: string;
+  movementKind: MonsterMovementKind;
   speedPixelsPerSecond: string;
   wobbleAmplitudePixels: string;
+  sameTrajectoryTimeSeconds: string;
 };
 
 type SpriteDraft = {
@@ -80,6 +84,12 @@ const rawDefinitionsByRegion: Record<MonsterRegion, readonly MonsterDefinition[]
   wasteland: wastelandEnemyDefinitions as readonly MonsterDefinition[],
 };
 const regionOptions = Object.keys(rawDefinitionsByRegion) as MonsterRegion[];
+const movementKindOptions = [
+  {value: "wallboundWobble", label: "Wallbound wobble"},
+  {value: "straight", label: "Straight"},
+  {value: "randomLines", label: "Random lines"},
+  {value: "blink", label: "Blink"},
+] as const satisfies readonly {value: MonsterMovementKind; label: string}[];
 
 export default function MonsterEditPage() {
   const {monsterId = "new"} = useParams<{monsterId: string}>();
@@ -375,8 +385,17 @@ export default function MonsterEditPage() {
             <h2 className={s.sectionTitle}>Movement</h2>
           </div>
           <div className={s.grid}>
+            <label className={s.field}>
+              <span className={s.label}>Movement type</span>
+              <select className={s.input} value={form.movementKind} onChange={event => updateForm("movementKind", event.target.value as MonsterMovementKind)}>
+                {movementKindOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
             <NumberField label="Speed pixels per second" value={form.speedPixelsPerSecond} onChange={value => updateForm("speedPixelsPerSecond", value)} />
             <NumberField label="Wobble amplitude pixels" value={form.wobbleAmplitudePixels} onChange={value => updateForm("wobbleAmplitudePixels", value)} />
+            {form.movementKind === "randomLines" && (
+              <NumberField label="Same trajectory time seconds" value={form.sameTrajectoryTimeSeconds} onChange={value => updateForm("sameTrajectoryTimeSeconds", value)} />
+            )}
           </div>
         </section>
 
@@ -553,8 +572,13 @@ function createInitialForm(monsterId: string, monster: MonsterDefinition | null)
     ...createMetadataFormFields(ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[source.sprite.textureKey]?.metadata),
     swarmSize: stringifyOptionalNumber(source.swarmSize, ""),
     swarmSizeMax: stringifyOptionalNumber(source.swarmSizeMax, ""),
+    movementKind: source.movement.kind,
     speedPixelsPerSecond: String(source.movement.speedPixelsPerSecond),
     wobbleAmplitudePixels: stringifyOptionalNumber(source.movement.wobbleAmplitudePixels, ""),
+    sameTrajectoryTimeSeconds: stringifyOptionalNumber(
+      source.movement.sameTrajectoryTimeSeconds,
+      source.movement.kind === "randomLines" ? "1" : "",
+    ),
   };
 }
 
@@ -610,9 +634,12 @@ function createPreview(
     swarmSize: parseOptionalNumber(form.swarmSize) ?? undefined,
     swarmSizeMax: parseOptionalNumber(form.swarmSizeMax) ?? undefined,
     movement: {
-      kind: "wallboundWobble",
+      kind: form.movementKind,
       speedPixelsPerSecond: parseNumberOrFallback(form.speedPixelsPerSecond, 1),
       wobbleAmplitudePixels: parseOptionalNumber(form.wobbleAmplitudePixels) ?? undefined,
+      sameTrajectoryTimeSeconds: form.movementKind === "randomLines"
+        ? parseOptionalNumber(form.sameTrajectoryTimeSeconds) ?? 1
+        : undefined,
     },
   };
 

@@ -147,7 +147,7 @@ export function NotificationCenter() {
     display: "grid",
     gridTemplateColumns: "40px 1fr",
     gap: 12,
-    alignItems: "center",
+    alignItems: "start",
     padding: "10px 12px",
     borderTop: `3px solid ${styles[scheme].accent}`,
     background: vars.color.background.surfaceHover,
@@ -174,6 +174,8 @@ export function NotificationCenter() {
     fontSize: 13,
     marginTop: 2,
     opacity: 0.9,
+    whiteSpace: "pre-line",
+    lineHeight: 1.35,
   };
 
   const toastItemStyle = (scheme: NotificationScheme): React.CSSProperties => ({
@@ -182,6 +184,7 @@ export function NotificationCenter() {
     padding: "8px 10px",
     borderRadius: 10,
     boxShadow: vars.color.shadow.card,
+    alignItems: "start",
   });
 
   return (

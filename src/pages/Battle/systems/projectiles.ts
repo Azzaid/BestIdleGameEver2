@@ -31,7 +31,7 @@ function applyProjectileDamage(
   const enemy = world.enemiesData.get(enemyId);
   if (!hp || !enemy) return;
 
-  const dmg = applyDamageModifiers({ baseDamage: info.damage, keywords: info.keywords }, enemy);
+  const dmg = applyDamageModifiers({ baseDamage: info.damage, keywords: info.keywords }, enemy, hp);
   hp.hitPoints -= dmg;
 }
 

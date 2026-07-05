@@ -6,7 +6,11 @@ import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
 import {getUpkeepValues, resolveCity} from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
-import type {HomogeneousCityEntityType, HomogeneousValueEntitySource} from "../../models/homogeneousValueResolution.ts";
+import type {
+    HomogeneousCityEntityType,
+    HomogeneousResolvedEntity,
+    HomogeneousValueEntitySource,
+} from "../../models/homogeneousValueResolution.ts";
 import {selectUnlockedWallSegmentIds, selectUnlockedWallSuperstructureIds} from "../unlocks/selectors.ts";
 
 export const selectUnlockedWallBuildingIds = createSelector(
@@ -36,6 +40,7 @@ export const selectWallResolution = createSelector(
             zoneDotDamage: 0,
             zoneDotTicksPerSecond: 0,
             zoneDotZoneSize: 0,
+            zoneDotKeywords: [],
             homogeneousValues: {},
             homogeneousResolvedValues: {},
         };
@@ -83,6 +88,7 @@ export const selectWallResolution = createSelector(
         resolution.zoneDotDamage = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage] ?? 0;
         resolution.zoneDotTicksPerSecond = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotTicksPerSecond] ?? 0;
         resolution.zoneDotZoneSize = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0;
+        resolution.zoneDotKeywords = collectWallZoneDotKeywords(resolvedWallCity.resolvedWallSegments);
 
         return resolution;
     }
@@ -106,3 +112,18 @@ export const selectBuiltWallTowerCount = createSelector(
         return Boolean(WALL_TOWER_BUILDINGS[hex.wallTopKey]);
     }).length
 );
+
+function collectWallZoneDotKeywords(wallEntities: readonly HomogeneousResolvedEntity[]): string[] {
+    return [...new Set(wallEntities.flatMap((entity) => {
+        const dotDamageContributions = entity.resolvedContributions.filter((value) => (
+            value.valueId === HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage
+        ));
+
+        if (dotDamageContributions.length === 0) return [];
+
+        return [
+            ...entity.effectiveKeywords,
+            ...dotDamageContributions.flatMap((value) => value.additionalKeywords ?? []),
+        ];
+    }))].sort();
+}

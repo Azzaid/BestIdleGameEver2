@@ -104,7 +104,9 @@ export const navBarItem = style({
 });
 
 export const navBarLink = style({
-        display: 'block',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '5px',
         textDecoration: 'none',
         minHeight: '30px',
         padding: '5px 8px',
@@ -124,6 +126,15 @@ export const navBarLink = style({
         padding: '8px 9px',
       },
     },
+});
+
+export const historyNewMarker = style({
+  width: '7px',
+  height: '7px',
+  borderRadius: '50%',
+  background: vars.color.state.warning,
+  boxShadow: `0 0 0 2px ${vars.color.background.navbar}`,
+  flex: '0 0 auto',
 });
 
 export const navBarLinkBlocked = style([

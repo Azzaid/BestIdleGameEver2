@@ -5,7 +5,9 @@ function enemyContributesSiegePressure(world: World, enemyId: number) {
   const transform = world.transforms.get(enemyId);
   if (!enemy || !transform) return false;
 
-  return transform.position.y + enemy.hitRadius >= world.config.wallContactY;
+  const wallEngagementDistance = enemy.kind === 'ranged' ? Math.max(0, enemy.shotDistance ?? 0) : 0;
+
+  return transform.position.y + enemy.hitRadius >= world.config.wallContactY - wallEngagementDistance;
 }
 
 export function WallLoadSystem(world: World) {

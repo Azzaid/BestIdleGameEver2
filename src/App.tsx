@@ -22,6 +22,8 @@ import { useResearchAutoUnlock } from "./pages/Research/useResearchAutoUnlock.ts
 import {CityExpansionControl} from "./components/CityExpansionControl.tsx";
 import {useContentAutoUnlock} from "./hooks/useContentAutoUnlock.ts";
 import {useGlobalEventSignals} from "./components/GlobalEvents/useGlobalEventSignals.ts";
+import {selectUnseenHistoryEntryIds} from "./store/globalEvents/selectors.ts";
+import {VictoryEventOverlay} from "./components/GlobalEvents/VictoryEventOverlay.tsx";
 
 const DevToolsNavLinks = import.meta.env.DEV
     ? lazy(() => import("./devtools/DevToolsNavLinks.tsx"))
@@ -41,6 +43,7 @@ function AppFrame() {
   const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
   const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
+  const unseenHistoryEntryCount = useTypedSelector(selectUnseenHistoryEntryIds).length;
   const isLocalDebugAvailable = import.meta.env.DEV;
   const isDebugToolsEnabled = isLocalDebugAvailable && isDebugModeEnabled;
   const isBuildBlocked = signatureStatus.isBesieged && hasAnyTowerBuild;
@@ -162,7 +165,16 @@ function AppFrame() {
                               <Link className={appTheme.navBarLink} to="/city">City</Link>
                           </li>
                           <li>
-                              <Link className={appTheme.navBarLink} to="/history">History</Link>
+                              <Link className={appTheme.navBarLink} to="/history">
+                                  <span>History</span>
+                                  {unseenHistoryEntryCount > 0 && (
+                                      <span
+                                          className={appTheme.historyNewMarker}
+                                          aria-label={`${unseenHistoryEntryCount} new history entries`}
+                                          title={`${unseenHistoryEntryCount} new history entries`}
+                                      />
+                                  )}
+                              </Link>
                           </li>
                           {isDebugToolsEnabled && DevToolsNavLinks && (
                               <Suspense fallback={null}>
@@ -175,6 +187,7 @@ function AppFrame() {
                       </div>
                   </nav>
                   <NotificationCenter />
+                  <VictoryEventOverlay />
                   {shouldShowUpkeepBar && (
                       <UpkeepBar rightSlot={shouldShowCityExpansionControl ? <CityExpansionControl /> : undefined}/>
                   )}
