@@ -1,7 +1,7 @@
 import type { Vector2 } from './common.ts';
 
 /** Generic movement controller (attach ONE per entity). */
-export type MovementKind = 'wobble' | 'polyline' | 'wander' | 'flee' | 'blink' | 'linear';
+export type MovementKind = 'wobble' | 'polyline' | 'wander' | 'flee' | 'circle' | 'blink' | 'linear';
 
 export interface MovementBase {
   kind: MovementKind;
@@ -45,6 +45,13 @@ export interface MovementFlee extends MovementBase {
   threatPoint: Vector2;
 }
 
+export interface MovementCircle extends MovementBase {
+  kind: 'circle';
+  speedPixelsPerSecond: number;
+  centerPoint: Vector2;
+  clockwise: boolean;
+}
+
 export interface MovementBlink extends MovementBase {
   kind: 'blink';
   driftVelocity: Vector2;
@@ -64,5 +71,6 @@ export type MovementController =
   | MovementPolyline
   | MovementWander
   | MovementFlee
+  | MovementCircle
   | MovementBlink
   | MovementLinear;

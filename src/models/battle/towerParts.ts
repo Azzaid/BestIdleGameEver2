@@ -23,6 +23,21 @@ export interface TowerModifiers {
   maximumRotationAngle: number;
   retargetCooldownSeconds: number;
   triggerTolerance: number;
+  zonePushBackDistance: number;
+  zonePushBacksPerSecond: number;
+  zonePushBackZoneSize: number;
+  zoneFleeDuration: number;
+  zoneFleesPerSecond: number;
+  zoneFleeZoneSize: number;
+  zoneCircleDuration: number;
+  zoneCirclesPerSecond: number;
+  zoneCircleZoneSize: number;
+  zoneDotDamage: number;
+  zoneDotTicksPerSecond: number;
+  zoneDotZoneSize: number;
+  zoneStunDuration: number;
+  zoneStunsPerSecond: number;
+  zoneStunZoneSize: number;
   weight: number;
 }
 
@@ -98,6 +113,21 @@ export interface TowerStatsResolved {
   maximumRotationAngle: number;
   retargetCooldownSeconds: number;
   triggerTolerance: number;
+  zonePushBackDistance: number;
+  zonePushBacksPerSecond: number;
+  zonePushBackZoneSize: number;
+  zoneFleeDuration: number;
+  zoneFleesPerSecond: number;
+  zoneFleeZoneSize: number;
+  zoneCircleDuration: number;
+  zoneCirclesPerSecond: number;
+  zoneCircleZoneSize: number;
+  zoneDotDamage: number;
+  zoneDotTicksPerSecond: number;
+  zoneDotZoneSize: number;
+  zoneStunDuration: number;
+  zoneStunsPerSecond: number;
+  zoneStunZoneSize: number;
   weight: number;
   keywords: Set<string>;
 }

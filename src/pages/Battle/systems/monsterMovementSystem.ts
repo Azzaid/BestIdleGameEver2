@@ -10,6 +10,18 @@ export function MonsterMovementSystem(world: World, dt: number) {
     const transform = world.transforms.get(entityId);
     if (!movement || !transform) continue;
 
+    const stunRemaining = world.enemyTowerStunRemainingSeconds.get(entityId) ?? 0;
+    if (stunRemaining > 0) {
+      const nextStunRemaining = Math.max(0, stunRemaining - dt);
+      if (nextStunRemaining > 0) {
+        world.enemyTowerStunRemainingSeconds.set(entityId, nextStunRemaining);
+      } else {
+        world.enemyTowerStunRemainingSeconds.delete(entityId);
+      }
+      stopEnemyAtEngagementLine(world, entityId, enemy.hitRadius, getEnemyWallEngagementDistance(enemy.kind, enemy.shotDistance));
+      continue;
+    }
+
     switch (movement.kind) {
       case 'linear': {
         const baseVelocity = movement.velocityPixelsPerSecond;
@@ -105,6 +117,22 @@ export function MonsterMovementSystem(world: World, dt: number) {
 
         transform.position.x += (deltaX / distanceFromThreat) * stepDistance;
         transform.position.y += (deltaY / distanceFromThreat) * stepDistance;
+        transform.rotationRadians = directionRadians;
+        applyMonsterSway(world, entityId, movement, transform, directionRadians, dt);
+        break;
+      }
+      case 'circle': {
+        const deltaX = transform.position.x - movement.centerPoint.x;
+        const deltaY = transform.position.y - movement.centerPoint.y;
+        const distanceFromCenter = Math.hypot(deltaX, deltaY) || 1;
+        const tangentSign = movement.clockwise ? 1 : -1;
+        const unitTangentX = (-deltaY / distanceFromCenter) * tangentSign;
+        const unitTangentY = (deltaX / distanceFromCenter) * tangentSign;
+        const stepDistance = getMonsterMovementSpeed(world, movement.speedPixelsPerSecond) * dt;
+        const directionRadians = Math.atan2(unitTangentY, unitTangentX);
+
+        transform.position.x += unitTangentX * stepDistance;
+        transform.position.y += unitTangentY * stepDistance;
         transform.rotationRadians = directionRadians;
         applyMonsterSway(world, entityId, movement, transform, directionRadians, dt);
         break;

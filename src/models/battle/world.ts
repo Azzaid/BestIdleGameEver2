@@ -10,6 +10,18 @@ import type { WaveSchedulerConfig, WaveSchedulerState } from './wave.ts';
 import type { WaveSpawner } from './waveSpawner.ts';
 import type { EnemyBlueprint } from './enemyBlueprints.ts';
 
+export interface TowerPushBackState {
+  remainingSeconds: number;
+  speedPixelsPerSecond: number;
+  directionX: number;
+  directionY: number;
+}
+
+export interface TowerMovementOverrideState {
+  remainingSeconds: number;
+  originalMovement: MovementController;
+}
+
 export interface MonsterMovementModifiers {
   speedFlat: number;
   speedMultiplier: number;
@@ -103,6 +115,11 @@ export interface World {
   enemyPushBackCooldownRemainingSeconds: Map<EntityId, number>;
   enemyPushBackRemainingSeconds: Map<EntityId, number>;
   enemyZoneDotProgress: Map<EntityId, number>;
+  enemyTowerZoneCooldownRemainingSeconds: Map<string, number>;
+  enemyTowerPushBacks: Map<string, TowerPushBackState>;
+  enemyTowerZoneDotProgress: Map<string, number>;
+  enemyTowerMovementOverrides: Map<EntityId, TowerMovementOverrideState>;
+  enemyTowerStunRemainingSeconds: Map<EntityId, number>;
 
   projectileInfo: Map<EntityId, ProjectileInfo>;
 }

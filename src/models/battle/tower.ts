@@ -21,6 +21,21 @@ export interface TowerData {
   maximumRotationAngle: number;
   zeroRotationRadians: number;
   triggerTolerance: number;
+  zonePushBackDistance: number;
+  zonePushBacksPerSecond: number;
+  zonePushBackZoneSize: number;
+  zoneFleeDuration: number;
+  zoneFleesPerSecond: number;
+  zoneFleeZoneSize: number;
+  zoneCircleDuration: number;
+  zoneCirclesPerSecond: number;
+  zoneCircleZoneSize: number;
+  zoneDotDamage: number;
+  zoneDotTicksPerSecond: number;
+  zoneDotZoneSize: number;
+  zoneStunDuration: number;
+  zoneStunsPerSecond: number;
+  zoneStunZoneSize: number;
 
   // Runtime targeting state
   rangePixels: number;

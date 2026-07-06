@@ -13,6 +13,7 @@ import { HealthSystem } from './healthSystem.ts';
 import { WallLoadSystem } from './wallLoadSystem.ts';
 import { SiegeSystem } from './siegeSystem.ts';
 import { WallZoneEffectsSystem } from './wallZoneEffectsSystem.ts';
+import { TowerZoneEffectsSystem } from './towerZoneEffectsSystem.ts';
 
 /** Per-frame update orchestrator */
 export function runSystems(world: World, dt: number) {
@@ -21,6 +22,7 @@ export function runSystems(world: World, dt: number) {
   AimingSystem(world, dt);
   FiringSystem(world, dt);
 
+  TowerZoneEffectsSystem(world, dt);
   MonsterMovementSystem(world, dt);
   ProjectileMovementSystem(world, dt);
   LifespanSystem(world, dt);
@@ -45,6 +47,11 @@ export function runSystems(world: World, dt: number) {
       world.enemyPushBackCooldownRemainingSeconds.delete(id);
       world.enemyPushBackRemainingSeconds.delete(id);
       world.enemyZoneDotProgress.delete(id);
+      world.enemyTowerMovementOverrides.delete(id);
+      world.enemyTowerStunRemainingSeconds.delete(id);
+      deleteTowerZoneEffectKeysForEntity(world.enemyTowerZoneCooldownRemainingSeconds, id);
+      deleteTowerZoneEffectKeysForEntity(world.enemyTowerPushBacks, id);
+      deleteTowerZoneEffectKeysForEntity(world.enemyTowerZoneDotProgress, id);
       const hb = world.healthBars.get(id);
       if (hb) { hb.destroy(); world.healthBars.delete(id); }
       const view = world.sprites.get(id);
@@ -55,4 +62,13 @@ export function runSystems(world: World, dt: number) {
   }
 
   PixiSyncSystem(world);
+}
+
+function deleteTowerZoneEffectKeysForEntity(map: Pick<Map<string, unknown>, 'keys' | 'delete'>, entityId: number) {
+  for (const key of map.keys()) {
+    const [towerId, enemyId] = key.split('|').map(Number);
+    if (towerId === entityId || enemyId === entityId) {
+      map.delete(key);
+    }
+  }
 }
