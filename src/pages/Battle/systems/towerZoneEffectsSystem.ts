@@ -21,6 +21,11 @@ export function TowerZoneEffectsSystem(world: World, dt: number) {
     updateTowerMovementEffect(world, towerId, tower, towerTransform.position, 'circle');
     updateTowerDots(world, towerId, tower, towerTransform.position, dt);
     updateTowerStuns(world, towerId, tower, towerTransform.position);
+    updateSingleTargetPushBacks(world, towerId, tower, towerTransform.position);
+    updateSingleTargetMovementEffect(world, towerId, tower, towerTransform.position, 'flee');
+    updateSingleTargetMovementEffect(world, towerId, tower, towerTransform.position, 'circle');
+    updateSingleTargetDots(world, towerId, tower, towerTransform.position, dt);
+    updateSingleTargetStuns(world, towerId, tower, towerTransform.position);
   }
 }
 
@@ -189,6 +194,114 @@ function updateTowerStuns(
   }
 }
 
+function updateSingleTargetPushBacks(
+  world: World,
+  towerId: EntityId,
+  tower: TowerData,
+  towerPosition: { x: number; y: number },
+) {
+  const { singleTargetPushBackDistance, singleTargetPushBacksPerSecond, singleTargetPushBackRange } = tower;
+  if (singleTargetPushBackDistance <= 0 || singleTargetPushBacksPerSecond <= 0 || singleTargetPushBackRange <= 0) return;
+
+  const cooldownKey = createTowerEffectKey(towerId, 'singlePush');
+  if ((world.enemyTowerZoneCooldownRemainingSeconds.get(cooldownKey) ?? 0) > 0) return;
+
+  const enemyId = findClosestEnemyToTower(world, towerPosition, singleTargetPushBackRange);
+  if (enemyId === undefined) return;
+
+  const transform = world.transforms.get(enemyId);
+  if (!transform) return;
+
+  const deltaX = transform.position.x - towerPosition.x;
+  const deltaY = transform.position.y - towerPosition.y;
+  const distance = Math.hypot(deltaX, deltaY) || 1;
+
+  world.enemyTowerPushBacks.set(createEffectKey(towerId, enemyId, 'singlePush'), {
+    remainingSeconds: PUSH_BACK_DURATION_SECONDS,
+    speedPixelsPerSecond: singleTargetPushBackDistance / PUSH_BACK_DURATION_SECONDS,
+    directionX: deltaX / distance,
+    directionY: deltaY / distance,
+  });
+  world.enemyTowerZoneCooldownRemainingSeconds.set(cooldownKey, 1 / singleTargetPushBacksPerSecond);
+}
+
+function updateSingleTargetMovementEffect(
+  world: World,
+  towerId: EntityId,
+  tower: TowerData,
+  towerPosition: { x: number; y: number },
+  kind: 'flee' | 'circle',
+) {
+  const duration = kind === 'flee' ? tower.singleTargetFleeDuration : tower.singleTargetCircleDuration;
+  const applicationsPerSecond = kind === 'flee'
+    ? tower.singleTargetFleesPerSecond
+    : tower.singleTargetCirclesPerSecond;
+  const range = kind === 'flee' ? tower.singleTargetFleeRange : tower.singleTargetCircleRange;
+  if (duration <= 0 || applicationsPerSecond <= 0 || range <= 0) return;
+
+  const cooldownKey = createTowerEffectKey(towerId, `single${capitalizeEffectName(kind)}`);
+  if ((world.enemyTowerZoneCooldownRemainingSeconds.get(cooldownKey) ?? 0) > 0) return;
+
+  const enemyId = findClosestEnemyToTower(world, towerPosition, range);
+  if (enemyId === undefined) return;
+
+  applyMovementOverride(world, enemyId, towerPosition, kind, duration);
+  world.enemyTowerZoneCooldownRemainingSeconds.set(cooldownKey, 1 / applicationsPerSecond);
+}
+
+function updateSingleTargetDots(
+  world: World,
+  towerId: EntityId,
+  tower: TowerData,
+  towerPosition: { x: number; y: number },
+  dt: number,
+) {
+  const { singleTargetDotDamage, singleTargetDotTicksPerSecond, singleTargetDotRange } = tower;
+  if (singleTargetDotDamage <= 0 || singleTargetDotTicksPerSecond <= 0 || singleTargetDotRange <= 0) return;
+
+  const progressKey = createTowerEffectKey(towerId, 'singleDot');
+  const enemyId = findClosestEnemyToTower(world, towerPosition, singleTargetDotRange);
+  if (enemyId === undefined) {
+    world.enemyTowerZoneDotProgress.delete(progressKey);
+    return;
+  }
+
+  const enemy = world.enemiesData.get(enemyId);
+  const health = world.healths.get(enemyId);
+  if (!enemy || !health) return;
+
+  const nextProgress = (world.enemyTowerZoneDotProgress.get(progressKey) ?? 0) + singleTargetDotTicksPerSecond * dt;
+  const ticks = Math.floor(nextProgress);
+  if (ticks > 0) {
+    const damagePerTick = applyDamageModifiers({ baseDamage: singleTargetDotDamage, keywords: tower.keywords }, enemy, health);
+    health.hitPoints -= damagePerTick * ticks;
+  }
+
+  world.enemyTowerZoneDotProgress.set(progressKey, nextProgress - ticks);
+}
+
+function updateSingleTargetStuns(
+  world: World,
+  towerId: EntityId,
+  tower: TowerData,
+  towerPosition: { x: number; y: number },
+) {
+  const { singleTargetStunDuration, singleTargetStunsPerSecond, singleTargetStunRange } = tower;
+  if (singleTargetStunDuration <= 0 || singleTargetStunsPerSecond <= 0 || singleTargetStunRange <= 0) return;
+
+  const cooldownKey = createTowerEffectKey(towerId, 'singleStun');
+  if ((world.enemyTowerZoneCooldownRemainingSeconds.get(cooldownKey) ?? 0) > 0) return;
+
+  const enemyId = findClosestEnemyToTower(world, towerPosition, singleTargetStunRange);
+  if (enemyId === undefined) return;
+
+  world.enemyTowerStunRemainingSeconds.set(
+    enemyId,
+    Math.max(world.enemyTowerStunRemainingSeconds.get(enemyId) ?? 0, singleTargetStunDuration),
+  );
+  world.enemyTowerZoneCooldownRemainingSeconds.set(cooldownKey, 1 / singleTargetStunsPerSecond);
+}
+
 function applyMovementOverride(
   world: World,
   enemyId: EntityId,
@@ -276,8 +389,43 @@ function enemyIsInsideTowerZone(
   return dx * dx + dy * dy <= effectiveZoneSize * effectiveZoneSize;
 }
 
+function findClosestEnemyToTower(
+  world: World,
+  towerPosition: { x: number; y: number },
+  range: number,
+): EntityId | undefined {
+  let closestEnemyId: EntityId | undefined;
+  let closestDistance2 = Infinity;
+  const range2 = range * range;
+
+  for (const [enemyId, enemy] of world.enemiesData) {
+    const transform = world.transforms.get(enemyId);
+    if (!transform) continue;
+
+    const dx = transform.position.x - towerPosition.x;
+    const dy = transform.position.y - towerPosition.y;
+    const effectiveRange = range + enemy.hitRadius;
+    const distance2 = dx * dx + dy * dy;
+    if (distance2 > Math.max(range2, effectiveRange * effectiveRange)) continue;
+    if (distance2 >= closestDistance2) continue;
+
+    closestEnemyId = enemyId;
+    closestDistance2 = distance2;
+  }
+
+  return closestEnemyId;
+}
+
 function createEffectKey(towerId: EntityId, enemyId: EntityId, effect: string) {
   return `${towerId}|${enemyId}|${effect}`;
+}
+
+function createTowerEffectKey(towerId: EntityId, effect: string) {
+  return `${towerId}|tower|${effect}`;
+}
+
+function capitalizeEffectName(effect: string) {
+  return `${effect.charAt(0).toUpperCase()}${effect.slice(1)}`;
 }
 
 function getEnemyIdFromEffectKey(key: string): EntityId | undefined {

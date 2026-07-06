@@ -1,4 +1,4 @@
-import { style } from '@vanilla-extract/css';
+import { style, styleVariants } from '@vanilla-extract/css';
 import {vars} from "../../theme/theme.css.ts";
 
 export const cityPage = style({
@@ -289,6 +289,53 @@ export const wallCategoryTitle = style({
     margin: 0,
     color: vars.color.text.heading,
     fontSize: '1rem',
+});
+
+export const wallTopTabs = style({
+    display: 'flex',
+    gap: '8px',
+    flexWrap: 'wrap',
+});
+
+export const wallTopTabButton = styleVariants({
+    active: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '6px 12px',
+        borderRadius: 999,
+        border: `1px solid ${vars.color.border.selected}`,
+        background: vars.color.background.surface,
+        color: vars.color.text.heading,
+        fontSize: '0.92rem',
+        cursor: 'pointer',
+    },
+    regular: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '6px 12px',
+        borderRadius: 999,
+        border: `1px solid ${vars.color.border.default}`,
+        background: 'transparent',
+        color: vars.color.text.primary,
+        fontSize: '0.92rem',
+        cursor: 'pointer',
+        selectors: {
+            '&:hover': {
+                background: vars.color.background.surfaceHover,
+            },
+        },
+    },
+});
+
+export const wallTopTabLabel = style({
+    lineHeight: 1,
+});
+
+export const wallTopTabCount = style({
+    fontSize: '0.78rem',
+    color: vars.color.text.muted,
 });
 
 export const wallCardList = style({

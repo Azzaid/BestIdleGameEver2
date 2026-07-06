@@ -12,11 +12,12 @@ import {
 import { loadBattleAssets } from '../assets/assetLoader';
 import { BATTLE_BACKGROUNDS } from '../assets/backgrounds.ts';
 import type { BattleBackgroundId } from '../../../models/battle/backgrounds.ts';
-import type { TowerAssemblyResolved } from '../../../models/battle/towerParts.ts';
+import type { TowerAssemblyResolved, TowerStatsResolved } from '../../../models/battle/towerParts.ts';
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
 import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/gunParts/visuals.ts';
 import type { BattleMetrics, BattleResult, MonsterMovementModifiers, WallZoneEffects } from '../../../models/battle/world.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
+import type { StandaloneTowerDefense, TowerData } from '../../../models/battle/tower.ts';
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX, CITY_HEX_SIZE } from '../../../data/constants.ts';
 import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 import { wallTopSpriteMetadataAtlas } from '../../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
@@ -26,6 +27,7 @@ import { getWallContactY } from '../core/wallGeometry.ts';
 export function BattleStage(props: {
     wallLogicalWidth: number;   // TODO: derive from city hex row width (Redux)
     wallSegments: BattleWallSegment[];
+    standaloneTowerDefenses: StandaloneTowerDefense[];
     battlefieldWidth: number;   // TODO: logical width in world units
     battlefieldHeight: number;  // TODO: logical height in world units
     wallY: number;
@@ -254,6 +256,10 @@ export function BattleStage(props: {
             wallLayer.zIndex = 15;
             world.worldLayer.addChild(wallLayer);
 
+            const standaloneTowerWallCellKeys = new Set(
+                props.standaloneTowerDefenses.flatMap((defense) => defense.wallCellKey ? [defense.wallCellKey] : []),
+            );
+
             props.resolvedTowers.forEach((resolvedTower, index) => {
                 const baseId = createEntityId(world);
                 const gunId = createEntityId(world);
@@ -261,6 +267,7 @@ export function BattleStage(props: {
                     towerIndex: index,
                     towerCount: props.resolvedTowers.length,
                     wallSegments: props.wallSegments,
+                    excludedWallCellKeys: standaloneTowerWallCellKeys,
                     segmentSize: BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX,
                     battlefieldWidth: props.battlefieldWidth,
                     wallY,
@@ -287,46 +294,41 @@ export function BattleStage(props: {
                     ? findTowerVisualSocketOffset(towerVisualDefinition, launchSystemId, 'muzzle') ?? { x: 0, y: 0 }
                     : { x: 0, y: 0 };
 
-                world.towersData.set(baseId, {
-                    rotationSpeed: resolvedTower.stats.rotationSpeed,
-                    shotsPerSecond: resolvedTower.stats.shotsPerSecond,
-                    burstCount: resolvedTower.stats.burstCount,
-                    projectileDamage: resolvedTower.stats.projectileDamage,
-                    projectileSpeed: resolvedTower.stats.projectileSpeed,
-                    projectileRadius: resolvedTower.stats.projectileRadius,
-                    projectileSpread: resolvedTower.stats.projectileSpread,
+                world.towersData.set(baseId, createTowerData({
+                    stats: resolvedTower.stats,
                     projectileSprite: resolvedTower.selectedParts.ammo?.projectileSprite,
-                    aoeRadius: resolvedTower.stats.aoeRadius,
                     keywords: new Set(resolvedTower.keywords),
-                    targetingDistanceLimit: resolvedTower.stats.targetingDistanceLimit,
-                    maximumRange: resolvedTower.stats.maximumRange,
-                    minimumRange: resolvedTower.stats.minimumRange,
-                    maximumRotationAngle: resolvedTower.stats.maximumRotationAngle,
                     zeroRotationRadians,
-                    triggerTolerance: resolvedTower.stats.triggerTolerance,
-                    zonePushBackDistance: resolvedTower.stats.zonePushBackDistance,
-                    zonePushBacksPerSecond: resolvedTower.stats.zonePushBacksPerSecond,
-                    zonePushBackZoneSize: resolvedTower.stats.zonePushBackZoneSize,
-                    zoneFleeDuration: resolvedTower.stats.zoneFleeDuration,
-                    zoneFleesPerSecond: resolvedTower.stats.zoneFleesPerSecond,
-                    zoneFleeZoneSize: resolvedTower.stats.zoneFleeZoneSize,
-                    zoneCircleDuration: resolvedTower.stats.zoneCircleDuration,
-                    zoneCirclesPerSecond: resolvedTower.stats.zoneCirclesPerSecond,
-                    zoneCircleZoneSize: resolvedTower.stats.zoneCircleZoneSize,
-                    zoneDotDamage: resolvedTower.stats.zoneDotDamage,
-                    zoneDotTicksPerSecond: resolvedTower.stats.zoneDotTicksPerSecond,
-                    zoneDotZoneSize: resolvedTower.stats.zoneDotZoneSize,
-                    zoneStunDuration: resolvedTower.stats.zoneStunDuration,
-                    zoneStunsPerSecond: resolvedTower.stats.zoneStunsPerSecond,
-                    zoneStunZoneSize: resolvedTower.stats.zoneStunZoneSize,
-                    rangePixels: resolvedTower.stats.targetingDistanceLimit,
-                    currentTarget: undefined,
                     gunEntity: gunId,
                     projectileSpawnOffset,
-                    retargetCooldownSeconds: resolvedTower.stats.retargetCooldownSeconds,
-                    retargetRemainingSeconds: 0,
                     aimKeywords: resolvedTower.aimKeywords,
+                }));
+            });
+
+            props.standaloneTowerDefenses.forEach((defense) => {
+                const baseId = createEntityId(world);
+                const towerPosition = getStandaloneTowerDefensePosition({
+                    defense,
+                    wallSegments: props.wallSegments,
+                    segmentSize: BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX,
+                    battlefieldWidth: props.battlefieldWidth,
+                    wallY,
                 });
+                const zeroRotationRadians = getTowerZeroRotationRadians({
+                    towerPosition,
+                    battlefieldWidth: props.battlefieldWidth,
+                    battlefieldHeight: props.battlefieldHeight,
+                });
+
+                world.transforms.set(baseId, { position: towerPosition, rotationRadians: zeroRotationRadians });
+                world.towersData.set(baseId, createTowerData({
+                    stats: defense.stats,
+                    keywords: new Set(defense.keywords),
+                    zeroRotationRadians,
+                    gunEntity: baseId,
+                    projectileSpawnOffset: { x: 0, y: 0 },
+                    aimKeywords: defense.aimKeywords,
+                }));
             });
 
             // Ticker stays the same in v8 (TickerPlugin is built-in)
@@ -420,6 +422,7 @@ export function BattleStage(props: {
         props.wallY,
         props.backgroundId,
         props.resolvedTowers,
+        props.standaloneTowerDefenses,
         props.showDebugOutlines,
     ]);
 
@@ -591,6 +594,7 @@ function getTowerAnchorPosition({
     towerIndex,
     towerCount,
     wallSegments,
+    excludedWallCellKeys,
     segmentSize,
     battlefieldWidth,
     wallY,
@@ -598,13 +602,14 @@ function getTowerAnchorPosition({
     towerIndex: number;
     towerCount: number;
     wallSegments: BattleWallSegment[];
+    excludedWallCellKeys: Set<string>;
     segmentSize: number;
     battlefieldWidth: number;
     wallY: number;
 }) {
     const wallTopSegments = wallSegments
         .map((segment, index) => ({ segment, index }))
-        .filter(({ segment }) => Boolean(segment.wallTopKey));
+        .filter(({ segment }) => Boolean(segment.wallTopKey) && !excludedWallCellKeys.has(segment.cellKey));
 
     const anchorSegment = wallTopSegments[towerIndex % Math.max(1, wallTopSegments.length)];
     if (anchorSegment) {
@@ -617,6 +622,114 @@ function getTowerAnchorPosition({
     return {
         x: battlefieldWidth * (towerIndex + 1) / (towerCount + 1),
         y: getWallTopAnchorY(wallY),
+    };
+}
+
+function getStandaloneTowerDefensePosition({
+    defense,
+    wallSegments,
+    segmentSize,
+    battlefieldWidth,
+    wallY,
+}: {
+    defense: StandaloneTowerDefense;
+    wallSegments: BattleWallSegment[];
+    segmentSize: number;
+    battlefieldWidth: number;
+    wallY: number;
+}) {
+    const segmentIndex = wallSegments.findIndex((segment) => segment.cellKey === defense.wallCellKey);
+    if (segmentIndex >= 0) {
+        return {
+            x: getSegmentCenterX(segmentIndex, segmentSize),
+            y: getWallTopAnchorY(wallY),
+        };
+    }
+
+    if (defense.wallColumn !== undefined) {
+        return {
+            x: getSegmentCenterX(Math.max(0, defense.wallColumn), segmentSize),
+            y: getWallTopAnchorY(wallY),
+        };
+    }
+
+    return {
+        x: battlefieldWidth / 2,
+        y: getWallTopAnchorY(wallY),
+    };
+}
+
+function createTowerData({
+    stats,
+    projectileSprite,
+    keywords,
+    zeroRotationRadians,
+    gunEntity,
+    projectileSpawnOffset,
+    aimKeywords,
+}: {
+    stats: TowerStatsResolved;
+    projectileSprite?: TowerData['projectileSprite'];
+    keywords: Set<string>;
+    zeroRotationRadians: number;
+    gunEntity: number;
+    projectileSpawnOffset: { x: number; y: number };
+    aimKeywords: string[];
+}): TowerData {
+    return {
+        rotationSpeed: stats.rotationSpeed,
+        shotsPerSecond: stats.shotsPerSecond,
+        burstCount: stats.burstCount,
+        projectileDamage: stats.projectileDamage,
+        projectileSpeed: stats.projectileSpeed,
+        projectileRadius: stats.projectileRadius,
+        projectileSpread: stats.projectileSpread,
+        projectileSprite,
+        aoeRadius: stats.aoeRadius,
+        keywords,
+        targetingDistanceLimit: stats.targetingDistanceLimit,
+        maximumRange: stats.maximumRange,
+        minimumRange: stats.minimumRange,
+        maximumRotationAngle: stats.maximumRotationAngle,
+        zeroRotationRadians,
+        triggerTolerance: stats.triggerTolerance,
+        zonePushBackDistance: stats.zonePushBackDistance,
+        zonePushBacksPerSecond: stats.zonePushBacksPerSecond,
+        zonePushBackZoneSize: stats.zonePushBackZoneSize,
+        zoneFleeDuration: stats.zoneFleeDuration,
+        zoneFleesPerSecond: stats.zoneFleesPerSecond,
+        zoneFleeZoneSize: stats.zoneFleeZoneSize,
+        zoneCircleDuration: stats.zoneCircleDuration,
+        zoneCirclesPerSecond: stats.zoneCirclesPerSecond,
+        zoneCircleZoneSize: stats.zoneCircleZoneSize,
+        zoneDotDamage: stats.zoneDotDamage,
+        zoneDotTicksPerSecond: stats.zoneDotTicksPerSecond,
+        zoneDotZoneSize: stats.zoneDotZoneSize,
+        zoneStunDuration: stats.zoneStunDuration,
+        zoneStunsPerSecond: stats.zoneStunsPerSecond,
+        zoneStunZoneSize: stats.zoneStunZoneSize,
+        singleTargetPushBackDistance: stats.singleTargetPushBackDistance,
+        singleTargetPushBacksPerSecond: stats.singleTargetPushBacksPerSecond,
+        singleTargetPushBackRange: stats.singleTargetPushBackRange,
+        singleTargetFleeDuration: stats.singleTargetFleeDuration,
+        singleTargetFleesPerSecond: stats.singleTargetFleesPerSecond,
+        singleTargetFleeRange: stats.singleTargetFleeRange,
+        singleTargetCircleDuration: stats.singleTargetCircleDuration,
+        singleTargetCirclesPerSecond: stats.singleTargetCirclesPerSecond,
+        singleTargetCircleRange: stats.singleTargetCircleRange,
+        singleTargetDotDamage: stats.singleTargetDotDamage,
+        singleTargetDotTicksPerSecond: stats.singleTargetDotTicksPerSecond,
+        singleTargetDotRange: stats.singleTargetDotRange,
+        singleTargetStunDuration: stats.singleTargetStunDuration,
+        singleTargetStunsPerSecond: stats.singleTargetStunsPerSecond,
+        singleTargetStunRange: stats.singleTargetStunRange,
+        rangePixels: stats.targetingDistanceLimit,
+        currentTarget: undefined,
+        gunEntity,
+        projectileSpawnOffset,
+        retargetCooldownSeconds: stats.retargetCooldownSeconds,
+        retargetRemainingSeconds: 0,
+        aimKeywords,
     };
 }
 

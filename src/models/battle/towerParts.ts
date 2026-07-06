@@ -38,6 +38,21 @@ export interface TowerModifiers {
   zoneStunDuration: number;
   zoneStunsPerSecond: number;
   zoneStunZoneSize: number;
+  singleTargetPushBackDistance: number;
+  singleTargetPushBacksPerSecond: number;
+  singleTargetPushBackRange: number;
+  singleTargetFleeDuration: number;
+  singleTargetFleesPerSecond: number;
+  singleTargetFleeRange: number;
+  singleTargetCircleDuration: number;
+  singleTargetCirclesPerSecond: number;
+  singleTargetCircleRange: number;
+  singleTargetDotDamage: number;
+  singleTargetDotTicksPerSecond: number;
+  singleTargetDotRange: number;
+  singleTargetStunDuration: number;
+  singleTargetStunsPerSecond: number;
+  singleTargetStunRange: number;
   weight: number;
 }
 
@@ -128,6 +143,21 @@ export interface TowerStatsResolved {
   zoneStunDuration: number;
   zoneStunsPerSecond: number;
   zoneStunZoneSize: number;
+  singleTargetPushBackDistance: number;
+  singleTargetPushBacksPerSecond: number;
+  singleTargetPushBackRange: number;
+  singleTargetFleeDuration: number;
+  singleTargetFleesPerSecond: number;
+  singleTargetFleeRange: number;
+  singleTargetCircleDuration: number;
+  singleTargetCirclesPerSecond: number;
+  singleTargetCircleRange: number;
+  singleTargetDotDamage: number;
+  singleTargetDotTicksPerSecond: number;
+  singleTargetDotRange: number;
+  singleTargetStunDuration: number;
+  singleTargetStunsPerSecond: number;
+  singleTargetStunRange: number;
   weight: number;
   keywords: Set<string>;
 }

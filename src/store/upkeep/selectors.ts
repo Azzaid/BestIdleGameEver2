@@ -194,6 +194,7 @@ function createTowerEntities(
     const towerEntities = cityResolution.resolvedWallSegments.filter((entity) => (
         entity.entityType === "wallSuperstructure"
         && (entity.keywords ?? []).includes(String(BUILDING_TYPES.tower))
+        && !hasTowerScopedContribution(entity)
     ));
 
     return resolvedTowers.map(({tower, resolved}, index) => {
@@ -210,6 +211,10 @@ function createTowerEntities(
             effects: resolved.effects,
         };
     });
+}
+
+function hasTowerScopedContribution(entity: HomogeneousResolvedEntity): boolean {
+    return entity.resolvedContributions.some((contribution) => contribution.valueId.startsWith("tower."));
 }
 
 function collectWallZoneDotKeywords(wallEntities: readonly HomogeneousResolvedEntity[]): string[] {

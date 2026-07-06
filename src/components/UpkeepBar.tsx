@@ -43,7 +43,11 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
         <div className={s.upkeepBar}>
             <div className={s.resourceGroup}>
                 {Object.values(DEVELOPMENT_VECTORS).map(vector => {
-                    if (vector === DEVELOPMENT_VECTORS.neutral || vector === DEVELOPMENT_VECTORS.aether) {
+                    if (
+                        vector === DEVELOPMENT_VECTORS.neutral
+                        || vector === DEVELOPMENT_VECTORS.nature
+                        || vector === DEVELOPMENT_VECTORS.aether
+                    ) {
                         return null;
                     }
 
@@ -130,7 +134,6 @@ function NatureBalanceTriangle({
     bioComplexity: number;
 }) {
     const gradientId = useId();
-    const clipId = useId();
     const center = 30;
     const maxDistance = 24;
     const maxValue = Math.max(0, fungi, plants, animals);
@@ -140,14 +143,8 @@ function NatureBalanceTriangle({
         getTrianglePoint(center, maxDistance, fungi, maxValue, 150),
     ];
     const fillRatio = Math.max(0, Math.min(1, bioComplexity / 1000));
-    const filledPoints = points.map(point => ({
-        x: center + (point.x - center) * fillRatio,
-        y: center + (point.y - center) * fillRatio,
-    }));
     const fillOpacity = 0.12 + fillRatio * 0.86;
-    const edgeColor = `hsl(150 78% ${28 + fillRatio * 28}%)`;
     const pointList = formatSvgPoints(points);
-    const filledPointList = formatSvgPoints(filledPoints);
 
     return (
         <div
@@ -155,24 +152,20 @@ function NatureBalanceTriangle({
             tabIndex={0}
             aria-label={`Nature balance. Fungi ${formatInteger(fungi)}, plants ${formatInteger(plants)}, animals ${formatInteger(animals)}, bio complexity ${formatInteger(bioComplexity)}`}
         >
-            <svg className={s.natureBalanceSvg} viewBox="0 0 60 60" role="img" aria-hidden="true">
+            <svg className={s.natureBalanceSvg} viewBox="4 2 52 46" role="img" aria-hidden="true">
                 <defs>
                     <radialGradient id={gradientId} cx="50%" cy="50%" r="58%">
                         <stop offset="0%" stopColor="rgb(211 255 221)" stopOpacity={0.24 + fillRatio * 0.2} />
                         <stop offset="58%" stopColor="rgb(54 211 119)" stopOpacity={0.4 + fillRatio * 0.35} />
                         <stop offset="100%" stopColor="rgb(0 201 112)" stopOpacity={fillOpacity} />
                     </radialGradient>
-                    <clipPath id={clipId}>
-                        <polygon points={filledPointList} />
-                    </clipPath>
                 </defs>
                 <line className={s.natureBalanceAxis} x1={center} y1={center} x2={center} y2={6} />
                 <line className={s.natureBalanceAxis} x1={center} y1={center} x2={50.8} y2={42} />
                 <line className={s.natureBalanceAxis} x1={center} y1={center} x2={9.2} y2={42} />
                 <polygon className={s.natureBalanceFrame} points="30,6 50.8,42 9.2,42" />
+                <polygon points={pointList} fill={`url(#${gradientId})`} />
                 <polygon className={s.natureBalanceShape} points={pointList} />
-                <polygon points={pointList} fill={`url(#${gradientId})`} clipPath={`url(#${clipId})`} />
-                <circle cx={center} cy={center} r="2.2" fill={edgeColor} />
             </svg>
             <div className={s.natureTooltip} role="tooltip">
                 <div className={s.natureTooltipTitle}>Nature balance</div>

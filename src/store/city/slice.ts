@@ -185,14 +185,17 @@ export const citySlice = createSlice({
         },
         buildWall: (state, action: PayloadAction<{cellKey: string; wallKey: string; developmentVector: DevelopmentVectorValue}>) => {
             const hex = state.hexes.find(cell => cell.cellKey === action.payload.cellKey);
-            if (!hex || hex.isUnclaimed || hex.kind !== "wall") return;
+            if (!hex || hex.isUnclaimed || hex.kind !== "wall" || hex.wallKey === action.payload.wallKey) return;
 
+            if (hex.wallKey) {
+                state.cityFootprint += FOOTPRINT_PER_DEMOLISHED_HEX;
+            }
             hex.wallKey = action.payload.wallKey;
             hex.wallDevelopmentVector = action.payload.developmentVector;
         },
         buildWallTop: (state, action: PayloadAction<{cellKey: string; wallTopKey: string; developmentVector: DevelopmentVectorValue}>) => {
             const hex = state.hexes.find(cell => cell.cellKey === action.payload.cellKey);
-            if (!hex || hex.isUnclaimed || hex.kind !== "wall") return;
+            if (!hex || hex.isUnclaimed || hex.kind !== "wall" || hex.wallTopKey) return;
 
             hex.wallTopKey = action.payload.wallTopKey;
             hex.wallTopDevelopmentVector = action.payload.developmentVector;
@@ -273,6 +276,13 @@ export const citySlice = createSlice({
                 hex.structureCoreCellKey = null;
             });
         },
+        demolishWallTop: (state, action: PayloadAction<{cellKey: string}>) => {
+            const targetHex = state.hexes.find(hex => hex.cellKey === action.payload.cellKey);
+            if (!targetHex || targetHex.isUnclaimed || targetHex.kind !== "wall" || !targetHex.wallTopKey) return;
+
+            targetHex.wallTopKey = null;
+            targetHex.wallTopDevelopmentVector = undefined;
+        },
         recordSurvivedSiege: (state) => {
             state.cityFootprint += FOOTPRINT_PER_SURVIVED_SIEGE;
         },
@@ -286,6 +296,7 @@ export const {
     buildWallTop,
     buildMultistructure,
     demolishHex,
+    demolishWallTop,
     retreatCityRadius,
     expandCityRadius,
     recordSurvivedSiege,

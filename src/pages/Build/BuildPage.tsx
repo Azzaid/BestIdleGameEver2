@@ -485,6 +485,16 @@ const BuildPage = () => {
     ['Zone DoT size', `${resolvedTower.stats.zoneDotZoneSize.toFixed(0)} px`],
     ['Zone stun', `${resolvedTower.stats.zoneStunDuration.toFixed(2)} s @ ${resolvedTower.stats.zoneStunsPerSecond.toFixed(2)}/s`],
     ['Zone stun size', `${resolvedTower.stats.zoneStunZoneSize.toFixed(0)} px`],
+    ['Target push', `${resolvedTower.stats.singleTargetPushBackDistance.toFixed(0)} px @ ${resolvedTower.stats.singleTargetPushBacksPerSecond.toFixed(2)}/s`],
+    ['Target push range', `${resolvedTower.stats.singleTargetPushBackRange.toFixed(0)} px`],
+    ['Target flee', `${resolvedTower.stats.singleTargetFleeDuration.toFixed(2)} s @ ${resolvedTower.stats.singleTargetFleesPerSecond.toFixed(2)}/s`],
+    ['Target flee range', `${resolvedTower.stats.singleTargetFleeRange.toFixed(0)} px`],
+    ['Target circle', `${resolvedTower.stats.singleTargetCircleDuration.toFixed(2)} s @ ${resolvedTower.stats.singleTargetCirclesPerSecond.toFixed(2)}/s`],
+    ['Target circle range', `${resolvedTower.stats.singleTargetCircleRange.toFixed(0)} px`],
+    ['Target DoT', `${resolvedTower.stats.singleTargetDotDamage.toFixed(1)} @ ${resolvedTower.stats.singleTargetDotTicksPerSecond.toFixed(2)}/s`],
+    ['Target DoT range', `${resolvedTower.stats.singleTargetDotRange.toFixed(0)} px`],
+    ['Target stun', `${resolvedTower.stats.singleTargetStunDuration.toFixed(2)} s @ ${resolvedTower.stats.singleTargetStunsPerSecond.toFixed(2)}/s`],
+    ['Target stun range', `${resolvedTower.stats.singleTargetStunRange.toFixed(0)} px`],
   ];
 
   return (

@@ -339,6 +339,7 @@ City view implementation:
 - Each city has a maximum cell radius determined when it is created. The current implementation sets it from the `maxCitySize` constant and precomputes a coherent terrain vector map through `maxCitySize + 2`.
 - Normal city hexes use city building data.
 - The top hex row is reserved for wall hexes and uses the wall build catalog.
+- Wall hexes have separate wall-segment and wall-top slots. Wall segments are replaced in place: the current segment is hidden from the wall list, choosing a different segment increases city footprint as if the previous segment were demolished. Wall-top occupants follow the city-building rebuild rule: a tower mount or wall superstructure must be demolished before another wall-top detail can be built.
 - Tiles without texture render a colored fallback with the building id so unfinished content remains visible.
 - Selecting a tile shows build options and resolved stats.
 
@@ -415,7 +416,8 @@ Current implementation:
 - `src/models/battle/resolveTowerAssembly.ts` resolves stats, support costs, keywords, targeting behavior, warnings, and synergies.
 - Build and Battle share resolved tower state.
 - Tower projectile radius, projectile spread, trigger tolerance, maximum range, minimum range, and maximum rotation angle are resolved as homogeneous tower values alongside damage, speed, range, reload, rotation, and area. Maximum range, minimum range, and maximum rotation angle default to unlimited when no source contributes them. If multiple sources contribute maximum range or maximum rotation angle, the lower value wins; if multiple sources contribute minimum range, the higher value wins.
-- Tower parts can also contribute tower-scoped circular zone effects around the tower center: outward push-back, temporary flee movement, temporary circling movement, zone DoT, and stun. These use `tower.zone*` homogeneous values and stay attached to the resolved tower assembly rather than entering wall-zone resolution.
+- Tower parts can also contribute tower-scoped circular zone effects around the tower center: outward push-back, temporary flee movement, temporary circling movement, zone DoT, and stun. These use `tower.zone*` homogeneous values and stay attached to the resolved tower assembly rather than entering wall-zone resolution. Wall superstructures that contribute `tower.*` values are treated as standalone single-detail tower defenses at their wall-top position, mutually exclusive with modular gun placement at that position.
+- Tower parts can contribute single-target tower effects with `tower.singleTarget*` homogeneous values. Each effect independently selects the closest enemy to the tower within that effect's range, then applies one-target push-back, flee, circle, DoT ticks, or stun.
 - Monster armor is a flat reduction from incoming battle damage resolved through the damage resolver. `armorPiercing` ignores half of this flat armor value, while `ignoreArmor` bypasses it completely.
 - Wall zone DoT damage carries runtime damage keywords from wall entities that contribute `wall.zoneDotDamage`, plus the `additionalKeywords` on those damage contributions. This lets wall superstructures such as poisonous spore mushrooms mark their DoT as `poison`, `antiAir`, `armorPiercing`, or `ignoreArmor`.
 - Gun stat values from tower parts stay inside the specific mounted gun assembly. Only city-scoped tower-part values enter city homogeneous totals, which prevents stats such as projectile damage from being summed into the city and reused by other towers.

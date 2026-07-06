@@ -18,6 +18,7 @@ import { selectIsDebugModeEnabled } from "../../store/debug/selectors.ts";
 import {enqueueGlobalSignal} from "../../store/globalEvents/slice.ts";
 import type { BattleMetrics, BattleResult } from "../../models/battle/world.ts";
 import type { BattleWallSegment } from "../../models/battle/wallSegment.ts";
+import type { StandaloneTowerDefense } from "../../models/battle/tower.ts";
 import {
     BATTLEFIELD_RANGE_MULTIPLIER,
     BATTLE_WALL_APRON_HEIGHT,
@@ -34,6 +35,8 @@ import {
     selectSiegeModifierValues,
 } from "../../store/homogeneousValues/selectors.ts";
 import type { TowerAssemblyResolved } from "../../models/battle/towerParts.ts";
+import { resolveTowerAssemblyStatsAndSupport } from "../../models/battle/resolveTowerAssembly.ts";
+import type { HomogeneousResolvedEntity } from "../../models/homogeneousValueResolution.ts";
 
 type BattleMode = "siege" | "pressure";
 
@@ -63,6 +66,44 @@ function getResolvedTowerBattleKey(tower: TowerAssemblyResolved) {
 
 function getResolvedTowersBattleKey(towers: TowerAssemblyResolved[]) {
     return towers.map(getResolvedTowerBattleKey).join("::");
+}
+
+function getStandaloneTowerDefenseBattleKey(defense: StandaloneTowerDefense) {
+    const statsKey = Object.entries(defense.stats)
+        .map(([stat, value]) => `${stat}:${value instanceof Set ? [...value].sort().join(",") : value}`)
+        .sort()
+        .join(",");
+
+    return [
+        defense.id,
+        defense.wallCellKey ?? "",
+        defense.wallColumn ?? "",
+        statsKey,
+        [...defense.keywords].sort().join(","),
+        defense.aimKeywords.join(","),
+    ].join("|");
+}
+
+function createStandaloneTowerDefenses(wallEntities: readonly HomogeneousResolvedEntity[]): StandaloneTowerDefense[] {
+    return wallEntities.flatMap((entity) => {
+        if (entity.entityType !== "wallSuperstructure" || !hasTowerScopedContribution(entity)) return [];
+
+        const keywords = new Set(entity.effectiveKeywords);
+        const {stats} = resolveTowerAssemblyStatsAndSupport(entity.resolvedValues, keywords);
+
+        return [{
+            id: entity.id,
+            wallCellKey: entity.cellKey,
+            wallColumn: entity.column,
+            stats,
+            keywords,
+            aimKeywords: ["closestToWall"],
+        }];
+    });
+}
+
+function hasTowerScopedContribution(entity: HomogeneousResolvedEntity) {
+    return entity.resolvedContributions.some((contribution) => contribution.valueId.startsWith("tower."));
 }
 
 function useStableResolvedBattleTowers(towers: TowerAssemblyResolved[]) {
@@ -100,6 +141,10 @@ const BattlePage = () => {
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const wallResolution = useTypedSelector(selectEffectiveWallResolution);
+    const standaloneTowerDefenses = useMemo(
+        () => createStandaloneTowerDefenses(cityResolution.resolvedWallSegments),
+        [cityResolution.resolvedWallSegments],
+    );
     const controlledTerritoryGrowthStep = useTypedSelector(selectControlledTerritoryGrowthStep);
     const monsterModifierValues = useTypedSelector(selectMonsterModifierValues);
     const siegeModifierValues = useTypedSelector(selectSiegeModifierValues);
@@ -178,12 +223,26 @@ const BattlePage = () => {
         : 0;
     const pressureProgressPercent = toPercent(metrics.siegePressure, metrics.wallResilience);
     const wallLogicalWidth = citySideHexes * BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX;
-    const longestTowerRange = Math.max(360, ...resolvedBattleTowers.map((tower) => tower.stats.targetingDistanceLimit));
+    const standaloneDefenseRanges = standaloneTowerDefenses.map((defense) => Math.max(
+        defense.stats.targetingDistanceLimit,
+        defense.stats.zonePushBackZoneSize,
+        defense.stats.zoneFleeZoneSize,
+        defense.stats.zoneCircleZoneSize,
+        defense.stats.zoneDotZoneSize,
+        defense.stats.zoneStunZoneSize,
+    ));
+    const longestTowerRange = Math.max(
+        360,
+        ...resolvedBattleTowers.map((tower) => tower.stats.targetingDistanceLimit),
+        ...standaloneDefenseRanges,
+    );
     const battlefieldLength = longestTowerRange * BATTLEFIELD_RANGE_MULTIPLIER;
     const battlefieldHeight = battlefieldLength + BATTLE_WALL_APRON_HEIGHT;
     const battleKey = useMemo(() => [
         wallLogicalWidth,
         battlefieldHeight,
+        resolvedBattleTowers.map(getResolvedTowerBattleKey).join("::"),
+        standaloneTowerDefenses.map(getStandaloneTowerDefenseBattleKey).join("::"),
         battleWallSegments
             .map(segment => [
                 segment.cellKey,
@@ -196,6 +255,8 @@ const BattlePage = () => {
     ].join(":"), [
         wallLogicalWidth,
         battlefieldHeight,
+        resolvedBattleTowers,
+        standaloneTowerDefenses,
         battleWallSegments,
     ]);
     useEffect(() => {
@@ -264,7 +325,7 @@ const BattlePage = () => {
 
     return (
         <div className={styles.battlePage}>
-            {hasAnyTowerBuild ? (
+            {hasAnyTowerBuild || standaloneTowerDefenses.length > 0 ? (
                 <div className={`${styles.battleShell} ${isSiege ? styles.battleShellSiege : ''}`}>
                     {isSiege && (
                         <div className={`${styles.battleProgress} ${styles.siegeProgress}`} aria-label="Siege duration">
@@ -313,6 +374,7 @@ const BattlePage = () => {
                         wallY={battlefieldLength}
                         backgroundId={cityBattlefield.backgroundId}
                         resolvedTowers={resolvedBattleTowers}
+                        standaloneTowerDefenses={standaloneTowerDefenses}
                         initialThreat={initialThreat}
                         targetThreat={targetThreat}
                         threatGrowthPerSecond={threatGrowthPerSecond}

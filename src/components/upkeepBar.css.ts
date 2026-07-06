@@ -94,9 +94,9 @@ export const aetherMeterSlot = style({
 
 export const natureBalanceWrap = style({
     position: 'relative',
-    flex: '0 0 42px',
-    width: '42px',
-    height: '42px',
+    flex: '0 0 65px',
+    width: '65px',
+    height: '65px',
     display: 'grid',
     placeItems: 'center',
     border: 0,
@@ -108,23 +108,23 @@ export const natureBalanceWrap = style({
     },
     '@media': {
         '(max-width: 520px)': {
-            flexBasis: '38px',
-            width: '38px',
-            height: '38px',
+            flexBasis: '65px',
+            width: '65px',
+            height: '65px',
         },
     },
 });
 
 export const natureBalanceSvg = style({
-    width: '42px',
-    height: '42px',
+    width: '65px',
+    height: '65px',
     display: 'block',
     overflow: 'visible',
     filter: 'drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2))',
     '@media': {
         '(max-width: 520px)': {
-            width: '38px',
-            height: '38px',
+            width: '65px',
+            height: '65px',
         },
     },
 });
@@ -136,9 +136,9 @@ export const natureBalanceAxis = style({
 });
 
 export const natureBalanceFrame = style({
-    fill: 'rgba(10, 28, 18, 0.18)',
-    stroke: 'rgba(191, 226, 199, 0.44)',
-    strokeWidth: 1.2,
+    fill: 'transparent',
+    stroke: 'transparent',
+    strokeWidth: 0,
     vectorEffect: 'non-scaling-stroke',
 });
 

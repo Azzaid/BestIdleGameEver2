@@ -13,7 +13,14 @@ import {
     selectCityHexes,
     selectCityStructureCandidates,
 } from "../../store/city/selectors.ts";
-import {buildHex, buildWall, buildWallTop, demolishHex, buildMultistructure} from "../../store/city/slice.ts";
+import {
+    buildHex,
+    buildWall,
+    buildWallTop,
+    demolishHex,
+    demolishWallTop,
+    buildMultistructure,
+} from "../../store/city/slice.ts";
 import {UPKEEP_SPRITES, UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
 import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
@@ -162,34 +169,58 @@ const CityPage = () => {
 
     const handleWallBuildingSelect = (buildingKey: string) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
+        if (selectedHex.kind !== "wall" || selectedHex.wallKey === buildingKey) return;
         if (!unlockedWallSegmentIdSet.has(buildingKey)) return;
         const wallBuilding = WALL_SEGMENT_BUILDINGS[buildingKey];
         if (!wallBuilding) return;
         if (!areRequirementsMet(wallBuilding.buildRequirements, requirementResolutionData)) return;
+        const nextHex = {
+            ...selectedHex,
+            wallKey: buildingKey,
+            wallDevelopmentVector: wallBuilding.vector ?? DEVELOPMENT_VECTORS.medieval,
+        };
         dispatch(buildWall({
             cellKey: selectedHex.cellKey,
             wallKey: buildingKey,
-            developmentVector: wallBuilding.vector ?? DEVELOPMENT_VECTORS.medieval,
+            developmentVector: nextHex.wallDevelopmentVector,
         }))
+        setSelectedHex(nextHex);
     };
 
     const handleWallTopBuildingSelect = (buildingKey: string) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
+        if (selectedHex.kind !== "wall" || selectedHex.wallTopKey) return;
         if (!unlockedWallSuperstructureIdSet.has(buildingKey)) return;
         const wallTopBuilding = WALL_TOWER_BUILDINGS[buildingKey];
         if (!wallTopBuilding) return;
         if (!areRequirementsMet(wallTopBuilding.buildRequirements, requirementResolutionData)) return;
+        const nextHex = {
+            ...selectedHex,
+            wallTopKey: buildingKey,
+            wallTopDevelopmentVector: wallTopBuilding.vector ?? DEVELOPMENT_VECTORS.medieval,
+        };
         dispatch(buildWallTop({
             cellKey: selectedHex.cellKey,
             wallTopKey: buildingKey,
-            developmentVector: wallTopBuilding.vector ?? DEVELOPMENT_VECTORS.medieval,
+            developmentVector: nextHex.wallTopDevelopmentVector,
         }))
+        setSelectedHex(nextHex);
     };
 
     const handleDemolishSelectedHex = () => {
         if (!selectedHex || signatureStatus.isBesieged) return;
         dispatch(demolishHex({cellKey: selectedHex.cellKey}));
         setSelectedHex(null);
+    };
+
+    const handleDemolishSelectedWallTop = () => {
+        if (!selectedHex || signatureStatus.isBesieged || selectedHex.kind !== "wall" || !selectedHex.wallTopKey) return;
+        dispatch(demolishWallTop({cellKey: selectedHex.cellKey}));
+        setSelectedHex({
+            ...selectedHex,
+            wallTopKey: null,
+            wallTopDevelopmentVector: undefined,
+        });
     };
 
     const handleBuildStructure = (structureId: string, coreCellKey: string) => {
@@ -207,6 +238,8 @@ const CityPage = () => {
         : undefined;
     const selectedWallBuilding = selectedHex?.wallKey ? WALL_SEGMENT_BUILDINGS[selectedHex.wallKey] : undefined;
     const selectedWallTopBuilding = selectedHex?.wallTopKey ? WALL_TOWER_BUILDINGS[selectedHex.wallTopKey] : undefined;
+    const selectedBuildingVector = selectedBuilding?.vector ?? (selectedHex?.kind === "city" ? selectedHex.developmentVector : undefined);
+    const selectedBuildingIsNature = selectedBuildingVector === DEVELOPMENT_VECTORS.nature;
     const selectedStructureCandidates = selectedHex
         ? structureCandidates.filter(candidate => (
             isHexPartOfStructureCandidate(selectedHex.cellKey, candidate)
@@ -245,6 +278,7 @@ const CityPage = () => {
                         blockedReason={BESIEGED_BUILD_BLOCK_REASON}
                         onBuildStructure={handleBuildStructure}
                         onDemolish={handleDemolishSelectedHex}
+                        onDemolishWallTop={handleDemolishSelectedWallTop}
                     />
                     {selectedHex.kind === "wall"
                         ? <WallBuildingSelector
@@ -254,12 +288,16 @@ const CityPage = () => {
                             visibleWallSuperstructureIds={visibleWallSuperstructureIdSet}
                             unavailableWallSegmentReasons={unavailableWallSegmentReasons}
                             unavailableWallSuperstructureReasons={unavailableWallSuperstructureReasons}
+                            currentWallKey={selectedHex.wallKey ?? null}
+                            hasWallTop={Boolean(selectedHex.wallTopKey)}
                             blocked={signatureStatus.isBesieged}
                             blockedReason={BESIEGED_BUILD_BLOCK_REASON}
                         />
                         : selectedHex.buildingKey || selectedHex.partOfStructureId
                             ? <p className={s.buildingLockedNote}>
-                                Demolish the existing building before using this hex again.
+                                {selectedBuildingIsNature
+                                    ? "Nature buildings remain rooted here and cannot be demolished."
+                                    : "Demolish the existing building before using this hex again."}
                             </p>
                             : <BuildingSelector
                             onBuild={handleBuildingSelect}
@@ -398,9 +436,14 @@ function SelectedHexPanel({
     blockedReason,
     onBuildStructure,
     onDemolish,
+    onDemolishWallTop,
 }: SelectedHexPanelProps) {
     const selectionTitle = getSelectionTitle(selectedHex, selectedBuilding, selectedWallBuilding, selectedWallTopBuilding);
     const selectionCoordinates = `${selectedHex.column}:${selectedHex.row}`;
+    const selectedWallTopLabel = selectedWallTopBuilding && isWallTopTowerMount(selectedWallTopBuilding)
+        ? "Tower"
+        : "Wall Superstructure";
+    const canDemolishSelectedBuilding = selectedHex.kind === "city" && selectedBuilding?.vector !== DEVELOPMENT_VECTORS.nature;
 
     return (
         <aside className={s.selectionPanel}>
@@ -440,7 +483,7 @@ function SelectedHexPanel({
                         blockedReason={blockedReason}
                     />
                     <p className={s.panelDescription}>{selectedBuilding.adjacencyDescription}</p>
-                    {selectedHex.kind === "city" && (
+                    {canDemolishSelectedBuilding && (
                         <button
                             className={s.demolishButton}
                             type="button"
@@ -466,6 +509,15 @@ function SelectedHexPanel({
                     <h3 className={s.statHeading}>On wall: {selectedWallTopBuilding.name}</h3>
                     <WallStats wallBuilding={selectedWallTopBuilding} />
                     <p className={s.panelDescription}>{selectedWallTopBuilding.description}</p>
+                    <button
+                        className={s.demolishButton}
+                        type="button"
+                        disabled={blocked}
+                        title={blocked ? blockedReason : undefined}
+                        onClick={onDemolishWallTop}
+                    >
+                        Demolish {selectedWallTopLabel}
+                    </button>
                 </div>
             )}
 
@@ -940,6 +992,8 @@ function WallBuildingSelector({
     visibleWallSuperstructureIds,
     unavailableWallSegmentReasons,
     unavailableWallSuperstructureReasons,
+    currentWallKey,
+    hasWallTop,
     blocked,
     blockedReason,
 }: {
@@ -949,20 +1003,87 @@ function WallBuildingSelector({
     visibleWallSuperstructureIds: ReadonlySet<string>;
     unavailableWallSegmentReasons: Readonly<Record<string, string>>;
     unavailableWallSuperstructureReasons: Readonly<Record<string, string>>;
+    currentWallKey: string | null;
+    hasWallTop: boolean;
     blocked: boolean;
     blockedReason: string;
 }) {
+    const [activeWallTopCategory, setActiveWallTopCategory] = useState<WallTopCategory>("tower");
     const visibleWallSegments = Object.values(WALL_SEGMENT_BUILDINGS)
-        .filter(building => visibleWallSegmentIds.has(building.id));
-    const visibleWallSuperstructures = Object.values(WALL_TOWER_BUILDINGS)
+        .filter(building => visibleWallSegmentIds.has(building.id) && building.id !== currentWallKey);
+    const visibleWallTopBuildings = Object.values(WALL_TOWER_BUILDINGS)
         .filter(building => visibleWallSuperstructureIds.has(building.id));
+    const visibleTowerMounts = visibleWallTopBuildings.filter(isWallTopTowerMount);
+    const visibleWallSuperstructures = visibleWallTopBuildings.filter(building => !isWallTopTowerMount(building));
+    const wallTopCategories = [
+        {category: "tower" as const, label: "Tower", buildings: visibleTowerMounts},
+        {category: "superstructure" as const, label: "Wall Superstructure", buildings: visibleWallSuperstructures},
+    ].filter(option => option.buildings.length > 0);
+    const activeCategoryIsAvailable = wallTopCategories.some(option => option.category === activeWallTopCategory);
+    const selectedWallTopCategory = (
+        activeCategoryIsAvailable
+            ? wallTopCategories.find(option => option.category === activeWallTopCategory)
+            : wallTopCategories[0]
+    );
+
+    useEffect(() => {
+        if (selectedWallTopCategory && selectedWallTopCategory.category !== activeWallTopCategory) {
+            setActiveWallTopCategory(selectedWallTopCategory.category);
+        }
+    }, [activeWallTopCategory, selectedWallTopCategory]);
 
     return (
         <div className={s.wallSelector}>
             <WallBuildingList title="Wall" buildings={visibleWallSegments} unavailableBuildingReasons={unavailableWallSegmentReasons} onBuild={onBuildWall} blocked={blocked} blockedReason={blockedReason} />
-            <WallBuildingList title="Tower" buildings={visibleWallSuperstructures} unavailableBuildingReasons={unavailableWallSuperstructureReasons} onBuild={onBuildWallTop} blocked={blocked} blockedReason={blockedReason} />
+            {hasWallTop ? (
+                <p className={s.buildingLockedNote}>
+                    Demolish the existing tower or wall superstructure before building another wall-top detail here.
+                </p>
+            ) : (
+                <section className={s.wallCategory}>
+                    {wallTopCategories.length > 0 && (
+                        <div className={s.wallTopTabs} role="tablist" aria-label="Wall-top build type">
+                            {wallTopCategories.map(({category, label, buildings}) => {
+                                const selected = selectedWallTopCategory?.category === category;
+
+                                return (
+                                    <button
+                                        key={category}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={selected}
+                                        className={s.wallTopTabButton[selected ? "active" : "regular"]}
+                                        onClick={() => setActiveWallTopCategory(category)}
+                                    >
+                                        <span className={s.wallTopTabLabel}>{label}</span>
+                                        <span className={s.wallTopTabCount}>{buildings.length}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+                    {selectedWallTopCategory ? (
+                        <WallBuildingList
+                            title={selectedWallTopCategory.label}
+                            buildings={selectedWallTopCategory.buildings}
+                            unavailableBuildingReasons={unavailableWallSuperstructureReasons}
+                            onBuild={onBuildWallTop}
+                            blocked={blocked}
+                            blockedReason={blockedReason}
+                        />
+                    ) : (
+                        <p className={s.buildingLockedNote}>No wall-top details are available yet.</p>
+                    )}
+                </section>
+            )}
         </div>
     );
+}
+
+type WallTopCategory = "tower" | "superstructure";
+
+function isWallTopTowerMount(building: WallBuilding): boolean {
+    return !(building.keywords ?? []).map(String).includes("wallSuperstructure");
 }
 
 function WallBuildingList({
@@ -984,6 +1105,9 @@ function WallBuildingList({
         <section className={s.wallCategory}>
             <h3 className={s.wallCategoryTitle}>{title}</h3>
             <div className={s.wallCardList}>
+                {buildings.length === 0 && (
+                    <p className={s.buildingLockedNote}>No other options are available yet.</p>
+                )}
                 {buildings.map((building) => {
                     const unavailableReason = unavailableBuildingReasons[building.id];
                     const buildBlockedReason = blocked ? blockedReason : unavailableReason;
