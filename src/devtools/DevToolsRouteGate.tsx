@@ -3,6 +3,7 @@ import ProgressionPage from "../pages/Progression/ProgressionPage.tsx";
 import GunPartEditorPage from "../pages/GunPartEditor/GunPartEditorPage.tsx";
 import IdAuditPage from "../pages/IdAudit/IdAuditPage.tsx";
 import EntityCreatePage from "../pages/EntityCreate/EntityCreatePage.tsx";
+import ContentPlanPage from "../pages/ContentPlan/ContentPlanPage.tsx";
 import MonsterEditPage from "../pages/MonsterEdit/MonsterEditPage.tsx";
 import GlobalEventsEditorPage from "../pages/GlobalEventsEditor/GlobalEventsEditorPage.tsx";
 import HexBackgroundEditorPage from "../pages/HexBackgroundEditor/HexBackgroundEditorPage.tsx";
@@ -29,6 +30,10 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     {
       path: "entity-create/:entityId",
       element: enabled ? <EntityCreatePage /> : <Navigate to="/battle" replace />,
+    },
+    {
+      path: "content-plan",
+      element: enabled ? <ContentPlanPage /> : <Navigate to="/battle" replace />,
     },
     {
       path: "monster-edit",

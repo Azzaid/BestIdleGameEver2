@@ -2,7 +2,7 @@ import type {UpkeepAmount} from "../Upkeep.ts";
 import type {BuildingTypesValue} from "./BuildingTypes.ts";
 import type {BuildingKeyword} from "./Keywords.ts";
 import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
-import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../homogeneousValues.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousDerivedValueEffect, HomogeneousValueEffect} from "../homogeneousValues.ts";
 import type {HomogeneousResolvedValueMap} from "../homogeneousValues.ts";
 import type {RequirementGate} from "../progression/requirements.ts";
 
@@ -13,6 +13,7 @@ export interface WallBuilding extends RequirementGate {
     vector?: DevelopmentVectorValue;
     keywords?: BuildingKeyword[];
     values?: HomogeneousValueEffect[];
+    derivedValues?: HomogeneousDerivedValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
     description: string;
 }

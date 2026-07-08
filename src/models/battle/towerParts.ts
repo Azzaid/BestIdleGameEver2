@@ -3,6 +3,7 @@ import type { DevelopmentVectorKey } from '../DevlopmentVector.ts';
 import type { UpkeepAmount } from '../Upkeep.ts';
 import type {
   HomogeneousAdjacencyRule,
+  HomogeneousDerivedValueEffect,
   HomogeneousResolvedValueMap,
   HomogeneousValueEffect,
 } from '../homogeneousValues.ts';
@@ -77,6 +78,7 @@ export interface GunPart extends RequirementGate {
   keywords: Set<string>;
   aimKeywords?: string[];
   values?: HomogeneousValueEffect[];
+  derivedValues?: HomogeneousDerivedValueEffect[];
   effects?: HomogeneousAdjacencyRule[];
   conflictsWithKeywords?: string[];
   children?: GunPart[]; // chain within a slot
@@ -92,6 +94,7 @@ export interface TowerSynergyRule {
   description: string;
   requiredKeywords: string[];
   values?: HomogeneousValueEffect[];
+  derivedValues?: HomogeneousDerivedValueEffect[];
   effects?: HomogeneousAdjacencyRule[];
   addKeywords?: string[];
   addAimKeywords?: string[];
@@ -167,6 +170,7 @@ export interface TowerAssemblyResolved {
   stats: TowerStatsResolved;
   supportCost: UpkeepAmount;
   values: HomogeneousValueEffect[];
+  derivedValues: HomogeneousDerivedValueEffect[];
   effects: HomogeneousAdjacencyRule[];
   homogeneousResolvedValues: HomogeneousResolvedValueMap;
   keywords: Set<string>;

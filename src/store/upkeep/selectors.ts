@@ -17,6 +17,8 @@ import {
     getProducedValues,
     getUpkeepValues,
     resolveCity,
+    resolveEntityContributionsWithDerivedValues,
+    resolveEntityValuesWithDerivedValues,
     resolveHomogeneousValueContributions,
 } from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
@@ -46,12 +48,13 @@ export const selectTowerAwareCityResolution = createSelector(
 );
 
 export const selectResolvedEffectiveAvailableTowers = createSelector(
-    [selectResolvedAvailableTowers, selectTowerAwareCityResolution],
-    (resolvedTowers, cityResolution): ResolvedAvailableTower[] => resolvedTowers.map((resolvedTower) => ({
+    [selectResolvedAvailableTowers, selectTowerAwareCityResolution, (state: RootState) => state.upkeep.controlledTerritory],
+    (resolvedTowers, cityResolution, controlledTerritory): ResolvedAvailableTower[] => resolvedTowers.map((resolvedTower) => ({
         ...resolvedTower,
         resolved: applyEffectiveTowerEntity(
             resolvedTower.resolved,
             cityResolution.resolvedTowers.find((entity) => entity.id === getTowerEntityId(resolvedTower.tower.id)),
+            getDerivedSourceValues(cityResolution, controlledTerritory),
         ),
     })),
 );
@@ -67,6 +70,7 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
         selectUnlockedTowerPartIds,
         selectTechnologyHomogeneousEntities,
         selectGlobalModifierHomogeneousEntities,
+        (state: RootState) => state.upkeep.controlledTerritory,
     ],
     (
         cityResolution,
@@ -78,6 +82,7 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
         unlockedTowerPartIds,
         technologyEntities,
         globalModifierEntities,
+        controlledTerritory,
     ): TowerAssemblyResolved => {
         const activeTowerIndex = availableTowers.findIndex((tower) => tower.id === activeTower?.id);
         if (activeTowerIndex < 0) return resolvedActiveTowerDraft;
@@ -98,15 +103,22 @@ export const selectResolvedEffectiveActiveTowerDraft = createSelector(
             entity.id === getTowerEntityId(activeTower?.id ?? "")
         ));
 
-        return applyEffectiveTowerEntity(resolvedActiveTowerDraft, effectiveTowerEntity);
+        return applyEffectiveTowerEntity(
+            resolvedActiveTowerDraft,
+            effectiveTowerEntity,
+            getDerivedSourceValues(effectiveCityResolution, controlledTerritory),
+        );
     },
 );
 
 export const selectEffectiveWallResolution = createSelector(
-    [selectTowerAwareCityResolution],
-    (cityResolution): WallResolution => {
+    [selectTowerAwareCityResolution, (state: RootState) => state.upkeep.controlledTerritory],
+    (cityResolution, controlledTerritory): WallResolution => {
+        const derivedSourceValues = getDerivedSourceValues(cityResolution, controlledTerritory);
         const resolvedWallValues = resolveHomogeneousValueContributions(
-            cityResolution.resolvedWallSegments.flatMap((entity) => entity.resolvedContributions),
+            cityResolution.resolvedWallSegments.flatMap((entity) => (
+                resolveEntityContributionsWithDerivedValues(entity, derivedSourceValues)
+            )),
         );
         const homogeneousValues = getAvailableValues(resolvedWallValues);
 
@@ -121,7 +133,7 @@ export const selectEffectiveWallResolution = createSelector(
             zoneDotDamage: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage] ?? 0,
             zoneDotTicksPerSecond: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotTicksPerSecond] ?? 0,
             zoneDotZoneSize: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0,
-            zoneDotKeywords: collectWallZoneDotKeywords(cityResolution.resolvedWallSegments),
+            zoneDotKeywords: collectWallZoneDotKeywords(cityResolution.resolvedWallSegments, derivedSourceValues),
             homogeneousValues,
             homogeneousResolvedValues: resolvedWallValues,
         };
@@ -148,6 +160,7 @@ function resolveEffectiveCityResolution(
             ...entity,
             keywords: entity.baseKeywords,
             values: entity.baseValueEffects,
+            derivedValues: entity.derivedValues,
         }));
     const resolvedCity = resolveCity([
         ...baseCityEntities,
@@ -208,18 +221,25 @@ function createTowerEntities(
             row: wallTowerEntity?.row,
             keywords: [...resolved.keywords],
             values: resolved.values,
+            derivedValues: resolved.derivedValues,
             effects: resolved.effects,
         };
     });
 }
 
 function hasTowerScopedContribution(entity: HomogeneousResolvedEntity): boolean {
-    return entity.resolvedContributions.some((contribution) => contribution.valueId.startsWith("tower."));
+    return (
+        entity.resolvedContributions.some((contribution) => contribution.valueId.startsWith("tower."))
+        || (entity.derivedValues ?? []).some((contribution) => contribution.valueId.startsWith("tower."))
+    );
 }
 
-function collectWallZoneDotKeywords(wallEntities: readonly HomogeneousResolvedEntity[]): string[] {
+function collectWallZoneDotKeywords(
+    wallEntities: readonly HomogeneousResolvedEntity[],
+    cityValues: Record<string, number>,
+): string[] {
     return [...new Set(wallEntities.flatMap((entity) => {
-        const dotDamageContributions = entity.resolvedContributions.filter((value) => (
+        const dotDamageContributions = resolveEntityContributionsWithDerivedValues(entity, cityValues).filter((value) => (
             value.valueId === HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage
         ));
 
@@ -236,15 +256,29 @@ function getTowerEntityId(towerId: string): string {
     return `tower:${towerId}`;
 }
 
+function getDerivedSourceValues(cityResolution: CityResolution, controlledTerritory: number): Record<string, number> {
+    return {
+        ...cityResolution.homogeneousValues,
+        [HOMOGENEOUS_VALUE_IDS.citySignature]: cityResolution.effectiveSignature,
+        [HOMOGENEOUS_VALUE_IDS.cityFootprint]: cityResolution.cityFootprint,
+        [HOMOGENEOUS_VALUE_IDS.cityControlledTerritory]: controlledTerritory,
+    };
+}
+
 function applyEffectiveTowerEntity(
     resolvedTower: TowerAssemblyResolved,
     effectiveTowerEntity?: HomogeneousResolvedEntity,
+    cityValues: Record<string, number> = {},
 ): TowerAssemblyResolved {
     if (!effectiveTowerEntity) return resolvedTower;
 
     const effectiveKeywords = new Set(effectiveTowerEntity.effectiveKeywords);
+    const resolvedValues = resolveEntityValuesWithDerivedValues(
+        effectiveTowerEntity,
+        cityValues,
+    );
     const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(
-        effectiveTowerEntity.resolvedValues,
+        resolvedValues,
         effectiveKeywords,
     );
 
@@ -253,7 +287,7 @@ function applyEffectiveTowerEntity(
         stats,
         supportCost,
         keywords: effectiveKeywords,
-        homogeneousResolvedValues: effectiveTowerEntity.resolvedValues,
+        homogeneousResolvedValues: resolvedValues,
     };
 }
 

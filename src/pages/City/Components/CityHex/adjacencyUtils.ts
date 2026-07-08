@@ -127,10 +127,11 @@ export function resolveCityUpkeepAndSignature(
                 cellKey: hexCell.cellKey,
                 column: hexCell.column,
                 row: hexCell.row,
-                keywords: [String(wallBuilding.type), ...(wallBuilding.keywords ?? [])],
-                values: wallBuilding.values ?? [],
-                effects: wallBuilding.effects,
-            }];
+                    keywords: [String(wallBuilding.type), ...(wallBuilding.keywords ?? [])],
+                    values: wallBuilding.values ?? [],
+                    derivedValues: wallBuilding.derivedValues ?? [],
+                    effects: wallBuilding.effects,
+                }];
         });
     });
     const cityEntities = [...buildingEntities, ...wallEntities];

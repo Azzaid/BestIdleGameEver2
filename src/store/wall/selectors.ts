@@ -71,6 +71,7 @@ export const selectWallResolution = createSelector(
                     row: hex.row,
                     keywords: [String(wallBuilding.type), ...(wallBuilding.keywords ?? [])],
                     values: wallBuilding.values ?? [],
+                    derivedValues: wallBuilding.derivedValues ?? [],
                     effects: wallBuilding.effects,
                 });
             });

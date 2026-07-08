@@ -1,9 +1,13 @@
 import {useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent} from "react";
-import {useParams} from "react-router-dom";
+import {useParams, useSearchParams} from "react-router-dom";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {TowerPartSlot} from "../../models/battle/towerParts.ts";
 import type {TowerPartVisualMetadata} from "../../models/battle/towerPartVisualMetadata.ts";
-import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {
+  HomogeneousAdjacencyRule,
+  HomogeneousDerivedValueEffect,
+  HomogeneousValueEffect,
+} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 import type {BuildingSpriteMetadata} from "../../models/sprites/buildings/BuildingSpriteMetadata.ts";
 import type {WallSpriteMetadata} from "../../models/sprites/walls/WallSpriteAtlas.ts";
@@ -60,6 +64,17 @@ type ValueRow = {
   base?: HomogeneousValueEffect;
 };
 
+type DerivedValueRow = {
+  id: number;
+  valueId: string;
+  derivedFrom: string;
+  derivedMultiplicator: string;
+  additionalKeywords: string[];
+  additive: string;
+  multiplier: string;
+  base?: HomogeneousDerivedValueEffect;
+};
+
 type EffectRow = {
   id: number;
   requiredBuildingKeywords: string[];
@@ -106,6 +121,7 @@ type StoredEntityDefinition = {
   requirements?: Requirement[];
   buildRequirements?: Requirement[];
   values?: HomogeneousValueEffect[];
+  derivedValues?: HomogeneousDerivedValueEffect[];
   effects?: HomogeneousAdjacencyRule[];
   visualAssetId?: string;
   spriteTextureKey?: string;
@@ -161,6 +177,12 @@ const requirementTypeOptions: {value: RequirementType; label: string}[] = [
 
 const vectorOptions = Object.keys(DEVELOPMENT_VECTORS) as DevelopmentVectorKey[];
 const defaultValueId = HOMOGENEOUS_VALUE_DEFINITION_LIST[0]?.id ?? "resource.people";
+const derivedSourceValueOptions = HOMOGENEOUS_VALUE_DEFINITION_LIST.filter(definition => (
+  definition.id.startsWith("resource.") || definition.id.startsWith("city.")
+));
+const defaultDerivedSourceValueId = derivedSourceValueOptions[0]?.id ?? defaultValueId;
+const towerDerivedTargetValueOptions = HOMOGENEOUS_VALUE_DEFINITION_LIST.filter(definition => definition.id.startsWith("tower."));
+const wallDerivedTargetValueOptions = HOMOGENEOUS_VALUE_DEFINITION_LIST.filter(definition => definition.id.startsWith("wall."));
 const buildingKeywordOptions = [...ALL_BUILDING_KEYWORDS];
 const valueKeywordOptions = Array.from(new Set(
   HOMOGENEOUS_VALUE_DEFINITION_LIST.flatMap(definition => definition.keywords),
@@ -215,6 +237,9 @@ const rawDefinitionsByType: Record<EntityType, Record<DevelopmentVectorKey, read
 
 export default function EntityCreatePage() {
   const {entityId = "new"} = useParams<{entityId: string}>();
+  const [searchParams] = useSearchParams();
+  const draftName = searchParams.get("name") ?? undefined;
+  const draftDescription = searchParams.get("description") ?? undefined;
   const [entityType, setEntityType] = useState<EntityType>("research");
   const [vector, setVector] = useState<DevelopmentVectorKey>("medieval");
   const [partType, setPartType] = useState<TowerPartSlot>("launchSystem");
@@ -234,6 +259,7 @@ export default function EntityCreatePage() {
   const [removedProjectileVisualAssetId, setRemovedProjectileVisualAssetId] = useState("");
   const [providedValueRows, setProvidedValueRows] = useState<ValueRow[]>([]);
   const [upkeepValueRows, setUpkeepValueRows] = useState<ValueRow[]>([]);
+  const [derivedValueRows, setDerivedValueRows] = useState<DerivedValueRow[]>([]);
   const [effectRows, setEffectRows] = useState<EffectRow[]>([]);
   const [requirementRows, setRequirementRows] = useState<RequirementRow[]>([]);
   const [buildRequirementRows, setBuildRequirementRows] = useState<RequirementRow[]>([]);
@@ -250,6 +276,7 @@ export default function EntityCreatePage() {
     : `${idPrefix}.${vector}.${normalizedItemName}`;
   const showBuildingFields = entityType === "building";
   const showBuildRequirements = entityType === "building" || entityType === "wallSegment" || entityType === "wallSuperstructure";
+  const showDerivedValues = isDerivedValueEntityType(entityType);
   const visualAssetKind = getVisualAssetKind(entityType);
   const generatedVisualAssetId = visualAssetKind
     ? getSpriteAssetId(entityType, vector, generatedId)
@@ -339,7 +366,10 @@ export default function EntityCreatePage() {
 
   useEffect(() => {
     if (entityId === "new") {
-      resetFormForNewEntity();
+      resetFormForNewEntity({
+        name: draftName,
+        description: draftDescription,
+      });
       return;
     }
 
@@ -350,7 +380,7 @@ export default function EntityCreatePage() {
     }
 
     fillFormFromStoredEntity(storedEntity);
-  }, [entityId]);
+  }, [draftDescription, draftName, entityId]);
 
   const entityPreview = useMemo(() => (
     createPreview({
@@ -369,6 +399,7 @@ export default function EntityCreatePage() {
       projectileVisualAssetId: effectiveProjectileVisualAssetId,
       providedValueRows,
       upkeepValueRows,
+      derivedValueRows,
       effectRows,
       requirementRows,
       buildRequirementRows,
@@ -378,6 +409,7 @@ export default function EntityCreatePage() {
     buildRequirementRows,
     description,
     displayName,
+    derivedValueRows,
     effectRows,
     entityType,
     generatedId,
@@ -448,6 +480,22 @@ export default function EntityCreatePage() {
         buildingId: "",
         visualAssetId: "",
         spriteDraft: null,
+      },
+    ]);
+  }
+
+  function addDerivedValueRow() {
+    const targetOptions = getDerivedTargetValueOptions(entityType);
+    setDerivedValueRows(rows => [
+      ...rows,
+      {
+        id: nextRowId++,
+        valueId: targetOptions[0]?.id ?? HOMOGENEOUS_VALUE_DEFINITION_LIST[0]?.id ?? "tower.projectileDamage",
+        derivedFrom: defaultDerivedSourceValueId,
+        derivedMultiplicator: "",
+        additionalKeywords: [],
+        additive: "",
+        multiplier: "",
       },
     ]);
   }
@@ -616,6 +664,16 @@ export default function EntityCreatePage() {
           onRemove={rowId => removeValueRow("upkeep", rowId)}
         />
 
+        {showDerivedValues && (
+          <DerivedValueSection
+            entityType={entityType}
+            rows={derivedValueRows}
+            onAdd={addDerivedValueRow}
+            onUpdate={updateDerivedValueRow}
+            onRemove={removeDerivedValueRow}
+          />
+        )}
+
         <section className={s.section}>
           <div className={s.sectionHeader}>
             <h2 className={s.sectionTitle}>Effects</h2>
@@ -706,6 +764,14 @@ export default function EntityCreatePage() {
       return;
     }
     setUpkeepValueRows(remove);
+  }
+
+  function updateDerivedValueRow(rowId: number, patch: Partial<DerivedValueRow>) {
+    setDerivedValueRows(rows => rows.map(row => row.id === rowId ? {...row, ...patch} : row));
+  }
+
+  function removeDerivedValueRow(rowId: number) {
+    setDerivedValueRows(rows => rows.filter(row => row.id !== rowId));
   }
 
   function updateEffectRow(rowId: number, patch: Partial<EffectRow>) {
@@ -927,6 +993,7 @@ export default function EntityCreatePage() {
         keywords,
         providedValueRows,
         upkeepValueRows,
+        derivedValueRows,
         effectRows,
         requirementRows,
         buildRequirementRows,
@@ -977,14 +1044,14 @@ export default function EntityCreatePage() {
     }
   }
 
-  function resetFormForNewEntity() {
+  function resetFormForNewEntity(draft?: {name?: string; description?: string}) {
     setEntityType("research");
     setVector("medieval");
     setPartType("launchSystem");
     setIsSuperstructure(false);
-    setItemName("newEntity");
-    setDisplayName("New Entity");
-    setDescription("");
+    setItemName(draft?.name ? normalizeIdPart(draft.name) : "newEntity");
+    setDisplayName(draft?.name?.trim() || "New Entity");
+    setDescription(draft?.description?.trim() || "");
     setHint("");
     setRequiredBuildingRows([]);
     setRequiredSourceSpriteRows([]);
@@ -997,6 +1064,7 @@ export default function EntityCreatePage() {
     setRemovedProjectileVisualAssetId("");
     setProvidedValueRows([]);
     setUpkeepValueRows([]);
+    setDerivedValueRows([]);
     setEffectRows([]);
     setRequirementRows([]);
     setBuildRequirementRows([]);
@@ -1023,6 +1091,7 @@ export default function EntityCreatePage() {
     setRemovedProjectileVisualAssetId("");
     setProvidedValueRows([]);
     setUpkeepValueRows([]);
+    setDerivedValueRows([]);
     setEffectRows([]);
     setRequirementRows([]);
     setBuildRequirementRows([]);
@@ -1057,6 +1126,7 @@ export default function EntityCreatePage() {
     setRemovedProjectileVisualAssetId("");
     setProvidedValueRows(createValueRows(definition.values ?? [], "production"));
     setUpkeepValueRows(createValueRows(definition.values ?? [], "upkeep"));
+    setDerivedValueRows(createDerivedValueRows(definition.derivedValues ?? []));
     setEffectRows(createEffectRows(definition.effects ?? []));
     setRequirementRows(createRequirementRows(definition.requirements ?? []));
     setBuildRequirementRows(createRequirementRows(definition.buildRequirements ?? []));
@@ -1111,6 +1181,78 @@ function ValueSection(props: {
               <input className={s.input} type="number" value={row.multiplier} onChange={event => props.onUpdate(row.id, {multiplier: event.target.value})} />
             </label>
             <button className={s.dangerButton} type="button" onClick={() => props.onRemove(row.id)} title="Remove value">x</button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function DerivedValueSection(props: {
+  entityType: EntityType;
+  rows: DerivedValueRow[];
+  onAdd: () => void;
+  onUpdate: (rowId: number, patch: Partial<DerivedValueRow>) => void;
+  onRemove: (rowId: number) => void;
+}) {
+  const targetOptions = getDerivedTargetValueOptions(props.entityType);
+
+  return (
+    <section className={s.section}>
+      <div className={s.sectionHeader}>
+        <h2 className={s.sectionTitle}>Derived Values</h2>
+        <button className={s.button} type="button" onClick={props.onAdd} title="Add derived value">+</button>
+      </div>
+      <div className={s.rowList}>
+        {props.rows.length === 0 && <span className={s.hint}>No derived values yet.</span>}
+        {props.rows.map(row => (
+          <div key={row.id} className={s.row}>
+            <label className={s.field}>
+              <span className={s.label}>Derived value</span>
+              <select
+                className={s.input}
+                value={targetOptions.some(option => option.id === row.valueId) ? row.valueId : (targetOptions[0]?.id ?? "")}
+                onChange={event => props.onUpdate(row.id, {valueId: event.target.value})}
+              >
+                {targetOptions.map(definition => (
+                  <option key={definition.id} value={definition.id}>{definition.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className={s.field}>
+              <span className={s.label}>Derived from</span>
+              <select
+                className={s.input}
+                value={derivedSourceValueOptions.some(option => option.id === row.derivedFrom) ? row.derivedFrom : defaultDerivedSourceValueId}
+                onChange={event => props.onUpdate(row.id, {derivedFrom: event.target.value})}
+              >
+                {derivedSourceValueOptions.map(definition => (
+                  <option key={definition.id} value={definition.id}>{definition.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className={s.field}>
+              <span className={s.label}>Derived multiplicator</span>
+              <input className={s.input} type="number" value={row.derivedMultiplicator} onChange={event => props.onUpdate(row.id, {derivedMultiplicator: event.target.value})} />
+            </label>
+            <div className={s.field}>
+              <span className={s.label}>Additional keywords</span>
+              <SearchableMultiSelect
+                label=""
+                options={entityKeywordOptions}
+                selected={row.additionalKeywords}
+                onChange={additionalKeywords => props.onUpdate(row.id, {additionalKeywords})}
+              />
+            </div>
+            <label className={s.field}>
+              <span className={s.label}>Additive</span>
+              <input className={s.input} type="number" value={row.additive} onChange={event => props.onUpdate(row.id, {additive: event.target.value})} />
+            </label>
+            <label className={s.field}>
+              <span className={s.label}>Multiplier</span>
+              <input className={s.input} type="number" value={row.multiplier} onChange={event => props.onUpdate(row.id, {multiplier: event.target.value})} />
+            </label>
+            <button className={s.dangerButton} type="button" onClick={() => props.onRemove(row.id)} title="Remove derived value">x</button>
           </div>
         ))}
       </div>
@@ -1885,6 +2027,7 @@ function createPreview(args: {
   keywords: string[];
   providedValueRows: ValueRow[];
   upkeepValueRows: ValueRow[];
+  derivedValueRows: DerivedValueRow[];
   effectRows: EffectRow[];
   requirementRows: RequirementRow[];
   buildRequirementRows: RequirementRow[];
@@ -1898,6 +2041,11 @@ function createPreview(args: {
     ...args.upkeepValueRows.map(row => createValueEffect(row, "upkeep")),
   ]
     .filter((value): value is HomogeneousValueEffect => Boolean(value));
+  const derivedValues = isDerivedValueEntityType(args.entityType)
+    ? args.derivedValueRows
+      .map(row => createDerivedValueEffect(row, args.entityType))
+      .filter((value): value is HomogeneousDerivedValueEffect => Boolean(value))
+    : [];
   const effects = args.effectRows
     .map(createAdjacencyRule)
     .filter((effect): effect is HomogeneousAdjacencyRule => Boolean(effect));
@@ -1994,6 +2142,12 @@ function createPreview(args: {
 
   if (values.length > 0) {
     preview.values = values;
+  }
+
+  if (derivedValues.length > 0) {
+    preview.derivedValues = derivedValues;
+  } else {
+    delete preview.derivedValues;
   }
 
   if (effects.length > 0) {
@@ -2290,6 +2444,79 @@ function createValueEffect(row: ValueRow, role: ValueRole): HomogeneousValueEffe
   }
 
   return effect;
+}
+
+function createDerivedValueEffect(row: DerivedValueRow, entityType: EntityType): HomogeneousDerivedValueEffect | null {
+  const targetValueId = getValidDerivedTargetValueId(entityType, row.valueId);
+  const sourceValueId = getValidDerivedSourceValueId(row.derivedFrom);
+  const derivedMultiplicator = parseOptionalNumber(row.derivedMultiplicator);
+  const additive = parseOptionalNumber(row.additive);
+  const multiplier = parseOptionalNumber(row.multiplier);
+  if (!row.base && derivedMultiplicator === null && additive === null && multiplier === null) return null;
+  if (derivedMultiplicator === null) return null;
+
+  const retainedKeywords = row.additionalKeywords
+    .filter(keyword => keyword !== "production" && keyword !== "upkeep");
+
+  const effect: HomogeneousDerivedValueEffect = {
+    ...row.base,
+    valueId: targetValueId,
+    derivedFrom: sourceValueId,
+    derivedMultiplicator,
+    additionalKeywords: ["production", ...retainedKeywords],
+  };
+
+  if (additive !== null) {
+    effect.additive = additive;
+  } else {
+    delete effect.additive;
+  }
+
+  if (multiplier !== null) {
+    effect.multiplier = multiplier;
+  } else {
+    delete effect.multiplier;
+  }
+
+  return effect;
+}
+
+function createDerivedValueRows(values: readonly HomogeneousDerivedValueEffect[]): DerivedValueRow[] {
+  return values.map(value => ({
+    id: nextRowId++,
+    valueId: value.valueId,
+    derivedFrom: value.derivedFrom,
+    derivedMultiplicator: String(value.derivedMultiplicator),
+    additionalKeywords: getAdditionalValueKeywords(value),
+    additive: value.additive === undefined || value.additive === null ? "" : String(value.additive),
+    multiplier: value.multiplier === undefined || value.multiplier === null ? "" : String(value.multiplier),
+    base: value,
+  }));
+}
+
+function getDerivedTargetValueOptions(entityType: EntityType) {
+  if (entityType === "gunPart") return towerDerivedTargetValueOptions;
+  if (entityType === "wallSegment") return wallDerivedTargetValueOptions;
+  if (entityType === "wallSuperstructure") return [...wallDerivedTargetValueOptions, ...towerDerivedTargetValueOptions];
+
+  return [];
+}
+
+function isDerivedValueEntityType(entityType: EntityType): boolean {
+  return entityType === "gunPart" || entityType === "wallSegment" || entityType === "wallSuperstructure";
+}
+
+function getValidDerivedTargetValueId(entityType: EntityType, valueId: string): string {
+  const options = getDerivedTargetValueOptions(entityType);
+  return options.some(option => option.id === valueId)
+    ? valueId
+    : options[0]?.id ?? "tower.projectileDamage";
+}
+
+function getValidDerivedSourceValueId(valueId: string): string {
+  return derivedSourceValueOptions.some(option => option.id === valueId)
+    ? valueId
+    : defaultDerivedSourceValueId;
 }
 
 function getValueRole(value: HomogeneousValueEffect): ValueRole {

@@ -8,6 +8,7 @@ import {
 } from '../homogeneousValueAdapters.ts';
 import type {
   HomogeneousAdjacencyRule,
+  HomogeneousDerivedValueEffect,
   HomogeneousResolvedValueMap,
   HomogeneousValueEffect,
 } from '../homogeneousValues.ts';
@@ -40,6 +41,7 @@ export function resolveTowerAssembly(
   const aimKeywords: string[] = [];
   const warnings: TowerAssemblyResolved['warnings'] = [];
   const values: HomogeneousValueEffect[] = [];
+  const derivedValues: HomogeneousDerivedValueEffect[] = [];
   const effects: HomogeneousAdjacencyRule[] = [];
 
   for (const { key: slot } of TOWER_PART_SLOT_ORDER) {
@@ -59,6 +61,7 @@ export function resolveTowerAssembly(
     selectedParts[slot] = part;
     part.keywords.forEach((keyword) => keywords.add(keyword));
     values.push(...(part.values ?? []));
+    derivedValues.push(...(part.derivedValues ?? []));
     effects.push(...(part.effects ?? []));
     addAimKeywords(aimKeywords, part.aimKeywords);
 
@@ -99,6 +102,7 @@ export function resolveTowerAssembly(
     if (!active) return [];
 
     values.push(...(rule.values ?? []));
+    derivedValues.push(...(rule.derivedValues ?? []));
     effects.push(...(rule.effects ?? []));
     rule.addKeywords?.forEach((keyword) => keywords.add(keyword));
     addAimKeywords(aimKeywords, rule.addAimKeywords);
@@ -131,6 +135,7 @@ export function resolveTowerAssembly(
     stats,
     supportCost,
     values,
+    derivedValues,
     effects,
     homogeneousResolvedValues: resolvedValues,
     keywords,

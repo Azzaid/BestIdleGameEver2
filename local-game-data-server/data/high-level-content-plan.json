@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "rootIds": [
+    "content-plan-root"
+  ],
+  "nodes": {
+    "content-plan-root": {
+      "id": "content-plan-root",
+      "header": "Content Plan",
+      "description": "High level content plan for future game entities and progression beats.",
+      "childIds": [
+        "plan-a50e3310-3c77-4fba-91d8-04092551db64"
+      ]
+    },
+    "plan-a50e3310-3c77-4fba-91d8-04092551db64": {
+      "id": "plan-a50e3310-3c77-4fba-91d8-04092551db64",
+      "header": "Nature branch",
+      "description": "Specializes on buff effects and passive targeting at closest enemy. Has fungi, plants and animals.",
+      "childIds": [
+        "plan-9d4a61d3-b14b-421a-aa68-48ad3a84447c"
+      ]
+    },
+    "plan-9d4a61d3-b14b-421a-aa68-48ad3a84447c": {
+      "id": "plan-9d4a61d3-b14b-421a-aa68-48ad3a84447c",
+      "header": "Fungi",
+      "description": "Poison, slow, mind control",
+      "childIds": [
+        "plan-07e71a41-6a51-4d80-98b5-b9036ad934c6"
+      ]
+    },
+    "plan-07e71a41-6a51-4d80-98b5-b9036ad934c6": {
+      "id": "plan-07e71a41-6a51-4d80-98b5-b9036ad934c6",
+      "header": "Poison",
+      "description": "Poisonous fungi. Provide wall clusters and tower bases with DOT.",
+      "childIds": [
+        "plan-4cc5403e-abcb-45b0-ae5a-9e3924e8131c",
+        "plan-909d41f2-e5f2-4414-a5b2-84066b5c9016",
+        "plan-c9047893-e2de-42a7-a1da-458d0ada4099",
+        "plan-7730b53d-46eb-4484-9162-5fde5ccf23c7"
+      ]
+    },
+    "plan-4cc5403e-abcb-45b0-ae5a-9e3924e8131c": {
+      "id": "plan-4cc5403e-abcb-45b0-ae5a-9e3924e8131c",
+      "header": "Level 1",
+      "description": "Freshly mutated from base mycelium. Gives access to poisonous cluster. Slighlty decreases adjanced animal production.",
+      "entityId": "buildings.nature.youngPoisonousMushrooms",
+      "childIds": []
+    },
+    "plan-909d41f2-e5f2-4414-a5b2-84066b5c9016": {
+      "id": "plan-909d41f2-e5f2-4414-a5b2-84066b5c9016",
+      "header": "Level 2",
+      "description": "Stronger and more mature. Help nearby fungi. Affect badly nearby animals.",
+      "childIds": []
+    },
+    "plan-c9047893-e2de-42a7-a1da-458d0ada4099": {
+      "id": "plan-c9047893-e2de-42a7-a1da-458d0ada4099",
+      "header": "Level 3",
+      "description": "Not just poisonous but acidious. Affect badly animals, slightly supress threes. Allows to build fungi tower base.",
+      "childIds": []
+    },
+    "plan-7730b53d-46eb-4484-9162-5fde5ccf23c7": {
+      "id": "plan-7730b53d-46eb-4484-9162-5fde5ccf23c7",
+      "header": "Level 4",
+      "description": "Extremely deadly fungi growth. supress nearby animals, threes, people. Allows to pass on the legacy.",
+      "childIds": []
+    }
+  }
+}

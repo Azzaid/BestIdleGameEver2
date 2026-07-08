@@ -7,6 +7,7 @@ import {
   selectLastSeenHistoryEntryId,
 } from "../../store/globalEvents/selectors.ts";
 import {markGlobalHistorySeen} from "../../store/globalEvents/slice.ts";
+import type {GlobalEventHistoryEntry} from "../../models/store/globalEvents.ts";
 import * as s from "./HistoryPage.css.ts";
 
 export default function HistoryPage() {
@@ -19,7 +20,7 @@ export default function HistoryPage() {
   const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null);
 
   const targetEventId = useMemo(
-    () => getHistoryScrollTarget(eventHistoryEntries.map(entry => entry.id), lastSeenEntryId),
+    () => getHistoryScrollTarget(eventHistoryEntries, lastSeenEntryId),
     [eventHistoryEntries, lastSeenEntryId],
   );
   const latestEntryId = eventHistoryEntries.at(-1)?.id;
@@ -130,15 +131,22 @@ export default function HistoryPage() {
 }
 
 function getHistoryScrollTarget(
-  historyEntryIds: readonly string[],
+  historyEntries: readonly GlobalEventHistoryEntry[],
   lastSeenEntryId: string | undefined,
 ): string | undefined {
-  if (historyEntryIds.length === 0) return undefined;
+  if (historyEntries.length === 0) return undefined;
 
-  const lastSeenIndex = lastSeenEntryId ? historyEntryIds.indexOf(lastSeenEntryId) : -1;
-  if (lastSeenIndex < historyEntryIds.length - 1) {
-    return historyEntryIds[lastSeenIndex + 1];
-  }
+  const lastSeenIndex = lastSeenEntryId
+    ? historyEntries.findIndex(entry => entry.id === lastSeenEntryId)
+    : -1;
+  const unseenEntries = historyEntries.slice(lastSeenIndex + 1);
+  const forceEntry = unseenEntries.find(entry => {
+    if (!entry.eventId) return false;
+    return (GLOBAL_EVENTS[entry.eventId]?.notificationLevel ?? "force") === "force";
+  });
+
+  if (forceEntry) return forceEntry.id;
+  if (unseenEntries.length > 0) return unseenEntries[0].id;
 
   return undefined;
 }

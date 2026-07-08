@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { recordControlledTerritoryReached, recordLastSiegeSignature } from "../../store/upkeep/slice.ts";
 import {
     selectCitySignatureStatus,
+    selectControlledTerritory,
     selectEffectiveWallResolution,
     selectResolvedEffectiveAvailableTowers,
     selectTowerAwareCityResolution,
@@ -29,6 +30,7 @@ import {
     SIEGE_THREAT_START_RATIO,
     SIEGE_WAVE_INTERVAL_SECONDS,
 } from "../../data/constants.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
 import {
     selectControlledTerritoryGrowthStep,
     selectMonsterModifierValues,
@@ -37,6 +39,8 @@ import {
 import type { TowerAssemblyResolved } from "../../models/battle/towerParts.ts";
 import { resolveTowerAssemblyStatsAndSupport } from "../../models/battle/resolveTowerAssembly.ts";
 import type { HomogeneousResolvedEntity } from "../../models/homogeneousValueResolution.ts";
+import {resolveEntityValuesWithDerivedValues} from "../../models/homogeneousValueResolution.ts";
+import type {CityResolution} from "../../models/city/Adjancency.ts";
 
 type BattleMode = "siege" | "pressure";
 
@@ -84,12 +88,18 @@ function getStandaloneTowerDefenseBattleKey(defense: StandaloneTowerDefense) {
     ].join("|");
 }
 
-function createStandaloneTowerDefenses(wallEntities: readonly HomogeneousResolvedEntity[]): StandaloneTowerDefense[] {
+function createStandaloneTowerDefenses(
+    wallEntities: readonly HomogeneousResolvedEntity[],
+    cityValues: Record<string, number>,
+): StandaloneTowerDefense[] {
     return wallEntities.flatMap((entity) => {
         if (entity.entityType !== "wallSuperstructure" || !hasTowerScopedContribution(entity)) return [];
 
         const keywords = new Set(entity.effectiveKeywords);
-        const {stats} = resolveTowerAssemblyStatsAndSupport(entity.resolvedValues, keywords);
+        const {stats} = resolveTowerAssemblyStatsAndSupport(
+            resolveEntityValuesWithDerivedValues(entity, cityValues),
+            keywords,
+        );
 
         return [{
             id: entity.id,
@@ -102,8 +112,20 @@ function createStandaloneTowerDefenses(wallEntities: readonly HomogeneousResolve
     });
 }
 
+function getDerivedSourceValues(cityResolution: CityResolution, controlledTerritory: number): Record<string, number> {
+    return {
+        ...cityResolution.homogeneousValues,
+        [HOMOGENEOUS_VALUE_IDS.citySignature]: cityResolution.effectiveSignature,
+        [HOMOGENEOUS_VALUE_IDS.cityFootprint]: cityResolution.cityFootprint,
+        [HOMOGENEOUS_VALUE_IDS.cityControlledTerritory]: controlledTerritory,
+    };
+}
+
 function hasTowerScopedContribution(entity: HomogeneousResolvedEntity) {
-    return entity.resolvedContributions.some((contribution) => contribution.valueId.startsWith("tower."));
+    return (
+        entity.resolvedContributions.some((contribution) => contribution.valueId.startsWith("tower."))
+        || (entity.derivedValues ?? []).some((contribution) => contribution.valueId.startsWith("tower."))
+    );
 }
 
 function useStableResolvedBattleTowers(towers: TowerAssemblyResolved[]) {
@@ -138,12 +160,17 @@ const BattlePage = () => {
     const cityHexes = useTypedSelector(selectCityHexes);
     const cityBattlefield = useTypedSelector(selectCityBattlefield);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
+    const controlledTerritory = useTypedSelector(selectControlledTerritory);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const wallResolution = useTypedSelector(selectEffectiveWallResolution);
+    const derivedSourceValues = useMemo(
+        () => getDerivedSourceValues(cityResolution, controlledTerritory),
+        [cityResolution, controlledTerritory],
+    );
     const standaloneTowerDefenses = useMemo(
-        () => createStandaloneTowerDefenses(cityResolution.resolvedWallSegments),
-        [cityResolution.resolvedWallSegments],
+        () => createStandaloneTowerDefenses(cityResolution.resolvedWallSegments, derivedSourceValues),
+        [derivedSourceValues, cityResolution.resolvedWallSegments],
     );
     const controlledTerritoryGrowthStep = useTypedSelector(selectControlledTerritoryGrowthStep);
     const monsterModifierValues = useTypedSelector(selectMonsterModifierValues);

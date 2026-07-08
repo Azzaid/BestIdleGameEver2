@@ -3,6 +3,7 @@ import type { WallBuilding, WallResolution } from './Wall.ts';
 import type { PlacedBuilding } from './Building.ts';
 import type { StructureDetectionResult } from './multistructureDetection.ts';
 import type { HomogeneousResolvedEntity } from '../homogeneousValueResolution.ts';
+import type { RequirementResolutionData } from '../progression/requirements.ts';
 
 export type SelectedHexPanelProps = {
     selectedHex: HexCell;
@@ -12,6 +13,8 @@ export type SelectedHexPanelProps = {
     selectedWallTopBuilding?: WallBuilding;
     structureCandidates: StructureDetectionResult[];
     builtStructureIds: ReadonlySet<string>;
+    unlockedBuildingIds: ReadonlySet<string>;
+    requirementResolutionData: RequirementResolutionData;
     isPartOfCompleteStructure: boolean;
     wallResolution: WallResolution;
     blocked: boolean;

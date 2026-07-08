@@ -5,6 +5,7 @@ import {
 } from "../data/homogeneousValues/index.ts";
 import type {
     HomogeneousAdjacencyRule,
+    HomogeneousDerivedValueEffect,
     HomogeneousResolvedValue,
     HomogeneousResolvedValueMap,
     HomogeneousValueEffect,
@@ -32,6 +33,7 @@ export type HomogeneousValueEntitySource = {
     row?: number;
     keywords?: readonly string[];
     values?: readonly HomogeneousValueEffect[];
+    derivedValues?: readonly HomogeneousDerivedValueEffect[];
     effects?: readonly HomogeneousAdjacencyRule[];
 };
 
@@ -141,6 +143,7 @@ export function resolveWallSegment(
             ...(entity.keywords ?? []),
         ])),
         values: wallEntities.flatMap((entity) => getEntityValues(entity)),
+        derivedValues: wallEntities.flatMap((entity) => entity.derivedValues ?? []),
         effects: wallEntities.flatMap((entity) => getEntityEffects(entity)),
     };
 
@@ -188,6 +191,49 @@ export function resolveCity(
             entity.entityType === "technology" || entity.entityType === "globalModifier"
         )),
     };
+}
+
+export function resolveDerivedValueEffects(
+    derivedValues: readonly HomogeneousDerivedValueEffect[] | undefined,
+    sourceValues: HomogeneousValueTotals,
+): HomogeneousValueEffect[] {
+    return (derivedValues ?? []).flatMap((derivedValue) => {
+        if (!isValidDerivedValueEffect(derivedValue)) return [];
+
+        const sourceValue = sourceValues[derivedValue.derivedFrom] ?? 0;
+        const derivedAdditive = (derivedValue.additive ?? 0) + sourceValue * derivedValue.derivedMultiplicator;
+        const additionalKeywords = [
+            "production",
+            ...(derivedValue.additionalKeywords ?? []).filter((keyword) => (
+                !HOMOGENEOUS_VALUE_ROLE_KEYWORDS.includes(keyword as HomogeneousValueRoleKeyword)
+            )),
+        ];
+
+        return [{
+            valueId: derivedValue.valueId,
+            additionalKeywords,
+            removedKeywords: derivedValue.removedKeywords,
+            multiplier: derivedValue.multiplier,
+            additive: derivedAdditive,
+        }];
+    });
+}
+
+export function resolveEntityContributionsWithDerivedValues(
+    entity: HomogeneousResolvedEntity,
+    sourceValues: HomogeneousValueTotals,
+): HomogeneousValueEffect[] {
+    return [
+        ...entity.resolvedContributions,
+        ...resolveDerivedValueEffects(entity.derivedValues, sourceValues),
+    ];
+}
+
+export function resolveEntityValuesWithDerivedValues(
+    entity: HomogeneousResolvedEntity,
+    sourceValues: HomogeneousValueTotals,
+): HomogeneousResolvedValueMap {
+    return resolveHomogeneousValueContributions(resolveEntityContributionsWithDerivedValues(entity, sourceValues));
 }
 
 export function getEffectKeywords(effect: HomogeneousValueEffect): Set<string> {
@@ -594,6 +640,14 @@ function updateDerivedResolvedValue(resolvedValue: HomogeneousResolvedValue): vo
 
 function getHomogeneousValueResolveType(valueId: HomogeneousValueId): HomogeneousValueResolveType {
     return homogeneousValueDefinitions[valueId]?.resolutionMethod ?? "sum";
+}
+
+function isValidDerivedValueEffect(effect: HomogeneousDerivedValueEffect): boolean {
+    return (
+        (effect.derivedFrom.startsWith("resource.") || effect.derivedFrom.startsWith("city."))
+        && (effect.valueId.startsWith("tower.") || effect.valueId.startsWith("wall."))
+        && Number.isFinite(effect.derivedMultiplicator)
+    );
 }
 
 function getHomogeneousValueDiminishingReturnPower(valueId: HomogeneousValueId): number {

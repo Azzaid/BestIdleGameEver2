@@ -150,7 +150,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 4
+        "additive": 3
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
       }
     ],
     "effects": [
@@ -263,5 +270,238 @@
     ],
     "adjacencyDescription": "Neighboring animals get stronger",
     "visualAssetId": "building_nature_meadow"
+  },
+  {
+    "id": "buildings.nature.youngPoisonousMushrooms",
+    "visualAssetId": "building_nature_young-poisonous-mushrooms",
+    "name": "Young poisonous mushrooms",
+    "kind": "superstructure",
+    "description": "First mushrooms start to pop out. Young and poisonous. Can be planted on a wall to provide cloud of toxic fumes. Not particulary big or strong one but it will get stronger the more fungi is in ecosystem. Symbiotic to plants but can be dangerous to animals.",
+    "requiredBuildingIds": [
+      "buildings.nature.poisonousMycelium"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.mycelium": "building_nature_young-poisonous-mushrooms-from-mycelium"
+    },
+    "hint": "In a diverse ecosystem mushrooms will grow",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.mushrooms"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 6
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 6
+      }
+    ],
+    "effects": [
+      {
+        "requiredBuildingKeywords": [
+          "fungi"
+        ],
+        "multiplier": 1.5,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "plants"
+        ],
+        "multiplier": 1.25,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "animals"
+        ],
+        "multiplier": 0.85
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.poisonousMycelium",
+    "visualAssetId": "building_nature_poisonous-mycelium",
+    "name": "Poisonous mycelium",
+    "kind": "superstructure",
+    "description": "Mycelium mutated into poisonous kind. Symbiotic to other fungi but can be harmfull for animals.",
+    "requiredBuildingIds": [
+      "buildings.nature.mycelium"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.mycelium": "building_nature_poisonous-mycelium-from-mycelium"
+    },
+    "hint": "In a diverse ecosystem mushrooms will grow",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.mushrooms"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 3
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      }
+    ],
+    "effects": [
+      {
+        "requiredBuildingKeywords": [
+          "fungi"
+        ],
+        "multiplier": 1.25,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "animals"
+        ],
+        "multiplier": 0.85,
+        "radius": 1
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.bigPoisonousMushrooms",
+    "visualAssetId": "building_nature_big-poisonous-mushrooms",
+    "name": "Big poisonous mushrooms",
+    "kind": "superstructure",
+    "description": "Grown up poisonous mushrooms. Can be gathered and pressed into living poisonous gun platform that will help to slide a weapon and create dangerous spore cloud. Better no to plant them near animals.",
+    "hint": "Will grow in a strong ecosystem",
+    "keywords": [
+      "nature"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.mushrooms"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.fungi",
+        "amount": 9
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 9
+      }
+    ],
+    "effects": [
+      {
+        "requiredBuildingKeywords": [
+          "plants"
+        ],
+        "multiplier": 1.25,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "fungi"
+        ],
+        "multiplier": 1.5,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "animals"
+        ],
+        "multiplier": 0.7,
+        "radius": 1
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.maturePoisonousMushrooms",
+    "visualAssetId": "building_nature_mature-poisonous-mushrooms",
+    "name": "Mature poisonous mushrooms",
+    "kind": "superstructure",
+    "description": "Matrure shrooms covered with clouds of poison and acid. Fully grown and ready to carry their genetical legacy forth.",
+    "requiredBuildingIds": [
+      "buildings.nature.bigPoisonousMushrooms"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.bigPoisonousMushrooms": "building_nature_mature-poisonous-mushrooms-from-big-poisonous-mushrooms"
+    },
+    "keywords": [
+      "nature"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.spores"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 15
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 15
+      }
+    ]
   }
 ]

@@ -14,6 +14,9 @@ export default function DevToolsNavLinks() {
         <Link className={appTheme.navBarLink} to="/entity-create/new">Entity Create</Link>
       </li>
       <li>
+        <Link className={appTheme.navBarLink} to="/content-plan">Content Plan</Link>
+      </li>
+      <li>
         <Link className={appTheme.navBarLink} to="/monster-edit/new">Monster Edit</Link>
       </li>
       <li>

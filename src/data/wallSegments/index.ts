@@ -1,7 +1,7 @@
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {BuildingKeyword} from "../../models/city/Keywords.ts";
 import type {WallBuilding, WallBuildingAtlas} from "../../models/city/Wall.ts";
-import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousDerivedValueEffect, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 import {createWallSegmentFactory} from "./wallSegmentFactory.ts";
 import aetherWallSegmentDefinitions from "./aether.json";
@@ -18,6 +18,7 @@ type WallSegmentDefinition = {
     requirements?: Requirement[];
     buildRequirements?: Requirement[];
     values?: HomogeneousValueEffect[];
+    derivedValues?: HomogeneousDerivedValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
 };
 
@@ -62,6 +63,7 @@ function buildWallSegments(vector: DevelopmentVectorKey): Record<string, WallBui
                     requirements: definition.requirements,
                     buildRequirements: definition.buildRequirements,
                     values: definition.values,
+                    derivedValues: definition.derivedValues,
                     effects: definition.effects,
                 },
             ),

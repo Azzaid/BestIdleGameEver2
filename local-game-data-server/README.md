@@ -19,6 +19,8 @@ Endpoints:
 - `GET /health`
 - `GET /game-files/sample-game-state.json`
 - `PUT /game-files/sample-game-state.json`
+- `GET /game-files/high-level-content-plan.json`
+- `PUT /game-files/high-level-content-plan.json`
 - `POST /entities`
 - `POST /entity-sprites`
 - `POST /entity-sprite-metadata`

@@ -8,7 +8,9 @@
     "npm": ">=11"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "node ./scripts/dev.mjs",
+    "dev:vite": "vite",
+    "dev:data": "npm --prefix ./local-game-data-server start",
     "build": "tsc -b && vite build",
     "check": "eslint . && tsc -b && vite build",
     "check:pinned": "powershell -ExecutionPolicy Bypass -File .\\scripts\\check.ps1",

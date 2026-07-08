@@ -1,5 +1,5 @@
 import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
-import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousDerivedValueEffect, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 import type {GunPart, TowerPartSlot} from "../../models/battle/towerParts.ts";
 import {DEFAULT_TOWER_PART_Z_INDEX} from "./renderLayers.ts";
@@ -19,6 +19,7 @@ type TowerPartOptions = {
   aimKeywords?: string[];
   conflictsWithKeywords?: string[];
   values?: HomogeneousValueEffect[];
+  derivedValues?: HomogeneousDerivedValueEffect[];
   effects?: HomogeneousAdjacencyRule[];
   children?: GunPart[];
 };
@@ -49,6 +50,7 @@ export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPart
       conflictsWithKeywords: options.conflictsWithKeywords,
       children: options.children,
       values: options.values,
+      derivedValues: options.derivedValues,
       effects: options.effects,
     };
   }

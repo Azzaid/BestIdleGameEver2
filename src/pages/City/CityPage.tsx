@@ -226,6 +226,8 @@ const CityPage = () => {
     const handleBuildStructure = (structureId: string, coreCellKey: string) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
         if (!unlockedBuildingIdSet.has(structureId)) return;
+        const structureBuilding = getStructureBuilding(structureId);
+        if (!areRequirementsMet(structureBuilding?.buildRequirements, requirementResolutionData)) return;
         dispatch(buildMultistructure({ coreCellKey, structureId }));
     };
 
@@ -243,7 +245,7 @@ const CityPage = () => {
     const selectedStructureCandidates = selectedHex
         ? structureCandidates.filter(candidate => (
             isHexPartOfStructureCandidate(selectedHex.cellKey, candidate)
-            && isStructureCandidateUnlockedOrBuilt(candidate, unlockedBuildingIdSet)
+            && isStructureCandidateVisibleOrBuilt(candidate, visibleBuildingIdSet)
         ))
         : [];
     const selectedHexIsPartOfCompleteStructure = selectedHex
@@ -272,6 +274,8 @@ const CityPage = () => {
                         selectedWallTopBuilding={selectedWallTopBuilding}
                         structureCandidates={selectedStructureCandidates}
                         builtStructureIds={builtStructureIdSet}
+                        unlockedBuildingIds={unlockedBuildingIdSet}
+                        requirementResolutionData={requirementResolutionData}
                         isPartOfCompleteStructure={selectedHexIsPartOfCompleteStructure}
                         wallResolution={wallResolution}
                         blocked={signatureStatus.isBesieged}
@@ -430,6 +434,8 @@ function SelectedHexPanel({
     selectedWallTopBuilding,
     structureCandidates,
     builtStructureIds,
+    unlockedBuildingIds,
+    requirementResolutionData,
     isPartOfCompleteStructure,
     wallResolution,
     blocked,
@@ -478,6 +484,8 @@ function SelectedHexPanel({
                     <MultistructureStatus
                         structureCandidates={structureCandidates}
                         builtStructureIds={builtStructureIds}
+                        unlockedBuildingIds={unlockedBuildingIds}
+                        requirementResolutionData={requirementResolutionData}
                         onBuildStructure={onBuildStructure}
                         blocked={blocked}
                         blockedReason={blockedReason}
@@ -565,12 +573,16 @@ function getSelectionTitle(
 function MultistructureStatus({
     structureCandidates,
     builtStructureIds,
+    unlockedBuildingIds,
+    requirementResolutionData,
     onBuildStructure,
     blocked,
     blockedReason,
 }: {
     structureCandidates: StructureDetectionResult[];
     builtStructureIds: ReadonlySet<string>;
+    unlockedBuildingIds: ReadonlySet<string>;
+    requirementResolutionData: ReturnType<typeof selectRequirementResolutionData>;
     onBuildStructure: (structureId: string, coreCellKey: string) => void;
     blocked: boolean;
     blockedReason: string;
@@ -588,6 +600,13 @@ function MultistructureStatus({
                     candidate.coreHex.partOfStructureId === candidate.structure.id;
                 const hasBeenBuiltBefore = builtStructureIds.has(candidate.structure.id);
                 const structureBuilding = getStructureBuilding(candidate.structure.id);
+                const buildBlockedReason = getStructureBuildBlockedReason(
+                    candidate.structure.id,
+                    structureBuilding?.buildRequirements,
+                    unlockedBuildingIds,
+                    requirementResolutionData,
+                );
+                const transformBlockedReason = blocked ? blockedReason : buildBlockedReason;
 
                 return (
                     <div key={`${candidate.structure.id}-${candidate.coreHex.cellKey}`} className={s.multistructureCandidate}>
@@ -600,8 +619,8 @@ function MultistructureStatus({
                                 <button
                                     className={s.demolishButton}
                                     type="button"
-                                    disabled={blocked}
-                                    title={blocked ? blockedReason : undefined}
+                                    disabled={Boolean(transformBlockedReason)}
+                                    title={transformBlockedReason}
                                     onClick={() => onBuildStructure(candidate.structure.id, candidate.coreHex.cellKey)}
                                 >
                                     Transform
@@ -908,6 +927,24 @@ function getUnavailableWallBuildingReasons(
     return reasons;
 }
 
+function getStructureBuildBlockedReason(
+    structureId: string,
+    buildRequirements: readonly Requirement[] | undefined,
+    unlockedBuildingIds: ReadonlySet<string>,
+    requirementResolutionData: ReturnType<typeof selectRequirementResolutionData>,
+): string | undefined {
+    if (!unlockedBuildingIds.has(structureId)) {
+        return "Not permanently unlocked yet";
+    }
+
+    const unmetBuildRequirements = getUnmetRequirements(buildRequirements, requirementResolutionData);
+    if (unmetBuildRequirements.length) {
+        return formatUnmetBuildRequirements(unmetBuildRequirements, requirementResolutionData);
+    }
+
+    return undefined;
+}
+
 function formatUnmetBuildRequirements(
     requirements: readonly Requirement[],
     requirementResolutionData: ReturnType<typeof selectRequirementResolutionData>,
@@ -974,11 +1011,11 @@ function isHexPartOfStructureCandidate(cellKey: string, candidate: StructureDete
         || candidate.matchedSatellites.some(match => match.hex.cellKey === cellKey);
 }
 
-function isStructureCandidateUnlockedOrBuilt(
+function isStructureCandidateVisibleOrBuilt(
     candidate: StructureDetectionResult,
-    unlockedBuildingIds: ReadonlySet<string>,
+    visibleBuildingIds: ReadonlySet<string>,
 ): boolean {
-    return unlockedBuildingIds.has(candidate.structure.id)
+    return visibleBuildingIds.has(candidate.structure.id)
         || (
             candidate.coreHex.kind === "city"
             && candidate.coreHex.partOfStructureId === candidate.structure.id

@@ -40,6 +40,11 @@ export type HomogeneousValueEffect = {
     additive?: number | null;
 };
 
+export type HomogeneousDerivedValueEffect = HomogeneousValueEffect & {
+    derivedFrom: HomogeneousValueId;
+    derivedMultiplicator: number;
+};
+
 export type HomogeneousValueDefinition = {
     id: HomogeneousValueId;
     label: string;

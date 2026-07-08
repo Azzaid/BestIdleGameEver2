@@ -2,7 +2,7 @@ import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import type {BuildingKeyword} from "../../models/city/Keywords.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import type {DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
-import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousDerivedValueEffect, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 
 type WallSuperstructureFactoryOptions = {
@@ -15,6 +15,7 @@ type WallSuperstructureOptions = {
     requirements?: Requirement[];
     buildRequirements?: Requirement[];
     values?: HomogeneousValueEffect[];
+    derivedValues?: HomogeneousDerivedValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
 };
 
@@ -34,6 +35,7 @@ export function createWallSuperstructureFactory({vector, defaultKeywords = []}: 
             requirements: options.requirements,
             buildRequirements: options.buildRequirements,
             values: options.values,
+            derivedValues: options.derivedValues,
             effects: options.effects,
             description,
         };

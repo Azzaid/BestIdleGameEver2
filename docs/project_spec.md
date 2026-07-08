@@ -71,7 +71,7 @@ Primary routes:
 - `/research` renders research.
 - `/city` renders the city view.
 - `/history` renders happened global events and foreseen event hints.
-- `/progression`, `/ids`, `/entity-create/:entityId`, `/monster-edit/:monsterId`, `/gun-part-editor`, `/global-events`, `/homogeneous-values`, and `/hex-background-editor` are debug-mode tools available only in development builds.
+- `/progression`, `/ids`, `/entity-create/:entityId`, `/content-plan`, `/monster-edit/:monsterId`, `/gun-part-editor`, `/global-events`, `/homogeneous-values`, and `/hex-background-editor` are debug-mode tools available only in development builds.
 
 Important directories:
 
@@ -100,6 +100,7 @@ Content data layout:
 - `src/data/globalEvents` and `src/data/globalModifiers` define event content, event images, flags, and global modifiers.
 - `src/data/ids.ts` derives grouped content IDs from the active atlases for buildings, research, gun parts, enemies, walls, and superstructures.
 - `/ids` renders an audit table that compares registered ids against data definitions, progression rules, and available assets.
+- `/content-plan` renders a high-level content planning tree. It reads and writes `local-game-data-server/data/high-level-content-plan.json` through the local development data server's `/game-files/high-level-content-plan.json` endpoint, links plan nodes to existing entity IDs, and can open `/entity-create/new` with the node header and description prefilled as an entity draft.
 - Content auto-unlock notifications are batched when several buildings, tower parts, walls, or superstructures unlock together. Discovery notifications append notification-style History entries; temporary visibility changes remain notification-only, and paired "now available" messages are suppressed when discovery already covered the same item.
 
 Texture asset layout:
@@ -224,6 +225,8 @@ Resources are stored through one keyworded resource map under the hood. UI and d
 The current implementation routes resources, city metrics, monster modifiers, siege modifiers, wall stats, tower stats, and future derived game values through the homogeneous value registry in `src/data/homogeneousValues`. Content contributes `HomogeneousValueEffect` entries to registered values, and gameplay/UI code should read final values through selectors instead of reading those effects directly. Every contribution must carry exactly one role keyword: `production`, `upkeep`, or `unlock`. Production creates the resolved value, upkeep reduces available value, and unlock checks against produced value without spending it.
 
 Tower parts use the same `values` and `effects` fields as other homogeneous entities. Tower stats, support upkeep, and tower-scoped modifiers all resolve from the assembled tower's single homogeneous value set. Tower-scoped modifiers use `radius: 0`, which affects only the assembled tower entity.
+
+Gun parts, wall segments, and wall superstructures may also define `derivedValues`. These use the normal homogeneous value effect shape plus `derivedFrom` and `derivedMultiplicator`, run after effective city resolution, and append final combat-facing `tower.*` or `wall.*` production values from resolved `resource.*` or `city.*` source values. Derived content values are intentionally one-way and do not feed back into city economy totals.
 
 Unlocked technologies may contribute city-wide homogeneous values and effects. Technology effects are assigned `radius: Infinity` by the technology factory, and technology homogeneous sources are included in effective city resolution alongside buildings, walls, and towers.
 

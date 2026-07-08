@@ -5,7 +5,7 @@ import type {
   TowerPartSlot,
   TowerSynergyRule,
 } from "../../models/battle/towerParts.ts";
-import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {HomogeneousAdjacencyRule, HomogeneousDerivedValueEffect, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 import aetherTowerPartDefinitions from "./aether.json";
 import medievalTowerPartDefinitions from "./medieval.json";
@@ -28,6 +28,7 @@ type GunPartDefinition = {
   aimKeywords?: string[];
   conflictsWithKeywords?: string[];
   values?: HomogeneousValueEffect[];
+  derivedValues?: HomogeneousDerivedValueEffect[];
   effects?: HomogeneousAdjacencyRule[];
 };
 
@@ -107,6 +108,7 @@ function buildTowerParts(vector: DevelopmentVectorKey): GunPart[] {
       aimKeywords: definition.aimKeywords,
       conflictsWithKeywords: definition.conflictsWithKeywords,
       values: definition.values,
+      derivedValues: definition.derivedValues,
       effects: definition.effects,
     },
   ));
