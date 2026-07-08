@@ -1,6 +1,8 @@
 import {useEffect, useMemo, useRef, useState} from "react";
+import {ConfirmationModal} from "../../components/ConfirmationModal.tsx";
 import {GLOBAL_EVENTS} from "../../data/globalEvents/index.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
+import {clearPersistedState} from "../../store/persistence.ts";
 import {
   selectForeseenGlobalEventIds,
   selectGlobalEventHistoryEntries,
@@ -17,6 +19,7 @@ export default function HistoryPage() {
   const lastSeenEntryId = useTypedSelector(selectLastSeenHistoryEntryId);
   const eventRefs = useRef<Record<string, HTMLElement | null>>({});
   const [isForeseenOpen, setIsForeseenOpen] = useState(true);
+  const [isCleanSlateConfirmationOpen, setIsCleanSlateConfirmationOpen] = useState(false);
   const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null);
 
   const targetEventId = useMemo(
@@ -53,12 +56,26 @@ export default function HistoryPage() {
     event: GLOBAL_EVENTS[eventId],
   }));
 
+  const cleanSlate = () => {
+    clearPersistedState();
+    window.location.reload();
+  };
+
   return (
     <section className={s.page}>
       <article className={s.book}>
         <header className={s.header}>
-          <p className={s.kicker}>Chronicle</p>
-          <h1 className={s.title}>History</h1>
+          <div className={s.headerText}>
+            <p className={s.kicker}>Chronicle</p>
+            <h1 className={s.title}>History</h1>
+          </div>
+          <button
+            className={s.cleanSlateButton}
+            type="button"
+            onClick={() => setIsCleanSlateConfirmationOpen(true)}
+          >
+            Clean slate
+          </button>
         </header>
 
         <div className={s.timeline}>
@@ -126,6 +143,15 @@ export default function HistoryPage() {
           </div>
         </section>
       </article>
+      {isCleanSlateConfirmationOpen && (
+        <ConfirmationModal
+          title="Clean slate?"
+          message="This will wipe the saved city and start again from an empty settlement. This cannot be undone."
+          confirmLabel="Clean slate"
+          onConfirm={cleanSlate}
+          onCancel={() => setIsCleanSlateConfirmationOpen(false)}
+        />
+      )}
     </section>
   );
 }

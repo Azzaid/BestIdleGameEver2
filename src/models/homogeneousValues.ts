@@ -19,6 +19,7 @@ export type HomogeneousValueResolveType = typeof HOMOGENEOUS_VALUE_RESOLVE_TYPES
 export const HOMOGENEOUS_VALUE_DISPLAY_METHODS = [
     "default",
     "integer",
+    "fixedTwoDigits",
     "percent",
     "multiplier",
     "seconds",

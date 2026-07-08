@@ -11,13 +11,11 @@ import {
     type AetherAtmosphereResolution,
 } from "../models/city/AetherAtmosphere.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../data/homogeneousValues/index.ts";
+import {formatHomogeneousValue} from "../models/homogeneousValueHelpers.ts";
+import {getHomogeneousValueIdForUpkeepType} from "../models/homogeneousValueAdapters.ts";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 2,
-});
-
-const integerFormatter = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 0,
 });
 
 function getThreatFillColor(ratio: number) {
@@ -61,7 +59,7 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
                                     <div key={resource} className={s.resourceEntry}>
                                         <img  className={s.resourceIcon}/>
                                         <div className={s.resourceText}>
-                                            {UPKEEP_SPRITES[resource]}: {effectiveUpkeep[resource] || 0}
+                                            {UPKEEP_SPRITES[resource]}: {formatUpkeepResourceAmount(resource, effectiveUpkeep[resource] ?? 0)}
                                         </div>
                                     </div>
                                 )
@@ -150,7 +148,7 @@ function NatureBalanceTriangle({
         <div
             className={s.natureBalanceWrap}
             tabIndex={0}
-            aria-label={`Nature balance. Fungi ${formatInteger(fungi)}, plants ${formatInteger(plants)}, animals ${formatInteger(animals)}, bio complexity ${formatInteger(bioComplexity)}`}
+            aria-label={`Nature balance. Fungi ${formatNatureValue(HOMOGENEOUS_VALUE_IDS.resourceFungi, fungi)}, plants ${formatNatureValue(HOMOGENEOUS_VALUE_IDS.resourcePlants, plants)}, animals ${formatNatureValue(HOMOGENEOUS_VALUE_IDS.resourceAnimals, animals)}, bio complexity ${formatNatureValue(HOMOGENEOUS_VALUE_IDS.natureBioComplexity, bioComplexity)}`}
         >
             <svg className={s.natureBalanceSvg} viewBox="4 2 52 46" role="img" aria-hidden="true">
                 <defs>
@@ -169,10 +167,10 @@ function NatureBalanceTriangle({
             </svg>
             <div className={s.natureTooltip} role="tooltip">
                 <div className={s.natureTooltipTitle}>Nature balance</div>
-                <div className={s.natureTooltipRow}><span>Plants</span><strong>{formatInteger(plants)}</strong></div>
-                <div className={s.natureTooltipRow}><span>Animals</span><strong>{formatInteger(animals)}</strong></div>
-                <div className={s.natureTooltipRow}><span>Fungi</span><strong>{formatInteger(fungi)}</strong></div>
-                <div className={s.natureTooltipRow}><span>Bio complexity</span><strong>{formatInteger(bioComplexity)}</strong></div>
+                <div className={s.natureTooltipRow}><span>Plants</span><strong>{formatNatureValue(HOMOGENEOUS_VALUE_IDS.resourcePlants, plants)}</strong></div>
+                <div className={s.natureTooltipRow}><span>Animals</span><strong>{formatNatureValue(HOMOGENEOUS_VALUE_IDS.resourceAnimals, animals)}</strong></div>
+                <div className={s.natureTooltipRow}><span>Fungi</span><strong>{formatNatureValue(HOMOGENEOUS_VALUE_IDS.resourceFungi, fungi)}</strong></div>
+                <div className={s.natureTooltipRow}><span>Bio complexity</span><strong>{formatNatureValue(HOMOGENEOUS_VALUE_IDS.natureBioComplexity, bioComplexity)}</strong></div>
             </div>
         </div>
     );
@@ -242,8 +240,12 @@ function formatKilometers(value: number): string {
     return `${numberFormatter.format(value)} km`;
 }
 
-function formatInteger(value: number): string {
-    return integerFormatter.format(value);
+function formatNatureValue(valueId: string, value: number): string {
+    return formatHomogeneousValue(valueId, value);
+}
+
+function formatUpkeepResourceAmount(resource: UpkeepTypesValue, amount: number): string {
+    return formatHomogeneousValue(getHomogeneousValueIdForUpkeepType(resource), amount);
 }
 
 function getTrianglePoint(

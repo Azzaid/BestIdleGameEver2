@@ -29,7 +29,7 @@ import {
   normalizeMultiplier,
   resolveHomogeneousValueContributions,
 } from '../../models/homogeneousValueResolution.ts';
-import {homogeneousValueTotalsToUpkeepAmount} from '../../models/homogeneousValueAdapters.ts';
+import {getHomogeneousValueIdForUpkeepType, homogeneousValueTotalsToUpkeepAmount} from '../../models/homogeneousValueAdapters.ts';
 import {HOMOGENEOUS_VALUE_IDS, getHomogeneousValueDefinition} from '../../data/homogeneousValues/index.ts';
 import {areRequirementsMet, getUnmetRequirements, type Requirement} from '../../models/progression/requirements.ts';
 import {DEVELOPMENT_VECTOR_LABELS, type DevelopmentVectorKey} from '../../models/DevlopmentVector.ts';
@@ -149,6 +149,9 @@ function getSupportStatus(required: UpkeepAmount, available: UpkeepAmount) {
         requiredAmount,
         availableAmount,
         missingAmount,
+        formattedRequiredAmount: formatUpkeepResourceAmount(resource, requiredAmount),
+        formattedAvailableAmount: formatUpkeepResourceAmount(resource, availableAmount),
+        formattedMissingAmount: formatUpkeepResourceAmount(resource, missingAmount),
       }];
     });
 }
@@ -190,8 +193,8 @@ function formatUnmetBuildRequirement(
 
   const definition = getHomogeneousValueDefinition(requirement.valueId);
   const currentValue = requirementResolutionData.resolvedCityData.homogeneousValues[requirement.valueId] ?? 0;
-  const amount = formatResourceAmount(requirement.amount);
-  const current = formatResourceAmount(currentValue);
+  const amount = formatHomogeneousValue(requirement.valueId, requirement.amount);
+  const current = formatHomogeneousValue(requirement.valueId, currentValue);
 
   if (requirement.type === 'homogeneousValueAtLeast') {
     return `Requires ${definition.label} at least ${amount} (current ${current})`;
@@ -202,6 +205,10 @@ function formatUnmetBuildRequirement(
 
 function formatResourceAmount(amount: number): string {
   return Number.isInteger(amount) ? String(amount) : amount.toFixed(2);
+}
+
+function formatUpkeepResourceAmount(resource: UpkeepTypesValue, amount: number): string {
+  return formatHomogeneousValue(getHomogeneousValueIdForUpkeepType(resource), amount);
 }
 
 function getAvailableUpkeepForSlot(
@@ -408,8 +415,8 @@ const BuildPage = () => {
                 key={item.resource}
                 className={item.missingAmount > 0 ? s.missingCostPill : s.costPill}
               >
-                {item.label} {item.requiredAmount}
-                {item.missingAmount > 0 ? ` / missing ${item.missingAmount}` : ''}
+                {item.label} {item.formattedRequiredAmount}
+                {item.missingAmount > 0 ? ` / missing ${item.formattedMissingAmount}` : ''}
               </span>
             ))}
           </div>
@@ -549,8 +556,8 @@ const BuildPage = () => {
                       key={item.resource}
                       className={item.missingAmount > 0 ? s.missingCostPill : s.costPill}
                     >
-                      {item.label} {item.requiredAmount}
-                      {item.missingAmount > 0 ? ` / missing ${item.missingAmount}` : ''}
+                      {item.label} {item.formattedRequiredAmount}
+                      {item.missingAmount > 0 ? ` / missing ${item.formattedMissingAmount}` : ''}
                     </span>
                   ))
                   : <span className={s.emptyText}>No support required</span>}
@@ -786,7 +793,7 @@ const BuildPage = () => {
                 </span>
                 <span className={s.valueRow}>
                   <span>Support</span>
-                  <strong>{detailsSupportCost.length > 0 ? detailsSupportCost.map((item) => `${item.label} ${item.requiredAmount}`).join(', ') : 'None'}</strong>
+                  <strong>{detailsSupportCost.length > 0 ? detailsSupportCost.map((item) => `${item.label} ${item.formattedRequiredAmount}`).join(', ') : 'None'}</strong>
                 </span>
               </div>
             </div>

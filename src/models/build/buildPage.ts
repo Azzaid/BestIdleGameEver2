@@ -6,4 +6,7 @@ export interface SupportStatusItem {
   requiredAmount: number;
   availableAmount: number;
   missingAmount: number;
+  formattedRequiredAmount: string;
+  formattedAvailableAmount: string;
+  formattedMissingAmount: string;
 }

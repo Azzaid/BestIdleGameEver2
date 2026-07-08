@@ -596,12 +596,12 @@ function resolveDerivedHomogeneousValues(resolvedValues: HomogeneousResolvedValu
         if (!config) continue;
 
         const resolvedValue = resolvedValues[valueId] ?? createEmptyResolvedValue();
-        resolvedValue.producedValue = config.resolveValue(
+        resolvedValue.producedValue = roundHomogeneousValue(valueId, config.resolveValue(
             Object.fromEntries(config.sourceValueIds.map((sourceValueId) => [
                 sourceValueId,
                 sourceValues[sourceValueId] ?? 0,
             ])),
-        );
+        ));
         updateDerivedResolvedValue(resolvedValue);
         resolvedValues[valueId] = resolvedValue;
     }

@@ -53,6 +53,16 @@ export function savePersistedState(state: Partial<PersistedStoreState>): void {
   }
 }
 
+export function clearPersistedState(): void {
+  if (!isStorageAvailable()) return;
+
+  try {
+    localStorage.removeItem(SAVE_STORAGE_KEY);
+  } catch {
+    // Storage can be unavailable or blocked by browser settings.
+  }
+}
+
 function pickPersistedSlices(state: Partial<PersistedStoreState>): Partial<PersistedStoreState> {
   const persistedState: Partial<PersistedStoreState> = {};
 

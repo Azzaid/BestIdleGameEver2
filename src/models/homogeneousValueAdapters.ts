@@ -16,6 +16,10 @@ const resourceValueIdsByUpkeepType: Record<UpkeepTypesValue, HomogeneousValueId>
     [UPKEEP_TYPES.animals]: HOMOGENEOUS_VALUE_IDS.resourceAnimals,
 };
 
+export function getHomogeneousValueIdForUpkeepType(resource: UpkeepTypesValue): HomogeneousValueId {
+    return resourceValueIdsByUpkeepType[resource];
+}
+
 export function homogeneousValueTotalsToUpkeepAmount(totals: Record<HomogeneousValueId, number>): UpkeepAmount {
     return (Object.keys(resourceValueIdsByUpkeepType) as UpkeepTypesValue[]).reduce<UpkeepAmount>(
         (amount, resource) => {

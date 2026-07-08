@@ -41,7 +41,10 @@ import {
 import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import {getUpkeepValues, normalizeMultiplier, resolveHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
-import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
+import {
+    getHomogeneousValueIdForUpkeepType,
+    homogeneousValueTotalsToUpkeepAmount,
+} from "../../models/homogeneousValueAdapters.ts";
 import {GLOBAL_MODIFIERS} from "../../data/globalModifiers/index.ts";
 import {resolveGlobalModifierEffects} from "../../models/globalEvents.ts";
 import {selectActiveGlobalModifiers} from "../../store/globalEvents/selectors.ts";
@@ -692,7 +695,7 @@ function MetricGroup({title, values}: {title: string; values: UpkeepAmount}) {
                     {entries.map(({resource, amount}) => (
                         <div key={resource} className={s.metricRow}>
                             <dt>{UPKEEP_SPRITES[resource]}</dt>
-                            <dd>{amount}</dd>
+                            <dd>{formatUpkeepResourceAmount(resource, amount)}</dd>
                         </div>
                     ))}
                 </dl>
@@ -896,9 +899,13 @@ function formatMissingUpkeep(shortfalls: UpkeepAmount): string {
     return (Object.values(UPKEEP_TYPES) as UpkeepTypesValue[])
         .flatMap(resource => {
             const amount = shortfalls[resource];
-            return amount ? [`${UPKEEP_SPRITES[resource]} ${formatResourceAmount(amount)}`] : [];
+            return amount ? [`${UPKEEP_SPRITES[resource]} ${formatUpkeepResourceAmount(resource, amount)}`] : [];
         })
         .join(", ");
+}
+
+function formatUpkeepResourceAmount(resource: UpkeepTypesValue, amount: number): string {
+    return formatHomogeneousValue(getHomogeneousValueIdForUpkeepType(resource), amount);
 }
 
 function formatResourceAmount(amount: number): string {
@@ -978,8 +985,8 @@ function formatUnmetBuildRequirement(
 
     const definition = getHomogeneousValueDefinition(requirement.valueId);
     const currentValue = requirementResolutionData.resolvedCityData.homogeneousValues[requirement.valueId] ?? 0;
-    const amount = formatResourceAmount(requirement.amount);
-    const current = formatResourceAmount(currentValue);
+    const amount = formatHomogeneousValue(requirement.valueId, requirement.amount);
+    const current = formatHomogeneousValue(requirement.valueId, currentValue);
 
     if (requirement.type === "homogeneousValueAtLeast") {
         return `Requires ${definition.label} at least ${amount} (current ${current})`;

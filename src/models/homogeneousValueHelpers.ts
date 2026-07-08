@@ -10,6 +10,11 @@ const numberFormatter = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 2,
 });
 
+const fixedTwoDigitsFormatter = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+});
+
 const integerFormatter = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
 });
@@ -43,6 +48,8 @@ export function formatHomogeneousValue(
     switch (displayMethod) {
         case "integer":
             return integerFormatter.format(rawValue);
+        case "fixedTwoDigits":
+            return fixedTwoDigitsFormatter.format(rawValue);
         case "percent":
             return `${numberFormatter.format(rawValue * 100)}%`;
         case "multiplier":

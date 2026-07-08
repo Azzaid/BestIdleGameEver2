@@ -20,11 +20,19 @@ export const book = style({
 });
 
 export const header = style({
-  display: "grid",
-  gap: "2px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "14px",
   padding: "18px 22px 16px",
   borderBottom: `1px solid ${vars.color.border.default}`,
   background: vars.color.background.navbar,
+});
+
+export const headerText = style({
+  display: "grid",
+  gap: "2px",
+  minWidth: 0,
 });
 
 export const kicker = style({
@@ -40,6 +48,24 @@ export const title = style({
   margin: 0,
   color: vars.color.text.heading,
   fontSize: "1.35rem",
+});
+
+export const cleanSlateButton = style({
+  flexShrink: 0,
+  minHeight: "34px",
+  padding: "7px 11px",
+  border: `1px solid ${vars.color.border.strong}`,
+  borderRadius: 4,
+  background: vars.color.background.app,
+  color: vars.color.text.heading,
+  cursor: "pointer",
+  fontWeight: 800,
+  selectors: {
+    "&:hover": {
+      borderColor: vars.color.border.selected,
+      background: vars.color.state.hoverBg,
+    },
+  },
 });
 
 export const timeline = style({
