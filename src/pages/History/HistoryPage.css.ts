@@ -63,7 +63,7 @@ export const cleanSlateButton = style({
   selectors: {
     "&:hover": {
       borderColor: vars.color.border.selected,
-      background: vars.color.state.hoverBg,
+      background: vars.color.background.surfaceHover,
     },
   },
 });

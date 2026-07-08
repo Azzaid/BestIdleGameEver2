@@ -358,19 +358,42 @@ function getMovementSpeedPixelsPerSecond(movement: MovementController): number {
 }
 
 function cloneMovement(movement: MovementController): MovementController {
-  return {
-    ...movement,
-    currentTarget: 'currentTarget' in movement && movement.currentTarget
-      ? { ...movement.currentTarget }
-      : undefined,
-    bounds: 'bounds' in movement && movement.bounds ? { ...movement.bounds } : undefined,
-    threatPoint: 'threatPoint' in movement ? { ...movement.threatPoint } : undefined,
-    centerPoint: 'centerPoint' in movement ? { ...movement.centerPoint } : undefined,
-    driftVelocity: 'driftVelocity' in movement ? { ...movement.driftVelocity } : undefined,
-    velocityPixelsPerSecond: 'velocityPixelsPerSecond' in movement
-      ? { ...movement.velocityPixelsPerSecond }
-      : undefined,
-  } as MovementController;
+  switch (movement.kind) {
+    case 'wobble':
+      return { ...movement };
+    case 'polyline':
+      return {
+        ...movement,
+        currentTarget: movement.currentTarget ? { ...movement.currentTarget } : null,
+        bounds: movement.bounds ? { ...movement.bounds } : undefined,
+      };
+    case 'wander':
+      return {
+        ...movement,
+        currentTarget: movement.currentTarget ? { ...movement.currentTarget } : null,
+      };
+    case 'flee':
+      return {
+        ...movement,
+        threatPoint: { ...movement.threatPoint },
+      };
+    case 'circle':
+      return {
+        ...movement,
+        centerPoint: { ...movement.centerPoint },
+      };
+    case 'blink':
+      return {
+        ...movement,
+        driftVelocity: { ...movement.driftVelocity },
+        bounds: movement.bounds ? { ...movement.bounds } : undefined,
+      };
+    case 'linear':
+      return {
+        ...movement,
+        velocityPixelsPerSecond: { ...movement.velocityPixelsPerSecond },
+      };
+  }
 }
 
 function enemyIsInsideTowerZone(
