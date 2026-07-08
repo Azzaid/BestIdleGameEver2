@@ -276,7 +276,7 @@
     "visualAssetId": "building_nature_young-poisonous-mushrooms",
     "name": "Young poisonous mushrooms",
     "kind": "superstructure",
-    "description": "First mushrooms start to pop out. Young and poisonous. Can be planted on a wall to provide cloud of toxic fumes. Not particulary big or strong one but it will get stronger the more fungi is in ecosystem. Symbiotic to plants but can be dangerous to animals.",
+    "description": "First mushrooms start to pop out. Young and poisonous. Not particulary big or strong one but it will get stronger the more fungi is in ecosystem. Symbiotic to plants but can be dangerous to animals.",
     "requiredBuildingIds": [
       "buildings.nature.poisonousMycelium"
     ],
@@ -314,7 +314,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 6
+        "additive": 8
       }
     ],
     "effects": [
@@ -345,7 +345,7 @@
     "visualAssetId": "building_nature_poisonous-mycelium",
     "name": "Poisonous mycelium",
     "kind": "superstructure",
-    "description": "Mycelium mutated into poisonous kind. Symbiotic to other fungi but can be harmfull for animals.",
+    "description": "Mycelium mutated into poisonous kind. Symbiotic to other fungi but can be harmfull for animals. Can be planted on a wall to provide cloud of toxic fumes.",
     "requiredBuildingIds": [
       "buildings.nature.mycelium"
     ],
@@ -377,6 +377,13 @@
           "production"
         ],
         "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 6
       }
     ],
     "effects": [
@@ -402,9 +409,10 @@
     "name": "Big poisonous mushrooms",
     "kind": "superstructure",
     "description": "Grown up poisonous mushrooms. Can be gathered and pressed into living poisonous gun platform that will help to slide a weapon and create dangerous spore cloud. Better no to plant them near animals.",
-    "hint": "Will grow in a strong ecosystem",
+    "hint": "Will grow if fungi presence is strong enough.",
     "keywords": [
-      "nature"
+      "nature",
+      "building"
     ],
     "requirements": [
       {
@@ -432,7 +440,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 9
+        "additive": 10
       }
     ],
     "effects": [
@@ -457,14 +465,20 @@
         "multiplier": 0.7,
         "radius": 1
       }
-    ]
+    ],
+    "requiredBuildingIds": [
+      "buildings.nature.youngPoisonousMushrooms"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.mycelium": "building_nature_big-poisonous-mushrooms-from-mycelium"
+    }
   },
   {
     "id": "buildings.nature.maturePoisonousMushrooms",
     "visualAssetId": "building_nature_mature-poisonous-mushrooms",
     "name": "Mature poisonous mushrooms",
     "kind": "superstructure",
-    "description": "Matrure shrooms covered with clouds of poison and acid. Fully grown and ready to carry their genetical legacy forth.",
+    "description": "Matrure shrooms covered with clouds of poison and acid. Fully grown and ready to carry their genetical legacy forth. But harmfull for people, plants and animals.",
     "requiredBuildingIds": [
       "buildings.nature.bigPoisonousMushrooms"
     ],
@@ -472,19 +486,20 @@
       "buildings.nature.bigPoisonousMushrooms": "building_nature_mature-poisonous-mushrooms-from-big-poisonous-mushrooms"
     },
     "keywords": [
-      "nature"
+      "nature",
+      "building"
     ],
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.spores"
+        "technologyId": "research.nature.mushrooms"
       }
     ],
     "buildRequirements": [
       {
         "type": "homogeneousValueAtLeast",
-        "valueId": "nature.bioComplexity",
-        "amount": 15
+        "valueId": "resource.fungi",
+        "amount": 12
       }
     ],
     "values": [
@@ -501,6 +516,41 @@
           "production"
         ],
         "additive": 15
+      }
+    ],
+    "hint": "Should finally ripe when fungi is strong.",
+    "effects": [
+      {
+        "requiredBuildingKeywords": [
+          "fungi",
+          "production"
+        ],
+        "multiplier": 2,
+        "radius": 2
+      },
+      {
+        "requiredBuildingKeywords": [
+          "plants",
+          "production"
+        ],
+        "multiplier": 0.8,
+        "radius": 2
+      },
+      {
+        "requiredBuildingKeywords": [
+          "animals",
+          "production"
+        ],
+        "multiplier": 0.5,
+        "radius": 2
+      },
+      {
+        "requiredBuildingKeywords": [
+          "people",
+          "production"
+        ],
+        "multiplier": 0.8,
+        "radius": 2
       }
     ]
   }

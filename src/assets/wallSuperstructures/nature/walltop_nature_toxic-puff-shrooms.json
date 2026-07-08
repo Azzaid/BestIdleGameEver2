@@ -1,10 +1,10 @@
 {
   "sourceSpriteSize": {
-    "width": 227,
-    "height": 193
+    "width": 1024,
+    "height": 1024
   },
   "targetSpriteSize": {
     "width": 80,
-    "height": 68
+    "height": 80
   }
 }

@@ -17,6 +17,7 @@ type WallSegmentOptions = {
     values?: HomogeneousValueEffect[];
     derivedValues?: HomogeneousDerivedValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
+    visualAssetId?: string;
 };
 
 export function createWallSegmentFactory({vector, defaultKeywords = []}: WallSegmentFactoryOptions) {
@@ -37,6 +38,7 @@ export function createWallSegmentFactory({vector, defaultKeywords = []}: WallSeg
             values: options.values,
             derivedValues: options.derivedValues,
             effects: options.effects,
+            visualAssetId: options.visualAssetId,
             description,
         };
     };

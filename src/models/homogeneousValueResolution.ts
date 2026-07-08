@@ -27,6 +27,7 @@ export type HexCoordinates = { column: number; row: number };
 export type HomogeneousValueEntitySource = {
     id: string;
     contentId?: string;
+    name?: string;
     entityType: HomogeneousCityEntityType;
     cellKey?: string;
     column?: number;
@@ -42,10 +43,18 @@ export type HomogeneousResolvedEntity = Omit<HomogeneousValueEntitySource, "valu
     effectiveKeywords: readonly string[];
     matchedRuleIds: readonly string[];
     baseValueEffects: readonly HomogeneousValueEffect[];
-    activeModifiers: readonly HomogeneousAdjacencyRule[];
+    activeModifiers: readonly HomogeneousActiveModifier[];
     resolvedContributions: readonly HomogeneousValueEffect[];
     resolvedValues: HomogeneousResolvedValueMap;
     values: HomogeneousValueTotals;
+};
+
+export type HomogeneousActiveModifier = {
+    rule: HomogeneousAdjacencyRule;
+    sourceEntityId: string;
+    sourceContentId?: string;
+    sourceName?: string;
+    sourceEntityType: HomogeneousRuleSourceEntityType;
 };
 
 export type HomogeneousCityResolution = {
@@ -75,6 +84,8 @@ type EffectAccumulator = {
 type HomogeneousCollectedAdjacencyRule = {
     id: string;
     sourceEntityId: string;
+    sourceContentId?: string;
+    sourceName?: string;
     sourceEntityType: HomogeneousRuleSourceEntityType;
     sourcePosition: HexCoordinates | null;
     rule: HomogeneousAdjacencyRule;
@@ -337,6 +348,8 @@ function collectHomogeneousAdjacencyRules(
     return sources.flatMap((source) => getEntityEffects(source).map((rule, ruleIndex) => ({
         id: `${source.id}:rule:${ruleIndex}`,
         sourceEntityId: source.id,
+        sourceContentId: source.contentId,
+        sourceName: source.name,
         sourceEntityType: getRuleSourceEntityType(source),
         sourcePosition: getEntityPosition(source),
         rule,
@@ -414,20 +427,20 @@ function resolveEntityValues(entity: ResolvedEntityDraft): HomogeneousResolvedEn
         entity.baseValueEffects,
         getDefaultContributionRoleKeyword(entity),
     );
-    const activeModifiers = entity.matchedRules.map((matchedRule) => matchedRule.rule);
+    const activeModifiers = entity.matchedRules.map(toHomogeneousActiveModifier);
 
     for (const modifier of activeModifiers) {
-        ensureModifierTargetAccumulators(contributionAccumulators, modifier);
+        ensureModifierTargetAccumulators(contributionAccumulators, modifier.rule);
 
         for (const contributionAccumulator of contributionAccumulators) {
-            if (!matchesValueKeywords(contributionAccumulator.keywords, modifier)) continue;
+            if (!matchesValueKeywords(contributionAccumulator.keywords, modifier.rule)) continue;
 
             contributionAccumulator.additive = resolveAdditiveContributionValue(
                 contributionAccumulator.additive,
-                modifier.additive ?? 0,
+                modifier.rule.additive ?? 0,
                 getHomogeneousValueResolveType(contributionAccumulator.valueId),
             );
-            contributionAccumulator.multiplier *= normalizeMultiplier(modifier.multiplier);
+            contributionAccumulator.multiplier *= normalizeMultiplier(modifier.rule.multiplier);
         }
     }
 
@@ -503,7 +516,8 @@ function ensureModifierTargetAccumulators(
     contributionAccumulators: EffectAccumulator[],
     modifier: HomogeneousAdjacencyRule,
 ): void {
-    if ((modifier.additive ?? 0) === 0 && normalizeMultiplier(modifier.multiplier) === 1) return;
+    const additive = modifier.additive ?? 0;
+    if (additive === 0) return;
 
     const roleKeyword = getModifierRoleKeyword(modifier);
 
@@ -524,6 +538,18 @@ function ensureModifierTargetAccumulators(
             multiplier: 1,
         });
     }
+}
+
+function toHomogeneousActiveModifier(
+    collectedRule: HomogeneousCollectedAdjacencyRule,
+): HomogeneousActiveModifier {
+    return {
+        rule: collectedRule.rule,
+        sourceEntityId: collectedRule.sourceEntityId,
+        sourceContentId: collectedRule.sourceContentId,
+        sourceName: collectedRule.sourceName,
+        sourceEntityType: collectedRule.sourceEntityType,
+    };
 }
 
 function getModifierRoleKeyword(modifier: HomogeneousAdjacencyRule): HomogeneousValueRoleKeyword {

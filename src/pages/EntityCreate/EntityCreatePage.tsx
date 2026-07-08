@@ -157,6 +157,12 @@ type SpriteSaveAction = {
   metadata?: SpriteMetadata;
 };
 
+type SizedSpriteMetadata = SpriteMetadata & {
+  sourceSpriteSize?: {width: number; height: number};
+  targetSpriteSize: {width: number; height: number};
+  rotationDegrees?: number;
+};
+
 const entityTypeOptions: {value: EntityType; label: string; prefix: string}[] = [
   {value: "research", label: "Research", prefix: "research"},
   {value: "wallSegment", label: "Wall Segment", prefix: "wallSegments"},
@@ -1435,6 +1441,13 @@ function VisualAssetField(props: {
   const previewSrc = props.draft?.previewUrl ?? props.selectedAsset?.src;
   const previewLabel = props.draft?.file.name ?? props.selectedAsset?.label ?? props.value;
   const previewMetadata = props.draft?.metadata ?? props.selectedAsset?.metadata;
+  const previewImageStyle = previewMetadata && isSizedSpriteMetadata(previewMetadata)
+    ? {
+      width: previewMetadata.targetSpriteSize.width,
+      height: previewMetadata.targetSpriteSize.height,
+      transform: `rotate(${previewMetadata.rotationDegrees ?? 0}deg)`,
+    }
+    : undefined;
   const visibleOptions = props.options
     .filter(option => `${option.label} ${option.id}`.toLowerCase().includes(query.trim().toLowerCase()))
     .slice(0, 16);
@@ -1463,6 +1476,25 @@ function VisualAssetField(props: {
         ...props.draft.metadata.shift,
         ...patch.shift,
       },
+    });
+  }
+
+  function updateSizedSpriteMetadata(patch: Partial<Pick<WallSpriteMetadata, "targetSpriteSize" | "rotationDegrees">>) {
+    if (!props.draft?.metadata || !isSizedSpriteMetadata(props.draft.metadata)) return;
+    props.onMetadataChange({
+      ...props.draft.metadata,
+      ...patch,
+      targetSpriteSize: {
+        ...props.draft.metadata.targetSpriteSize,
+        ...patch.targetSpriteSize,
+      },
+    });
+  }
+
+  function adjustRotation(deltaDegrees: number) {
+    if (!props.draft?.metadata || !isSizedSpriteMetadata(props.draft.metadata)) return;
+    updateSizedSpriteMetadata({
+      rotationDegrees: normalizeDegrees((props.draft.metadata.rotationDegrees ?? 0) + deltaDegrees),
     });
   }
 
@@ -1531,7 +1563,7 @@ function VisualAssetField(props: {
         <div className={s.visualPreviewBox}>
           {previewSrc ? (
             <>
-              <img className={s.visualPreviewImage} src={previewSrc} alt={previewLabel} />
+              <img className={s.visualPreviewImage} style={previewImageStyle} src={previewSrc} alt={previewLabel} />
               {props.draft?.metadata && isBuildingSpriteMetadata(props.draft.metadata) && (
                 <div className={s.row}>
                   <label className={s.field}>
@@ -1565,6 +1597,69 @@ function VisualAssetField(props: {
                       onChange={event => updateBuildingMetadata({shift: {x: props.draft?.metadata && isBuildingSpriteMetadata(props.draft.metadata) ? props.draft.metadata.shift.x : 0, y: parseNumberOrFallback(event.target.value, 0)}})}
                     />
                   </label>
+                </div>
+              )}
+              {props.draft?.metadata && isSizedSpriteMetadata(props.draft.metadata) && (
+                <div className={s.spriteMetadataControls}>
+                  <div className={s.pairedFields}>
+                    <label className={s.field}>
+                      <span className={s.label}>Target Width</span>
+                      <input
+                        className={s.input}
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={props.draft.metadata.targetSpriteSize.width}
+                        onChange={event => updateSizedSpriteMetadata({
+                          targetSpriteSize: {
+                            width: parsePositiveNumberOrFallback(event.target.value, props.draft?.metadata && isSizedSpriteMetadata(props.draft.metadata) ? props.draft.metadata.targetSpriteSize.width : 1),
+                            height: props.draft?.metadata && isSizedSpriteMetadata(props.draft.metadata) ? props.draft.metadata.targetSpriteSize.height : 1,
+                          },
+                        })}
+                      />
+                    </label>
+                    <label className={s.field}>
+                      <span className={s.label}>Target Height</span>
+                      <input
+                        className={s.input}
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={props.draft.metadata.targetSpriteSize.height}
+                        onChange={event => updateSizedSpriteMetadata({
+                          targetSpriteSize: {
+                            width: props.draft?.metadata && isSizedSpriteMetadata(props.draft.metadata) ? props.draft.metadata.targetSpriteSize.width : 1,
+                            height: parsePositiveNumberOrFallback(event.target.value, props.draft?.metadata && isSizedSpriteMetadata(props.draft.metadata) ? props.draft.metadata.targetSpriteSize.height : 1),
+                          },
+                        })}
+                      />
+                    </label>
+                  </div>
+                  <div className={s.pairedFields}>
+                    <label className={s.field}>
+                      <span className={s.label}>Source Width</span>
+                      <input className={s.input} readOnly value={props.draft.metadata.sourceSpriteSize?.width ?? ""} />
+                    </label>
+                    <label className={s.field}>
+                      <span className={s.label}>Source Height</span>
+                      <input className={s.input} readOnly value={props.draft.metadata.sourceSpriteSize?.height ?? ""} />
+                    </label>
+                  </div>
+                  <div className={s.spriteRotationControls}>
+                    <button className={s.button} type="button" onClick={() => adjustRotation(-90)}>-90</button>
+                    <button className={s.button} type="button" onClick={() => updateSizedSpriteMetadata({rotationDegrees: 0})}>0</button>
+                    <button className={s.button} type="button" onClick={() => adjustRotation(90)}>+90</button>
+                    <label className={s.field}>
+                      <span className={s.label}>Rotation degrees</span>
+                      <input
+                        className={s.input}
+                        type="number"
+                        step="1"
+                        value={props.draft.metadata.rotationDegrees ?? 0}
+                        onChange={event => updateSizedSpriteMetadata({rotationDegrees: parseNumberOrFallback(event.target.value, 0)})}
+                      />
+                    </label>
+                  </div>
                 </div>
               )}
               {previewMetadata && (
@@ -1948,6 +2043,7 @@ function createDefaultSpriteMetadata(
     return {
       sourceSpriteSize,
       targetSpriteSize: fitSpriteSize(sourceSpriteSize, 80, 80),
+      rotationDegrees: 0,
     };
   }
 
@@ -1955,6 +2051,7 @@ function createDefaultSpriteMetadata(
     return {
       sourceSpriteSize,
       targetSpriteSize: fitSpriteSize(sourceSpriteSize, 80, 80),
+      rotationDegrees: 0,
     };
   }
 
@@ -1966,6 +2063,7 @@ function createDefaultSpriteMetadata(
   return {
     sourceSpriteSize,
     targetSpriteSize: fitSpriteSize(sourceSpriteSize, 120, 80),
+    rotationDegrees: 0,
     inputSocket: center,
     outputSockets: getDefaultOutputSockets(partType, center),
   };
@@ -2596,8 +2694,21 @@ function parseNumberOrFallback(value: string, fallback: number): number {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function parsePositiveNumberOrFallback(value: string, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function normalizeDegrees(value: number): number {
+  return ((value % 360) + 360) % 360;
+}
+
 function isBuildingSpriteMetadata(metadata: SpriteMetadata): metadata is BuildingSpriteMetadata {
   return "zoom" in metadata && "shift" in metadata;
+}
+
+function isSizedSpriteMetadata(metadata: SpriteMetadata): metadata is SizedSpriteMetadata {
+  return "targetSpriteSize" in metadata;
 }
 
 function normalizeIdPart(value: string): string {

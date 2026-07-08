@@ -40,6 +40,7 @@ import {
 } from "../../models/homogeneousValueHelpers.ts";
 import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
+import type {HomogeneousActiveModifier} from "../../models/homogeneousValueResolution.ts";
 import {getUpkeepValues, normalizeMultiplier, resolveHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
 import {
     getHomogeneousValueIdForUpkeepType,
@@ -706,12 +707,12 @@ function MetricGroup({title, values}: {title: string; values: UpkeepAmount}) {
     );
 }
 
-function ActiveModifierList({modifiers}: {modifiers: readonly HomogeneousAdjacencyRule[]}) {
+function ActiveModifierList({modifiers}: {modifiers: readonly HomogeneousActiveModifier[]}) {
     const visibleModifiers = modifiers.filter(modifier => (
-        (modifier.additive ?? 0) !== 0
-        || normalizeMultiplier(modifier.multiplier) !== 1
-        || (modifier.additionalBuildingKeywords?.length ?? 0) > 0
-        || (modifier.removedBuildingKeywords?.length ?? 0) > 0
+        (modifier.rule.additive ?? 0) !== 0
+        || normalizeMultiplier(modifier.rule.multiplier) !== 1
+        || (modifier.rule.additionalBuildingKeywords?.length ?? 0) > 0
+        || (modifier.rule.removedBuildingKeywords?.length ?? 0) > 0
     ));
 
     return (
@@ -721,8 +722,8 @@ function ActiveModifierList({modifiers}: {modifiers: readonly HomogeneousAdjacen
                 <dl className={s.metricList}>
                     {visibleModifiers.map((modifier, index) => (
                         <div key={index} className={s.metricRow}>
-                            <dt>{formatModifierTarget(modifier)}</dt>
-                            <dd>{formatModifierAmount(modifier)}</dd>
+                            <dt>{formatActiveModifierSource(modifier)}{" -> "}{formatModifierTarget(modifier.rule)}</dt>
+                            <dd>{formatModifierAmount(modifier.rule)}</dd>
                         </div>
                     ))}
                 </dl>
@@ -789,7 +790,7 @@ function formatModifierTarget(modifier: HomogeneousAdjacencyRule): string {
     const hiddenValueKeywords = new Set(["resource", "support", "output", "spendable", "production", "upkeep", "unlock"]);
     const valueKeywords = modifier.requiredValueKeywords?.filter(keyword => !hiddenValueKeywords.has(keyword)) ?? [];
     const buildingKeywords = modifier.requiredBuildingKeywords ?? [];
-    const targets = [...buildingKeywords, ...valueKeywords];
+    const targets = [...new Set([...buildingKeywords, ...valueKeywords])];
 
     return targets.length
         ? targets.map(formatKeywordLabel).join(", ")
@@ -1122,6 +1123,12 @@ function WallBuildingSelector({
             )}
         </div>
     );
+}
+
+function formatActiveModifierSource(modifier: HomogeneousActiveModifier): string {
+    return modifier.sourceName
+        ?? modifier.sourceContentId?.split(".").at(-1)?.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[-_]+/g, " ")
+        ?? modifier.sourceEntityId;
 }
 
 type WallTopCategory = "tower" | "superstructure";

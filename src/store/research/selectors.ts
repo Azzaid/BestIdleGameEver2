@@ -19,6 +19,7 @@ export const selectTechnologyHomogeneousEntities = createSelector(
   (technologies): HomogeneousValueEntitySource[] => technologies.map(technology => ({
     id: `technology:${technology.id}`,
     contentId: technology.id,
+    name: technology.name,
     entityType: "technology",
     keywords: technology.keywords,
     values: technology.values,

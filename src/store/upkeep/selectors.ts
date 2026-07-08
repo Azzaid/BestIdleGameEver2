@@ -215,6 +215,7 @@ function createTowerEntities(
 
         return {
             id: getTowerEntityId(tower.id),
+            name: tower.name,
             entityType: "tower",
             cellKey: wallTowerEntity?.cellKey,
             column: wallTowerEntity?.column,

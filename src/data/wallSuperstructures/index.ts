@@ -20,6 +20,7 @@ type WallSuperstructureDefinition = {
   values?: HomogeneousValueEffect[];
   derivedValues?: HomogeneousDerivedValueEffect[];
   effects?: HomogeneousAdjacencyRule[];
+  visualAssetId?: string;
 };
 
 const definitionsByVector: Record<DevelopmentVectorKey, readonly WallSuperstructureDefinition[]> = {
@@ -67,6 +68,7 @@ function buildWallSuperstructures(vector: DevelopmentVectorKey): Record<string, 
           values: definition.values,
           derivedValues: definition.derivedValues,
           effects: definition.effects,
+          visualAssetId: definition.visualAssetId,
         },
       ),
     ]),

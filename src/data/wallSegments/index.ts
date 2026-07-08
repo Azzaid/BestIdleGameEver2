@@ -20,6 +20,7 @@ type WallSegmentDefinition = {
     values?: HomogeneousValueEffect[];
     derivedValues?: HomogeneousDerivedValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
+    visualAssetId?: string;
 };
 
 const wallSegmentDefinitionsByVector: Record<DevelopmentVectorKey, readonly WallSegmentDefinition[]> = {
@@ -65,6 +66,7 @@ function buildWallSegments(vector: DevelopmentVectorKey): Record<string, WallBui
                     values: definition.values,
                     derivedValues: definition.derivedValues,
                     effects: definition.effects,
+                    visualAssetId: definition.visualAssetId,
                 },
             ),
         ]),

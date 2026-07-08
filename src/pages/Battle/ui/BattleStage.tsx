@@ -22,6 +22,8 @@ import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX, CITY_HEX_SIZE } from '../../../da
 import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 import { wallTopSpriteMetadataAtlas } from '../../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
 import { getWallContactY } from '../core/wallGeometry.ts';
+import { WALL_SEGMENT_BUILDINGS } from '../../../data/wallSegments/index.ts';
+import { WALL_TOWER_BUILDINGS } from '../../../data/wallSuperstructures/index.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
 export function BattleStage(props: {
@@ -523,19 +525,21 @@ function createBattleWallLayer({
 
     wallSegments.forEach((segment, index) => {
         const segmentCenterX = getSegmentCenterX(index, segmentSize);
-        const wallSpriteMetadata = segment.wallKey && segment.wallDevelopmentVector
-            ? wallSpriteMetadataAtlas[segment.wallDevelopmentVector][segment.wallKey]
+        const textureAlias = segment.wallKey ? getWallSpriteLookupKey(segment.wallKey) : undefined;
+        const wallSpriteMetadata = textureAlias && segment.wallDevelopmentVector
+            ? wallSpriteMetadataAtlas[segment.wallDevelopmentVector][textureAlias]
             : undefined;
-        const textureAlias = wallSpriteMetadata ? segment.wallKey : undefined;
 
         if (wallSpriteMetadata && textureAlias && Assets.cache.has(textureAlias)) {
             const sprite = new Sprite(Texture.from(textureAlias));
             const spriteWidth = wallSpriteMetadata.targetSpriteSize.width * cityToBattleScale;
             const spriteHeight = wallSpriteMetadata.targetSpriteSize.height * cityToBattleScale;
-            sprite.x = segmentCenterX - spriteWidth / 2;
-            sprite.y = wallY - spriteHeight / 2;
+            sprite.anchor.set(0.5);
+            sprite.x = segmentCenterX;
+            sprite.y = wallY;
             sprite.width = spriteWidth;
             sprite.height = spriteHeight;
+            sprite.rotation = (wallSpriteMetadata.rotationDegrees ?? 0) * Math.PI / 180;
             wallLayer.addChild(sprite);
             return;
         }
@@ -550,19 +554,21 @@ function createBattleWallLayer({
 
     wallSegments.forEach((segment, index) => {
         const segmentCenterX = getSegmentCenterX(index, segmentSize);
-        const wallTopSpriteMetadata = segment.wallTopKey && segment.wallTopDevelopmentVector
-            ? wallTopSpriteMetadataAtlas[segment.wallTopDevelopmentVector][segment.wallTopKey]
+        const textureAlias = segment.wallTopKey ? getWallTopSpriteLookupKey(segment.wallTopKey) : undefined;
+        const wallTopSpriteMetadata = textureAlias && segment.wallTopDevelopmentVector
+            ? wallTopSpriteMetadataAtlas[segment.wallTopDevelopmentVector][textureAlias]
             : undefined;
-        const textureAlias = wallTopSpriteMetadata ? segment.wallTopKey : undefined;
 
         if (wallTopSpriteMetadata && textureAlias && Assets.cache.has(textureAlias)) {
             const sprite = new Sprite(Texture.from(textureAlias));
             const spriteWidth = wallTopSpriteMetadata.targetSpriteSize.width * cityToBattleScale;
             const spriteHeight = wallTopSpriteMetadata.targetSpriteSize.height * cityToBattleScale;
-            sprite.x = segmentCenterX - spriteWidth / 2;
-            sprite.y = wallTopAnchorY - spriteHeight / 2;
+            sprite.anchor.set(0.5);
+            sprite.x = segmentCenterX;
+            sprite.y = wallTopAnchorY;
             sprite.width = spriteWidth;
             sprite.height = spriteHeight;
+            sprite.rotation = (wallTopSpriteMetadata.rotationDegrees ?? 0) * Math.PI / 180;
             sprite.zIndex = 1;
             wallLayer.addChild(sprite);
             return;
@@ -588,6 +594,14 @@ function getSegmentCenterX(index: number, segmentSize: number) {
 
 function getWallTopAnchorY(wallY: number) {
     return wallY;
+}
+
+function getWallSpriteLookupKey(wallKey: string) {
+    return WALL_SEGMENT_BUILDINGS[wallKey]?.visualAssetId ?? wallKey;
+}
+
+function getWallTopSpriteLookupKey(wallTopKey: string) {
+    return WALL_TOWER_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
 }
 
 function getTowerAnchorPosition({

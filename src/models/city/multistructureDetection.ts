@@ -25,39 +25,20 @@ export function detectMultistructures(
     structures: readonly StructureDefinition[],
 ): StructureDetectionResult[] {
     const resultsByKey = new Map<string, StructureDetectionResult>();
+    const components = getBaseBuildingComponents(hexes);
 
-    for (let pass = 0; pass < structures.length; pass++) {
-        const completedComponents = [...resultsByKey.values()]
-            .filter(result => result.isComplete)
-            .map(resultToComponent);
-        const components = [
-            ...getBaseBuildingComponents(hexes),
-            ...completedComponents,
-        ];
-        let addedCompleteStructure = false;
+    for (const structure of structures) {
+        const coreCandidates = components.filter(component => structure.requiredBuildingIds.includes(component.buildingId));
 
-        for (const structure of structures) {
-            const coreCandidates = components.filter(component => structure.requiredBuildingIds.includes(component.buildingId));
+        for (const coreCandidate of coreCandidates) {
+            const result = detectStructureAtCore(components, structure, coreCandidate);
+            const key = getResultKey(result);
+            const existing = resultsByKey.get(key);
 
-            for (const coreCandidate of coreCandidates) {
-                const result = detectStructureAtCore(components, structure, coreCandidate);
-                const key = getResultKey(result);
-                const existing = resultsByKey.get(key);
-
-                if (!existing) {
-                    resultsByKey.set(key, result);
-                    addedCompleteStructure ||= result.isComplete;
-                    continue;
-                }
-
-                if (!existing.isComplete && result.isComplete) {
-                    resultsByKey.set(key, result);
-                    addedCompleteStructure = true;
-                }
+            if (!existing || (!existing.isComplete && result.isComplete)) {
+                resultsByKey.set(key, result);
             }
         }
-
-        if (!addedCompleteStructure) break;
     }
 
     return [...resultsByKey.values()];
@@ -107,21 +88,6 @@ function getBaseBuildingComponents(hexes: readonly HexCell[]): StructureComponen
             }];
         }),
     ];
-}
-
-function resultToComponent(result: StructureDetectionResult): StructureComponentCandidate {
-    const hexesByKey = new Map<string, HexCell>();
-    hexesByKey.set(result.coreHex.cellKey, result.coreHex);
-
-    for (const match of result.matchedSatellites) {
-        hexesByKey.set(match.hex.cellKey, match.hex);
-    }
-
-    return {
-        buildingId: result.structure.id,
-        hexes: [...hexesByKey.values()],
-        representativeHex: result.coreHex,
-    };
 }
 
 function detectStructureAtCore(

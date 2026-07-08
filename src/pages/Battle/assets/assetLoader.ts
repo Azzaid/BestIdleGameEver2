@@ -9,6 +9,8 @@ import { wallSpriteMetadataAtlas, wallSpritesAtlas } from '../../../models/sprit
 import { wallTopSpriteMetadataAtlas, wallTopSpritesAtlas } from '../../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
 import { BATTLE_ENEMY_BLUEPRINTS } from '../../../data/enemies/index.ts';
 import { ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY } from '../../../data/enemies/visuals.ts';
+import { WALL_SEGMENT_BUILDINGS } from '../../../data/wallSegments/index.ts';
+import { WALL_TOWER_BUILDINGS } from '../../../data/wallSuperstructures/index.ts';
 
 export async function loadBattleBackground(backgroundId: BattleBackgroundId): Promise<void> {
     const background = BATTLE_BACKGROUNDS[backgroundId];
@@ -56,26 +58,28 @@ export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): P
     const wallAssetsToLoad = wallSegments.flatMap((segment) => {
         if (!segment.wallKey || !segment.wallDevelopmentVector) return [];
 
-        const metadata = wallSpriteMetadataAtlas[segment.wallDevelopmentVector][segment.wallKey];
-        const src = wallSpritesAtlas[segment.wallDevelopmentVector][segment.wallKey]?.src;
-        if (!metadata || !src || Assets.cache.has(segment.wallKey) || queuedAliases.has(segment.wallKey)) return [];
-        queuedAliases.add(segment.wallKey);
+        const textureAlias = getWallSpriteLookupKey(segment.wallKey);
+        const metadata = wallSpriteMetadataAtlas[segment.wallDevelopmentVector][textureAlias];
+        const src = wallSpritesAtlas[segment.wallDevelopmentVector][textureAlias]?.src;
+        if (!metadata || !src || Assets.cache.has(textureAlias) || queuedAliases.has(textureAlias)) return [];
+        queuedAliases.add(textureAlias);
 
         return [{
-            alias: segment.wallKey,
+            alias: textureAlias,
             src,
         }];
     });
     const wallTopAssetsToLoad = wallSegments.flatMap((segment) => {
         if (!segment.wallTopKey || !segment.wallTopDevelopmentVector) return [];
 
-        const metadata = wallTopSpriteMetadataAtlas[segment.wallTopDevelopmentVector][segment.wallTopKey];
-        const src = wallTopSpritesAtlas[segment.wallTopDevelopmentVector][segment.wallTopKey]?.src;
-        if (!metadata || !src || Assets.cache.has(segment.wallTopKey) || queuedAliases.has(segment.wallTopKey)) return [];
-        queuedAliases.add(segment.wallTopKey);
+        const textureAlias = getWallTopSpriteLookupKey(segment.wallTopKey);
+        const metadata = wallTopSpriteMetadataAtlas[segment.wallTopDevelopmentVector][textureAlias];
+        const src = wallTopSpritesAtlas[segment.wallTopDevelopmentVector][textureAlias]?.src;
+        if (!metadata || !src || Assets.cache.has(textureAlias) || queuedAliases.has(textureAlias)) return [];
+        queuedAliases.add(textureAlias);
 
         return [{
-            alias: segment.wallTopKey,
+            alias: textureAlias,
             src,
         }];
     });
@@ -115,4 +119,12 @@ export async function loadBattleAssets(args?: {
     if (args?.backgroundId) {
         await loadBattleBackground(args.backgroundId);
     }
+}
+
+function getWallSpriteLookupKey(wallKey: string) {
+    return WALL_SEGMENT_BUILDINGS[wallKey]?.visualAssetId ?? wallKey;
+}
+
+function getWallTopSpriteLookupKey(wallTopKey: string) {
+    return WALL_TOWER_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
 }

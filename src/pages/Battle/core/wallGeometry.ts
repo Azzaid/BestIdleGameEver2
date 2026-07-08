@@ -1,4 +1,5 @@
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX, CITY_HEX_SIZE } from '../../../data/constants.ts';
+import { WALL_SEGMENT_BUILDINGS } from '../../../data/wallSegments/index.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 
@@ -16,7 +17,7 @@ export function getWallContactY({
     const cityToBattleScale = segmentSize / CITY_HEX_SIZE;
     const nearestWallEdgeOffset = wallSegments.reduce((nearestOffset, segment) => {
         const wallSpriteMetadata = segment.wallKey && segment.wallDevelopmentVector
-            ? wallSpriteMetadataAtlas[segment.wallDevelopmentVector][segment.wallKey]
+            ? wallSpriteMetadataAtlas[segment.wallDevelopmentVector][getWallSpriteLookupKey(segment.wallKey)]
             : undefined;
 
         if (!wallSpriteMetadata) return Math.max(nearestOffset, segmentSize / 2);
@@ -33,4 +34,8 @@ export function getWallContactY({
     }, 0);
 
     return wallY - nearestWallEdgeOffset;
+}
+
+function getWallSpriteLookupKey(wallKey: string) {
+    return WALL_SEGMENT_BUILDINGS[wallKey]?.visualAssetId ?? wallKey;
 }

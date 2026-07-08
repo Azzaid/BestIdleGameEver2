@@ -15,6 +15,7 @@ export interface WallBuilding extends RequirementGate {
     values?: HomogeneousValueEffect[];
     derivedValues?: HomogeneousDerivedValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
+    visualAssetId?: string;
     description: string;
 }
 

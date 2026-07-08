@@ -32,8 +32,8 @@ const SPRITE_HEIGHT = spriteSide;
 const HEX_BACKGROUND_PADDING = 1.04;
 const HEX_BACKGROUND_WIDTH = hexWidth * HEX_BACKGROUND_PADDING;
 const HEX_BACKGROUND_HEIGHT = HEX_RADIUS_PX * 2 * HEX_BACKGROUND_PADDING;
-const UNCLAIMED_LAND_SHADE_OPACITY = 0.32;
-const OUTER_UNCLAIMED_LAND_SHADE_OPACITY = 0.54;
+const UNCLAIMED_LAND_SHADE_OPACITY = 0.5;
+const OUTER_UNCLAIMED_LAND_SHADE_OPACITY = 0.75;
 const INITIAL_ZOOM_FACTOR = 1.35;
 const MAX_ZOOM_FACTOR = 5;
 const WHEEL_ZOOM_IN_FACTOR = 1.12;
@@ -469,6 +469,7 @@ export default function CityHex({
                         wallKey,
                         wallDevelopmentVector,
                         wallTopKey,
+                        wallTopDevelopmentVector,
                     } = cell;
                     const isHovered = !isUnclaimed && cellKey === hoveredCellKey;
                     const clipId = `clip-${cellKey}`;
@@ -503,21 +504,23 @@ export default function CityHex({
                     const buildingSpriteWidth = SPRITE_WIDTH * buildingSpriteZoom;
                     const buildingSpriteHeight = SPRITE_HEIGHT * buildingSpriteZoom;
                     const wallSpriteUrl = kind === "wall" && wallKey && wallDevelopmentVector
-                        ? wallSpritesAtlas[wallDevelopmentVector]?.[wallKey]?.src
+                        ? wallSpritesAtlas[wallDevelopmentVector]?.[getWallSpriteLookupKey(wallKey)]?.src
                         : undefined;
                     const wallSpriteMetadata = kind === "wall" && wallKey && wallDevelopmentVector
-                        ? wallSpriteMetadataAtlas[wallDevelopmentVector]?.[wallKey]
+                        ? wallSpriteMetadataAtlas[wallDevelopmentVector]?.[getWallSpriteLookupKey(wallKey)]
                         : undefined;
                     const wallSpriteWidth = wallSpriteMetadata?.targetSpriteSize.width ?? SPRITE_WIDTH;
                     const wallSpriteHeight = wallSpriteMetadata?.targetSpriteSize.height ?? SPRITE_HEIGHT;
-                    const wallTopSpriteUrl = kind === "wall" && wallTopKey && wallDevelopmentVector
-                        ? wallTopSpritesAtlas[wallDevelopmentVector]?.[wallTopKey]?.src
+                    const wallSpriteRotation = wallSpriteMetadata?.rotationDegrees ?? 0;
+                    const wallTopSpriteUrl = kind === "wall" && wallTopKey && wallTopDevelopmentVector
+                        ? wallTopSpritesAtlas[wallTopDevelopmentVector]?.[getWallTopSpriteLookupKey(wallTopKey)]?.src
                         : undefined;
-                    const wallTopSpriteMetadata = kind === "wall" && wallTopKey && wallDevelopmentVector
-                        ? wallTopSpriteMetadataAtlas[wallDevelopmentVector]?.[wallTopKey]
+                    const wallTopSpriteMetadata = kind === "wall" && wallTopKey && wallTopDevelopmentVector
+                        ? wallTopSpriteMetadataAtlas[wallTopDevelopmentVector]?.[getWallTopSpriteLookupKey(wallTopKey)]
                         : undefined;
                     const wallTopSpriteWidth = wallTopSpriteMetadata?.targetSpriteSize.width ?? SPRITE_WIDTH;
                     const wallTopSpriteHeight = wallTopSpriteMetadata?.targetSpriteSize.height ?? SPRITE_HEIGHT;
+                    const wallTopSpriteRotation = wallTopSpriteMetadata?.rotationDegrees ?? 0;
                     const hasForegroundTexture = Boolean(spriteUrl || wallSpriteUrl || wallTopSpriteUrl);
                     const wallName = wallKey ? WALL_SEGMENT_BUILDINGS[wallKey]?.name ?? wallKey : undefined;
                     const wallTopName = wallTopKey ? WALL_TOWER_BUILDINGS[wallTopKey]?.name ?? wallTopKey : undefined;
@@ -576,28 +579,30 @@ export default function CityHex({
                                 />
                             )}
                             {wallSpriteUrl && (
-                                <image
-                                    href={wallSpriteUrl}
-                                    x={-wallSpriteWidth / 2}
-                                    y={-wallSpriteHeight / 2}
-                                    width={wallSpriteWidth}
-                                    height={wallSpriteHeight}
-                                    preserveAspectRatio="xMidYMid meet"
-                                    clipPath={`url(#${clipId})`}
-                                    style={{ imageRendering: "pixelated", pointerEvents: "none" }}
-                                />
+                                <g transform={`rotate(${wallSpriteRotation})`} clipPath={`url(#${clipId})`}>
+                                    <image
+                                        href={wallSpriteUrl}
+                                        x={-wallSpriteWidth / 2}
+                                        y={-wallSpriteHeight / 2}
+                                        width={wallSpriteWidth}
+                                        height={wallSpriteHeight}
+                                        preserveAspectRatio="xMidYMid meet"
+                                        style={{ imageRendering: "pixelated", pointerEvents: "none" }}
+                                    />
+                                </g>
                             )}
                             {wallTopSpriteUrl && (
-                                <image
-                                    href={wallTopSpriteUrl}
-                                    x={-wallTopSpriteWidth / 2}
-                                    y={-wallTopSpriteHeight / 2}
-                                    width={wallTopSpriteWidth}
-                                    height={wallTopSpriteHeight}
-                                    preserveAspectRatio="xMidYMid meet"
-                                    clipPath={`url(#${clipId})`}
-                                    style={{ imageRendering: "pixelated", pointerEvents: "none" }}
-                                />
+                                <g transform={`rotate(${wallTopSpriteRotation})`} clipPath={`url(#${clipId})`}>
+                                    <image
+                                        href={wallTopSpriteUrl}
+                                        x={-wallTopSpriteWidth / 2}
+                                        y={-wallTopSpriteHeight / 2}
+                                        width={wallTopSpriteWidth}
+                                        height={wallTopSpriteHeight}
+                                        preserveAspectRatio="xMidYMid meet"
+                                        style={{ imageRendering: "pixelated", pointerEvents: "none" }}
+                                    />
+                                </g>
                             )}
                             {fallbackKey && !hasForegroundTexture && (
                                 <>
@@ -636,7 +641,7 @@ export default function CityHex({
                                 <use
                                     href="#hexagonPath"
                                     fill="#050508"
-                                    opacity={unclaimedShadeOpacity}
+                                    fillOpacity={unclaimedShadeOpacity}
                                     clipPath={`url(#${clipId})`}
                                 />
                             )}
@@ -881,4 +886,12 @@ function getFallbackFill(seed: string, kind: HexCell["kind"]) {
     const saturation = kind === "wall" ? 22 : 46;
     const lightness = kind === "wall" ? 35 : 32;
     return `hsl(${hue} ${saturation}% ${lightness}%)`;
+}
+
+function getWallSpriteLookupKey(wallKey: string) {
+    return WALL_SEGMENT_BUILDINGS[wallKey]?.visualAssetId ?? wallKey;
+}
+
+function getWallTopSpriteLookupKey(wallTopKey: string) {
+    return WALL_TOWER_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
 }

@@ -8,4 +8,5 @@ export type WallTopSpriteMetadataAtlas = Record<DevelopmentVectorValue, Record<s
 export type WallTopSpriteMetadata = {
     sourceSpriteSize: WallSpriteSize;
     targetSpriteSize: WallSpriteSize;
+    rotationDegrees?: number;
 };

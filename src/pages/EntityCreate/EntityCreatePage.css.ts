@@ -213,6 +213,23 @@ export const pairedFields = style({
   gap: "6px",
 });
 
+export const spriteMetadataControls = style({
+  display: "grid",
+  gap: "8px",
+});
+
+export const spriteRotationControls = style({
+  display: "grid",
+  gridTemplateColumns: "auto auto auto minmax(140px, 1fr)",
+  gap: "6px",
+  alignItems: "end",
+  "@media": {
+    "(max-width: 560px)": {
+      gridTemplateColumns: "repeat(3, auto)",
+    },
+  },
+});
+
 export const primaryButton = style([
   button,
   {

@@ -68,7 +68,7 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.mushrooms"
+        "technologyId": "research.nature.spores"
       }
     ],
     "buildRequirements": [
@@ -80,25 +80,25 @@
     ],
     "values": [
       {
-        "valueId": "wall.zoneDotDamage",
+        "valueId": "tower.zoneDotDamage",
         "additionalKeywords": [
           "production"
         ],
         "additive": 2
       },
       {
-        "valueId": "wall.zoneDotTicksPerSecond",
+        "valueId": "tower.zoneDotZoneSize",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 0.3
+        "additive": 200
       },
       {
-        "valueId": "wall.zoneDotZoneSize",
+        "valueId": "tower.zoneDotTicksPerSecond",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 50
+        "additive": 1
       },
       {
         "valueId": "resource.fungi",
@@ -108,6 +108,24 @@
         "additive": 1
       }
     ],
-    "description": "Tiny but deadly. Lets just hope thad wind will blow in the enemy dirrection."
+    "description": "Tiny but deadly. Lets just hope thad wind will blow in the enemy dirrection.",
+    "derivedValues": [
+      {
+        "valueId": "tower.zoneDotDamage",
+        "derivedFrom": "resource.fungi",
+        "derivedMultiplicator": 0.1,
+        "additionalKeywords": [
+          "production"
+        ]
+      },
+      {
+        "valueId": "tower.zoneDotZoneSize",
+        "derivedFrom": "resource.fungi",
+        "derivedMultiplicator": 10,
+        "additionalKeywords": [
+          "production"
+        ]
+      }
+    ]
   }
 ]

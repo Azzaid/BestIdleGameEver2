@@ -99,6 +99,7 @@ export function resolveCityUpkeepAndSignature(
     const buildingEntities: HomogeneousValueEntitySource[] = [...city.entries()].map(([cellKey, building]) => ({
             id: cellKey,
             contentId: building.id,
+            name: building.name,
             entityType: "building",
             cellKey,
             column: building.column,
@@ -123,6 +124,7 @@ export function resolveCityUpkeepAndSignature(
 
             return [{
                 id: `${hexCell.cellKey}:${wallBuilding.id}`,
+                name: wallBuilding.name,
                 entityType,
                 cellKey: hexCell.cellKey,
                 column: hexCell.column,

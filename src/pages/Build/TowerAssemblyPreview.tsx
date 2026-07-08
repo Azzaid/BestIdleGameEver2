@@ -35,6 +35,7 @@ function createMountedTowerPreview(towerVisualDefinition: ReturnType<typeof crea
   wall.anchor.set(0.5);
   wall.width = wallMetadata.targetSpriteSize.width * previewCityToBattleScale;
   wall.height = wallMetadata.targetSpriteSize.height * previewCityToBattleScale;
+  wall.rotation = (wallMetadata.rotationDegrees ?? 0) * Math.PI / 180;
   wall.position.set(0, 0);
   wall.zIndex = 1;
   scene.addChild(wall);
@@ -43,6 +44,7 @@ function createMountedTowerPreview(towerVisualDefinition: ReturnType<typeof crea
   towerBase.anchor.set(0.5);
   towerBase.width = wallTopMetadata.targetSpriteSize.width * previewCityToBattleScale;
   towerBase.height = wallTopMetadata.targetSpriteSize.height * previewCityToBattleScale;
+  towerBase.rotation = (wallTopMetadata.rotationDegrees ?? 0) * Math.PI / 180;
   towerBase.position.set(0, 0);
   towerBase.zIndex = 2;
   scene.addChild(towerBase);

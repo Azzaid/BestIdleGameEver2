@@ -81,7 +81,6 @@
   },
   {
     "id": "research.nature.spores",
-    "parentId": "research.nature.mushrooms",
     "name": "Spores",
     "summary": "Certain mushrooms can emit clouds of spores and wind carry them for a great distances",
     "requirements": [
@@ -90,10 +89,12 @@
         "technologyId": "research.nature.mushrooms"
       },
       {
-        "type": "homogeneousValueAtLeast",
-        "valueId": "resource.fungi",
-        "amount": 2
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.poisonousMycelium"
       }
+    ],
+    "keywords": [
+      "nature"
     ]
   },
   {

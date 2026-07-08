@@ -17,6 +17,7 @@ type WallSuperstructureOptions = {
     values?: HomogeneousValueEffect[];
     derivedValues?: HomogeneousDerivedValueEffect[];
     effects?: HomogeneousAdjacencyRule[];
+    visualAssetId?: string;
 };
 
 export function createWallSuperstructureFactory({vector, defaultKeywords = []}: WallSuperstructureFactoryOptions) {
@@ -37,6 +38,7 @@ export function createWallSuperstructureFactory({vector, defaultKeywords = []}: 
             values: options.values,
             derivedValues: options.derivedValues,
             effects: options.effects,
+            visualAssetId: options.visualAssetId,
             description,
         };
     };

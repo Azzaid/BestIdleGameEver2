@@ -56,7 +56,7 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 2. Confirm `src/data/ids.ts` derives the wall id from the active atlas.
 3. Put the PNG and JSON metadata in `src/assets/wallSegments/<vector>/`.
 4. Import and map both files in `src/data/entityVisualAssets.ts`, then register active runtime sprites in `src/models/sprites/walls/<vector>.ts` as a sprite asset keyed by the wall id: `{ src, metadata }`.
-5. Keep wall metadata JSON limited to image sizing/bounds. Do not duplicate `id`, `spriteId`, or `wallId` in the JSON; the registry key is the wall id and battle texture alias.
+5. Keep wall metadata JSON limited to image sizing, optional `rotationDegrees`, and visible-pixel bounds. Do not duplicate `id`, `spriteId`, or `wallId` in the JSON; the registry key is the wall id and battle texture alias.
 6. City rendering uses `wallSpritesAtlas`; battle loading uses `wallSpriteMetadataAtlas` and `wallSpritesAtlas`.
 7. Set `targetSpriteSize` to the intended city SVG size at zoom 1. City hex rendering centers that size on the hex and clips anything outside the hex border. Battle wall rendering scales that size by `BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX / CITY_HEX_SIZE`.
 8. If the source PNG has transparent padding, set `sourceVisiblePixelBounds` to the opaque/content bounds in source image pixels. Battle enemy contact uses the top of these visible pixel bounds so enemies stop at the wall face, not the full transparent image box.
@@ -67,9 +67,9 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 2. Confirm `src/data/ids.ts` derives the superstructure id from the active atlas.
 3. Put the PNG and JSON metadata in `src/assets/wallSuperstructures/<vector>/`.
 4. Import and map both files in `src/data/entityVisualAssets.ts`, then register active runtime sprites in `src/models/sprites/wallTops/<vector>.ts` as a sprite asset keyed by the superstructure id: `{ src, metadata }`.
-5. Keep wall-top metadata JSON limited to image sizing/bounds. Do not duplicate `id`, `spriteId`, or `superstructureId` in the JSON; the registry key is the superstructure id and battle texture alias.
+5. Keep wall-top metadata JSON limited to image sizing and optional `rotationDegrees`. Do not duplicate `id`, `spriteId`, or `superstructureId` in the JSON; the registry key is the superstructure id and battle texture alias.
 6. The City page reads through `wallTopSpritesAtlas`; do not import wall-top textures directly in page components.
-7. Set `targetSpriteSize` to the intended city SVG size at zoom 1. City hex rendering centers that size on the hex and clips anything outside the hex border.
+7. Set `targetSpriteSize` to the intended city SVG size at zoom 1. City hex rendering centers that size on the hex, applies `rotationDegrees` around the hex center when present, and clips anything outside the hex border.
 
 ## Add A Tower Component Texture
 

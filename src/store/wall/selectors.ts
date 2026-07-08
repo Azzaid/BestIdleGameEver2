@@ -65,6 +65,7 @@ export const selectWallResolution = createSelector(
 
                 wallEntities.push({
                     id: `${hex.cellKey}:${wallBuilding.id}`,
+                    name: wallBuilding.name,
                     entityType,
                     cellKey: hex.cellKey,
                     column: hex.column,

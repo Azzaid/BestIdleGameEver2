@@ -12,12 +12,13 @@ import type {ProgressionRequirements, ProgressionRule} from "./types.ts";
 type RuleSource = {
   id: string;
   requirements?: readonly Requirement[];
+  requiredBuildingIds?: readonly string[];
 };
 
 export const PROGRESSION_RULES = defineProgression(
   getProgressionRuleSources().map((source): ProgressionRule => ({
       target: getProgressionNodeRefFromId(source.id),
-      requires: requirementsToProgressionRequirements(source.requirements),
+      requires: requirementsToProgressionRequirements(source.requirements, source.requiredBuildingIds),
   })),
 );
 
@@ -28,6 +29,7 @@ function getProgressionRuleSources(): RuleSource[] {
       .map((building): RuleSource => ({
         id: building.id,
         requirements: building.requirements,
+        requiredBuildingIds: building.multiHexStructure?.flatMap(rule => rule.requiredBuildingIds),
       })),
     ...Object.values(WALL_SEGMENT_BUILDINGS).map((wallSegment): RuleSource => ({
       id: wallSegment.id,
@@ -50,6 +52,7 @@ function getProgressionRuleSources(): RuleSource[] {
 
 function requirementsToProgressionRequirements(
   requirements: readonly Requirement[] | undefined,
+  requiredBuildingIds: readonly string[] | undefined,
 ): ProgressionRequirements | undefined {
   const converted: ProgressionRequirements = {};
 
@@ -61,6 +64,14 @@ function requirementsToProgressionRequirements(
     if (requirement.type === "buildingExists") {
       converted.buildings = [...(converted.buildings ?? []), requirement.buildingId];
     }
+  }
+
+  for (const buildingId of requiredBuildingIds ?? []) {
+    converted.buildings = [...(converted.buildings ?? []), buildingId];
+  }
+
+  if (converted.buildings) {
+    converted.buildings = [...new Set(converted.buildings)];
   }
 
   return Object.keys(converted).length ? converted : undefined;

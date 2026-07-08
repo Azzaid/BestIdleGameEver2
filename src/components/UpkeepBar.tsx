@@ -13,6 +13,9 @@ import {
 import {HOMOGENEOUS_VALUE_IDS} from "../data/homogeneousValues/index.ts";
 import {formatHomogeneousValue} from "../models/homogeneousValueHelpers.ts";
 import {getHomogeneousValueIdForUpkeepType} from "../models/homogeneousValueAdapters.ts";
+import natureAnimalsIcon from "../assets/resourceIcons/nature-animals.png";
+import natureFungiIcon from "../assets/resourceIcons/nature-fungi.png";
+import naturePlantsIcon from "../assets/resourceIcons/nature-plants.png";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 2,
@@ -143,6 +146,13 @@ function NatureBalanceTriangle({
     const fillRatio = Math.max(0, Math.min(1, bioComplexity / 1000));
     const fillOpacity = 0.12 + fillRatio * 0.86;
     const pointList = formatSvgPoints(points);
+    const iconSize = 16;
+    const triangleBaseY = 42;
+    const iconPositions = [
+        {label: "Plants", href: naturePlantsIcon, x: center - iconSize / 2, y: 6 - iconSize / 2},
+        {label: "Animals", href: natureAnimalsIcon, x: 50.8 - iconSize / 2, y: triangleBaseY - iconSize},
+        {label: "Fungi", href: natureFungiIcon, x: 9.2 - iconSize / 2, y: triangleBaseY - iconSize},
+    ];
 
     return (
         <div
@@ -164,6 +174,17 @@ function NatureBalanceTriangle({
                 <polygon className={s.natureBalanceFrame} points="30,6 50.8,42 9.2,42" />
                 <polygon points={pointList} fill={`url(#${gradientId})`} />
                 <polygon className={s.natureBalanceShape} points={pointList} />
+                {iconPositions.map(({label, href, x, y}) => (
+                    <image
+                        key={label}
+                        className={s.natureBalanceIcon}
+                        href={href}
+                        x={x}
+                        y={y}
+                        width={iconSize}
+                        height={iconSize}
+                    />
+                ))}
             </svg>
             <div className={s.natureTooltip} role="tooltip">
                 <div className={s.natureTooltipTitle}>Nature balance</div>

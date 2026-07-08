@@ -19,5 +19,6 @@ export type WallSpriteBounds = {
 export type WallSpriteMetadata = {
     sourceSpriteSize: WallSpriteSize;
     targetSpriteSize: WallSpriteSize;
+    rotationDegrees?: number;
     sourceVisiblePixelBounds?: WallSpriteBounds;
 };

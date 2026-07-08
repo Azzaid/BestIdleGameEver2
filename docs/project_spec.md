@@ -106,8 +106,8 @@ Content data layout:
 Texture asset layout:
 
 - City building textures and zoom/shift metadata live in `src/assets/buildings/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
-- City wall segment textures and metadata live in `src/assets/wallSegments/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
-- City wall-top/superstructure textures live in `src/assets/wallSuperstructures/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
+- City wall segment textures and metadata live in `src/assets/wallSegments/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`. Wall metadata controls runtime target size, optional rotation, and visible-pixel bounds for battle contact.
+- City wall-top/superstructure textures and metadata live in `src/assets/wallSuperstructures/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`. Wall-top metadata controls runtime target size and optional rotation in city and battle previews.
 - City hex background textures live in `src/assets/hexBackgrounds/<type>/<biome>/<vector>` and are cataloged through `src/data/cityHexBackgrounds.ts`. City state stores a biome, maximum city size, generated terrain vector map, and per-hex background sprite id/vector; migration rerolls the biome and terrain map, initial and cleared cells use `claimedTerrain`, and built cells use `buildingUnderlay`.
 - Tower component textures and metadata live in `src/assets/gunParts/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`; tower part runtime metadata is derived in `src/data/gunParts/partVisualMetadata.ts`. Ammo projectile textures live in `src/assets/projectiles/<vector>` and are referenced from ammo definitions with `projectileSpriteTextureKey`.
 - Global event pictures live in `src/assets/events` and are discovered by the global event image catalog.
