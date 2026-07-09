@@ -96,6 +96,7 @@ export const HOMOGENEOUS_VALUE_IDS = {
     towerSingleTargetStunsPerSecond: "tower.singleTargetStunsPerSecond",
     towerSingleTargetStunRange: "tower.singleTargetStunRange",
     towerWeight: "tower.weight",
+    towerMaximumWeight: "tower.maximumWeight",
 } as const satisfies Record<string, HomogeneousValueId>;
 
 export const HOMOGENEOUS_VALUE_DEFINITIONS = {
@@ -757,6 +758,13 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         keywords: ["tower", "weight"],
         displayMethod: "default",
         initialValue: BASE_TOWER_STATS.weight,
+    },
+    [HOMOGENEOUS_VALUE_IDS.towerMaximumWeight]: {
+        id: HOMOGENEOUS_VALUE_IDS.towerMaximumWeight,
+        label: "Tower Maximum Weight",
+        keywords: ["tower", "weight", "maximumWeight"],
+        displayMethod: "default",
+        initialValue: BASE_TOWER_STATS.maximumWeight,
     },
 } as const satisfies Record<HomogeneousValueId, HomogeneousValueDefinition>;
 

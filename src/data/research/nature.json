@@ -130,5 +130,23 @@
         "amount": 2
       }
     ]
+  },
+  {
+    "id": "research.nature.hardenedMycelium",
+    "name": "Hardened mycelium",
+    "summary": "Mycelium mutate and hardens. Now it can form three like structures protecting soft mushrooms inside.",
+    "keywords": [
+      "nature"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.spores"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.bigPoisonousMushrooms"
+      }
+    ]
   }
 ]

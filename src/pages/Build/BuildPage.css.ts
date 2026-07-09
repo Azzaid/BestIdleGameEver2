@@ -177,6 +177,62 @@ export const panelTitle = style({
   fontSize: '16px',
 });
 
+export const weightCapacityPanel = style({
+  display: 'grid',
+  gap: '6px',
+  marginTop: '8px',
+  padding: '8px',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '4px',
+  backgroundColor: vars.color.state.selectedBg,
+});
+
+export const weightCapacityPanelOver = style({
+  borderColor: vars.color.state.error,
+});
+
+export const weightCapacityHeader = style({
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: '8px',
+});
+
+export const weightCapacityLabel = style({
+  minWidth: 0,
+  color: vars.color.text.primary,
+  fontSize: '12px',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+});
+
+export const weightCapacityValue = style({
+  flex: '0 0 auto',
+  color: vars.color.text.heading,
+  fontSize: '13px',
+});
+
+export const weightCapacityTrack = style({
+  position: 'relative',
+  height: '9px',
+  overflow: 'hidden',
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: '4px',
+  backgroundColor: vars.color.background.surface,
+});
+
+export const weightCapacityFill = style({
+  position: 'absolute',
+  inset: '0 auto 0 0',
+  maxWidth: '100%',
+  borderRadius: '4px',
+  backgroundColor: vars.color.brand.primary,
+});
+
+export const weightCapacityFillOver = style({
+  backgroundColor: vars.color.state.error,
+});
+
 export const statsGrid = style({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))',

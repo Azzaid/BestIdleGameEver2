@@ -132,6 +132,13 @@ export function resolveTowerAssembly(
     resolvedValues,
     keywords,
   );
+  if (stats.weight > stats.maximumWeight) {
+    warnings.push({
+      id: 'overweight',
+      kind: 'overweight',
+      message: `Tower weight ${stats.weight.toFixed(0)} exceeds supported weight ${stats.maximumWeight.toFixed(0)}.`,
+    });
+  }
   const damageProfiles = createTowerDamageProfiles(stats, keywords, resolvedTower.resolvedContributions);
 
   return {

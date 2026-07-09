@@ -84,6 +84,7 @@ export function homogeneousValueTotalsToTowerStats(
         singleTargetStunsPerSecond: totals[HOMOGENEOUS_VALUE_IDS.towerSingleTargetStunsPerSecond] ?? 0,
         singleTargetStunRange: totals[HOMOGENEOUS_VALUE_IDS.towerSingleTargetStunRange] ?? 0,
         weight: totals[HOMOGENEOUS_VALUE_IDS.towerWeight] ?? 0,
+        maximumWeight: totals[HOMOGENEOUS_VALUE_IDS.towerMaximumWeight] ?? 0,
         keywords,
     };
 }

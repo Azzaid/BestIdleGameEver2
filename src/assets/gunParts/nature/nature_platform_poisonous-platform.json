@@ -1,0 +1,13 @@
+{
+  "sourceSpriteSize": {
+    "width": 1024,
+    "height": 1024
+  },
+  "zoom": 0.078125,
+  "rotationDegrees": 0,
+  "inputSocket": {
+    "x": 512,
+    "y": 512
+  },
+  "outputSockets": {}
+}

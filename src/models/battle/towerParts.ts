@@ -56,6 +56,7 @@ export interface TowerModifiers {
   singleTargetStunsPerSecond: number;
   singleTargetStunRange: number;
   weight: number;
+  maximumWeight: number;
 }
 
 export type TowerPartSlot =
@@ -109,7 +110,7 @@ export interface ResolvedTowerSynergy {
   description: string;
 }
 
-export type TowerBuildWarningKind = 'missingSlot' | 'lockedPart' | 'conflict';
+export type TowerBuildWarningKind = 'missingSlot' | 'lockedPart' | 'conflict' | 'overweight';
 
 export interface TowerBuildWarning {
   id: string;
@@ -163,6 +164,7 @@ export interface TowerStatsResolved {
   singleTargetStunsPerSecond: number;
   singleTargetStunRange: number;
   weight: number;
+  maximumWeight: number;
   keywords: Set<string>;
 }
 

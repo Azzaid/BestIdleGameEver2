@@ -207,6 +207,10 @@ function formatResourceAmount(amount: number): string {
   return Number.isInteger(amount) ? String(amount) : amount.toFixed(2);
 }
 
+function formatWeightAmount(amount: number): string {
+  return formatHomogeneousValue(HOMOGENEOUS_VALUE_IDS.towerWeight, amount);
+}
+
 function formatUpkeepResourceAmount(resource: UpkeepTypesValue, amount: number): string {
   return formatHomogeneousValue(getHomogeneousValueIdForUpkeepType(resource), amount);
 }
@@ -451,6 +455,14 @@ const BuildPage = () => {
     && canModifyTower;
   const actionLabel = hasAnyTowerBuild ? 'Rebuild' : 'Build';
   const draftChanged = JSON.stringify(activeTower?.selectedPartIds ?? {}) !== JSON.stringify(towerDraftAssembly.selectedPartIds);
+  const weightCapacityRatio = resolvedTower.stats.maximumWeight > 0
+    ? resolvedTower.stats.weight / resolvedTower.stats.maximumWeight
+    : resolvedTower.stats.weight > 0 ? 1 : 0;
+  const weightCapacityPercent = Math.max(0, Math.min(100, weightCapacityRatio * 100));
+  const isOverweight = resolvedTower.stats.weight > resolvedTower.stats.maximumWeight;
+  const weightBarStyle: CSSProperties = {
+    width: `${weightCapacityPercent}%`,
+  };
   const filteredRowCount = table.getCoreRowModel().rows.length;
   const firstVisibleRow = filteredRowCount === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
   const lastVisibleRow = Math.min(filteredRowCount, (pagination.pageIndex + 1) * pagination.pageSize);
@@ -466,6 +478,7 @@ const BuildPage = () => {
   const detailsModifierRows = detailsPart ? getPartModifierRows(detailsPart) : [];
   const detailsSupportCost = detailsPart ? getSupportStatus(getPartSupportCost(detailsPart), {}) : [];
   const detailsPreviewAsset = detailsPart ? TOWER_PART_VISUAL_ASSETS[detailsPart.sprite.textureKey] ?? TOWER_PART_VISUAL_ASSETS[detailsPart.id] : undefined;
+  const warningTitle = resolvedTower.warnings.map((warning) => warning.message).join(' ');
   const statRows = [
     ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
     ['Shots/s', resolvedTower.stats.shotsPerSecond.toFixed(2)],
@@ -538,6 +551,23 @@ const BuildPage = () => {
 
           <aside className={s.towerStats}>
             <h2 className={s.panelTitle}>Resolved Build</h2>
+            <div
+              className={`${s.weightCapacityPanel} ${isOverweight ? s.weightCapacityPanelOver : ''}`}
+              aria-label={`Tower weapon weight ${formatWeightAmount(resolvedTower.stats.weight)} of ${formatWeightAmount(resolvedTower.stats.maximumWeight)}`}
+            >
+              <div className={s.weightCapacityHeader}>
+                <span className={s.weightCapacityLabel}>Weapon weight</span>
+                <strong className={s.weightCapacityValue}>
+                  {formatWeightAmount(resolvedTower.stats.weight)} / {formatWeightAmount(resolvedTower.stats.maximumWeight)}
+                </strong>
+              </div>
+              <div className={s.weightCapacityTrack}>
+                <span
+                  className={`${s.weightCapacityFill} ${isOverweight ? s.weightCapacityFillOver : ''}`}
+                  style={weightBarStyle}
+                />
+              </div>
+            </div>
             <div className={s.statsGrid}>
               {statRows.map(([label, value]) => (
                 <div key={label} className={s.statItem}>
@@ -593,32 +623,33 @@ const BuildPage = () => {
               )}
             </div>
 
-            <div className={`${s.statsActions} ${hasAnyTowerBuild ? '' : s.statsActionsCentered}`}>
-              <button
-                className={`${s.rebuildButton} ${hasAnyTowerBuild ? '' : s.buildButtonCentered}`}
-                disabled={!canRebuild}
-                title={!canModifyTower
-                  ? 'The city is besieged. Tower rebuilding is blocked.'
-                  : !hasCompleteDraft ? `Select all required tower components before ${actionLabel.toLowerCase()}ing.`
-                  : !selectedPartBuildRequirementsMet ? formatUnmetBuildRequirements(selectedPartBuildRequirementFailures, requirementResolutionData)
-                  : !canRebuild ? 'City support is too low for this draft tower' : undefined}
-                onClick={() => {
-                  if (!canRebuild) return;
-                  dispatch(commitTowerDraft(undefined));
-                }}
-              >
-                {actionLabel}
-              </button>
-              {hasAnyTowerBuild && (
+            {draftChanged && (
+              <div className={`${s.statsActions} ${hasAnyTowerBuild ? '' : s.statsActionsCentered}`}>
                 <button
-                  className={s.cancelButton}
-                  disabled={!draftChanged}
-                  onClick={() => dispatch(cancelTowerDraft(undefined))}
+                  className={`${s.rebuildButton} ${hasAnyTowerBuild ? '' : s.buildButtonCentered}`}
+                  disabled={!canRebuild}
+                  title={!canModifyTower
+                    ? 'The city is besieged. Tower rebuilding is blocked.'
+                    : !hasCompleteDraft ? warningTitle
+                    : !selectedPartBuildRequirementsMet ? formatUnmetBuildRequirements(selectedPartBuildRequirementFailures, requirementResolutionData)
+                    : !canRebuild ? 'City support is too low for this draft tower' : undefined}
+                  onClick={() => {
+                    if (!canRebuild) return;
+                    dispatch(commitTowerDraft(undefined));
+                  }}
                 >
-                  Cancel
+                  {actionLabel}
                 </button>
-              )}
-            </div>
+                {hasAnyTowerBuild && (
+                  <button
+                    className={s.cancelButton}
+                    onClick={() => dispatch(cancelTowerDraft(undefined))}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            )}
           </aside>
         </div>
       </section>

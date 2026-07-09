@@ -1,10 +1,57 @@
 [
   {
-    "id": "gunParts.medieval.launchSystem.crudeSling",
+    "id": "gunParts.neutral.ammo.stoneBasket",
+    "slot": "ammo",
+    "name": "Stone Basket",
+    "description": "A basket stones.",
+    "keywords": [
+      "neutral",
+      "gunPart",
+      "ammo",
+      "stone"
+    ],
+    "values": [
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.projectileSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -100
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "tower.projectileRadius",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      }
+    ],
+    "projectileSpriteTextureKey": "projectiles.neutral.stoneBasket",
+    "spriteTextureKey": "gunParts.neutral.ammo.stoneBasket"
+  },
+  {
+    "id": "gunParts.neutral.launchSystem.crudeSling",
     "slot": "launchSystem",
     "name": "Primitive Launcher",
     "description": "Crude slingshot. It is a bit rough, but it works.",
     "keywords": [
+      "neutral",
+      "gunPart",
+      "launchSystem",
       "rough",
       "wood"
     ],
@@ -70,16 +117,18 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 1.5
+        "additive": 1
       }
-    ]
+    ],
+    "spriteTextureKey": "gunParts.medieval.launchSystem.crudeSling"
   },
   {
-    "id": "gunParts.medieval.barrel.hollowedTrunk",
+    "id": "gunParts.neutral.barrel.hollowedTrunk",
     "slot": "barrel",
     "name": "Hollow trunk",
     "description": "Old hollow trunk found near the city walls.",
     "keywords": [
+      "neutral",
       "gunPart",
       "barrel",
       "rough",
@@ -129,7 +178,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": -0.15
+        "additive": -0.1
       },
       {
         "valueId": "resource.people",
@@ -140,49 +189,5 @@
       }
     ],
     "spriteTextureKey": "gunParts.medieval.barrel.hollowedTrunk"
-  },
-  {
-    "id": "gunParts.neutral.ammo.stoneBasket",
-    "slot": "ammo",
-    "name": "Stone Basket",
-    "description": "A basket stones.",
-    "keywords": [
-      "neutral",
-      "gunPart",
-      "ammo",
-      "stone"
-    ],
-    "values": [
-      {
-        "valueId": "tower.projectileDamage",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 5
-      },
-      {
-        "valueId": "tower.projectileSpeed",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": -100
-      },
-      {
-        "valueId": "tower.weight",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 2
-      },
-      {
-        "valueId": "tower.projectileRadius",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 5
-      }
-    ],
-    "projectileSpriteTextureKey": "projectiles.neutral.stoneBasket",
-    "spriteTextureKey": "gunParts.neutral.ammo.stoneBasket"
   }
 ]

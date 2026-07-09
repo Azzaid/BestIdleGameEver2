@@ -38,6 +38,13 @@
         "additive": 2
       },
       {
+        "valueId": "tower.projectileRadius",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 6
+      },
+      {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
@@ -81,7 +88,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 3
+        "additive": 4
       },
       {
         "valueId": "tower.projectileSpeed",
@@ -190,7 +197,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 3
+        "additive": 5
       },
       {
         "valueId": "tower.retargetCooldownSeconds",
@@ -256,7 +263,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 100
+        "additive": 200
       },
       {
         "valueId": "tower.shotsPerSecond",
@@ -280,18 +287,18 @@
         "additive": 0.1
       },
       {
+        "valueId": "tower.projectileRadius",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
         ],
         "additive": 2
-      },
-      {
-        "valueId": "resource.gold",
-        "additionalKeywords": [
-          "upkeep"
-        ],
-        "additive": 1
       }
     ],
     "spriteTextureKey": "gunParts.medieval.ammo.sharpenedStakes"
@@ -357,14 +364,7 @@
         "additionalKeywords": [
           "upkeep"
         ],
-        "additive": 4
-      },
-      {
-        "valueId": "resource.gold",
-        "additionalKeywords": [
-          "upkeep"
-        ],
-        "additive": 3
+        "additive": 2
       }
     ],
     "spriteTextureKey": "gunParts.medieval.barrel.boredTimberBarrel"
@@ -468,17 +468,17 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 0.25
+        "additive": 3
       },
       {
-        "valueId": "resource.people",
+        "valueId": "tower.weight",
         "additionalKeywords": [
-          "upkeep"
+          "production"
         ],
         "additive": 3
       },
       {
-        "valueId": "resource.gold",
+        "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
         ],
@@ -513,21 +513,21 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 1
+        "additive": 0.5
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
       },
       {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
         ],
-        "additive": 1
-      },
-      {
-        "valueId": "resource.gold",
-        "additionalKeywords": [
-          "upkeep"
-        ],
-        "additive": 5
+        "additive": 2
       }
     ],
     "spriteTextureKey": "gunParts.medieval.loadingSystem.leverLoader"
@@ -558,7 +558,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 7
+        "additive": 10
       },
       {
         "valueId": "tower.weight",
@@ -593,14 +593,14 @@
         "additionalKeywords": [
           "upkeep"
         ],
-        "additive": 2
+        "additive": 1
       },
       {
         "valueId": "resource.gold",
         "additionalKeywords": [
           "upkeep"
         ],
-        "additive": 3
+        "additive": 1
       }
     ],
     "spriteTextureKey": "gunParts.medieval.barrel.stoneRails"
@@ -687,28 +687,56 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 0.45
+        "additive": 1
       },
       {
         "valueId": "tower.projectileSpread",
         "additionalKeywords": [
           "production"
         ],
-        "additive": -0.1
+        "additive": -0.2
+      },
+      {
+        "valueId": "tower.targetingDistanceLimit",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 100
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.projectileRadius",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "tower.projectileDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
       },
       {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
         ],
-        "additive": 2
+        "additive": 1
       },
       {
         "valueId": "resource.gold",
         "additionalKeywords": [
           "upkeep"
         ],
-        "additive": 3
+        "additive": 1
       }
     ],
     "spriteTextureKey": "gunParts.medieval.platform.stoneRails"

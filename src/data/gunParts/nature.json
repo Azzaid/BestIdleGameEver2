@@ -1,1 +1,74 @@
-[]
+[
+  {
+    "id": "gunParts.nature.platform.poisonousPlatform",
+    "slot": "platform",
+    "spriteTextureKey": "gunParts.nature.platform.poisonousPlatform",
+    "name": "Poisonous platform",
+    "description": "Hardened mycelium arranged into gun platform. Helps to slide heavier weapons over it. But most important allows to create poisonous cloud around tower.",
+    "keywords": [
+      "nature",
+      "gunPart",
+      "platform"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.hardenedMycelium"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.zoneDotDamage",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.zoneDotTicksPerSecond",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 0.3
+      },
+      {
+        "valueId": "tower.zoneDotZoneSize",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 50
+      },
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "tower.rotationSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "tower.weight",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      }
+    ],
+    "derivedValues": [
+      {
+        "valueId": "tower.zoneDotDamage",
+        "derivedFrom": "resource.fungi",
+        "derivedMultiplicator": 0.1,
+        "additionalKeywords": [
+          "production"
+        ]
+      }
+    ]
+  }
+]

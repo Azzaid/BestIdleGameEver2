@@ -179,7 +179,7 @@
     "id": "buildings.nature.saplings",
     "name": "Saplings",
     "kind": "building",
-    "description": "Field of saplings growing in the wild. They are not very tall, but they are very strong.",
+    "description": "Field of random mutated sapling found in the wild. Who knows what can grow out of them.",
     "keywords": [
       "nature",
       "building",
@@ -204,6 +204,13 @@
         "valueId": "resource.plants",
         "additionalKeywords": [
           "production"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
         ],
         "additive": 1
       }
@@ -551,6 +558,52 @@
         ],
         "multiplier": 0.8,
         "radius": 2
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.livingWoodSaplings",
+    "visualAssetId": "building_nature_living-wood-saplings",
+    "name": "Living wood saplings",
+    "kind": "superstructure",
+    "description": "Strong as a diamond with sharp leaves. It cant be cut and used for building. But can be persuaded to grow into desired shape while still young.",
+    "requiredBuildingIds": [
+      "buildings.nature.saplings"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.saplings": "building_nature_living-wood-saplings-from-saplings"
+    },
+    "hint": "In a diverse ecosystem might grow into strong and tall threes.",
+    "keywords": [
+      "nature"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.threes"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 2
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.plants",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 6
       }
     ]
   }
