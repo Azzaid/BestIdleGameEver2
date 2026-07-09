@@ -1466,8 +1466,11 @@ function VisualAssetField(props: {
   const previewSrc = props.draft?.previewUrl ?? props.selectedAsset?.src;
   const previewLabel = props.draft?.file.name ?? props.selectedAsset?.label ?? props.value;
   const previewMetadata = props.draft?.metadata ?? props.metadataOverride ?? props.selectedAsset?.metadata;
-  const towerPartRenderedSize = previewMetadata && isTowerPartVisualMetadata(previewMetadata)
-    ? getTowerVisualRenderedSize(previewMetadata)
+  const towerPartPreviewMetadata = previewMetadata && isTowerPartVisualMetadata(previewMetadata)
+    ? previewMetadata
+    : undefined;
+  const towerPartRenderedSize = towerPartPreviewMetadata
+    ? getTowerVisualRenderedSize(towerPartPreviewMetadata)
     : undefined;
   const previewImageStyle = previewMetadata && isSizedSpriteMetadata(previewMetadata)
     ? {
@@ -1479,7 +1482,7 @@ function VisualAssetField(props: {
       ? {
         width: towerPartRenderedSize.width,
         height: towerPartRenderedSize.height,
-        transform: `rotate(${previewMetadata?.rotationDegrees ?? 0}deg)`,
+        transform: `rotate(${towerPartPreviewMetadata.rotationDegrees ?? 0}deg)`,
       }
     : undefined;
   const visibleOptions = props.options

@@ -416,7 +416,6 @@ export default function DamageAreaVfxEditorPage() {
               size={previewSize}
               displayType={previewDisplayType}
               pieces={circularPreviewPieces}
-              lengthToRepeat={previewLengthToRepeat}
               spriteZoom={previewSpriteZoom}
             />
           ) : (
@@ -489,7 +488,6 @@ function PreviewShape({
   size,
   displayType,
   pieces,
-  lengthToRepeat,
   spriteZoom,
 }: {
   src: string;
@@ -497,7 +495,6 @@ function PreviewShape({
   size: number;
   displayType: DamageAreaVfxDisplayType;
   pieces: {x: number; y: number; rotation: number}[];
-  lengthToRepeat: number;
   spriteZoom: number;
 }) {
   if (displayType === "centered") {
