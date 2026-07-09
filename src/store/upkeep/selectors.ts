@@ -26,7 +26,7 @@ import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import type {HomogeneousResolvedEntity, HomogeneousValueEntitySource} from "../../models/homogeneousValueResolution.ts";
 import {selectUnlockedTowerPartIds} from "../unlocks/selectors.ts";
-import {resolveTowerAssembly, resolveTowerAssemblyStatsAndSupport} from "../../models/battle/resolveTowerAssembly.ts";
+import {createTowerDamageProfiles, resolveTowerAssembly, resolveTowerAssemblyStatsAndSupport} from "../../models/battle/resolveTowerAssembly.ts";
 import type {TowerAssemblyResolved} from "../../models/battle/towerParts.ts";
 import type {WallResolution} from "../../models/city/Wall.ts";
 import {selectTechnologyHomogeneousEntities} from "../research/selectors.ts";
@@ -278,14 +278,17 @@ function applyEffectiveTowerEntity(
         effectiveTowerEntity,
         cityValues,
     );
+    const contributions = resolveEntityContributionsWithDerivedValues(effectiveTowerEntity, cityValues);
     const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(
         resolvedValues,
         effectiveKeywords,
     );
+    const damageProfiles = createTowerDamageProfiles(stats, effectiveKeywords, contributions);
 
     return {
         ...resolvedTower,
         stats,
+        damageProfiles,
         supportCost,
         keywords: effectiveKeywords,
         homogeneousResolvedValues: resolvedValues,

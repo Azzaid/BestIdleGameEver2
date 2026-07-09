@@ -13,7 +13,6 @@ const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
   platform: {
     rootSocket: { x: 0, y: 18 },
     outputSockets: {},
-    fallbackSize: { width: 120, height: 38 },
     renderLayer: DEFAULT_TOWER_PART_Z_INDEX.platform,
   },
   barrel: {
@@ -22,31 +21,26 @@ const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
       barrelAttachment: { x: 48, y: 0 },
       muzzle: { x: 56, y: 0 },
     },
-    fallbackSize: { width: 104, height: 22 },
     renderLayer: DEFAULT_TOWER_PART_Z_INDEX.barrel,
   },
   ammo: {
     rootSocket: { x: 0, y: 0 },
     outputSockets: {},
-    fallbackSize: { width: 30, height: 30 },
     renderLayer: DEFAULT_TOWER_PART_Z_INDEX.ammo,
   },
   aimSystem: {
     rootSocket: { x: 0, y: 18 },
     outputSockets: {},
-    fallbackSize: { width: 58, height: 32 },
     renderLayer: DEFAULT_TOWER_PART_Z_INDEX.aimSystem,
   },
   barrelAttachment: {
     rootSocket: { x: -18, y: 0 },
     outputSockets: {},
-    fallbackSize: { width: 38, height: 26 },
     renderLayer: DEFAULT_TOWER_PART_Z_INDEX.barrelAttachment,
   },
   loadingSystem: {
     rootSocket: { x: 18, y: 0 },
     outputSockets: {},
-    fallbackSize: { width: 48, height: 34 },
     renderLayer: DEFAULT_TOWER_PART_Z_INDEX.loadingSystem,
   },
   launchSystem: {
@@ -58,7 +52,6 @@ const slotVisualLayouts: Record<TowerPartSlot, VisualSlotLayout> = {
       aimSystem: { x: 0, y: -52 },
       loadingSystem: { x: -38, y: -8 },
     },
-    fallbackSize: { width: 48, height: 34 },
     renderLayer: DEFAULT_TOWER_PART_Z_INDEX.launchSystem,
   },
 };
@@ -79,7 +72,8 @@ function createVisualPartForSlot(slot: TowerPartSlot, resolvedTower: TowerAssemb
       ...layout.outputSockets,
       ...visualMetadata?.outputSockets,
     },
-    targetSpriteSize: visualMetadata?.targetSpriteSize ?? layout.targetSpriteSize,
+    sourceSpriteSize: visualMetadata?.sourceSpriteSize,
+    zoom: visualMetadata?.zoom,
     rotationDegrees: visualMetadata?.rotationDegrees,
   };
 }

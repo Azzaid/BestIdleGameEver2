@@ -43,30 +43,30 @@ function updatePushBacks(world: World, dt: number) {
 }
 
 function updateZoneDots(world: World, dt: number) {
-  const { zoneDotDamage, zoneDotTicksPerSecond, zoneDotZoneSize, zoneDotKeywords } = world.config.wallZoneEffects;
-  if (zoneDotDamage <= 0 || zoneDotTicksPerSecond <= 0 || zoneDotZoneSize <= 0) return;
+  const { zoneDotDamageProfile, zoneDotTicksPerSecond, zoneDotZoneSize } = world.config.wallZoneEffects;
+  if (zoneDotDamageProfile.amount <= 0 || zoneDotTicksPerSecond <= 0 || zoneDotZoneSize <= 0) return;
 
-  const damageKeywords = new Set(zoneDotKeywords);
+  const nextProgress = world.wallZoneDotProgress + zoneDotTicksPerSecond * dt;
+  const ticks = Math.floor(nextProgress);
+  world.wallZoneDotProgress = nextProgress - ticks;
+  if (ticks <= 0) return;
 
+  let damagedAnyEnemy = false;
   for (const [enemyId, enemy] of world.enemiesData) {
     if (world.toRemove.has(enemyId)) continue;
 
     const health = world.healths.get(enemyId);
     if (!health) continue;
 
-    if (!enemyIsInsideWallZone(world, enemyId, zoneDotZoneSize)) {
-      world.enemyZoneDotProgress.delete(enemyId);
-      continue;
-    }
+    if (!enemyIsInsideWallZone(world, enemyId, zoneDotZoneSize)) continue;
 
-    const nextProgress = (world.enemyZoneDotProgress.get(enemyId) ?? 0) + zoneDotTicksPerSecond * dt;
-    const ticks = Math.floor(nextProgress);
-    if (ticks > 0) {
-      const damagePerTick = applyDamageModifiers({ baseDamage: zoneDotDamage, keywords: damageKeywords }, enemy, health);
-      health.hitPoints -= damagePerTick * ticks;
-    }
+    const damagePerTick = applyDamageModifiers(zoneDotDamageProfile, enemy, health);
+    health.hitPoints -= damagePerTick * ticks;
+    damagedAnyEnemy = true;
+  }
 
-    world.enemyZoneDotProgress.set(enemyId, nextProgress - ticks);
+  if (damagedAnyEnemy) {
+    triggerDamageAreaVfxPulse(world, "wall:zoneDot");
   }
 }
 
@@ -76,4 +76,11 @@ function enemyIsInsideWallZone(world: World, enemyId: number, zoneSize: number) 
   if (!enemy || !transform) return false;
 
   return transform.position.y + enemy.hitRadius >= world.config.wallContactY - zoneSize;
+}
+
+function triggerDamageAreaVfxPulse(world: World, pulseKey: string) {
+  world.damageAreaVfxPulseTriggers.set(
+    pulseKey,
+    (world.damageAreaVfxPulseTriggers.get(pulseKey) ?? 0) + 1,
+  );
 }

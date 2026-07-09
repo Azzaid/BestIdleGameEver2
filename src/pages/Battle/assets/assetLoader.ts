@@ -11,6 +11,7 @@ import { BATTLE_ENEMY_BLUEPRINTS } from '../../../data/enemies/index.ts';
 import { ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY } from '../../../data/enemies/visuals.ts';
 import { WALL_SEGMENT_BUILDINGS } from '../../../data/wallSegments/index.ts';
 import { WALL_TOWER_BUILDINGS } from '../../../data/wallSuperstructures/index.ts';
+import { BATTLE_DAMAGE_AREA_VFX_DEFINITIONS } from '../../../data/battleDamageAreaVfx.ts';
 
 export async function loadBattleBackground(backgroundId: BattleBackgroundId): Promise<void> {
     const background = BATTLE_BACKGROUNDS[backgroundId];
@@ -107,6 +108,19 @@ export async function loadEnemyAssets(): Promise<void> {
     await Assets.load(assetsToLoad);
 }
 
+export async function loadBattleDamageAreaVfxAssets(): Promise<void> {
+    const assetsToLoad = BATTLE_DAMAGE_AREA_VFX_DEFINITIONS
+        .filter(definition => definition.src && !Assets.cache.has(definition.textureAlias))
+        .map(definition => ({
+            alias: definition.textureAlias,
+            src: definition.src,
+        }));
+
+    if (assetsToLoad.length === 0) return;
+
+    await Assets.load(assetsToLoad);
+}
+
 /** Loads only assets needed by the current battle scene. */
 export async function loadBattleAssets(args?: {
     backgroundId?: BattleBackgroundId;
@@ -115,6 +129,7 @@ export async function loadBattleAssets(args?: {
     await loadEnemyAssets();
     await loadTowerPartAssets();
     await loadBattleWallAssets(args?.wallSegments ?? []);
+    await loadBattleDamageAreaVfxAssets();
 
     if (args?.backgroundId) {
         await loadBattleBackground(args.backgroundId);

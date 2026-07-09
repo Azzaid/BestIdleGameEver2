@@ -1,29 +1,29 @@
 import type { EnemyData } from '../../../models/battle/enemy.ts';
 import type { Health } from '../../../models/battle/health.ts';
-import type { DamageModifier, ProjectileForDamage } from '../../../models/battle/damage.ts';
+import { DAMAGE_KEYWORDS, type DamageModifier, type DamageProfile } from '../../../models/battle/damage.ts';
 
 const damageRules: DamageModifier[] = [
-  (raw, proj, enemy) => {
+  (raw, damage, enemy) => {
     if (!enemy.keywords.has('flying')) return raw;
-    if (proj.keywords.has('ignoreFlying') || proj.keywords.has('antiAir')) return raw;
+    if (damage.keywords.has(DAMAGE_KEYWORDS.ignoreFlying) || damage.keywords.has(DAMAGE_KEYWORDS.antiAir)) return raw;
     return 0;
   },
-  (raw, proj, enemy) => {
-    if (enemy.keywords.has('undead') && proj.keywords.has('holy')) return raw * 1.5;
+  (raw, damage, enemy) => {
+    if (enemy.keywords.has('undead') && damage.keywords.has(DAMAGE_KEYWORDS.holy)) return raw * 1.5;
     return raw;
   },
-  (raw, proj, _enemy, health) => {
-    if (proj.keywords.has('ignoreArmor')) return raw;
+  (raw, damage, _enemy, health) => {
+    if (damage.keywords.has(DAMAGE_KEYWORDS.ignoreArmor)) return raw;
 
-    const armorIgnoredRatio = proj.keywords.has('armorPiercing') ? 0.5 : 0;
+    const armorIgnoredRatio = damage.keywords.has(DAMAGE_KEYWORDS.armorPiercing) ? 0.5 : 0;
     const effectiveArmor = health.armor * (1 - armorIgnoredRatio);
 
     return raw - effectiveArmor;
   },
 ];
 
-export function applyDamageModifiers(projectile: ProjectileForDamage, enemy: EnemyData, health: Health): number {
-  let dmg = projectile.baseDamage;
-  for (const rule of damageRules) dmg = rule(dmg, projectile, enemy, health);
+export function applyDamageModifiers(damage: DamageProfile, enemy: EnemyData, health: Health): number {
+  let dmg = damage.amount;
+  for (const rule of damageRules) dmg = rule(dmg, damage, enemy, health);
   return Math.max(0, dmg);
 }

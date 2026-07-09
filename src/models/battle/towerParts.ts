@@ -1,4 +1,5 @@
 import type { SpriteInfo } from './spriteInfo.ts';
+import type { TowerDamageProfiles } from './damage.ts';
 import type { DevelopmentVectorKey } from '../DevlopmentVector.ts';
 import type { UpkeepAmount } from '../Upkeep.ts';
 import type {
@@ -168,6 +169,7 @@ export interface TowerStatsResolved {
 export interface TowerAssemblyResolved {
   selectedParts: Partial<Record<TowerPartSlot, GunPart>>;
   stats: TowerStatsResolved;
+  damageProfiles: TowerDamageProfiles;
   supportCost: UpkeepAmount;
   values: HomogeneousValueEffect[];
   derivedValues: HomogeneousDerivedValueEffect[];

@@ -37,10 +37,14 @@ import {
     selectSiegeModifierValues,
 } from "../../store/homogeneousValues/selectors.ts";
 import type { TowerAssemblyResolved } from "../../models/battle/towerParts.ts";
-import { resolveTowerAssemblyStatsAndSupport } from "../../models/battle/resolveTowerAssembly.ts";
+import {createTowerDamageProfiles, resolveTowerAssemblyStatsAndSupport} from "../../models/battle/resolveTowerAssembly.ts";
 import type { HomogeneousResolvedEntity } from "../../models/homogeneousValueResolution.ts";
-import {resolveEntityValuesWithDerivedValues} from "../../models/homogeneousValueResolution.ts";
+import {
+    resolveEntityContributionsWithDerivedValues,
+    resolveEntityValuesWithDerivedValues,
+} from "../../models/homogeneousValueResolution.ts";
 import type {CityResolution} from "../../models/city/Adjancency.ts";
+import type {TowerDamageProfiles} from "../../models/battle/damage.ts";
 
 type BattleMode = "siege" | "pressure";
 
@@ -62,6 +66,7 @@ function getResolvedTowerBattleKey(tower: TowerAssemblyResolved) {
     return [
         selectedPartKey,
         statsKey,
+        getTowerDamageProfilesBattleKey(tower.damageProfiles),
         [...tower.keywords].sort().join(","),
         tower.aimKeywords.join(","),
         tower.selectedParts.ammo?.projectileSprite?.textureKey ?? "",
@@ -83,9 +88,17 @@ function getStandaloneTowerDefenseBattleKey(defense: StandaloneTowerDefense) {
         defense.wallCellKey ?? "",
         defense.wallColumn ?? "",
         statsKey,
+        getTowerDamageProfilesBattleKey(defense.damageProfiles),
         [...defense.keywords].sort().join(","),
         defense.aimKeywords.join(","),
     ].join("|");
+}
+
+function getTowerDamageProfilesBattleKey(damageProfiles: TowerDamageProfiles) {
+    return Object.entries(damageProfiles)
+        .map(([profileName, profile]) => `${profileName}:${profile.amount}:${[...profile.keywords].sort().join(",")}`)
+        .sort()
+        .join(";");
 }
 
 function createStandaloneTowerDefenses(
@@ -96,16 +109,19 @@ function createStandaloneTowerDefenses(
         if (entity.entityType !== "wallSuperstructure" || !hasTowerScopedContribution(entity)) return [];
 
         const keywords = new Set(entity.effectiveKeywords);
+        const contributions = resolveEntityContributionsWithDerivedValues(entity, cityValues);
         const {stats} = resolveTowerAssemblyStatsAndSupport(
             resolveEntityValuesWithDerivedValues(entity, cityValues),
             keywords,
         );
+        const damageProfiles = createTowerDamageProfiles(stats, keywords, contributions);
 
         return [{
             id: entity.id,
             wallCellKey: entity.cellKey,
             wallColumn: entity.column,
             stats,
+            damageProfiles,
             keywords,
             aimKeywords: ["closestToWall"],
         }];
@@ -179,10 +195,12 @@ const BattlePage = () => {
         pushBackDistance: wallResolution.pushBackDistance,
         pushBacksPerSecond: wallResolution.pushBacksPerSecond,
         pushBackEffectZoneSize: wallResolution.pushBackEffectZoneSize,
-        zoneDotDamage: wallResolution.zoneDotDamage,
+        zoneDotDamageProfile: {
+            amount: wallResolution.zoneDotDamage,
+            keywords: new Set(wallResolution.zoneDotKeywords),
+        },
         zoneDotTicksPerSecond: wallResolution.zoneDotTicksPerSecond,
         zoneDotZoneSize: wallResolution.zoneDotZoneSize,
-        zoneDotKeywords: wallResolution.zoneDotKeywords,
     }), [
         wallResolution.pushBackDistance,
         wallResolution.pushBacksPerSecond,

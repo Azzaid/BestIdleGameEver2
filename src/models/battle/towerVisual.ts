@@ -17,9 +17,9 @@ export interface TowerVisualPartDefinition {
   visible?: boolean;
   rootSocket: TowerVisualPoint;
   outputSockets: Record<string, TowerVisualPoint>;
-  targetSpriteSize?: TowerVisualSize;
+  sourceSpriteSize?: TowerVisualSize;
+  zoom?: number;
   rotationDegrees?: number;
-  fallbackSize?: TowerVisualSize;
   renderLayer?: number;
 }
 
@@ -37,7 +37,7 @@ export interface TowerVisualDefinition {
   root: TowerVisualNodeDefinition;
 }
 
-export type VisualSlotLayout = Pick<TowerVisualPartDefinition, 'rootSocket' | 'outputSockets' | 'targetSpriteSize' | 'fallbackSize' | 'renderLayer'>;
+export type VisualSlotLayout = Pick<TowerVisualPartDefinition, 'rootSocket' | 'outputSockets' | 'renderLayer'>;
 
 export interface TowerVisualRenderOptions {
   warn?: (message: string) => void;

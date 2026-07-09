@@ -3,10 +3,7 @@
     "width": 1024,
     "height": 1024
   },
-  "targetSpriteSize": {
-    "width": 100,
-    "height": 110
-  },
+  "zoom": 0.0977,
   "rotationDegrees": 90,
   "inputSocket": {
     "x": 510,

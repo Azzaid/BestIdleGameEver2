@@ -3,6 +3,7 @@ import {useParams, useSearchParams} from "react-router-dom";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {TowerPartSlot} from "../../models/battle/towerParts.ts";
 import type {TowerPartVisualMetadata} from "../../models/battle/towerPartVisualMetadata.ts";
+import {getTowerVisualRenderedSize} from "../../models/battle/towerVisualSizing.ts";
 import type {
   HomogeneousAdjacencyRule,
   HomogeneousDerivedValueEffect,
@@ -1465,12 +1466,21 @@ function VisualAssetField(props: {
   const previewSrc = props.draft?.previewUrl ?? props.selectedAsset?.src;
   const previewLabel = props.draft?.file.name ?? props.selectedAsset?.label ?? props.value;
   const previewMetadata = props.draft?.metadata ?? props.metadataOverride ?? props.selectedAsset?.metadata;
+  const towerPartRenderedSize = previewMetadata && isTowerPartVisualMetadata(previewMetadata)
+    ? getTowerVisualRenderedSize(previewMetadata)
+    : undefined;
   const previewImageStyle = previewMetadata && isSizedSpriteMetadata(previewMetadata)
     ? {
       width: previewMetadata.targetSpriteSize.width,
       height: previewMetadata.targetSpriteSize.height,
       transform: `rotate(${previewMetadata.rotationDegrees ?? 0}deg)`,
     }
+    : towerPartRenderedSize
+      ? {
+        width: towerPartRenderedSize.width,
+        height: towerPartRenderedSize.height,
+        transform: `rotate(${previewMetadata?.rotationDegrees ?? 0}deg)`,
+      }
     : undefined;
   const visibleOptions = props.options
     .filter(option => `${option.label} ${option.id}`.toLowerCase().includes(query.trim().toLowerCase()))
@@ -1512,6 +1522,14 @@ function VisualAssetField(props: {
         ...previewMetadata.targetSpriteSize,
         ...patch.targetSpriteSize,
       },
+    });
+  }
+
+  function updateTowerPartMetadata(patch: Partial<Pick<TowerPartVisualMetadata, "zoom" | "rotationDegrees">>) {
+    if (!previewMetadata || !isTowerPartVisualMetadata(previewMetadata)) return;
+    props.onMetadataChange({
+      ...previewMetadata,
+      ...patch,
     });
   }
 
@@ -1682,6 +1700,43 @@ function VisualAssetField(props: {
                         value={previewMetadata.rotationDegrees ?? 0}
                         onChange={event => updateSizedSpriteMetadata({rotationDegrees: parseNumberOrFallback(event.target.value, 0)})}
                       />
+                    </label>
+                  </div>
+                </div>
+              )}
+              {previewMetadata && isTowerPartVisualMetadata(previewMetadata) && (
+                <div className={s.spriteMetadataControls}>
+                  <div className={s.pairedFields}>
+                    <label className={s.field}>
+                      <span className={s.label}>Sprite Zoom</span>
+                      <input
+                        className={s.input}
+                        type="number"
+                        min="0.001"
+                        step="0.001"
+                        value={previewMetadata.zoom}
+                        onChange={event => updateTowerPartMetadata({zoom: parsePositiveNumberOrFallback(event.target.value, previewMetadata.zoom)})}
+                      />
+                    </label>
+                    <label className={s.field}>
+                      <span className={s.label}>Rotation degrees</span>
+                      <input
+                        className={s.input}
+                        type="number"
+                        step="1"
+                        value={previewMetadata.rotationDegrees ?? 0}
+                        onChange={event => updateTowerPartMetadata({rotationDegrees: parseNumberOrFallback(event.target.value, 0)})}
+                      />
+                    </label>
+                  </div>
+                  <div className={s.pairedFields}>
+                    <label className={s.field}>
+                      <span className={s.label}>Source Width</span>
+                      <input className={s.input} readOnly value={previewMetadata.sourceSpriteSize.width} />
+                    </label>
+                    <label className={s.field}>
+                      <span className={s.label}>Source Height</span>
+                      <input className={s.input} readOnly value={previewMetadata.sourceSpriteSize.height} />
                     </label>
                   </div>
                 </div>
@@ -2107,11 +2162,15 @@ function createDefaultSpriteMetadata(
 
   return {
     sourceSpriteSize,
-    targetSpriteSize: fitSpriteSize(sourceSpriteSize, 120, 80),
+    zoom: getFitSpriteZoom(sourceSpriteSize, 120, 80),
     rotationDegrees: 0,
     inputSocket: center,
     outputSockets: getDefaultOutputSockets(partType, center),
   };
+}
+
+function getFitSpriteZoom(sourceSpriteSize: {width: number; height: number}, maxWidth: number, maxHeight: number) {
+  return Math.min(maxWidth / sourceSpriteSize.width, maxHeight / sourceSpriteSize.height);
 }
 
 function getDefaultOutputSockets(partType: TowerPartSlot, center: {x: number; y: number}): Record<string, {x: number; y: number}> {
@@ -2754,6 +2813,10 @@ function isBuildingSpriteMetadata(metadata: SpriteMetadata): metadata is Buildin
 
 function isSizedSpriteMetadata(metadata: SpriteMetadata): metadata is SizedSpriteMetadata {
   return "targetSpriteSize" in metadata;
+}
+
+function isTowerPartVisualMetadata(metadata: SpriteMetadata): metadata is TowerPartVisualMetadata {
+  return "zoom" in metadata && "inputSocket" in metadata && "outputSockets" in metadata;
 }
 
 function normalizeIdPart(value: string): string {

@@ -82,9 +82,11 @@
       {
         "valueId": "tower.zoneDotDamage",
         "additionalKeywords": [
-          "production"
+          "production",
+          "damage.poison",
+          "damage.ignoreArmor"
         ],
-        "additive": 2
+        "additive": 9
       },
       {
         "valueId": "tower.zoneDotZoneSize",
@@ -98,7 +100,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 1
+        "additive": 0.3
       },
       {
         "valueId": "resource.fungi",
@@ -115,7 +117,9 @@
         "derivedFrom": "resource.fungi",
         "derivedMultiplicator": 0.1,
         "additionalKeywords": [
-          "production"
+          "production",
+          "damage.poison",
+          "damage.ignoreArmor"
         ]
       },
       {

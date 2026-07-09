@@ -23,6 +23,7 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - Tower component metadata: `src/assets/gunParts/<vector>/<vector>_<slot>_<id>.json`
 - Ammo projectile textures: `src/assets/projectiles/<vector>/<vector>_projectile_<id>.png`
 - Battle backgrounds: `src/assets/battle/backgrounds/<id>.png`
+- Battle damage-area VFX textures: `src/assets/battle/effects/<id>.png`
 - Battle enemy textures: `src/assets/enemies/<region>/<textureKey>.png`
 - Battle enemy animation atlases: `src/assets/enemies/<region>/<textureKey>.json`
 - Legacy city-wide backgrounds: `src/assets/city/background/<id>.<ext>`
@@ -79,7 +80,7 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 2. Confirm `src/data/ids.ts` derives the gun part id from the active atlas and slot group.
 3. Put the PNG and JSON metadata in `src/assets/gunParts/<vector>/`.
 4. Import and map both files in `src/data/entityVisualAssets.ts`; `src/data/gunParts/partVisualMetadata.ts` derives tower part visual metadata from that registry.
-5. Keep tower part metadata JSON limited to sockets, source size, target size, and rotation. Do not duplicate `id` or `spriteId` in the JSON; the visual asset registry key is the Pixi texture alias.
+5. Keep tower part metadata JSON limited to sockets, source size, zoom, and rotation. `zoom` is a single sprite scale derived from source pixels, so preview and Pixi rendering preserve the source proportions. Do not duplicate `id` or `spriteId` in the JSON; the visual asset registry key is the Pixi texture alias.
 6. Use `/gun-part-editor` to check sockets and `/ids` to check id/data/asset coverage.
 
 ## Add An Ammo Projectile Texture
@@ -88,6 +89,14 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 2. Put projectile PNGs in `src/assets/projectiles/<vector>/` using `<vector>_projectile_<id>.png`.
 3. Reference the projectile asset from the ammo definition with `projectileSpriteTextureKey`, using the registry id format `projectiles.<vector>.<id>`.
 4. The entity edit page can upload or select the projectile sprite alongside the ammo part's main tower-component sprite.
+
+## Add A Battle Damage-Area VFX Texture
+
+1. Put the PNG in `src/assets/battle/effects/` using kebab-case, for example `toxic-cloud.png`.
+2. Add or update the runtime mapping in `src/data/battleDamageAreaVfxDefinitions.json`, including the display type and any circular-repeat controls.
+3. Match the effect through damage keywords such as `damage.poison`, not through a specific tower, wall, or building id.
+4. Use `/damage-area-vfx` in local debug mode to preview existing sprites, upload new PNGs, and save mapping changes through the local data server.
+5. See `docs/damage-area-vfx.md` for the scalable matching model.
 
 ## Add A Battle Enemy Texture
 

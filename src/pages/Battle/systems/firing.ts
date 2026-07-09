@@ -40,10 +40,9 @@ export function FiringSystem(world: World, dt: number) {
       world.transforms.set(id, { position: spawnPosition, rotationRadians: angle });
       world.lifespans.set(id, { remainingSeconds: 2.0 });
       world.projectileInfo.set(id, {
-        damage: tower.projectileDamage,
+        damageProfile: tower.projectileDamageProfile,
         projectileRadius: tower.projectileRadius,
         aoeRadius: tower.aoeRadius,
-        keywords: tower.keywords,
         speedPixelsPerSecond: tower.projectileSpeed,
         directionRadians: angle,
       });

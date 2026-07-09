@@ -375,22 +375,31 @@ function PixiAnimationPreview(props: {
     let app: Application | null = null;
     let sheet: Spritesheet | null = null;
 
+    const destroyApp = () => {
+      const currentApp = app;
+      app = null;
+      if (!currentApp) return;
+
+      currentApp.destroy({removeView: true}, {children: true, texture: false, textureSource: false, context: true});
+    };
+
     async function renderPreview() {
       if (!hostRef.current || !props.imageUrl || !props.frameKeys.length) return;
 
-      app = new Application();
-      await app.init({
+      const nextApp = new Application();
+      await nextApp.init({
         width: 260,
         height: 260,
         backgroundAlpha: 0,
         antialias: true,
       });
       if (disposed || !hostRef.current) {
-        app.destroy(true);
+        nextApp.destroy({removeView: true}, {children: true, texture: false, textureSource: false, context: true});
         return;
       }
 
-      hostRef.current.replaceChildren(app.canvas);
+      app = nextApp;
+      hostRef.current.replaceChildren(nextApp.canvas);
 
       const atlas = {
         ...props.atlas,
@@ -401,7 +410,7 @@ function PixiAnimationPreview(props: {
       };
       sheet = new Spritesheet(Texture.from(props.imageUrl), atlas);
       await sheet.parse();
-      if (disposed || !app) return;
+      if (disposed || app !== nextApp) return;
 
       const textures = props.frameKeys
         .map(key => sheet?.textures[key])
@@ -411,14 +420,14 @@ function PixiAnimationPreview(props: {
 
       const animation = new AnimatedSprite(textures);
       animation.anchor.set(0.5);
-      animation.x = app.screen.width / 2;
-      animation.y = app.screen.height / 2;
+      animation.x = nextApp.screen.width / 2;
+      animation.y = nextApp.screen.height / 2;
       animation.width = props.targetWidth;
       animation.height = props.targetHeight;
       animation.rotation = (props.rotationDegrees ?? 0) * Math.PI / 180;
       animation.animationSpeed = props.fps / 60;
       animation.play();
-      app.stage.addChild(animation);
+      nextApp.stage.addChild(animation);
     }
 
     void renderPreview();
@@ -426,7 +435,7 @@ function PixiAnimationPreview(props: {
     return () => {
       disposed = true;
       sheet?.destroy(true);
-      app?.destroy(true, {children: true, texture: false, textureSource: false, context: true});
+      destroyApp();
       hostRef.current?.replaceChildren();
     };
   }, [props.atlas, props.fps, props.frameKeys, props.imageUrl, props.rotationDegrees, props.targetHeight, props.targetWidth]);

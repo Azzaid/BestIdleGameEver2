@@ -1,5 +1,6 @@
 import type { TowerPartVisualMetadata } from '../../models/battle/towerPartVisualMetadata.ts';
 import type { TowerVisualPoint, TowerVisualSize } from '../../models/battle/towerVisual.ts';
+import { getTowerVisualRenderedSize } from '../../models/battle/towerVisualSizing.ts';
 import type { SpriteAsset } from '../../models/sprites/SpriteAtlas.ts';
 import {ENTITY_VISUAL_ASSETS, type GunPartVisualAssetOption} from "../entityVisualAssets.ts";
 
@@ -10,11 +11,11 @@ export type TowerPartVisualAsset = SpriteAsset<TowerPartVisualMetadata> & {
 function scalePoint(
   point: TowerVisualPoint,
   sourceSpriteSize: TowerVisualSize,
-  targetSpriteSize: TowerVisualSize
+  renderedSize: TowerVisualSize
 ): TowerVisualPoint {
   return {
-    x: (point.x - sourceSpriteSize.width / 2) * (targetSpriteSize.width / sourceSpriteSize.width),
-    y: (point.y - sourceSpriteSize.height / 2) * (targetSpriteSize.height / sourceSpriteSize.height),
+    x: (point.x - sourceSpriteSize.width / 2) * (renderedSize.width / sourceSpriteSize.width),
+    y: (point.y - sourceSpriteSize.height / 2) * (renderedSize.height / sourceSpriteSize.height),
   };
 }
 
@@ -32,27 +33,27 @@ function rotatePoint(point: TowerVisualPoint, rotationDegrees = 0): TowerVisualP
 function normalizePoint(
   point: TowerVisualPoint,
   sourceSpriteSize: TowerVisualSize,
-  targetSpriteSize: TowerVisualSize,
+  renderedSize: TowerVisualSize,
   rotationDegrees = 0
 ): TowerVisualPoint {
-  return rotatePoint(scalePoint(point, sourceSpriteSize, targetSpriteSize), rotationDegrees);
+  return rotatePoint(scalePoint(point, sourceSpriteSize, renderedSize), rotationDegrees);
 }
 
 function normalizeMetadata(metadata: TowerPartVisualMetadata): TowerPartVisualMetadata {
-  if (!metadata.sourceSpriteSize || !metadata.targetSpriteSize) return metadata;
+  const renderedSize = getTowerVisualRenderedSize(metadata);
 
   return {
     ...metadata,
     inputSocket: normalizePoint(
       metadata.inputSocket,
       metadata.sourceSpriteSize,
-      metadata.targetSpriteSize,
+      renderedSize,
       metadata.rotationDegrees
     ),
     outputSockets: Object.fromEntries(
       Object.entries(metadata.outputSockets).map(([socketName, point]) => [
         socketName,
-        normalizePoint(point, metadata.sourceSpriteSize!, metadata.targetSpriteSize!, metadata.rotationDegrees),
+        normalizePoint(point, metadata.sourceSpriteSize, renderedSize, metadata.rotationDegrees),
       ])
     ),
   };

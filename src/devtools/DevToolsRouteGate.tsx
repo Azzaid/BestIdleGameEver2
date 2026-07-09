@@ -9,6 +9,7 @@ import GlobalEventsEditorPage from "../pages/GlobalEventsEditor/GlobalEventsEdit
 import HexBackgroundEditorPage from "../pages/HexBackgroundEditor/HexBackgroundEditorPage.tsx";
 import HomogeneousValuesEditorPage from "../pages/HomogeneousValuesEditor/HomogeneousValuesEditorPage.tsx";
 import EnemyAnimationSpriteSheetPage from "../pages/EnemyAnimationSpriteSheet/EnemyAnimationSpriteSheetPage.tsx";
+import DamageAreaVfxEditorPage from "../pages/DamageAreaVfxEditor/DamageAreaVfxEditorPage.tsx";
 
 export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
   const routeElement = useRoutes([
@@ -59,6 +60,10 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     {
       path: "enemy-animation-sprites",
       element: enabled ? <EnemyAnimationSpriteSheetPage /> : <Navigate to="/battle" replace />,
+    },
+    {
+      path: "damage-area-vfx",
+      element: enabled ? <DamageAreaVfxEditorPage /> : <Navigate to="/battle" replace />,
     },
   ]);
 

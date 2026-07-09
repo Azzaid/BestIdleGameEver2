@@ -153,28 +153,28 @@ function updateTowerDots(
   towerPosition: { x: number; y: number },
   dt: number,
 ) {
-  const { zoneDotDamage, zoneDotTicksPerSecond, zoneDotZoneSize } = tower;
-  if (zoneDotDamage <= 0 || zoneDotTicksPerSecond <= 0 || zoneDotZoneSize <= 0) return;
+  const { zoneDotDamageProfile, zoneDotTicksPerSecond, zoneDotZoneSize } = tower;
+  if (zoneDotDamageProfile.amount <= 0 || zoneDotTicksPerSecond <= 0 || zoneDotZoneSize <= 0) return;
 
-  const damageKeywords = tower.keywords;
+  const nextProgress = (world.towerZoneDotProgress.get(towerId) ?? 0) + zoneDotTicksPerSecond * dt;
+  const ticks = Math.floor(nextProgress);
+  world.towerZoneDotProgress.set(towerId, nextProgress - ticks);
+  if (ticks <= 0) return;
+
+  let damagedAnyEnemy = false;
   for (const [enemyId, enemy] of world.enemiesData) {
-    const key = createEffectKey(towerId, enemyId, 'dot');
-    if (!enemyIsInsideTowerZone(world, enemyId, towerPosition, zoneDotZoneSize)) {
-      world.enemyTowerZoneDotProgress.delete(key);
-      continue;
-    }
+    if (!enemyIsInsideTowerZone(world, enemyId, towerPosition, zoneDotZoneSize)) continue;
 
     const health = world.healths.get(enemyId);
     if (!health) continue;
 
-    const nextProgress = (world.enemyTowerZoneDotProgress.get(key) ?? 0) + zoneDotTicksPerSecond * dt;
-    const ticks = Math.floor(nextProgress);
-    if (ticks > 0) {
-      const damagePerTick = applyDamageModifiers({ baseDamage: zoneDotDamage, keywords: damageKeywords }, enemy, health);
-      health.hitPoints -= damagePerTick * ticks;
-    }
+    const damagePerTick = applyDamageModifiers(zoneDotDamageProfile, enemy, health);
+    health.hitPoints -= damagePerTick * ticks;
+    damagedAnyEnemy = true;
+  }
 
-    world.enemyTowerZoneDotProgress.set(key, nextProgress - ticks);
+  if (damagedAnyEnemy) {
+    triggerDamageAreaVfxPulse(world, createTowerZoneDotPulseKey(towerId));
   }
 }
 
@@ -263,8 +263,8 @@ function updateSingleTargetDots(
   towerPosition: { x: number; y: number },
   dt: number,
 ) {
-  const { singleTargetDotDamage, singleTargetDotTicksPerSecond, singleTargetDotRange } = tower;
-  if (singleTargetDotDamage <= 0 || singleTargetDotTicksPerSecond <= 0 || singleTargetDotRange <= 0) return;
+  const { singleTargetDotDamageProfile, singleTargetDotTicksPerSecond, singleTargetDotRange } = tower;
+  if (singleTargetDotDamageProfile.amount <= 0 || singleTargetDotTicksPerSecond <= 0 || singleTargetDotRange <= 0) return;
 
   const progressKey = createTowerEffectKey(towerId, 'singleDot');
   const enemyId = findClosestEnemyToTower(world, towerPosition, singleTargetDotRange);
@@ -280,7 +280,7 @@ function updateSingleTargetDots(
   const nextProgress = (world.enemyTowerZoneDotProgress.get(progressKey) ?? 0) + singleTargetDotTicksPerSecond * dt;
   const ticks = Math.floor(nextProgress);
   if (ticks > 0) {
-    const damagePerTick = applyDamageModifiers({ baseDamage: singleTargetDotDamage, keywords: tower.keywords }, enemy, health);
+    const damagePerTick = applyDamageModifiers(singleTargetDotDamageProfile, enemy, health);
     health.hitPoints -= damagePerTick * ticks;
   }
 
@@ -456,6 +456,17 @@ function createEffectKey(towerId: EntityId, enemyId: EntityId, effect: string) {
 
 function createTowerEffectKey(towerId: EntityId, effect: string) {
   return `${towerId}|tower|${effect}`;
+}
+
+function createTowerZoneDotPulseKey(towerId: EntityId) {
+  return `tower:${towerId}:zoneDot`;
+}
+
+function triggerDamageAreaVfxPulse(world: World, pulseKey: string) {
+  world.damageAreaVfxPulseTriggers.set(
+    pulseKey,
+    (world.damageAreaVfxPulseTriggers.get(pulseKey) ?? 0) + 1,
+  );
 }
 
 function capitalizeEffectName(effect: string) {

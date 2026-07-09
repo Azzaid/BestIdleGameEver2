@@ -6,6 +6,7 @@ import { gunpartIdRows } from '../../data/ids.ts';
 import type { TowerPartVisualMetadata } from '../../models/battle/towerPartVisualMetadata.ts';
 import type { TowerPartSlot } from '../../models/battle/towerParts.ts';
 import type { TowerVisualPoint, TowerVisualSize } from '../../models/battle/towerVisual.ts';
+import { getTowerVisualRenderedSize } from '../../models/battle/towerVisualSizing.ts';
 import { INITIAL_TOWER_AIM_RADIANS } from '../../models/battle/tower.ts';
 import * as s from './GunPartEditorPage.css.ts';
 
@@ -51,6 +52,10 @@ const SLOT_SOCKET_TEMPLATES: Record<TowerPartSlot, string[]> = {
 
 const DEFAULT_SOURCE_SIZE: TowerVisualSize = { width: 1024, height: 1024 };
 const DEFAULT_TARGET_SIZE: TowerVisualSize = { width: 96, height: 64 };
+const DEFAULT_SPRITE_ZOOM = Math.min(
+  DEFAULT_TARGET_SIZE.width / DEFAULT_SOURCE_SIZE.width,
+  DEFAULT_TARGET_SIZE.height / DEFAULT_SOURCE_SIZE.height
+);
 const SOCKET_MAP_NODE_SIZE = 76;
 const INITIAL_TOWER_AIM_DEGREES = INITIAL_TOWER_AIM_RADIANS * 180 / Math.PI;
 
@@ -249,26 +254,30 @@ function getRotatedBounds(size: TowerVisualSize, rotationDegrees: number): Tower
   };
 }
 
-function sourcePointToTargetPoint(
+function sourcePointToRenderedPoint(
   point: TowerVisualPoint,
   sourceSpriteSize: TowerVisualSize,
-  targetSpriteSize: TowerVisualSize
+  renderedSize: TowerVisualSize
 ): TowerVisualPoint {
   return {
-    x: (point.x - sourceSpriteSize.width / 2) * (targetSpriteSize.width / sourceSpriteSize.width),
-    y: (point.y - sourceSpriteSize.height / 2) * (targetSpriteSize.height / sourceSpriteSize.height),
+    x: (point.x - sourceSpriteSize.width / 2) * (renderedSize.width / sourceSpriteSize.width),
+    y: (point.y - sourceSpriteSize.height / 2) * (renderedSize.height / sourceSpriteSize.height),
   };
 }
 
-function targetPointToSourcePoint(
+function renderedPointToSourcePoint(
   point: TowerVisualPoint,
   sourceSpriteSize: TowerVisualSize,
-  targetSpriteSize: TowerVisualSize
+  renderedSize: TowerVisualSize
 ): TowerVisualPoint {
   return {
-    x: point.x * (sourceSpriteSize.width / targetSpriteSize.width) + sourceSpriteSize.width / 2,
-    y: point.y * (sourceSpriteSize.height / targetSpriteSize.height) + sourceSpriteSize.height / 2,
+    x: point.x * (sourceSpriteSize.width / renderedSize.width) + sourceSpriteSize.width / 2,
+    y: point.y * (sourceSpriteSize.height / renderedSize.height) + sourceSpriteSize.height / 2,
   };
+}
+
+function getInitialSpriteZoom(metadata?: TowerPartVisualMetadata) {
+  return metadata?.zoom ?? DEFAULT_SPRITE_ZOOM;
 }
 
 function createSocketsForSlot(
@@ -310,7 +319,7 @@ function getSvgPoint(svg: SVGSVGElement, clientX: number, clientY: number): Towe
 
 function createMetadata(
   sourceSpriteSize: TowerVisualSize,
-  targetSpriteSize: TowerVisualSize,
+  spriteZoom: number,
   rotationDegrees: number,
   sockets: readonly SocketDraft[]
 ): TowerPartVisualMetadata {
@@ -323,7 +332,7 @@ function createMetadata(
 
   return {
     sourceSpriteSize,
-    targetSpriteSize,
+    zoom: Number(spriteZoom.toFixed(4)),
     rotationDegrees,
     inputSocket: roundPoint(inputSocket),
     outputSockets,
@@ -460,13 +469,11 @@ export default function GunPartEditorPage() {
   const [sourceSpriteSize, setSourceSpriteSize] = useState<TowerVisualSize>(
     selectedAsset?.metadata?.sourceSpriteSize ?? DEFAULT_SOURCE_SIZE
   );
-  const [targetSpriteSize, setTargetSpriteSize] = useState<TowerVisualSize>(
-    selectedAsset?.metadata?.targetSpriteSize ?? DEFAULT_TARGET_SIZE
-  );
+  const [spriteZoom, setSpriteZoom] = useState(getInitialSpriteZoom(selectedAsset?.metadata));
   const [sockets, setSockets] = useState<SocketDraft[]>(
     createSocketsForSlot(slot, sourceSpriteSize, selectedAsset?.metadata)
   );
-  const [zoom, setZoom] = useState(1);
+  const [previewZoom, setPreviewZoom] = useState(1);
   const [rotationDegrees, setRotationDegrees] = useState(selectedAsset?.metadata?.rotationDegrees ?? 0);
   const [activeSocketKey, setActiveSocketKey] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({ kind: 'idle', message: '' });
@@ -474,17 +481,18 @@ export default function GunPartEditorPage() {
 
   useEffect(() => {
     const nextPart = TOWER_PARTS.find((part) => part.id === selectedPartId) ?? initialPart;
-    const nextAsset = EDITOR_ASSETS[nextPart.id];
+    const nextAssetId = nextPart.sprite.textureKey ?? nextPart.id;
+    const nextAsset = EDITOR_ASSETS[nextAssetId] ?? EDITOR_ASSETS[nextPart.id];
     const nextSourceSize = nextAsset?.metadata?.sourceSpriteSize ?? DEFAULT_SOURCE_SIZE;
     const nextSlot = nextPart.slot ?? 'barrel';
 
     setSlot(nextSlot);
     setSourceSpriteSize(nextSourceSize);
-    setTargetSpriteSize(nextAsset?.metadata?.targetSpriteSize ?? DEFAULT_TARGET_SIZE);
+    setSpriteZoom(getInitialSpriteZoom(nextAsset?.metadata));
     setSockets(createSocketsForSlot(nextSlot, nextSourceSize, nextAsset?.metadata));
     setRotationDegrees(nextAsset?.metadata?.rotationDegrees ?? 0);
     setSaveStatus({ kind: 'idle', message: '' });
-    setZoom(1);
+    setPreviewZoom(1);
   }, [initialPart, selectedPartId]);
 
   useEffect(() => {
@@ -503,10 +511,14 @@ export default function GunPartEditorPage() {
   }, [selectedAsset?.metadata, selectedAsset?.src, slot]);
 
   const generatedMetadata = useMemo(
-    () => createMetadata(sourceSpriteSize, targetSpriteSize, rotationDegrees, sockets),
-    [rotationDegrees, sourceSpriteSize, sockets, targetSpriteSize]
+    () => createMetadata(sourceSpriteSize, spriteZoom, rotationDegrees, sockets),
+    [rotationDegrees, sourceSpriteSize, sockets, spriteZoom]
   );
   const generatedJson = useMemo(() => getJson(generatedMetadata), [generatedMetadata]);
+  const renderedSize = useMemo(
+    () => getTowerVisualRenderedSize({ sourceSpriteSize, zoom: spriteZoom }),
+    [sourceSpriteSize, spriteZoom]
+  );
 
   function updateSlot(nextSlot: TowerPartSlot) {
     setSlot(nextSlot);
@@ -570,27 +582,27 @@ export default function GunPartEditorPage() {
     if (!activeSocketKey || !svgRef.current) return;
 
     const rawPoint = getSvgPoint(svgRef.current, event.clientX, event.clientY);
-    const unrotatedTargetPoint = rotatePoint(rawPoint, { x: 0, y: 0 }, -displayRotationDegrees);
-    updateSocketPoint(activeSocketKey, targetPointToSourcePoint(unrotatedTargetPoint, sourceSpriteSize, targetSpriteSize));
+    const unrotatedRenderedPoint = rotatePoint(rawPoint, { x: 0, y: 0 }, -displayRotationDegrees);
+    updateSocketPoint(activeSocketKey, renderedPointToSourcePoint(unrotatedRenderedPoint, sourceSpriteSize, renderedSize));
   }
 
   const displayRotationDegrees = rotationDegrees + INITIAL_TOWER_AIM_DEGREES;
-  const rotatedBounds = getRotatedBounds(targetSpriteSize, displayRotationDegrees);
-  const previewPadding = Math.max(48 / zoom, 16);
+  const rotatedBounds = getRotatedBounds(renderedSize, displayRotationDegrees);
+  const previewPadding = Math.max(48 / previewZoom, 16);
   const viewBox = {
     x: -rotatedBounds.width / 2 - previewPadding,
     y: -rotatedBounds.height / 2 - previewPadding,
     width: rotatedBounds.width + previewPadding * 2,
     height: rotatedBounds.height + previewPadding * 2,
   };
-  const displayWidth = Math.max(1, viewBox.width * zoom);
-  const displayHeight = Math.max(1, viewBox.height * zoom);
-  const markerRadius = Math.max(8 / zoom, 5);
-  const markerLength = Math.max(16 / zoom, 10);
-  const markerStroke = Math.max(2 / zoom, 1.5);
-  const labelFontSize = Math.max(12 / zoom, 8);
-  const labelOffsetX = Math.max(12 / zoom, 8);
-  const labelOffsetY = Math.max(10 / zoom, 7);
+  const displayWidth = Math.max(1, viewBox.width * previewZoom);
+  const displayHeight = Math.max(1, viewBox.height * previewZoom);
+  const markerRadius = Math.max(8 / previewZoom, 5);
+  const markerLength = Math.max(16 / previewZoom, 10);
+  const markerStroke = Math.max(2 / previewZoom, 1.5);
+  const labelFontSize = Math.max(12 / previewZoom, 8);
+  const labelOffsetX = Math.max(12 / previewZoom, 8);
+  const labelOffsetY = Math.max(10 / previewZoom, 7);
 
   return (
     <div className={s.page}>
@@ -651,11 +663,11 @@ export default function GunPartEditorPage() {
             </select>
           </label>
           <div className={s.field}>
-            <span className={s.label}>Zoom</span>
+            <span className={s.label}>Preview Zoom</span>
             <div className={s.buttonGroup}>
-              <button className={s.button} type="button" onClick={() => setZoom((value) => Math.max(0.25, value - 0.25))}>-</button>
-              <button className={s.button} type="button" onClick={() => setZoom(1)}>1:1</button>
-              <button className={s.button} type="button" onClick={() => setZoom((value) => Math.min(8, value + 0.25))}>+</button>
+              <button className={s.button} type="button" onClick={() => setPreviewZoom((value) => Math.max(0.25, value - 0.25))}>-</button>
+              <button className={s.button} type="button" onClick={() => setPreviewZoom(1)}>1:1</button>
+              <button className={s.button} type="button" onClick={() => setPreviewZoom((value) => Math.min(8, value + 0.25))}>+</button>
             </div>
           </div>
           <div className={s.field}>
@@ -666,21 +678,28 @@ export default function GunPartEditorPage() {
             </div>
           </div>
           <label className={s.field}>
-            <span className={s.label}>Target Size</span>
+            <span className={s.label}>Sprite Zoom</span>
+            <input
+              className={s.input}
+              min={0.001}
+              step={0.001}
+              type="number"
+              value={spriteZoom}
+              onChange={(event) => setSpriteZoom(Math.max(0.001, Number(event.target.value) || 0.001))}
+            />
+          </label>
+          <label className={s.field}>
+            <span className={s.label}>Rendered Size</span>
             <span className={s.targetSizeFields}>
               <input
                 className={s.input}
-                min={1}
-                type="number"
-                value={targetSpriteSize.width}
-                onChange={(event) => setTargetSpriteSize((size) => ({ ...size, width: Math.max(1, Number(event.target.value) || 1) }))}
+                readOnly
+                value={Math.round(renderedSize.width)}
               />
               <input
                 className={s.input}
-                min={1}
-                type="number"
-                value={targetSpriteSize.height}
-                onChange={(event) => setTargetSpriteSize((size) => ({ ...size, height: Math.max(1, Number(event.target.value) || 1) }))}
+                readOnly
+                value={Math.round(renderedSize.height)}
               />
             </span>
           </label>
@@ -708,16 +727,15 @@ export default function GunPartEditorPage() {
                 <g transform={`rotate(${displayRotationDegrees})`}>
                   <image
                     href={selectedAsset.src}
-                    x={-targetSpriteSize.width / 2}
-                    y={-targetSpriteSize.height / 2}
-                    width={targetSpriteSize.width}
-                    height={targetSpriteSize.height}
-                    preserveAspectRatio="none"
+                    x={-renderedSize.width / 2}
+                    y={-renderedSize.height / 2}
+                    width={renderedSize.width}
+                    height={renderedSize.height}
                   />
                   {sockets.map((socket) => {
                     const socketKey = `${socket.kind}:${socket.name}`;
                     const color = socket.kind === 'input' ? '#f97316' : '#14b8a6';
-                    const previewPoint = sourcePointToTargetPoint(socket.point, sourceSpriteSize, targetSpriteSize);
+                    const previewPoint = sourcePointToRenderedPoint(socket.point, sourceSpriteSize, renderedSize);
 
                     return (
                       <g

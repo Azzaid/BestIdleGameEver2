@@ -9,6 +9,17 @@ import type { EnemyData } from './enemy.ts';
 import type { WaveSchedulerConfig, WaveSchedulerState } from './wave.ts';
 import type { WaveSpawner } from './waveSpawner.ts';
 import type { EnemyBlueprint } from './enemyBlueprints.ts';
+import type { DamageProfile } from './damage.ts';
+
+export interface DamageAreaVfxView {
+  container: PIXI.Container;
+  content: PIXI.Container;
+  mask: PIXI.Graphics;
+  elapsedSeconds: number;
+  renderKey: string;
+  pulseElapsedSeconds: number;
+  lastPulseTriggerCount: number;
+}
 
 export interface TowerPushBackState {
   remainingSeconds: number;
@@ -33,17 +44,15 @@ export interface WallZoneEffects {
   pushBackDistance: number;
   pushBacksPerSecond: number;
   pushBackEffectZoneSize: number;
-  zoneDotDamage: number;
+  zoneDotDamageProfile: DamageProfile;
   zoneDotTicksPerSecond: number;
   zoneDotZoneSize: number;
-  zoneDotKeywords: readonly string[];
 }
 
 export interface ProjectileInfo {
-  damage: number;
+  damageProfile: DamageProfile;
   projectileRadius: number;
   aoeRadius: number;
-  keywords: Set<string>;
   speedPixelsPerSecond: number;
   directionRadians: number;
 }
@@ -103,6 +112,8 @@ export interface World {
   worldLayer: PIXI.Container;
   sprites: Map<EntityId, PIXI.ContainerChild>;
   healthBars: Map<EntityId, PIXI.Graphics>;
+  damageAreaVfxViews: Map<string, DamageAreaVfxView>;
+  damageAreaVfxPulseTriggers: Map<string, number>;
 
   toRemove: Set<EntityId>;
   siegePressure: number;
@@ -114,10 +125,11 @@ export interface World {
   towerReloadRemainingSeconds: Map<EntityId, number>;
   enemyPushBackCooldownRemainingSeconds: Map<EntityId, number>;
   enemyPushBackRemainingSeconds: Map<EntityId, number>;
-  enemyZoneDotProgress: Map<EntityId, number>;
+  wallZoneDotProgress: number;
   enemyTowerZoneCooldownRemainingSeconds: Map<string, number>;
   enemyTowerPushBacks: Map<string, TowerPushBackState>;
   enemyTowerZoneDotProgress: Map<string, number>;
+  towerZoneDotProgress: Map<EntityId, number>;
   enemyTowerMovementOverrides: Map<EntityId, TowerMovementOverrideState>;
   enemyTowerStunRemainingSeconds: Map<EntityId, number>;
 

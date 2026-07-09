@@ -1,4 +1,4 @@
-import type { World } from '../../../models/battle/world.ts';
+import type { ProjectileInfo, World } from '../../../models/battle/world.ts';
 import { applyDamageModifiers } from '../keywords/damageResolver';
 
 export function ProjectilesSystem(world: World) {
@@ -25,20 +25,20 @@ export function ProjectilesSystem(world: World) {
 function applyProjectileDamage(
   world: World,
   enemyId: number,
-  info: { damage: number; keywords: Set<string> }
+  info: Pick<ProjectileInfo, 'damageProfile'>
 ) {
   const hp = world.healths.get(enemyId);
   const enemy = world.enemiesData.get(enemyId);
   if (!hp || !enemy) return;
 
-  const dmg = applyDamageModifiers({ baseDamage: info.damage, keywords: info.keywords }, enemy, hp);
+  const dmg = applyDamageModifiers(info.damageProfile, enemy, hp);
   hp.hitPoints -= dmg;
 }
 
 function applyAreaDamage(
   world: World,
   primaryEnemyId: number,
-  info: { damage: number; aoeRadius: number; keywords: Set<string> }
+  info: ProjectileInfo
 ) {
   if (info.aoeRadius <= 0) return;
 
@@ -55,7 +55,12 @@ function applyAreaDamage(
     const dx = enemyPosition.x - impactPosition.x;
     const dy = enemyPosition.y - impactPosition.y;
     if (dx * dx + dy * dy <= radiusSquared) {
-      applyProjectileDamage(world, enemyId, { damage: info.damage * 0.6, keywords: info.keywords });
+      applyProjectileDamage(world, enemyId, {
+        damageProfile: {
+          ...info.damageProfile,
+          amount: info.damageProfile.amount * 0.6,
+        },
+      });
     }
   }
 }

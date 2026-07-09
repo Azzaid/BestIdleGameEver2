@@ -30,6 +30,8 @@ Endpoints:
 - `POST /global-event-images`
 - `DELETE /global-event-images`
 - `POST /hex-background-sprites`
+- `POST /battle-effect-sprites`
+- `POST /battle-damage-area-vfx`
 - `POST /global-modifiers`
 - `POST /homogeneous-values`
 
@@ -98,6 +100,8 @@ Use `kind=projectile` for ammo projectile sprites. Projectile uploads save PNG f
 `POST /global-event-images` saves a PNG event image under `src/assets/events/{fileStem}.png`. Send it as `multipart/form-data` with `fileStem`, optional `previousFileStem`, and an `image` file field.
 `DELETE /global-event-images` removes an event PNG. Send JSON with `fileStem`.
 `POST /hex-background-sprites` saves a PNG under `src/assets/hexBackgrounds/{type}/{biome}/{vector}/{fileStem}.png`. Send it as `multipart/form-data` with `type`, `biome`, `vector`, `fileStem`, and an `image` file field.
+`POST /battle-effect-sprites` saves a PNG under `src/assets/battle/effects/{fileStem}.png`. Send it as `multipart/form-data` with `fileStem` and an `image` file field.
+`POST /battle-damage-area-vfx` writes damage-area VFX mappings to `src/data/battleDamageAreaVfxDefinitions.json`. Send JSON with a `definition` object.
 `POST /global-modifiers` writes modifier definitions to `src/data/globalModifiers/modifiers.json`.
 Global event and modifier endpoints append new definitions and update existing definitions with the same ID.
 `POST /homogeneous-values` updates existing homogeneous value definitions in `src/data/homogeneousValues/index.ts`.

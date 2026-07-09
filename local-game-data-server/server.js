@@ -367,6 +367,66 @@ const server = createServer(async (request, response) => {
     return
   }
 
+  if (request.method === 'POST' && url.pathname === '/battle-damage-area-vfx') {
+    let definition
+
+    try {
+      const body = await readRequestBody(request)
+      const payload = JSON.parse(body)
+      definition = payload?.definition ?? payload
+    } catch (error) {
+      sendJson(response, 400, { error: 'Request body must be valid JSON' })
+      return
+    }
+
+    const validation = validateBattleDamageAreaVfxDefinition(definition)
+    if (!validation.ok) {
+      sendJson(response, validation.statusCode, { error: validation.error })
+      return
+    }
+
+    const targetFile = path.resolve(gameDataDir, 'battleDamageAreaVfxDefinitions.json')
+
+    try {
+      const fileContents = await readFile(targetFile, 'utf8')
+      const definitions = JSON.parse(fileContents)
+
+      if (!Array.isArray(definitions)) {
+        sendJson(response, 500, { error: 'Battle damage-area VFX file must contain a JSON array' })
+        return
+      }
+
+      const existingIndex = definitions.findIndex(item => item?.id === definition.id)
+      const action = existingIndex === -1 ? 'created' : 'updated'
+
+      if (existingIndex === -1) {
+        definitions.push(definition)
+      } else {
+        definitions[existingIndex] = definition
+      }
+
+      await writeFile(targetFile, `${JSON.stringify(definitions, null, 2)}\n`, 'utf8')
+      sendJson(response, existingIndex === -1 ? 201 : 200, {
+        action,
+        definition,
+        file: path.relative(path.join(__dirname, '..'), targetFile).replaceAll(path.sep, '/'),
+      })
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        sendJson(response, 404, { error: 'Battle damage-area VFX data file not found' })
+        return
+      }
+
+      if (error instanceof SyntaxError) {
+        sendJson(response, 500, { error: 'Battle damage-area VFX file must contain valid JSON' })
+        return
+      }
+
+      sendJson(response, 500, { error: 'Failed to save battle damage-area VFX definition' })
+    }
+    return
+  }
+
   if (request.method === 'POST' && url.pathname === '/global-event-images') {
     try {
       const upload = await readMultipartFormData(request)
@@ -397,6 +457,17 @@ const server = createServer(async (request, response) => {
       sendJson(response, 200, imageResult)
     } catch (error) {
       sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to save hex background sprite' })
+    }
+    return
+  }
+
+  if (request.method === 'POST' && url.pathname === '/battle-effect-sprites') {
+    try {
+      const upload = await readMultipartFormData(request)
+      const imageResult = await saveBattleEffectSpriteUpload(upload.fields, upload.files.image)
+      sendJson(response, 200, imageResult)
+    } catch (error) {
+      sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to save battle effect sprite' })
     }
     return
   }
@@ -983,6 +1054,128 @@ function resolveHexBackgroundSpriteTarget(action) {
     imagePath,
     relativeImagePath: path.relative(path.join(__dirname, '..'), imagePath).replaceAll(path.sep, '/'),
   }
+}
+
+async function saveBattleEffectSpriteUpload(fields, imageFile) {
+  const action = {
+    fileStem: fields.fileStem,
+  }
+  const target = resolveBattleEffectSpriteTarget(action)
+
+  if (!target.ok) {
+    const error = new Error(target.error)
+    error.statusCode = target.statusCode
+    throw error
+  }
+
+  if (!imageFile?.buffer?.length || imageFile.contentType !== 'image/png') {
+    throw new Error('Battle effect upload must include a PNG image')
+  }
+
+  await mkdir(target.dir, { recursive: true })
+  await writeFile(target.imagePath, imageFile.buffer)
+
+  return {
+    action: 'saved',
+    file: target.relativeImagePath,
+  }
+}
+
+function resolveBattleEffectSpriteTarget(action) {
+  if (!action?.fileStem || !isSafePathPart(action.fileStem)) {
+    return { ok: false, statusCode: 400, error: 'Battle effect file stem must be a safe path segment' }
+  }
+
+  const dir = path.resolve(gameAssetsDir, 'battle', 'effects')
+  const collectionDir = path.resolve(gameAssetsDir, 'battle')
+  const imagePath = path.resolve(dir, `${action.fileStem}.png`)
+
+  if (!dir.startsWith(`${collectionDir}${path.sep}`) || !imagePath.startsWith(`${dir}${path.sep}`)) {
+    return { ok: false, statusCode: 400, error: 'Resolved battle effect path is outside the asset directory' }
+  }
+
+  return {
+    ok: true,
+    dir,
+    imagePath,
+    relativeImagePath: path.relative(path.join(__dirname, '..'), imagePath).replaceAll(path.sep, '/'),
+  }
+}
+
+function validateBattleDamageAreaVfxDefinition(definition) {
+  if (!definition || Array.isArray(definition) || typeof definition !== 'object') {
+    return { ok: false, statusCode: 400, error: 'Definition must be a JSON object' }
+  }
+
+  if (typeof definition.id !== 'string' || !definition.id.trim()) {
+    return { ok: false, statusCode: 400, error: 'Definition id must be a non-empty string' }
+  }
+
+  if (typeof definition.label !== 'string' || !definition.label.trim()) {
+    return { ok: false, statusCode: 400, error: 'Definition label must be a non-empty string' }
+  }
+
+  if (
+    !Array.isArray(definition.requiredDamageKeywords)
+    || definition.requiredDamageKeywords.length === 0
+    || !definition.requiredDamageKeywords.every(keyword => typeof keyword === 'string' && keyword.trim())
+  ) {
+    return { ok: false, statusCode: 400, error: 'Required damage keywords must be a non-empty string array' }
+  }
+
+  if (typeof definition.textureAlias !== 'string' || !definition.textureAlias.trim()) {
+    return { ok: false, statusCode: 400, error: 'Texture alias must be a non-empty string' }
+  }
+
+  if (!isSafePathPart(definition.assetFileStem)) {
+    return { ok: false, statusCode: 400, error: 'Asset file stem must be a safe path segment' }
+  }
+
+  const displayTypes = new Set(['tile', 'circularTile', 'centered'])
+  if (!definition.display || Array.isArray(definition.display) || typeof definition.display !== 'object' || !displayTypes.has(definition.display.type)) {
+    return { ok: false, statusCode: 400, error: 'Display type must be tile, circularTile, or centered' }
+  }
+
+  if (definition.tickPulse !== undefined && (Array.isArray(definition.tickPulse) || typeof definition.tickPulse !== 'object')) {
+    return { ok: false, statusCode: 400, error: 'Tick pulse must be a JSON object when present' }
+  }
+
+  if (definition.animation !== undefined && (Array.isArray(definition.animation) || typeof definition.animation !== 'object')) {
+    return { ok: false, statusCode: 400, error: 'Animation must be a JSON object when present' }
+  }
+
+  const numericFields = [
+    'alpha',
+    'priority',
+    'zIndex',
+    'display.initialRotationRadians',
+    'display.angleRadians',
+    'display.lengthToRepeat',
+    'display.spriteZoom',
+    'tickPulse.durationSeconds',
+    'tickPulse.startScale',
+    'tickPulse.pulseSpeed',
+    'animation.scrollXPerSecond',
+    'animation.scrollYPerSecond',
+    'animation.rotationPerSecond',
+    'animation.pulseAmount',
+    'animation.pulseSpeed',
+  ]
+
+  for (const field of numericFields) {
+    const value = getNestedValue(definition, field)
+    if (value !== undefined && !Number.isFinite(value)) {
+      return { ok: false, statusCode: 400, error: `${field} must be a finite number` }
+    }
+  }
+
+  return { ok: true }
+}
+
+function getNestedValue(source, pathKey) {
+  return pathKey.split('.').reduce((value, key) => (
+    value && typeof value === 'object' ? value[key] : undefined
+  ), source)
 }
 
 async function saveEnemyAnimationSpriteUpload(fields, imageFile) {

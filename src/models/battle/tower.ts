@@ -1,4 +1,5 @@
 import type { EntityId } from './common.ts';
+import type { DamageProfile, TowerDamageProfiles } from './damage.ts';
 import type { SpriteInfo } from './spriteInfo.ts';
 import type { TowerStatsResolved } from './towerParts.ts';
 
@@ -9,7 +10,7 @@ export interface TowerData {
   rotationSpeed: number;   // rad/sec
   shotsPerSecond: number;
   burstCount: number;
-  projectileDamage: number;
+  projectileDamageProfile: DamageProfile;
   projectileSpeed: number;
   projectileRadius: number;
   projectileSpread: number;
@@ -31,7 +32,7 @@ export interface TowerData {
   zoneCircleDuration: number;
   zoneCirclesPerSecond: number;
   zoneCircleZoneSize: number;
-  zoneDotDamage: number;
+  zoneDotDamageProfile: DamageProfile;
   zoneDotTicksPerSecond: number;
   zoneDotZoneSize: number;
   zoneStunDuration: number;
@@ -46,7 +47,7 @@ export interface TowerData {
   singleTargetCircleDuration: number;
   singleTargetCirclesPerSecond: number;
   singleTargetCircleRange: number;
-  singleTargetDotDamage: number;
+  singleTargetDotDamageProfile: DamageProfile;
   singleTargetDotTicksPerSecond: number;
   singleTargetDotRange: number;
   singleTargetStunDuration: number;
@@ -71,6 +72,7 @@ export interface StandaloneTowerDefense {
   wallCellKey?: string;
   wallColumn?: number;
   stats: TowerStatsResolved;
+  damageProfiles: TowerDamageProfiles;
   keywords: Set<string>;
   aimKeywords: string[];
 }

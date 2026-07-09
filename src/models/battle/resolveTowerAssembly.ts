@@ -17,6 +17,8 @@ import {
   getUpkeepValues,
   resolveTower,
 } from '../homogeneousValueResolution.ts';
+import { createDamageProfile, type TowerDamageProfiles } from './damage.ts';
+import { HOMOGENEOUS_VALUE_IDS } from '../../data/homogeneousValues/index.ts';
 
 function addAimKeywords(target: string[], source?: string[]) {
   if (!source) return;
@@ -118,21 +120,24 @@ export function resolveTowerAssembly(
     aimKeywords.push('closestToWall');
   }
 
-  const resolvedValues = resolveTower({
+  const resolvedTower = resolveTower({
     id: 'towerAssembly',
     entityType: 'tower',
     keywords: [...keywords],
     values,
     effects,
-  }).resolvedValues;
+  });
+  const resolvedValues = resolvedTower.resolvedValues;
   const {stats, supportCost} = resolveTowerAssemblyStatsAndSupport(
     resolvedValues,
     keywords,
   );
+  const damageProfiles = createTowerDamageProfiles(stats, keywords, resolvedTower.resolvedContributions);
 
   return {
     selectedParts,
     stats,
+    damageProfiles,
     supportCost,
     values,
     derivedValues,
@@ -154,6 +159,33 @@ export function resolveTowerAssemblyStatsAndSupport(
   stats.rotationSpeed -= stats.weight * TOWER_WEIGHT_ROTATION_PENALTY;
 
   return {stats, supportCost};
+}
+
+export function createTowerDamageProfiles(
+  stats: TowerAssemblyResolved['stats'],
+  keywords: Set<string>,
+  contributions: readonly HomogeneousValueEffect[],
+): TowerDamageProfiles {
+  return {
+    projectile: createDamageProfile(
+      stats.projectileDamage,
+      keywords,
+      HOMOGENEOUS_VALUE_IDS.towerProjectileDamage,
+      contributions,
+    ),
+    zoneDot: createDamageProfile(
+      stats.zoneDotDamage,
+      keywords,
+      HOMOGENEOUS_VALUE_IDS.towerZoneDotDamage,
+      contributions,
+    ),
+    singleTargetDot: createDamageProfile(
+      stats.singleTargetDotDamage,
+      keywords,
+      HOMOGENEOUS_VALUE_IDS.towerSingleTargetDotDamage,
+      contributions,
+    ),
+  };
 }
 
 export function formatTowerSlot(slot: TowerPartSlot): string {

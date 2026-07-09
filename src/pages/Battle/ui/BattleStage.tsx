@@ -13,6 +13,7 @@ import { loadBattleAssets } from '../assets/assetLoader';
 import { BATTLE_BACKGROUNDS } from '../assets/backgrounds.ts';
 import type { BattleBackgroundId } from '../../../models/battle/backgrounds.ts';
 import type { TowerAssemblyResolved, TowerStatsResolved } from '../../../models/battle/towerParts.ts';
+import type { TowerDamageProfiles } from '../../../models/battle/damage.ts';
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
 import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/gunParts/visuals.ts';
 import type { BattleMetrics, BattleResult, MonsterMovementModifiers, WallZoneEffects } from '../../../models/battle/world.ts';
@@ -147,32 +148,49 @@ export function BattleStage(props: {
 
     useEffect(() => {
         let app: Application | null = null;
+        let disposed = false;
         let cleanupInput = () => {};
         let cleanupResize = () => {};
+
+        const destroyApp = () => {
+            const currentApp = app;
+            app = null;
+            if (!currentApp) return;
+
+            currentApp.destroy({ removeView: true }, { children: true, texture: false, textureSource: false, context: true });
+        };
 
         (async () => {
             if (!hostRef.current || !canvasIsReady) return;
 
-            app = new Application();
+            const nextApp = new Application();
 
             // v8: init() is async; use canvas via app.canvas; resize plugin via resizeTo.
-            await app.init({
+            await nextApp.init({
                 resizeTo: hostRef.current,               // auto-resize to the host <div>
                 backgroundColor: 0x0b0e13,
                 antialias: true,
                 webgl: { powerPreference: 'high-performance' }, // was powerPreference in v7
             }); // :contentReference[oaicite:0]{index=0}
 
-            hostRef.current.appendChild(app.canvas);
+            if (disposed || !hostRef.current) {
+                nextApp.destroy({ removeView: true }, { children: true, texture: false, textureSource: false, context: true });
+                return;
+            }
+
+            app = nextApp;
+            hostRef.current.appendChild(nextApp.canvas);
 
             await loadBattleAssets({
                 backgroundId: props.backgroundId,
                 wallSegments: props.wallSegments,
             });
+
+            if (disposed || app !== nextApp) return;
             const runtimeProps = runtimePropsRef.current;
 
-            const viewportWidth = app.renderer.width;
-            const viewportHeight = app.renderer.height;
+            const viewportWidth = nextApp.renderer.width;
+            const viewportHeight = nextApp.renderer.height;
             const minZoom = computeMinZoomForWall({
                 wallLogicalWidth: props.wallLogicalWidth,
                 viewportWidth,
@@ -190,7 +208,7 @@ export function BattleStage(props: {
             });
             camera.position.y = props.battlefieldHeight - viewportHeight / camera.scale;
             applyCameraTransform(camera);
-            app.stage.addChild(camera.container);
+            nextApp.stage.addChild(camera.container);
 
             const wallY = props.wallY;
             const wallContactY = getWallContactY({
@@ -203,7 +221,7 @@ export function BattleStage(props: {
                 battlefieldHeight: props.battlefieldHeight,
                 wallY,
                 wallContactY,
-                app,
+                app: nextApp,
                 initialThreat: runtimeProps.initialThreat,
                 targetThreat: runtimeProps.targetThreat,
                 threatGrowthPerSecond: runtimeProps.threatGrowthPerSecond,
@@ -298,6 +316,7 @@ export function BattleStage(props: {
 
                 world.towersData.set(baseId, createTowerData({
                     stats: resolvedTower.stats,
+                    damageProfiles: resolvedTower.damageProfiles,
                     projectileSprite: resolvedTower.selectedParts.ammo?.projectileSprite,
                     keywords: new Set(resolvedTower.keywords),
                     zeroRotationRadians,
@@ -325,6 +344,7 @@ export function BattleStage(props: {
                 world.transforms.set(baseId, { position: towerPosition, rotationRadians: zeroRotationRadians });
                 world.towersData.set(baseId, createTowerData({
                     stats: defense.stats,
+                    damageProfiles: defense.damageProfiles,
                     keywords: new Set(defense.keywords),
                     zeroRotationRadians,
                     gunEntity: baseId,
@@ -335,7 +355,7 @@ export function BattleStage(props: {
 
             // Ticker stays the same in v8 (TickerPlugin is built-in)
             let previousTimeMs = performance.now();
-            app.ticker.add(() => {
+            nextApp.ticker.add(() => {
                 const nowMs = performance.now();
                 const dt = Math.min(0.25, (nowMs - previousTimeMs) / 1000);
                 previousTimeMs = nowMs;
@@ -343,7 +363,7 @@ export function BattleStage(props: {
             }); // :contentReference[oaicite:1]{index=1}
 
             // Camera input
-            const canvas = app.canvas;
+            const canvas = nextApp.canvas;
             let isDragging = false;
             let dragStartScreen = { x: 0, y: 0 };
             let cameraStartWorld = { x: 0, y: 0 };
@@ -386,8 +406,8 @@ export function BattleStage(props: {
 
             // v8 renderer still emits 'resize'
             const onResize = () => {
-                const vw = app!.renderer.width;
-                const vh = app!.renderer.height;
+                const vw = nextApp.renderer.width;
+                const vh = nextApp.renderer.height;
                 camera.config.viewportWidth = vw;
                 camera.config.viewportHeight = vh;
                 camera.config.minZoom = computeMinZoomForWall({
@@ -400,20 +420,21 @@ export function BattleStage(props: {
                 setCameraScale(camera, camera.scale);
                 applyCameraTransform(camera);
             };
-            app.renderer.on('resize', onResize); // :contentReference[oaicite:2]{index=2}
+            nextApp.renderer.on('resize', onResize); // :contentReference[oaicite:2]{index=2}
             cleanupResize = () => {
-                app?.renderer.off('resize', onResize);
+                if (app === nextApp) {
+                    nextApp.renderer.off('resize', onResize);
+                }
             };
         })();
 
         return () => {
+            disposed = true;
             worldRef.current = null;
             siegeOutlineRef.current = null;
             cleanupInput();
             cleanupResize();
-            if (!app) return;
-
-            app.destroy(true, { children: true, texture: false, textureSource: false, context: true }); // :contentReference[oaicite:3]{index=3}
+            destroyApp();
         };
     }, [
         canvasIsReady,
@@ -675,6 +696,7 @@ function getStandaloneTowerDefensePosition({
 
 function createTowerData({
     stats,
+    damageProfiles,
     projectileSprite,
     keywords,
     zeroRotationRadians,
@@ -683,6 +705,7 @@ function createTowerData({
     aimKeywords,
 }: {
     stats: TowerStatsResolved;
+    damageProfiles: TowerDamageProfiles;
     projectileSprite?: TowerData['projectileSprite'];
     keywords: Set<string>;
     zeroRotationRadians: number;
@@ -694,7 +717,7 @@ function createTowerData({
         rotationSpeed: stats.rotationSpeed,
         shotsPerSecond: stats.shotsPerSecond,
         burstCount: stats.burstCount,
-        projectileDamage: stats.projectileDamage,
+        projectileDamageProfile: damageProfiles.projectile,
         projectileSpeed: stats.projectileSpeed,
         projectileRadius: stats.projectileRadius,
         projectileSpread: stats.projectileSpread,
@@ -716,7 +739,7 @@ function createTowerData({
         zoneCircleDuration: stats.zoneCircleDuration,
         zoneCirclesPerSecond: stats.zoneCirclesPerSecond,
         zoneCircleZoneSize: stats.zoneCircleZoneSize,
-        zoneDotDamage: stats.zoneDotDamage,
+        zoneDotDamageProfile: damageProfiles.zoneDot,
         zoneDotTicksPerSecond: stats.zoneDotTicksPerSecond,
         zoneDotZoneSize: stats.zoneDotZoneSize,
         zoneStunDuration: stats.zoneStunDuration,
@@ -731,7 +754,7 @@ function createTowerData({
         singleTargetCircleDuration: stats.singleTargetCircleDuration,
         singleTargetCirclesPerSecond: stats.singleTargetCirclesPerSecond,
         singleTargetCircleRange: stats.singleTargetCircleRange,
-        singleTargetDotDamage: stats.singleTargetDotDamage,
+        singleTargetDotDamageProfile: damageProfiles.singleTargetDot,
         singleTargetDotTicksPerSecond: stats.singleTargetDotTicksPerSecond,
         singleTargetDotRange: stats.singleTargetDotRange,
         singleTargetStunDuration: stats.singleTargetStunDuration,

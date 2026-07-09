@@ -5,11 +5,11 @@ import type {
   TowerVisualPartDefinition,
   TowerVisualPoint,
   TowerVisualRenderOptions,
-  TowerVisualSize,
   BuiltTowerVisualContainer,
 } from '../../../models/battle/towerVisual.ts';
+import { getTowerVisualRenderedSize } from '../../../models/battle/towerVisualSizing.ts';
 
-const defaultFallbackSize: TowerVisualSize = { width: 56, height: 36 };
+const fallbackSize = { width: 56, height: 36 };
 
 function getSafePoint(point: TowerVisualPoint | undefined, warningMessage: string, warn: (message: string) => void) {
   if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) {
@@ -41,12 +41,11 @@ function createFallbackPartDisplay(
   part: TowerVisualPartDefinition,
   options: Required<TowerVisualRenderOptions>
 ) {
-  const size = part.fallbackSize ?? defaultFallbackSize;
   const display = new PIXI.Container();
 
   const body = new PIXI.Graphics();
   body
-    .rect(-size.width / 2, -size.height / 2, size.width, size.height)
+    .rect(-fallbackSize.width / 2, -fallbackSize.height / 2, fallbackSize.width, fallbackSize.height)
     .fill(options.fallbackFillColor)
     .stroke({ color: options.fallbackBorderColor, width: 2 });
   display.addChild(body);
@@ -60,7 +59,7 @@ function createFallbackPartDisplay(
       fontWeight: '700',
       align: 'center',
       wordWrap: true,
-      wordWrapWidth: Math.max(20, size.width - 8),
+      wordWrapWidth: Math.max(20, fallbackSize.width - 8),
     },
   });
   label.anchor.set(0.5);
@@ -81,9 +80,10 @@ function createPartDisplay(
       const animatedSprite = new PIXI.AnimatedSprite(frames);
       animatedSprite.anchor.set(0.5);
       animatedSprite.rotation = (part.rotationDegrees ?? 0) * Math.PI / 180;
-      if (part.targetSpriteSize) {
-        animatedSprite.width = part.targetSpriteSize.width;
-        animatedSprite.height = part.targetSpriteSize.height;
+      if (part.sourceSpriteSize && part.zoom) {
+        const renderedSize = getTowerVisualRenderedSize({ sourceSpriteSize: part.sourceSpriteSize, zoom: part.zoom });
+        animatedSprite.width = renderedSize.width;
+        animatedSprite.height = renderedSize.height;
       }
       animatedSprite.animationSpeed = (part.sprite.fps ?? 8) / 60;
       animatedSprite.play();
@@ -94,9 +94,10 @@ function createPartDisplay(
     const sprite = new PIXI.Sprite(PIXI.Texture.from(part.sprite.textureKey));
     sprite.anchor.set(0.5);
     sprite.rotation = (part.rotationDegrees ?? 0) * Math.PI / 180;
-    if (part.targetSpriteSize) {
-      sprite.width = part.targetSpriteSize.width;
-      sprite.height = part.targetSpriteSize.height;
+    if (part.sourceSpriteSize && part.zoom) {
+      const renderedSize = getTowerVisualRenderedSize({ sourceSpriteSize: part.sourceSpriteSize, zoom: part.zoom });
+      sprite.width = renderedSize.width;
+      sprite.height = renderedSize.height;
     }
     display.addChild(sprite);
     return display;

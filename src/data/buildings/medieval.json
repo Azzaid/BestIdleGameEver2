@@ -172,10 +172,6 @@
       {
         "type": "buildingExists",
         "buildingId": "buildings.medieval.woodenHouse"
-      },
-      {
-        "type": "buildingExists",
-        "buildingId": "buildings.medieval.toolShed"
       }
     ],
     "values": [

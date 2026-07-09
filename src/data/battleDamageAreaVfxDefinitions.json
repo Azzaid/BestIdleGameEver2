@@ -1,0 +1,33 @@
+[
+  {
+    "id": "damageArea.toxicCloud",
+    "label": "Toxic cloud",
+    "requiredDamageKeywords": [
+      "damage.poison"
+    ],
+    "textureAlias": "battle.damageArea.toxicCloud",
+    "assetFileStem": "toxic-cloud",
+    "alpha": 0.42,
+    "priority": 10,
+    "zIndex": 3,
+    "display": {
+      "type": "circularTile",
+      "initialRotationRadians": 0,
+      "angleRadians": 2.303834612632515,
+      "lengthToRepeat": 64,
+      "spriteZoom": 1.35
+    },
+    "tickPulse": {
+      "durationSeconds": 0.35,
+      "startScale": 0.72,
+      "pulseSpeed": 4
+    },
+    "animation": {
+      "scrollXPerSecond": 7,
+      "scrollYPerSecond": -4,
+      "rotationPerSecond": 0.015,
+      "pulseAmount": 0.08,
+      "pulseSpeed": 0.9
+    }
+  }
+]

@@ -14,6 +14,7 @@ import { WallLoadSystem } from './wallLoadSystem.ts';
 import { SiegeSystem } from './siegeSystem.ts';
 import { WallZoneEffectsSystem } from './wallZoneEffectsSystem.ts';
 import { TowerZoneEffectsSystem } from './towerZoneEffectsSystem.ts';
+import { DamageAreaVfxSystem } from './damageAreaVfxSystem.ts';
 
 /** Per-frame update orchestrator */
 export function runSystems(world: World, dt: number) {
@@ -31,6 +32,7 @@ export function runSystems(world: World, dt: number) {
   HealthSystem(world);
   WallLoadSystem(world);
   SiegeSystem(world, dt);
+  DamageAreaVfxSystem(world, dt);
 
   HealthBarSystem(world);
 
@@ -46,12 +48,13 @@ export function runSystems(world: World, dt: number) {
       world.towerReloadRemainingSeconds.delete(id);
       world.enemyPushBackCooldownRemainingSeconds.delete(id);
       world.enemyPushBackRemainingSeconds.delete(id);
-      world.enemyZoneDotProgress.delete(id);
       world.enemyTowerMovementOverrides.delete(id);
       world.enemyTowerStunRemainingSeconds.delete(id);
+      world.towerZoneDotProgress.delete(id);
       deleteTowerZoneEffectKeysForEntity(world.enemyTowerZoneCooldownRemainingSeconds, id);
       deleteTowerZoneEffectKeysForEntity(world.enemyTowerPushBacks, id);
       deleteTowerZoneEffectKeysForEntity(world.enemyTowerZoneDotProgress, id);
+      deleteDamageAreaVfxPulseKeysForEntity(world.damageAreaVfxPulseTriggers, id);
       const hb = world.healthBars.get(id);
       if (hb) { hb.destroy(); world.healthBars.delete(id); }
       const view = world.sprites.get(id);
@@ -68,6 +71,16 @@ function deleteTowerZoneEffectKeysForEntity(map: Pick<Map<string, unknown>, 'key
   for (const key of map.keys()) {
     const [towerId, enemyId] = key.split('|').map(Number);
     if (towerId === entityId || enemyId === entityId) {
+      map.delete(key);
+    }
+  }
+}
+
+function deleteDamageAreaVfxPulseKeysForEntity(map: Pick<Map<string, unknown>, 'keys' | 'delete'>, entityId: number) {
+  const towerPrefix = `tower:${entityId}:`;
+
+  for (const key of map.keys()) {
+    if (key.startsWith(towerPrefix)) {
       map.delete(key);
     }
   }

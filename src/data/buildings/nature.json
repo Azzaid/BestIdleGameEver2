@@ -367,7 +367,7 @@
       {
         "type": "homogeneousValueAtLeast",
         "valueId": "nature.bioComplexity",
-        "amount": 3
+        "amount": 2
       }
     ],
     "values": [
