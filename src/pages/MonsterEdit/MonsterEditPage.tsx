@@ -167,6 +167,7 @@ export default function MonsterEditPage() {
         })
         : undefined;
       const metadataResult = effectiveTextureKey
+        && !selectedVisualAsset?.atlasSrc
         ? await saveMonsterSpriteMetadata({
           region: form.region,
           textureKey: effectiveTextureKey,
@@ -540,7 +541,8 @@ function MonsterVisualAssetField(props: {
           <pre className={s.visualMetadataPreview}>
             {JSON.stringify({
               textureKey: props.value,
-              status: props.draft ? "pending upload" : props.selectedAsset ? "registered" : "missing asset",
+              status: props.draft ? "pending upload" : props.selectedAsset ? props.selectedAsset.atlasSrc ? "registered animation" : "registered" : "missing asset",
+              animationFrames: props.selectedAsset?.animationFrames,
               metadata: props.metadata,
             }, null, 2)}
           </pre>

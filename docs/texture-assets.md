@@ -6,6 +6,7 @@ Current implementation note, 2026-06-24:
 - `/ids` audits content IDs and visual coverage.
 - `/gun-part-editor` supports tower component socket/visual metadata work.
 - `/entity-create/:entityId` and `/global-events` support debug editing flows for entity and event content.
+- `/enemy-animation-sprites` cuts enemy sprite sheets into Pixi atlas frames and saves the PNG plus generated atlas JSON through the local data server.
 
 Use this when adding or moving gameplay textures. Keep active textures in typed registries and move unused images to `src/assets/unused`.
 
@@ -23,6 +24,7 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - Ammo projectile textures: `src/assets/projectiles/<vector>/<vector>_projectile_<id>.png`
 - Battle backgrounds: `src/assets/battle/backgrounds/<id>.png`
 - Battle enemy textures: `src/assets/enemies/<region>/<textureKey>.png`
+- Battle enemy animation atlases: `src/assets/enemies/<region>/<textureKey>.json`
 - Legacy city-wide backgrounds: `src/assets/city/background/<id>.<ext>`
 - Global event pictures: `src/assets/events/<id>.png`
 - Unused images: `src/assets/unused/...`
@@ -94,6 +96,15 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 3. Add or edit the paired metadata JSON at `src/assets/enemies/<region>/<textureKey>.json` when the battle sprite needs explicit sizing or rotation. `targetSpriteSize` controls the rendered battle size, and `rotationDegrees` is applied to the image inside the moving enemy container.
 4. The runtime catalog in `src/data/enemies/visuals.ts` discovers the file and battle loading registers it under `sprite.textureKey`.
 5. In local debug mode, `/monster-edit/:monsterId` can upload the PNG, set the texture key automatically, and save enemy sprite metadata.
+
+## Add A Battle Enemy Animation
+
+1. In local debug mode, open `/enemy-animation-sprites`.
+2. Choose the enemy biome/region, enter the sprite set name, and upload a PNG sprite sheet.
+3. Either tune the X/Y length, initial shift, and gap values until the green frame guides match the sheet, or upload/drop a pre-generated Pixi-style JSON atlas. Dropped JSON frame data drives the guides and preview.
+4. Check the Pixi preview. The page renders the generated or uploaded frame atlas before saving.
+5. Save through the local data server. This writes `src/assets/enemies/<region>/<textureKey>.png` and a paired Pixi spritesheet JSON at `src/assets/enemies/<region>/<textureKey>.json`.
+6. Use `/monster-edit/:monsterId` to select the saved texture key as the monster sprite. The enemy visual catalog treats Pixi spritesheet JSON files as animated assets and loads the atlas in battle.
 
 ## Add A Global Event Picture
 

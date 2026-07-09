@@ -8,6 +8,7 @@ import MonsterEditPage from "../pages/MonsterEdit/MonsterEditPage.tsx";
 import GlobalEventsEditorPage from "../pages/GlobalEventsEditor/GlobalEventsEditorPage.tsx";
 import HexBackgroundEditorPage from "../pages/HexBackgroundEditor/HexBackgroundEditorPage.tsx";
 import HomogeneousValuesEditorPage from "../pages/HomogeneousValuesEditor/HomogeneousValuesEditorPage.tsx";
+import EnemyAnimationSpriteSheetPage from "../pages/EnemyAnimationSpriteSheet/EnemyAnimationSpriteSheetPage.tsx";
 
 export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
   const routeElement = useRoutes([
@@ -54,6 +55,10 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     {
       path: "hex-background-editor",
       element: enabled ? <HexBackgroundEditorPage /> : <Navigate to="/battle" replace />,
+    },
+    {
+      path: "enemy-animation-sprites",
+      element: enabled ? <EnemyAnimationSpriteSheetPage /> : <Navigate to="/battle" replace />,
     },
   ]);
 

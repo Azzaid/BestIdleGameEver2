@@ -124,18 +124,23 @@ export class WaveSpawner {
         if (world.enemiesData.size >= world.config.simultaneousMonstersLimit) return;
 
         const id = createEntityId(world);
+        const walkMovement = bp.createMovement(spawnX, spawnY, world, movementModifiers);
+        const attackMovement = bp.createAttackMovement(spawnX, spawnY, world, movementModifiers);
 
         world.transforms.set(id, { position: { x: spawnX, y: spawnY }, rotationRadians: Math.PI / 2 });
-        world.movements.set(id, bp.createMovement(spawnX, spawnY, world, movementModifiers));
+        world.movements.set(id, walkMovement);
 
         world.healths.set(id, { maxHitPoints: bp.maxHitPoints, hitPoints: bp.maxHitPoints, armor: bp.armor });
         world.enemiesData.set(id, {
             name: bp.displayName,
             kind: bp.kind,
+            mode: 'walk',
             hitRadius: bp.hitRadius,
             pressure: bp.pressure,
             shotDistance: bp.shotDistance,
             keywords: new Set(bp.keywords),
+            walkMovement,
+            attackMovement,
         });
 
         const view = createDisplayFromSpriteInfo(bp.sprite);

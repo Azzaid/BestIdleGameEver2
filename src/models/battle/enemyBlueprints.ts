@@ -43,6 +43,7 @@ export interface EnemyBlueprint {
 
     // Movement factory (can randomize params each spawn)
     createMovement: MovementFactory;
+    createAttackMovement: MovementFactory;
 
     // Optional: spawns N copies as a "swarm" cluster
     swarmSize?: number;          // e.g. 3..6 means 3 to 6 copies

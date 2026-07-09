@@ -202,6 +202,13 @@ An enemy generates load if:
 
 Enemies walking through the battlefield generate little or no load.
 
+Current prototype behavior:
+
+- melee enemies enter attack mode when they reach wall contact;
+- ranged enemies enter attack mode when they are within their `shotDistance` from the wall;
+- attack mode uses the enemy's optional `attackMovement` JSON definition and defaults to standing still;
+- tower push-back or movement effects can move an attacking enemy out of engagement range, returning it to walk mode.
+
 ---
 
 # Status Effects and Load

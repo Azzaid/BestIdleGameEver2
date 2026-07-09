@@ -135,24 +135,30 @@ function NatureBalanceTriangle({
     bioComplexity: number;
 }) {
     const gradientId = useId();
-    const center = 30;
-    const maxDistance = 24;
+    const iconSize = 16;
+    const triangleTopY = -5 + iconSize;
+    const triangleBaseY = 52;
+    const centerX = 30;
+    const maxDistance = (triangleBaseY - triangleTopY) / 1.5;
+    const centerY = triangleTopY + maxDistance;
+    const triangleTopPoint = getTrianglePoint(centerX, centerY, maxDistance, 1, 1, -90);
+    const triangleAnimalsPoint = getTrianglePoint(centerX, centerY, maxDistance, 1, 1, 30);
+    const triangleFungiPoint = getTrianglePoint(centerX, centerY, maxDistance, 1, 1, 150);
     const maxValue = Math.max(0, fungi, plants, animals);
     const points = [
-        getTrianglePoint(center, maxDistance, plants, maxValue, -90),
-        getTrianglePoint(center, maxDistance, animals, maxValue, 30),
-        getTrianglePoint(center, maxDistance, fungi, maxValue, 150),
+        getTrianglePoint(centerX, centerY, maxDistance, plants, maxValue, -90),
+        getTrianglePoint(centerX, centerY, maxDistance, animals, maxValue, 30),
+        getTrianglePoint(centerX, centerY, maxDistance, fungi, maxValue, 150),
     ];
     const fillRatio = Math.max(0, Math.min(1, bioComplexity / 1000));
     const fillOpacity = 0.12 + fillRatio * 0.86;
     const pointList = formatSvgPoints(points);
-    const iconSize = 16;
-    const triangleBaseY = 42;
     const iconPositions = [
-        {label: "Plants", href: naturePlantsIcon, x: center - iconSize / 2, y: 6 - iconSize / 2},
-        {label: "Animals", href: natureAnimalsIcon, x: 50.8 - iconSize / 2, y: triangleBaseY - iconSize},
-        {label: "Fungi", href: natureFungiIcon, x: 9.2 - iconSize / 2, y: triangleBaseY - iconSize},
+        {label: "Plants", href: naturePlantsIcon, x: centerX - iconSize / 2, y: triangleTopPoint.y - iconSize},
+        {label: "Animals", href: natureAnimalsIcon, x: triangleAnimalsPoint.x, y: triangleAnimalsPoint.y - iconSize},
+        {label: "Fungi", href: natureFungiIcon, x: triangleFungiPoint.x - iconSize, y: triangleFungiPoint.y - iconSize},
     ];
+    const triangleFramePoints = formatSvgPoints([triangleTopPoint, triangleAnimalsPoint, triangleFungiPoint]);
 
     return (
         <div
@@ -160,7 +166,7 @@ function NatureBalanceTriangle({
             tabIndex={0}
             aria-label={`Nature balance. Fungi ${formatNatureValue(HOMOGENEOUS_VALUE_IDS.resourceFungi, fungi)}, plants ${formatNatureValue(HOMOGENEOUS_VALUE_IDS.resourcePlants, plants)}, animals ${formatNatureValue(HOMOGENEOUS_VALUE_IDS.resourceAnimals, animals)}, bio complexity ${formatNatureValue(HOMOGENEOUS_VALUE_IDS.natureBioComplexity, bioComplexity)}`}
         >
-            <svg className={s.natureBalanceSvg} viewBox="4 2 52 46" role="img" aria-hidden="true">
+            <svg className={s.natureBalanceSvg} viewBox="4 2 52 50" role="img" aria-hidden="true">
                 <defs>
                     <radialGradient id={gradientId} cx="50%" cy="50%" r="58%">
                         <stop offset="0%" stopColor="rgb(211 255 221)" stopOpacity={0.24 + fillRatio * 0.2} />
@@ -168,10 +174,10 @@ function NatureBalanceTriangle({
                         <stop offset="100%" stopColor="rgb(0 201 112)" stopOpacity={fillOpacity} />
                     </radialGradient>
                 </defs>
-                <line className={s.natureBalanceAxis} x1={center} y1={center} x2={center} y2={6} />
-                <line className={s.natureBalanceAxis} x1={center} y1={center} x2={50.8} y2={42} />
-                <line className={s.natureBalanceAxis} x1={center} y1={center} x2={9.2} y2={42} />
-                <polygon className={s.natureBalanceFrame} points="30,6 50.8,42 9.2,42" />
+                <line className={s.natureBalanceAxis} x1={centerX} y1={centerY} x2={triangleTopPoint.x} y2={triangleTopPoint.y} />
+                <line className={s.natureBalanceAxis} x1={centerX} y1={centerY} x2={triangleAnimalsPoint.x} y2={triangleAnimalsPoint.y} />
+                <line className={s.natureBalanceAxis} x1={centerX} y1={centerY} x2={triangleFungiPoint.x} y2={triangleFungiPoint.y} />
+                <polygon className={s.natureBalanceFrame} points={triangleFramePoints} />
                 <polygon points={pointList} fill={`url(#${gradientId})`} />
                 <polygon className={s.natureBalanceShape} points={pointList} />
                 {iconPositions.map(({label, href, x, y}) => (
@@ -270,7 +276,8 @@ function formatUpkeepResourceAmount(resource: UpkeepTypesValue, amount: number):
 }
 
 function getTrianglePoint(
-    center: number,
+    centerX: number,
+    centerY: number,
     maxDistance: number,
     value: number,
     maxValue: number,
@@ -281,8 +288,8 @@ function getTrianglePoint(
     const radians = angleDegrees * Math.PI / 180;
 
     return {
-        x: center + Math.cos(radians) * distance,
-        y: center + Math.sin(radians) * distance,
+        x: centerX + Math.cos(radians) * distance,
+        y: centerY + Math.sin(radians) * distance,
     };
 }
 

@@ -259,6 +259,7 @@ export default function EntityCreatePage() {
   const [keywords, setKeywords] = useState<string[]>([]);
   const [visualAssetId, setVisualAssetId] = useState("");
   const [spriteDraft, setSpriteDraft] = useState<SpriteDraft | null>(null);
+  const [visualAssetMetadataDraft, setVisualAssetMetadataDraft] = useState<SpriteMetadata | null>(null);
   const [removedVisualAssetId, setRemovedVisualAssetId] = useState("");
   const [projectileVisualAssetId, setProjectileVisualAssetId] = useState("");
   const [projectileSpriteDraft, setProjectileSpriteDraft] = useState<SpriteDraft | null>(null);
@@ -564,6 +565,7 @@ export default function EntityCreatePage() {
                 emptyHint="Drop a PNG or choose an existing image."
                 options={visualAssetOptions}
                 selectedAsset={selectedVisualAsset}
+                metadataOverride={visualAssetMetadataDraft ?? undefined}
                 value={effectiveVisualAssetId}
                 draft={spriteDraft}
                 onChange={selectVisualAsset}
@@ -831,6 +833,7 @@ export default function EntityCreatePage() {
 
   function selectVisualAsset(nextVisualAssetId: string) {
     setSpriteDraft(null);
+    setVisualAssetMetadataDraft(null);
     setRemovedVisualAssetId("");
     setVisualAssetId(nextVisualAssetId);
   }
@@ -852,6 +855,7 @@ export default function EntityCreatePage() {
     try {
       const draft = await createSpriteDraft(file, entityType, partType);
       setSpriteDraft(draft);
+      setVisualAssetMetadataDraft(null);
       setRemovedVisualAssetId("");
       setSaveStatus({kind: "idle", message: ""});
     } catch (error) {
@@ -917,6 +921,7 @@ export default function EntityCreatePage() {
     if (effectiveVisualAssetId) {
       setRemovedVisualAssetId(effectiveVisualAssetId);
       setVisualAssetId("");
+      setVisualAssetMetadataDraft(null);
     }
   }
 
@@ -933,7 +938,12 @@ export default function EntityCreatePage() {
   }
 
   function updateSpriteMetadata(metadata: SpriteMetadata) {
-    setSpriteDraft(currentDraft => currentDraft ? {...currentDraft, metadata} : currentDraft);
+    if (spriteDraft) {
+      setSpriteDraft({...spriteDraft, metadata});
+      return;
+    }
+
+    setVisualAssetMetadataDraft(metadata);
   }
 
   async function saveEntity() {
@@ -954,6 +964,15 @@ export default function EntityCreatePage() {
         : undefined;
       const spriteResult = spriteAction
         ? await applySpriteSaveAction(spriteAction, spriteDraft)
+        : undefined;
+      const spriteMetadataResult = !spriteAction && visualAssetKind && effectiveVisualAssetId && visualAssetMetadataDraft
+        ? await applySpriteMetadataSaveAction({
+          kind: visualAssetKind,
+          vector,
+          slot: entityType === "gunPart" ? partType : undefined,
+          fileStem: getSpriteFileStem(entityType, vector, partType, effectiveVisualAssetId),
+          metadata: visualAssetMetadataDraft,
+        })
         : undefined;
       const projectileSpriteAction = showProjectileSpriteField
         ? createProjectileSpriteSaveAction({
@@ -1029,6 +1048,7 @@ export default function EntityCreatePage() {
         message: [
           `${responseBody?.action ?? "saved"} in ${responseBody?.file ?? "data file"}`,
           spriteResult?.action ? `sprite ${spriteResult.action}` : "",
+          spriteMetadataResult?.action ? `sprite metadata ${spriteMetadataResult.action}` : "",
           projectileSpriteResult?.action ? `projectile sprite ${projectileSpriteResult.action}` : "",
           requiredBuildingSpriteResults.length ? `${requiredBuildingSpriteResults.length} multistructure sprite${requiredBuildingSpriteResults.length === 1 ? "" : "s"} saved` : "",
         ].filter(Boolean).join("; ") + ".",
@@ -1064,6 +1084,7 @@ export default function EntityCreatePage() {
     setKeywords(getAutomaticKeywords("research", "medieval", "launchSystem"));
     setVisualAssetId("");
     setSpriteDraft(null);
+    setVisualAssetMetadataDraft(null);
     setRemovedVisualAssetId("");
     setProjectileVisualAssetId("");
     setProjectileSpriteDraft(null);
@@ -1091,6 +1112,7 @@ export default function EntityCreatePage() {
     setKeywords(getAutomaticKeywords(inferred.entityType, inferred.vector, inferred.partType ?? "launchSystem"));
     setVisualAssetId("");
     setSpriteDraft(null);
+    setVisualAssetMetadataDraft(null);
     setRemovedVisualAssetId("");
     setProjectileVisualAssetId("");
     setProjectileSpriteDraft(null);
@@ -1126,6 +1148,7 @@ export default function EntityCreatePage() {
     ));
     setVisualAssetId(getStoredVisualAssetId(storedEntity));
     setSpriteDraft(null);
+    setVisualAssetMetadataDraft(null);
     setRemovedVisualAssetId("");
     setProjectileVisualAssetId(definition.projectileSpriteTextureKey ?? "");
     setProjectileSpriteDraft(null);
@@ -1430,6 +1453,7 @@ function VisualAssetField(props: {
   emptyHint: string;
   options: readonly EntityVisualAsset[];
   selectedAsset: EntityVisualAsset | undefined;
+  metadataOverride?: SpriteMetadata;
   value: string;
   draft: SpriteDraft | null;
   onChange: (value: string) => void;
@@ -1440,7 +1464,7 @@ function VisualAssetField(props: {
   const [query, setQuery] = useState("");
   const previewSrc = props.draft?.previewUrl ?? props.selectedAsset?.src;
   const previewLabel = props.draft?.file.name ?? props.selectedAsset?.label ?? props.value;
-  const previewMetadata = props.draft?.metadata ?? props.selectedAsset?.metadata;
+  const previewMetadata = props.draft?.metadata ?? props.metadataOverride ?? props.selectedAsset?.metadata;
   const previewImageStyle = previewMetadata && isSizedSpriteMetadata(previewMetadata)
     ? {
       width: previewMetadata.targetSpriteSize.width,
@@ -1468,33 +1492,33 @@ function VisualAssetField(props: {
   }
 
   function updateBuildingMetadata(patch: Partial<BuildingSpriteMetadata>) {
-    if (!props.draft?.metadata || !isBuildingSpriteMetadata(props.draft.metadata)) return;
+    if (!previewMetadata || !isBuildingSpriteMetadata(previewMetadata)) return;
     props.onMetadataChange({
-      ...props.draft.metadata,
+      ...previewMetadata,
       ...patch,
       shift: {
-        ...props.draft.metadata.shift,
+        ...previewMetadata.shift,
         ...patch.shift,
       },
     });
   }
 
   function updateSizedSpriteMetadata(patch: Partial<Pick<WallSpriteMetadata, "targetSpriteSize" | "rotationDegrees">>) {
-    if (!props.draft?.metadata || !isSizedSpriteMetadata(props.draft.metadata)) return;
+    if (!previewMetadata || !isSizedSpriteMetadata(previewMetadata)) return;
     props.onMetadataChange({
-      ...props.draft.metadata,
+      ...previewMetadata,
       ...patch,
       targetSpriteSize: {
-        ...props.draft.metadata.targetSpriteSize,
+        ...previewMetadata.targetSpriteSize,
         ...patch.targetSpriteSize,
       },
     });
   }
 
   function adjustRotation(deltaDegrees: number) {
-    if (!props.draft?.metadata || !isSizedSpriteMetadata(props.draft.metadata)) return;
+    if (!previewMetadata || !isSizedSpriteMetadata(previewMetadata)) return;
     updateSizedSpriteMetadata({
-      rotationDegrees: normalizeDegrees((props.draft.metadata.rotationDegrees ?? 0) + deltaDegrees),
+      rotationDegrees: normalizeDegrees((previewMetadata.rotationDegrees ?? 0) + deltaDegrees),
     });
   }
 
@@ -1564,7 +1588,7 @@ function VisualAssetField(props: {
           {previewSrc ? (
             <>
               <img className={s.visualPreviewImage} style={previewImageStyle} src={previewSrc} alt={previewLabel} />
-              {props.draft?.metadata && isBuildingSpriteMetadata(props.draft.metadata) && (
+              {previewMetadata && isBuildingSpriteMetadata(previewMetadata) && (
                 <div className={s.row}>
                   <label className={s.field}>
                     <span className={s.label}>Zoom</span>
@@ -1573,7 +1597,7 @@ function VisualAssetField(props: {
                       type="number"
                       min="0.01"
                       step="0.05"
-                      value={props.draft.metadata.zoom}
+                      value={previewMetadata.zoom}
                       onChange={event => updateBuildingMetadata({zoom: parseNumberOrFallback(event.target.value, 1)})}
                     />
                   </label>
@@ -1583,8 +1607,8 @@ function VisualAssetField(props: {
                       className={s.input}
                       type="number"
                       step="1"
-                      value={props.draft.metadata.shift.x}
-                      onChange={event => updateBuildingMetadata({shift: {x: parseNumberOrFallback(event.target.value, 0), y: props.draft?.metadata && isBuildingSpriteMetadata(props.draft.metadata) ? props.draft.metadata.shift.y : 0}})}
+                      value={previewMetadata.shift.x}
+                      onChange={event => updateBuildingMetadata({shift: {x: parseNumberOrFallback(event.target.value, 0), y: previewMetadata.shift.y}})}
                     />
                   </label>
                   <label className={s.field}>
@@ -1593,13 +1617,13 @@ function VisualAssetField(props: {
                       className={s.input}
                       type="number"
                       step="1"
-                      value={props.draft.metadata.shift.y}
-                      onChange={event => updateBuildingMetadata({shift: {x: props.draft?.metadata && isBuildingSpriteMetadata(props.draft.metadata) ? props.draft.metadata.shift.x : 0, y: parseNumberOrFallback(event.target.value, 0)}})}
+                      value={previewMetadata.shift.y}
+                      onChange={event => updateBuildingMetadata({shift: {x: previewMetadata.shift.x, y: parseNumberOrFallback(event.target.value, 0)}})}
                     />
                   </label>
                 </div>
               )}
-              {props.draft?.metadata && isSizedSpriteMetadata(props.draft.metadata) && (
+              {previewMetadata && isSizedSpriteMetadata(previewMetadata) && (
                 <div className={s.spriteMetadataControls}>
                   <div className={s.pairedFields}>
                     <label className={s.field}>
@@ -1609,11 +1633,11 @@ function VisualAssetField(props: {
                         type="number"
                         min="1"
                         step="1"
-                        value={props.draft.metadata.targetSpriteSize.width}
+                        value={previewMetadata.targetSpriteSize.width}
                         onChange={event => updateSizedSpriteMetadata({
                           targetSpriteSize: {
-                            width: parsePositiveNumberOrFallback(event.target.value, props.draft?.metadata && isSizedSpriteMetadata(props.draft.metadata) ? props.draft.metadata.targetSpriteSize.width : 1),
-                            height: props.draft?.metadata && isSizedSpriteMetadata(props.draft.metadata) ? props.draft.metadata.targetSpriteSize.height : 1,
+                            width: parsePositiveNumberOrFallback(event.target.value, previewMetadata.targetSpriteSize.width),
+                            height: previewMetadata.targetSpriteSize.height,
                           },
                         })}
                       />
@@ -1625,11 +1649,11 @@ function VisualAssetField(props: {
                         type="number"
                         min="1"
                         step="1"
-                        value={props.draft.metadata.targetSpriteSize.height}
+                        value={previewMetadata.targetSpriteSize.height}
                         onChange={event => updateSizedSpriteMetadata({
                           targetSpriteSize: {
-                            width: props.draft?.metadata && isSizedSpriteMetadata(props.draft.metadata) ? props.draft.metadata.targetSpriteSize.width : 1,
-                            height: parsePositiveNumberOrFallback(event.target.value, props.draft?.metadata && isSizedSpriteMetadata(props.draft.metadata) ? props.draft.metadata.targetSpriteSize.height : 1),
+                            width: previewMetadata.targetSpriteSize.width,
+                            height: parsePositiveNumberOrFallback(event.target.value, previewMetadata.targetSpriteSize.height),
                           },
                         })}
                       />
@@ -1638,11 +1662,11 @@ function VisualAssetField(props: {
                   <div className={s.pairedFields}>
                     <label className={s.field}>
                       <span className={s.label}>Source Width</span>
-                      <input className={s.input} readOnly value={props.draft.metadata.sourceSpriteSize?.width ?? ""} />
+                      <input className={s.input} readOnly value={previewMetadata.sourceSpriteSize?.width ?? ""} />
                     </label>
                     <label className={s.field}>
                       <span className={s.label}>Source Height</span>
-                      <input className={s.input} readOnly value={props.draft.metadata.sourceSpriteSize?.height ?? ""} />
+                      <input className={s.input} readOnly value={previewMetadata.sourceSpriteSize?.height ?? ""} />
                     </label>
                   </div>
                   <div className={s.spriteRotationControls}>
@@ -1655,7 +1679,7 @@ function VisualAssetField(props: {
                         className={s.input}
                         type="number"
                         step="1"
-                        value={props.draft.metadata.rotationDegrees ?? 0}
+                        value={previewMetadata.rotationDegrees ?? 0}
                         onChange={event => updateSizedSpriteMetadata({rotationDegrees: parseNumberOrFallback(event.target.value, 0)})}
                       />
                     </label>
@@ -1973,6 +1997,27 @@ async function applySpriteSaveAction(
 
   if (!response.ok) {
     throw new Error(responseBody?.error ?? `Sprite upload failed with status ${response.status}.`);
+  }
+
+  return responseBody ?? {};
+}
+
+async function applySpriteMetadataSaveAction(action: {
+  kind: EntityVisualAssetKind;
+  vector: DevelopmentVectorKey;
+  slot?: TowerPartSlot;
+  fileStem: string;
+  metadata: SpriteMetadata;
+}): Promise<{action?: string; file?: string} | undefined> {
+  const response = await fetch(`${localDataServerUrl}/entity-sprite-metadata`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(action),
+  });
+  const responseBody = await response.json().catch(() => null) as {action?: string; file?: string; error?: string} | null;
+
+  if (!response.ok) {
+    throw new Error(responseBody?.error ?? `Sprite metadata save failed with status ${response.status}.`);
   }
 
   return responseBody ?? {};

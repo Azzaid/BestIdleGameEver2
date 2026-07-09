@@ -11,13 +11,14 @@ export function AimingSystem(world: World, dt: number) {
 
     const targetTransform = world.transforms.get(tower.currentTarget);
     if (!targetTransform) continue;
+    const targetEnemy = world.enemiesData.get(tower.currentTarget);
 
     const desired = predictProjectileAimAngle({
       basePosition: baseTf.position,
       currentAngleRadians: gunTf.rotationRadians,
       projectileSpawnOffset: tower.projectileSpawnOffset,
       targetTransform,
-      targetMovement: world.movements.get(tower.currentTarget),
+      targetMovement: targetEnemy?.mode === 'attack' ? undefined : world.movements.get(tower.currentTarget),
       projectileSpeed: tower.projectileSpeed,
       monsterMovementModifiers: world.config.monsterMovementModifiers,
     });

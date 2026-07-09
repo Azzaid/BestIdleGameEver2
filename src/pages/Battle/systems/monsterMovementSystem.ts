@@ -6,9 +6,12 @@ const DEFAULT_MONSTER_SWAY_FREQUENCY_HZ = 0.25;
 
 export function MonsterMovementSystem(world: World, dt: number) {
   for (const [entityId, enemy] of world.enemiesData) {
-    const movement = world.movements.get(entityId);
+    let movement = world.movements.get(entityId);
     const transform = world.transforms.get(entityId);
     if (!movement || !transform) continue;
+    updateEnemyAttackMode(world, entityId);
+    movement = world.movements.get(entityId);
+    if (!movement) continue;
 
     const stunRemaining = world.enemyTowerStunRemainingSeconds.get(entityId) ?? 0;
     if (stunRemaining > 0) {
@@ -19,10 +22,14 @@ export function MonsterMovementSystem(world: World, dt: number) {
         world.enemyTowerStunRemainingSeconds.delete(entityId);
       }
       stopEnemyAtEngagementLine(world, entityId, enemy.hitRadius, getEnemyWallEngagementDistance(enemy.kind, enemy.shotDistance));
+      updateEnemyAttackMode(world, entityId);
       continue;
     }
 
     switch (movement.kind) {
+      case 'standing': {
+        break;
+      }
       case 'linear': {
         const baseVelocity = movement.velocityPixelsPerSecond;
         const baseSpeed = Math.hypot(baseVelocity.x, baseVelocity.y);
@@ -165,6 +172,7 @@ export function MonsterMovementSystem(world: World, dt: number) {
     }
 
     stopEnemyAtEngagementLine(world, entityId, enemy.hitRadius, getEnemyWallEngagementDistance(enemy.kind, enemy.shotDistance));
+    updateEnemyAttackMode(world, entityId);
   }
 }
 
@@ -248,4 +256,37 @@ function getEnemyWallEngagementDistance(enemyKind: string, shotDistance: number 
   if (enemyKind !== 'ranged') return 0;
 
   return Math.max(0, shotDistance ?? 0);
+}
+
+function updateEnemyAttackMode(world: World, entityId: number) {
+  const enemy = world.enemiesData.get(entityId);
+  const transform = world.transforms.get(entityId);
+  if (!enemy || !transform) return;
+
+  const shouldAttack = enemyIsAtEngagementLine(world, entityId);
+  const canChangeMovement = !world.enemyTowerMovementOverrides.has(entityId);
+
+  if (shouldAttack && enemy.mode !== 'attack') {
+    enemy.mode = 'attack';
+    if (canChangeMovement) {
+      world.movements.set(entityId, enemy.attackMovement);
+    }
+    return;
+  }
+
+  if (!shouldAttack && enemy.mode !== 'walk') {
+    enemy.mode = 'walk';
+    if (canChangeMovement) {
+      world.movements.set(entityId, enemy.walkMovement);
+    }
+  }
+}
+
+function enemyIsAtEngagementLine(world: World, entityId: number) {
+  const enemy = world.enemiesData.get(entityId);
+  const transform = world.transforms.get(entityId);
+  if (!enemy || !transform) return false;
+
+  const wallEngagementDistance = getEnemyWallEngagementDistance(enemy.kind, enemy.shotDistance);
+  return transform.position.y + enemy.hitRadius >= world.config.wallContactY - wallEngagementDistance;
 }

@@ -15,7 +15,7 @@
       "swarm"
     ],
     "sprite": {
-      "textureKey": "enemy_scrapling"
+      "textureKey": "enemy_scrapling_walk"
     },
     "swarmSize": 3,
     "swarmSizeMax": 5,

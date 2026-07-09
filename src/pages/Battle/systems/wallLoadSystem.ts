@@ -2,12 +2,7 @@ import type { World } from '../../../models/battle/world.ts';
 
 function enemyContributesSiegePressure(world: World, enemyId: number) {
   const enemy = world.enemiesData.get(enemyId);
-  const transform = world.transforms.get(enemyId);
-  if (!enemy || !transform) return false;
-
-  const wallEngagementDistance = enemy.kind === 'ranged' ? Math.max(0, enemy.shotDistance ?? 0) : 0;
-
-  return transform.position.y + enemy.hitRadius >= world.config.wallContactY - wallEngagementDistance;
+  return enemy?.mode === 'attack';
 }
 
 export function WallLoadSystem(world: World) {

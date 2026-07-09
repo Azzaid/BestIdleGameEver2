@@ -17,6 +17,6 @@ export function PixiSyncSystem(world: World) {
       display = sp;
     }
     display.position.set(tf.position.x, tf.position.y);
-    display.rotation = tf.rotationRadians ?? 0;
+    display.rotation = world.enemiesData.has(entityId) ? 0 : tf.rotationRadians ?? 0;
   }
 }

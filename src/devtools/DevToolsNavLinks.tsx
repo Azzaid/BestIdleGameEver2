@@ -20,6 +20,9 @@ export default function DevToolsNavLinks() {
         <Link className={appTheme.navBarLink} to="/monster-edit/new">Monster Edit</Link>
       </li>
       <li>
+        <Link className={appTheme.navBarLink} to="/enemy-animation-sprites">Enemy Animations</Link>
+      </li>
+      <li>
         <Link className={appTheme.navBarLink} to="/gun-part-editor">Part Editor</Link>
       </li>
       <li>

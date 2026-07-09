@@ -98,7 +98,7 @@ export async function loadEnemyAssets(): Promise<void> {
         const asset = ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[textureKey];
         return asset ? [{
             alias: textureKey,
-            src: asset.src,
+            src: asset.atlasSrc ?? asset.src,
         }] : [];
     });
 

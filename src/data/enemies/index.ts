@@ -2,16 +2,19 @@ import type {EnemyBlueprint, EnemyBlueprintAtlas} from "../../models/battle/enem
 import wastelandEnemyDefinitions from "./wasteland.json";
 import {ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY} from "./visuals.ts";
 
-type EnemyMovementKind = "wallboundWobble" | "straight" | "randomLines" | "blink";
+type EnemyMovementKind = "standing" | "wallboundWobble" | "straight" | "randomLines" | "blink";
 
-type EnemyDefinition = Omit<EnemyBlueprint, "keywords" | "createMovement"> & {
+type EnemyMovementDefinition = {
+  kind: EnemyMovementKind;
+  speedPixelsPerSecond?: number;
+  wobbleAmplitudePixels?: number;
+  sameTrajectoryTimeSeconds?: number;
+};
+
+type EnemyDefinition = Omit<EnemyBlueprint, "keywords" | "createMovement" | "createAttackMovement"> & {
   keywords: string[];
-  movement?: {
-    kind: EnemyMovementKind;
-    speedPixelsPerSecond: number;
-    wobbleAmplitudePixels?: number;
-    sameTrajectoryTimeSeconds?: number;
-  };
+  movement?: EnemyMovementDefinition;
+  attackMovement?: EnemyMovementDefinition;
 };
 
 export const BATTLE_ENEMY_BLUEPRINTS_ATLAS: EnemyBlueprintAtlas = {
@@ -34,26 +37,37 @@ function buildEnemies(definitions: readonly EnemyDefinition[]): Record<string, E
         ...definition.sprite,
         targetSpriteSize: ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[definition.sprite.textureKey]?.metadata?.targetSpriteSize,
         rotationDegrees: ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[definition.sprite.textureKey]?.metadata?.rotationDegrees,
+        animated: Boolean(ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[definition.sprite.textureKey]?.animationFrames?.length),
+        animationFrames: ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[definition.sprite.textureKey]?.animationFrames,
+        fps: ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[definition.sprite.textureKey]?.fps,
       },
       keywords: new Set(definition.keywords),
-      createMovement: createMovement(definition),
+      createMovement: createMovement(definition, definition.movement),
+      createAttackMovement: createMovement(definition, definition.attackMovement ?? {kind: "standing"}),
     },
   ]));
 }
 
-function createMovement(definition: EnemyDefinition): EnemyBlueprint["createMovement"] {
-  if (!definition.movement) {
+function createMovement(
+  definition: EnemyDefinition,
+  movementDefinition: EnemyMovementDefinition | undefined,
+): EnemyBlueprint["createMovement"] {
+  if (!movementDefinition) {
     throw new Error(`Enemy "${definition.id}" is missing a supported movement definition.`);
   }
 
   const {
     kind,
-    speedPixelsPerSecond,
+    speedPixelsPerSecond = 0,
     wobbleAmplitudePixels = 0,
     sameTrajectoryTimeSeconds = 1,
-  } = definition.movement;
+  } = movementDefinition;
 
   switch (kind) {
+    case "standing":
+      return () => ({
+        kind: "standing",
+      });
     case "wallboundWobble":
       return (spawnX, _spawnY, world, modifiers) => ({
         kind: "wobble",

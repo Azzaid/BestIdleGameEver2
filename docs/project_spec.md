@@ -1,6 +1,6 @@
 # Project Specification: Best Idle Game Ever 2
 
-Last updated: 2026-06-24 (local)
+Last updated: 2026-07-09 (local)
 
 This document is the repository's single project specification. It summarizes the implemented prototype and the current design direction from the rest of the `docs` folder. The focused design documents remain the deeper references for individual systems.
 
@@ -376,8 +376,9 @@ Current battle/wall behavior:
 - Battle uses a growing threat counter instead of a player-facing wave counter.
 - Threat starts at 80% of current city signature and grows until it reaches city signature or the siege breaks the wall line.
 - If the city is not besieged, battle still runs as constant wall pressure with threat locked to current city signature.
-- Melee enemies stop once their hit radius reaches the wall. Ranged enemies with `shotDistance` stop when their hit radius reaches that distance from the wall.
-- Stopped melee enemies and ranged enemies at their shot distance add siege pressure equal to their pressure reduced by the wall's ignored threat.
+- Melee enemies switch from walk mode to attack mode once their hit radius reaches the wall. Ranged enemies switch to attack mode once their hit radius reaches their `shotDistance` from the wall.
+- Attack-mode enemies add siege pressure equal to their pressure reduced by the wall's ignored threat. Attack mode has its own monster JSON movement definition through `attackMovement` and defaults to standing still when omitted.
+- Tower push-back or movement effects can move an attack-mode enemy out of its wall engagement distance; once outside that distance, the enemy switches back to walk mode.
 - `randomLines` monster movement picks a new downward-and-sideways trajectory every `sameTrajectoryTimeSeconds`, using `speedPixelsPerSecond` for forward movement and `wobbleAmplitudePixels` as the sideways speed scale.
 - Wall push-back and zone DoT values affect enemies inside rectangular battlefield zones measured upward from the wall contact line. Push-back speed is derived from push-back distance so the configured distance is covered over 0.5 seconds.
 - If combined siege pressure exceeds combined wall resilience, battle ends before the city signature target and the city retreats by one radius.
@@ -626,7 +627,7 @@ Current content layout:
 - `src/pages/Progression/data/` contains progression graph helpers derived from building, research, wall, and tower part requirement data.
 - `src/data/ids.ts` derives grouped content ids from the active atlases for buildings, technologies, tower parts, enemies, wall segments, and wall superstructures. Add runtime ids to the relevant JSON/catalog first, then confirm derived ID and asset coverage in `/ids`.
 - `/ids` is the content audit screen for checking missing definitions, progression rules, and assets by id.
-- `/monster-edit/:monsterId` edits monster entries under `src/data/enemies` and saves paired enemy sprite metadata under `src/assets/enemies/<region>`. Monster definitions may set `minimumCityVisibilityThreshold`; the battle wave planner only includes monsters whose threshold is at or below the current city visibility/threat value.
+- `/monster-edit/:monsterId` edits monster entries under `src/data/enemies` and saves paired enemy sprite metadata under `src/assets/enemies/<region>`. Monster definitions may set `minimumCityVisibilityThreshold`; the battle wave planner only includes monsters whose threshold is at or below the current city visibility/threat value. Monster definitions may also set an `attackMovement`; omitted attack movement defaults to standing still.
 
 Future content definitions should be data-driven and tag-heavy.
 

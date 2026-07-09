@@ -401,6 +401,17 @@ const server = createServer(async (request, response) => {
     return
   }
 
+  if (request.method === 'POST' && url.pathname === '/enemy-animation-sprites') {
+    try {
+      const upload = await readMultipartFormData(request)
+      const imageResult = await saveEnemyAnimationSpriteUpload(upload.fields, upload.files.image)
+      sendJson(response, 200, imageResult)
+    } catch (error) {
+      sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to save enemy animation sprite' })
+    }
+    return
+  }
+
   if (request.method === 'POST' && url.pathname === '/gun-part-metadata') {
     let payload
 
@@ -972,6 +983,85 @@ function resolveHexBackgroundSpriteTarget(action) {
     imagePath,
     relativeImagePath: path.relative(path.join(__dirname, '..'), imagePath).replaceAll(path.sep, '/'),
   }
+}
+
+async function saveEnemyAnimationSpriteUpload(fields, imageFile) {
+  const action = {
+    biome: fields.biome,
+    fileStem: fields.fileStem,
+    atlas: fields.atlas ? JSON.parse(fields.atlas) : undefined,
+  }
+  const target = resolveEnemyAnimationSpriteTarget(action)
+
+  if (!target.ok) {
+    const error = new Error(target.error)
+    error.statusCode = target.statusCode
+    throw error
+  }
+
+  if (!imageFile?.buffer?.length || imageFile.contentType !== 'image/png') {
+    throw new Error('Enemy animation upload must include a PNG image')
+  }
+
+  if (!isValidEnemyAnimationAtlas(action.atlas, action.fileStem)) {
+    const error = new Error('Enemy animation atlas must include frames, animations, and matching metadata')
+    error.statusCode = 400
+    throw error
+  }
+
+  await mkdir(target.dir, { recursive: true })
+  await writeFile(target.imagePath, imageFile.buffer)
+  await writeFile(target.atlasPath, `${JSON.stringify(action.atlas, null, 2)}\n`, 'utf8')
+
+  return {
+    action: 'saved',
+    imageFile: target.relativeImagePath,
+    atlasFile: target.relativeAtlasPath,
+  }
+}
+
+function resolveEnemyAnimationSpriteTarget(action) {
+  const biomes = new Set(['wasteland'])
+
+  if (!biomes.has(action?.biome)) {
+    return { ok: false, statusCode: 400, error: 'Enemy animation biome is not supported' }
+  }
+
+  if (!action?.fileStem || !isSafePathPart(action.fileStem)) {
+    return { ok: false, statusCode: 400, error: 'Enemy animation file stem must be a safe path segment' }
+  }
+
+  const collectionDir = path.resolve(gameAssetsDir, 'enemies')
+  const dir = path.resolve(collectionDir, action.biome)
+  const imagePath = path.resolve(dir, `${action.fileStem}.png`)
+  const atlasPath = path.resolve(dir, `${action.fileStem}.json`)
+
+  if (!dir.startsWith(`${collectionDir}${path.sep}`) || !imagePath.startsWith(`${dir}${path.sep}`) || !atlasPath.startsWith(`${dir}${path.sep}`)) {
+    return { ok: false, statusCode: 400, error: 'Resolved enemy animation path is outside the asset directory' }
+  }
+
+  return {
+    ok: true,
+    dir,
+    imagePath,
+    atlasPath,
+    relativeImagePath: path.relative(path.join(__dirname, '..'), imagePath).replaceAll(path.sep, '/'),
+    relativeAtlasPath: path.relative(path.join(__dirname, '..'), atlasPath).replaceAll(path.sep, '/'),
+  }
+}
+
+function isValidEnemyAnimationAtlas(atlas, fileStem) {
+  if (!atlas || Array.isArray(atlas) || typeof atlas !== 'object') return false
+  if (!atlas.frames || Array.isArray(atlas.frames) || typeof atlas.frames !== 'object') return false
+  if (!atlas.animations || Array.isArray(atlas.animations) || typeof atlas.animations !== 'object') return false
+  if (!atlas.meta || Array.isArray(atlas.meta) || typeof atlas.meta !== 'object') return false
+  if (atlas.meta.image !== `${fileStem}.png`) return false
+  if (!atlas.meta.enemyVisualMetadata || Array.isArray(atlas.meta.enemyVisualMetadata) || typeof atlas.meta.enemyVisualMetadata !== 'object') return false
+
+  const animation = atlas.animations[fileStem]
+  if (!Array.isArray(animation) || animation.length === 0) return false
+
+  return animation.every(frameKey => typeof frameKey === 'string' && atlas.frames[frameKey])
 }
 
 function isSafePathPart(value) {

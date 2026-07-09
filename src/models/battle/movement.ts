@@ -1,13 +1,17 @@
 import type { Vector2 } from './common.ts';
 
 /** Generic movement controller (attach ONE per entity). */
-export type MovementKind = 'wobble' | 'polyline' | 'wander' | 'flee' | 'circle' | 'blink' | 'linear';
+export type MovementKind = 'standing' | 'wobble' | 'polyline' | 'wander' | 'flee' | 'circle' | 'blink' | 'linear';
 
 export interface MovementBase {
   kind: MovementKind;
   swayElapsedSeconds?: number;
   previousSwayOffsetPixels?: number;
   swaySeedRadians?: number;
+}
+
+export interface MovementStanding extends MovementBase {
+  kind: 'standing';
 }
 
 export interface MovementWobble extends MovementBase {
@@ -67,6 +71,7 @@ export interface MovementLinear extends MovementBase {
 }
 
 export type MovementController =
+  | MovementStanding
   | MovementWobble
   | MovementPolyline
   | MovementWander

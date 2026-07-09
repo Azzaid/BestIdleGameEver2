@@ -1,11 +1,606 @@
 {
-  "sourceSpriteSize": {
-    "width": 768,
-    "height": 768
+  "frames": {
+    "enemy_ridge_spitter_000": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_001": {
+      "frame": {
+        "x": 586,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_002": {
+      "frame": {
+        "x": 1172,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_003": {
+      "frame": {
+        "x": 1758,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_004": {
+      "frame": {
+        "x": 2344,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_005": {
+      "frame": {
+        "x": 0,
+        "y": 610,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_006": {
+      "frame": {
+        "x": 586,
+        "y": 610,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_007": {
+      "frame": {
+        "x": 1172,
+        "y": 610,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_008": {
+      "frame": {
+        "x": 1758,
+        "y": 610,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_009": {
+      "frame": {
+        "x": 2344,
+        "y": 610,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_010": {
+      "frame": {
+        "x": 0,
+        "y": 1220,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_011": {
+      "frame": {
+        "x": 586,
+        "y": 1220,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_012": {
+      "frame": {
+        "x": 1172,
+        "y": 1220,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_013": {
+      "frame": {
+        "x": 1758,
+        "y": 1220,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_014": {
+      "frame": {
+        "x": 2344,
+        "y": 1220,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_015": {
+      "frame": {
+        "x": 0,
+        "y": 1830,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_016": {
+      "frame": {
+        "x": 586,
+        "y": 1830,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_017": {
+      "frame": {
+        "x": 1172,
+        "y": 1830,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_018": {
+      "frame": {
+        "x": 1758,
+        "y": 1830,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_019": {
+      "frame": {
+        "x": 2344,
+        "y": 1830,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_020": {
+      "frame": {
+        "x": 0,
+        "y": 2440,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_021": {
+      "frame": {
+        "x": 586,
+        "y": 2440,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_022": {
+      "frame": {
+        "x": 1172,
+        "y": 2440,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_023": {
+      "frame": {
+        "x": 1758,
+        "y": 2440,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    },
+    "enemy_ridge_spitter_024": {
+      "frame": {
+        "x": 2344,
+        "y": 2440,
+        "w": 586,
+        "h": 610
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 586,
+        "h": 610
+      },
+      "sourceSize": {
+        "w": 586,
+        "h": 610
+      },
+      "duration": 55
+    }
   },
-  "targetSpriteSize": {
-    "width": 48,
-    "height": 48
+  "animations": {
+    "enemy_ridge_spitter": [
+      "enemy_ridge_spitter_000",
+      "enemy_ridge_spitter_001",
+      "enemy_ridge_spitter_002",
+      "enemy_ridge_spitter_003",
+      "enemy_ridge_spitter_004",
+      "enemy_ridge_spitter_005",
+      "enemy_ridge_spitter_006",
+      "enemy_ridge_spitter_007",
+      "enemy_ridge_spitter_008",
+      "enemy_ridge_spitter_009",
+      "enemy_ridge_spitter_010",
+      "enemy_ridge_spitter_011",
+      "enemy_ridge_spitter_012",
+      "enemy_ridge_spitter_013",
+      "enemy_ridge_spitter_014",
+      "enemy_ridge_spitter_015",
+      "enemy_ridge_spitter_016",
+      "enemy_ridge_spitter_017",
+      "enemy_ridge_spitter_018",
+      "enemy_ridge_spitter_019",
+      "enemy_ridge_spitter_020",
+      "enemy_ridge_spitter_021",
+      "enemy_ridge_spitter_022",
+      "enemy_ridge_spitter_023",
+      "enemy_ridge_spitter_024"
+    ]
   },
-  "rotationDegrees": 270
+  "meta": {
+    "image": "enemy_ridge_spitter.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2930,
+      "h": 3050
+    },
+    "scale": "1",
+    "enemyVisualMetadata": {
+      "sourceSpriteSize": {
+        "width": 586,
+        "height": 610
+      },
+      "targetSpriteSize": {
+        "width": 48,
+        "height": 48
+      },
+      "rotationDegrees": 0,
+      "animationFrames": [
+        "enemy_ridge_spitter_000",
+        "enemy_ridge_spitter_001",
+        "enemy_ridge_spitter_002",
+        "enemy_ridge_spitter_003",
+        "enemy_ridge_spitter_004",
+        "enemy_ridge_spitter_005",
+        "enemy_ridge_spitter_006",
+        "enemy_ridge_spitter_007",
+        "enemy_ridge_spitter_008",
+        "enemy_ridge_spitter_009",
+        "enemy_ridge_spitter_010",
+        "enemy_ridge_spitter_011",
+        "enemy_ridge_spitter_012",
+        "enemy_ridge_spitter_013",
+        "enemy_ridge_spitter_014",
+        "enemy_ridge_spitter_015",
+        "enemy_ridge_spitter_016",
+        "enemy_ridge_spitter_017",
+        "enemy_ridge_spitter_018",
+        "enemy_ridge_spitter_019",
+        "enemy_ridge_spitter_020",
+        "enemy_ridge_spitter_021",
+        "enemy_ridge_spitter_022",
+        "enemy_ridge_spitter_023",
+        "enemy_ridge_spitter_024"
+      ],
+      "fps": 18
+    }
+  }
 }

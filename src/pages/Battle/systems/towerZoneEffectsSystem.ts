@@ -37,8 +37,15 @@ function updateMovementOverrides(world: World, dt: number) {
       continue;
     }
 
+    const enemy = world.enemiesData.get(enemyId);
     if (world.movements.has(enemyId)) {
-      world.movements.set(enemyId, override.originalMovement);
+      let restoredMovement = override.originalMovement;
+      if (enemy) {
+        restoredMovement = enemy.mode === 'attack'
+          ? enemy.attackMovement
+          : enemy.walkMovement;
+      }
+      world.movements.set(enemyId, restoredMovement);
     }
     world.enemyTowerMovementOverrides.delete(enemyId);
   }
@@ -340,6 +347,8 @@ function applyMovementOverride(
 
 function getMovementSpeedPixelsPerSecond(movement: MovementController): number {
   switch (movement.kind) {
+    case 'standing':
+      return 0;
     case 'wobble':
       return movement.baseSpeedPixelsPerSecond;
     case 'polyline':
@@ -359,6 +368,8 @@ function getMovementSpeedPixelsPerSecond(movement: MovementController): number {
 
 function cloneMovement(movement: MovementController): MovementController {
   switch (movement.kind) {
+    case 'standing':
+      return { ...movement };
     case 'wobble':
       return { ...movement };
     case 'polyline':
