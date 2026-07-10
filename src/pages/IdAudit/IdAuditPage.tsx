@@ -398,7 +398,10 @@ export default function IdAuditPage() {
                   {row.category === "Enemy" ? (
                     <Link className={s.editLink} to={`/monster-edit/${encodeURIComponent(row.id)}`}>Edit</Link>
                   ) : isEditableEntityCategory(row.category) ? (
-                    <Link className={s.editLink} to={`/entity-create/${encodeURIComponent(row.id)}`}>Edit</Link>
+                    <div className={s.actionLinks}>
+                      <Link className={s.editLink} to={`/entity-create/${encodeURIComponent(row.id)}`}>Edit</Link>
+                      <Link className={s.editLink} to={`/entity-create/new?copyFrom=${encodeURIComponent(row.id)}`}>Copy</Link>
+                    </div>
                   ) : (
                     <span className={s.muted}>N/A</span>
                   )}

@@ -231,54 +231,6 @@
     "visualAssetId": "building_nature_saplings"
   },
   {
-    "id": "buildings.nature.meadow",
-    "name": "Meadow",
-    "kind": "building",
-    "description": "A small meadow full of small wild animals.",
-    "keywords": [
-      "nature",
-      "building",
-      "animals",
-      "boost"
-    ],
-    "requirements": [
-      {
-        "type": "technologyUnlocked",
-        "technologyId": "research.nature.animals"
-      }
-    ],
-    "values": [
-      {
-        "valueId": "city.signature",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 4
-      },
-      {
-        "valueId": "resource.animals",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 1
-      }
-    ],
-    "effects": [
-      {
-        "radius": 1,
-        "requiredBuildingKeywords": [
-          "animals"
-        ],
-        "requiredValueKeywords": [
-          "animals"
-        ],
-        "multiplier": 1.25
-      }
-    ],
-    "adjacencyDescription": "Neighboring animals get stronger",
-    "visualAssetId": "building_nature_meadow"
-  },
-  {
     "id": "buildings.nature.youngPoisonousMushrooms",
     "visualAssetId": "building_nature_young-poisonous-mushrooms",
     "name": "Young poisonous mushrooms",
@@ -575,7 +527,8 @@
     },
     "hint": "In a diverse ecosystem might grow into strong and tall threes.",
     "keywords": [
-      "nature"
+      "nature",
+      "building"
     ],
     "requirements": [
       {
@@ -604,6 +557,471 @@
           "production"
         ],
         "additive": 6
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      }
+    ],
+    "effects": [
+      {
+        "requiredValueKeywords": [
+          "resource",
+          "plants"
+        ],
+        "additive": 1.25,
+        "radius": 1
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.livingWoodYoungTrees",
+    "visualAssetId": "building_nature_living-wood-young-trees",
+    "name": "Living wood young trees",
+    "kind": "superstructure",
+    "description": "Saplings grow stronger every day.",
+    "requiredBuildingIds": [
+      "buildings.nature.saplings"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.saplings": "building_nature_living-wood-young-trees-from-saplings"
+    },
+    "hint": "Will get stronger in a diverse ecosystem.",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.threes"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 6
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.plants",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 8
+      }
+    ],
+    "effects": [
+      {
+        "multiplier": 1.5,
+        "radius": 1,
+        "requiredValueKeywords": [
+          "plants",
+          "resource"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.livingWoodTrees",
+    "visualAssetId": "building_nature_living-wood-trees",
+    "name": "Living wood trees",
+    "kind": "superstructure",
+    "description": "Saplings grow stronger every day.",
+    "requiredBuildingIds": [
+      "buildings.nature.livingWoodYoungTrees"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.saplings": "building_nature_living-wood-trees-from-saplings"
+    },
+    "hint": "Will get stronger in a diverse ecosystem.",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.threes"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.plants",
+        "amount": 9
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.plants",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      }
+    ],
+    "effects": [
+      {
+        "multiplier": 1.5,
+        "radius": 2,
+        "requiredValueKeywords": [
+          "plants",
+          "resource"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.matureLivingWoodTrees",
+    "visualAssetId": "building_nature_mature-living-wood-trees",
+    "name": "Mature living wood trees",
+    "kind": "superstructure",
+    "description": "Saplings grow stronger every day.",
+    "requiredBuildingIds": [
+      "buildings.nature.livingWoodTrees"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.saplings": "building_nature_mature-living-wood-trees-from-saplings"
+    },
+    "hint": "Mature and ready to pass genetic legacy.",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.threes"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.plants",
+        "amount": 15
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.plants",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 15
+      }
+    ],
+    "effects": [
+      {
+        "multiplier": 1.5,
+        "radius": 3,
+        "requiredValueKeywords": [
+          "plants",
+          "resource"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.hiveCluster",
+    "name": "Hive cluster",
+    "kind": "building",
+    "description": "A cluster of hives of a different mutated creatures found in the wild. Could be deadly if you not carefull.",
+    "keywords": [
+      "nature",
+      "building",
+      "animals",
+      "boost"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.animals"
+      }
+    ],
+    "values": [
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "resource.animals",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      }
+    ],
+    "effects": [
+      {
+        "radius": 1,
+        "requiredBuildingKeywords": [
+          "animals"
+        ],
+        "requiredValueKeywords": [
+          "animals",
+          "resource"
+        ],
+        "multiplier": 1.25
+      }
+    ],
+    "adjacencyDescription": "Neighboring animals get stronger",
+    "visualAssetId": "building_nature_hive-cluster"
+  },
+  {
+    "id": "buildings.nature.fleshyHivesProtocolony",
+    "visualAssetId": "building_nature_fleshy-hives-protocolony",
+    "name": "Fleshy hives protocolony",
+    "kind": "superstructure",
+    "description": "Bunch of flesh made hives. Small and fragile but inhabitants already capable of pushing enemies back if planted on the wall.",
+    "requiredBuildingIds": [
+      "buildings.nature.hiveCluster"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.hiveCluster": "building_nature_fleshy-hives-protocolony-from-hive-cluster"
+    },
+    "hint": "In a diverse ecosystem mushrooms will grow",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.animals"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 3
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.animals",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 6
+      }
+    ],
+    "effects": [
+      {
+        "multiplier": 1.25,
+        "radius": 1,
+        "requiredValueKeywords": [
+          "animals",
+          "resource"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.fleshyHivesColony",
+    "visualAssetId": "building_nature_fleshy-hives-colony",
+    "name": "Fleshy hives Colony",
+    "kind": "superstructure",
+    "description": "Hives grow bigger.",
+    "requiredBuildingIds": [
+      "buildings.nature.fleshyHivesProtocolony"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.hiveCluster": "building_nature_fleshy-hives-colony-from-hive-cluster"
+    },
+    "hint": "In a diverse ecosystem hives will grow",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.animals"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 6
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.animals",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 8
+      }
+    ],
+    "effects": [
+      {
+        "multiplier": 1.25,
+        "radius": 1,
+        "requiredValueKeywords": [
+          "animals",
+          "resource"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.strongFleshyHivesColony",
+    "visualAssetId": "building_nature_strong-fleshy-hives-colony",
+    "name": "Strong fleshy hives colony",
+    "kind": "superstructure",
+    "description": "Hives grow bigger.",
+    "requiredBuildingIds": [
+      "buildings.nature.fleshyHivesColony"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.hiveCluster": "building_nature_strong-fleshy-hives-colony-from-hive-cluster"
+    },
+    "hint": "In a diverse ecosystem hives will grow",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.animals"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 10
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.animals",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      }
+    ],
+    "effects": [
+      {
+        "multiplier": 1.25,
+        "radius": 1,
+        "requiredValueKeywords": [
+          "animals",
+          "resource"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.strongFleshyHivesColonyCopy",
+    "visualAssetId": "building_nature_strong-fleshy-hives-colony-copy",
+    "name": "Mature flesh hive",
+    "kind": "superstructure",
+    "description": "Fully mature and ready to pass its genes further.",
+    "requiredBuildingIds": [
+      "buildings.nature.fleshyHivesColony"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.hiveCluster": "building_nature_strong-fleshy-hives-colony-copy-from-hive-cluster"
+    },
+    "hint": "In a diverse ecosystem hives will grow",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.animals"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 15
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.animals",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 12
+      }
+    ],
+    "effects": [
+      {
+        "multiplier": 1.25,
+        "radius": 1,
+        "requiredValueKeywords": [
+          "animals",
+          "resource"
+        ]
       }
     ]
   }

@@ -247,6 +247,7 @@ export default function EntityCreatePage() {
   const [searchParams] = useSearchParams();
   const draftName = searchParams.get("name") ?? undefined;
   const draftDescription = searchParams.get("description") ?? undefined;
+  const copyFromEntityId = searchParams.get("copyFrom") ?? undefined;
   const [entityType, setEntityType] = useState<EntityType>("research");
   const [vector, setVector] = useState<DevelopmentVectorKey>("medieval");
   const [partType, setPartType] = useState<TowerPartSlot>("launchSystem");
@@ -275,6 +276,10 @@ export default function EntityCreatePage() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
   const previousAutomaticKeywordsRef = useRef<string[]>([]);
   const loadedEntity = useMemo(() => entityId === "new" ? null : findStoredEntity(entityId), [entityId]);
+  const copiedEntity = useMemo(
+    () => entityId === "new" && copyFromEntityId ? findStoredEntity(copyFromEntityId) : null,
+    [copyFromEntityId, entityId],
+  );
   const isEditingExisting = Boolean(loadedEntity);
 
   const idPrefix = entityTypeOptions.find(option => option.value === entityType)?.prefix ?? "research";
@@ -374,6 +379,11 @@ export default function EntityCreatePage() {
 
   useEffect(() => {
     if (entityId === "new") {
+      if (copiedEntity) {
+        fillFormFromStoredEntity(copiedEntity, {asCopy: true});
+        return;
+      }
+
       resetFormForNewEntity({
         name: draftName,
         description: draftDescription,
@@ -388,7 +398,7 @@ export default function EntityCreatePage() {
     }
 
     fillFormFromStoredEntity(storedEntity);
-  }, [draftDescription, draftName, entityId]);
+  }, [copiedEntity, draftDescription, draftName, entityId]);
 
   const entityPreview = useMemo(() => (
     createPreview({
@@ -411,7 +421,7 @@ export default function EntityCreatePage() {
       effectRows,
       requirementRows,
       buildRequirementRows,
-      baseDefinition: loadedEntity?.definition ?? null,
+      baseDefinition: loadedEntity?.definition ?? copiedEntity?.definition ?? null,
     })
   ), [
     buildRequirementRows,
@@ -432,6 +442,7 @@ export default function EntityCreatePage() {
     requiredSourceSpriteRows,
     requirementRows,
     loadedEntity,
+    copiedEntity,
     upkeepValueRows,
     vector,
   ]);
@@ -515,6 +526,9 @@ export default function EntityCreatePage() {
           <h1 className={s.title}>{isEditingExisting ? `Edit ${entityId}` : "Create entity"}</h1>
           {entityId !== "new" && !loadedEntity && (
             <p className={s.subtitle}>No stored entity found for {entityId}; using the id as a draft.</p>
+          )}
+          {entityId === "new" && copyFromEntityId && !copiedEntity && (
+            <p className={s.subtitle}>No stored entity found for {copyFromEntityId}; starting with a blank draft.</p>
           )}
         </header>
 
@@ -1025,7 +1039,7 @@ export default function EntityCreatePage() {
         buildRequirementRows,
         visualAssetId: effectiveVisualAssetId,
         projectileVisualAssetId: effectiveProjectileVisualAssetId,
-        baseDefinition: loadedEntity?.definition ?? null,
+        baseDefinition: loadedEntity?.definition ?? copiedEntity?.definition ?? null,
       });
       const response = await fetch(`${localDataServerUrl}/entities`, {
         method: "POST",
@@ -1126,14 +1140,16 @@ export default function EntityCreatePage() {
     setBuildRequirementRows([]);
   }
 
-  function fillFormFromStoredEntity(storedEntity: StoredEntityLookup) {
+  function fillFormFromStoredEntity(storedEntity: StoredEntityLookup, options?: {asCopy?: boolean}) {
     const definition = storedEntity.definition;
+    const itemName = definition.id.split(".").at(-1) ?? "newEntity";
+    const displayName = definition.name ?? titleFromIdPart(definition.id);
     setEntityType(storedEntity.entityType);
     setVector(storedEntity.vector);
     setPartType(definition.slot ?? "launchSystem");
     setIsSuperstructure(definition.kind === "superstructure");
-    setItemName(definition.id.split(".").at(-1) ?? "newEntity");
-    setDisplayName(definition.name ?? titleFromIdPart(definition.id));
+    setItemName(options?.asCopy ? `${itemName}Copy` : itemName);
+    setDisplayName(options?.asCopy ? `${displayName} Copy` : displayName);
     setDescription(definition.summary ?? definition.description ?? "");
     setHint(definition.hint ?? "");
     setRequiredBuildingRows(createBuildingIdRows(

@@ -176,6 +176,13 @@ export const neutralBadge = style({
   fontWeight: 700,
 });
 
+export const actionLinks = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "5px",
+  whiteSpace: "nowrap",
+});
+
 export const editLink = style({
   display: "inline-flex",
   alignItems: "center",

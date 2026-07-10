@@ -32,6 +32,7 @@ import type {WallResolution} from "../../models/city/Wall.ts";
 import {selectTechnologyHomogeneousEntities} from "../research/selectors.ts";
 import {selectGlobalModifierHomogeneousEntities} from "../globalEvents/selectors.ts";
 import type {GlobalModifierApplyContext} from "../../models/globalEvents.ts";
+import type {HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 
 export {selectCityResolution};
 
@@ -207,11 +208,16 @@ function createTowerEntities(
     const towerEntities = cityResolution.resolvedWallSegments.filter((entity) => (
         entity.entityType === "wallSuperstructure"
         && (entity.keywords ?? []).includes(String(BUILDING_TYPES.tower))
-        && !hasTowerScopedContribution(entity)
     ));
 
     return resolvedTowers.map(({tower, resolved}, index) => {
         const wallTowerEntity = towerEntities[index];
+        const wallTowerContributions = wallTowerEntity
+            ? getTowerScopedContributions(wallTowerEntity)
+            : [];
+        const wallTowerDerivedValues = wallTowerEntity?.derivedValues?.filter((contribution) => (
+            contribution.valueId.startsWith("tower.")
+        )) ?? [];
 
         return {
             id: getTowerEntityId(tower.id),
@@ -220,19 +226,30 @@ function createTowerEntities(
             cellKey: wallTowerEntity?.cellKey,
             column: wallTowerEntity?.column,
             row: wallTowerEntity?.row,
-            keywords: [...resolved.keywords],
-            values: resolved.values,
-            derivedValues: resolved.derivedValues,
-            effects: resolved.effects,
+            keywords: [...new Set([
+                ...(wallTowerEntity?.effectiveKeywords ?? []),
+                ...resolved.keywords,
+            ])],
+            values: [
+                ...wallTowerContributions,
+                ...resolved.values,
+            ],
+            derivedValues: [
+                ...wallTowerDerivedValues,
+                ...resolved.derivedValues,
+            ],
+            effects: [
+                ...(wallTowerEntity?.effects ?? []),
+                ...resolved.effects,
+            ],
         };
     });
 }
 
-function hasTowerScopedContribution(entity: HomogeneousResolvedEntity): boolean {
-    return (
-        entity.resolvedContributions.some((contribution) => contribution.valueId.startsWith("tower."))
-        || (entity.derivedValues ?? []).some((contribution) => contribution.valueId.startsWith("tower."))
-    );
+function getTowerScopedContributions(entity: HomogeneousResolvedEntity): HomogeneousValueEffect[] {
+    return entity.resolvedContributions.filter((contribution) => (
+        contribution.valueId.startsWith("tower.")
+    ));
 }
 
 function collectWallZoneDotKeywords(
@@ -284,6 +301,15 @@ function applyEffectiveTowerEntity(
         effectiveKeywords,
     );
     const damageProfiles = createTowerDamageProfiles(stats, effectiveKeywords, contributions);
+    const warnings = resolvedTower.warnings.filter((warning) => warning.kind !== "overweight");
+
+    if (stats.weight > stats.maximumWeight) {
+        warnings.push({
+            id: "overweight",
+            kind: "overweight",
+            message: `Tower weight ${stats.weight.toFixed(0)} exceeds supported weight ${stats.maximumWeight.toFixed(0)}.`,
+        });
+    }
 
     return {
         ...resolvedTower,
@@ -292,6 +318,7 @@ function applyEffectiveTowerEntity(
         supportCost,
         keywords: effectiveKeywords,
         homogeneousResolvedValues: resolvedValues,
+        warnings,
     };
 }
 

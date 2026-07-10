@@ -99,7 +99,6 @@
   },
   {
     "id": "research.nature.livingWood",
-    "parentId": "research.nature.threes",
     "name": "Living wood",
     "summary": "Certain sorts of trees grow incredibly fast and it feels like they follow commands.",
     "requirements": [
@@ -108,10 +107,12 @@
         "technologyId": "research.nature.threes"
       },
       {
-        "type": "homogeneousValueAtLeast",
-        "valueId": "resource.plants",
-        "amount": 2
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.livingWoodSaplings"
       }
+    ],
+    "keywords": [
+      "nature"
     ]
   },
   {
