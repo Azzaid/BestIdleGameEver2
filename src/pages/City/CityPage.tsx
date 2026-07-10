@@ -6,6 +6,7 @@ import {BuildingSelector} from "./Components/BuildingSelector/BuildingSelector.t
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {
+    selectCityExpansionOptions,
     selectBuiltStructureIds,
     selectAllCityHexes,
     selectCityBiome,
@@ -20,6 +21,7 @@ import {
     demolishHex,
     demolishWallTop,
     buildMultistructure,
+    expandCitySide,
 } from "../../store/city/slice.ts";
 import {UPKEEP_SPRITES, UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
@@ -38,7 +40,7 @@ import {
     getHomogeneousProductionContributions,
     getHomogeneousRequirementContributions,
 } from "../../models/homogeneousValueHelpers.ts";
-import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
+import {getHomogeneousValueDefinition, HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {HomogeneousActiveModifier} from "../../models/homogeneousValueResolution.ts";
 import {getUpkeepValues, normalizeMultiplier, resolveHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
@@ -59,12 +61,21 @@ import {
     selectVisibleWallSuperstructureIds,
 } from "../../store/unlocks/selectors.ts";
 import {areRequirementsMet, getUnmetRequirements, type Requirement} from "../../models/progression/requirements.ts";
+import {ConfirmationModal} from "../../components/ConfirmationModal.tsx";
+import {sendNotification} from "../../lib/notifications/eventBus.ts";
+import {enqueueGlobalSignal} from "../../store/globalEvents/slice.ts";
+import {SIGNATURE_PER_HEX} from "../../data/constants.ts";
+import type {CityExpansionOption, CityExpansionSideId} from "../../models/city/expansion.ts";
+import {selectIsDebugModeEnabled} from "../../store/debug/selectors.ts";
 
 const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise controlled territory in battle before building.";
+const EXPAND_BLOCK_REASON = "The city is besieged. Raise controlled territory in battle before expanding.";
+const EXPAND_WARNING = "City grows bigger, more noticeable and attracts more monsters";
 
 const CityPage = () => {
     const dispatch = useTypedDispatch();
     const allHexes = useTypedSelector(selectAllCityHexes);
+    const cityExpansionOptions = useTypedSelector(selectCityExpansionOptions);
     const hexes = useTypedSelector(selectCityHexes);
     const cityBiome = useTypedSelector(selectCityBiome);
     const cityBuildings = useTypedSelector(selectCityBuildings);
@@ -82,7 +93,9 @@ const CityPage = () => {
     const visibleWallSuperstructureIds = useTypedSelector(selectVisibleWallSuperstructureIds);
     const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
     const activeGlobalModifiers = useTypedSelector(selectActiveGlobalModifiers);
+    const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const [selectedHex, setSelectedHex] = useState<HexCell | null>(null);
+    const [confirmingExpansionSide, setConfirmingExpansionSide] = useState<CityExpansionSideId | null>(null);
     const [globalEffectsOpen, setGlobalEffectsOpen] = useState(false);
     const selectHex = (hex: HexCell) => {
         const selectedCoreHex = hex.partOfStructureId
@@ -156,6 +169,21 @@ const CityPage = () => {
         () => getUnavailableWallBuildingReasons(WALL_TOWER_BUILDINGS, unlockedWallSuperstructureIdSet, requirementResolutionData),
         [requirementResolutionData, unlockedWallSuperstructureIdSet],
     );
+    const selectedExpansionOption = confirmingExpansionSide
+        ? cityExpansionOptions.find(option => option.side.id === confirmingExpansionSide)
+        : undefined;
+    const getExpansionDisabledReason = (option: CityExpansionOption) => {
+        if (isDebugModeEnabled) return undefined;
+        if (signatureStatus.isBesieged) return EXPAND_BLOCK_REASON;
+        if (option.addedHexCount === 0) return "No claimable land remains on this side.";
+
+        const requiredTerritory = getExpansionRequiredTerritory(cityResolution, option.addedHexCount);
+        if (signatureStatus.controlledTerritory < requiredTerritory) {
+            return `Requires controlled territory ${formatHomogeneousValue(HOMOGENEOUS_VALUE_IDS.cityControlledTerritory, requiredTerritory)}.`;
+        }
+
+        return undefined;
+    };
 
     const handleBuildingSelect = (buildingKey: string, developmentVector: DevelopmentVectorValue) => {
         if (!selectedHex || signatureStatus.isBesieged) return;
@@ -235,6 +263,19 @@ const CityPage = () => {
         dispatch(buildMultistructure({ coreCellKey, structureId }));
     };
 
+    const handleExpandConfirm = () => {
+        if (!selectedExpansionOption || getExpansionDisabledReason(selectedExpansionOption)) return;
+
+        dispatch(expandCitySide({sideId: selectedExpansionOption.side.id}));
+        dispatch(enqueueGlobalSignal({type: "cityExpanded"}));
+        setConfirmingExpansionSide(null);
+        sendNotification({
+            title: "City Expanded",
+            message: EXPAND_WARNING,
+            scheme: "warning",
+        });
+    };
+
     const selectedBuilding = selectedHex ? cityBuildings.get(selectedHex.cellKey) : undefined;
     const selectedResolvedEntity = selectedHex
         ? cityResolution.resolvedHexes.find(entity => (
@@ -260,7 +301,15 @@ const CityPage = () => {
         <div className={s.cityPage}>
             <div className={s.cityViewport}>
                 <div className={s.cityContainer}>
-                    <CityHex cells={allHexes} biome={cityBiome} onSelect={selectHex}/>
+                    <CityHex
+                        cells={allHexes}
+                        biome={cityBiome}
+                        expansionOptions={cityExpansionOptions}
+                        getExpansionDisabledReason={getExpansionDisabledReason}
+                        showDebugAxes={isDebugModeEnabled}
+                        onExpandSide={setConfirmingExpansionSide}
+                        onSelect={selectHex}
+                    />
                 </div>
             </div>
             <GlobalEffectsDrawer
@@ -317,9 +366,25 @@ const CityPage = () => {
                     }
                 </div>
             }
+            {selectedExpansionOption && (
+                <ConfirmationModal
+                    title="Expand City?"
+                    message={`${EXPAND_WARNING}. ${selectedExpansionOption.side.label} by ${selectedExpansionOption.addedHexCount} hexes.`}
+                    confirmLabel="Expand"
+                    onCancel={() => setConfirmingExpansionSide(null)}
+                    onConfirm={handleExpandConfirm}
+                />
+            )}
         </div>
     );
 };
+
+function getExpansionRequiredTerritory(
+    cityResolution: ReturnType<typeof selectTowerAwareCityResolution>,
+    addedHexCount: number,
+): number {
+    return cityResolution.effectiveSignature + SIGNATURE_PER_HEX * addedHexCount;
+}
 
 function GlobalEffectsDrawer({
     activeGlobalModifiers,

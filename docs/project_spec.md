@@ -338,8 +338,9 @@ Building data convention:
 City view implementation:
 
 - The City page renders an SVG hex map.
-- City state stores the full generated map, including two unclaimed rings around the claimed city. Unclaimed cells are identified with `isUnclaimed`; selectors expose claimed-only hexes for upkeep, wall, battle, and progression calculations.
+- City state stores the full generated map through the site's maximum cell radius plus reveal padding. Unclaimed cells are identified with `isUnclaimed`; selectors expose claimed-only hexes for upkeep, wall, battle, and progression calculations.
 - Each city has a maximum cell radius determined when it is created. The current implementation sets it from the `maxCitySize` constant and precomputes a coherent terrain vector map through `maxCitySize + 2`.
+- City expansion is side-based: city state stores the last claimed radius for each big-hex side (`east`, `southEast`, `southWest`, `west`, `northWest`, `northEast`), and the SVG map renders one semi-transparent arrow over each claimable unclaimed side strip. Confirming an arrow increments that side's stored radius and claims that side's sector of the next big-hex ring, so radius 2 claims 3 cells, radius 3 claims 4 cells, and so on. Neighboring side radii do not move until their own side is expanded. Only the top wall side can move the top frontier upward; other side expansions skip candidate cells above the current wall frontier. A side arrow is disabled while besieged, when no claimable strip remains, or when controlled territory is below the projected post-expansion city signature.
 - Normal city hexes use city building data.
 - The top hex row is reserved for wall hexes and uses the wall build catalog.
 - Wall hexes have separate wall-segment and wall-top slots. Wall segments are replaced in place: the current segment is hidden from the wall list, choosing a different segment increases city footprint as if the previous segment were demolished. Wall-top occupants follow the city-building rebuild rule: a tower mount or wall superstructure must be demolished before another wall-top detail can be built.

@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {sendNotification} from "../lib/notifications/eventBus.ts";
-import {expandCityRadius, resetCityForMigration} from "../store/city/slice.ts";
+import {resetCityForMigration} from "../store/city/slice.ts";
 import {selectGlobalSignalRequirementSnapshot} from "../store/globalEvents/selectors.ts";
 import {enqueueGlobalSignal} from "../store/globalEvents/slice.ts";
 import {useTypedDispatch, useTypedSelector} from "../store/hooks.ts";
@@ -8,35 +8,16 @@ import {selectCitySignatureStatus, selectGlobalModifierApplyContext} from "../st
 import {resetWallForMigration} from "../store/wall/slice.ts";
 import {ConfirmationModal} from "./ConfirmationModal.tsx";
 import * as s from "./CityExpansionControl.css.ts";
-import {selectCanExpandCityRadius, selectCityMaxCellRadius} from "../store/city/selectors.ts";
 
 const EXPAND_BLOCK_REASON = "The city is besieged. Raise controlled territory in battle before expanding.";
-const EXPAND_MAX_REASON = "This settlement has reached its maximum city size.";
-const EXPAND_WARNING = "City grows bigger, more noticeable and attracts more monsters";
 const EXODUS_MESSAGE = "Are you ready to abandon city and move on in search for a better place?";
 
 export function CityExpansionControl() {
     const dispatch = useTypedDispatch();
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
-    const canExpandCityRadius = useTypedSelector(selectCanExpandCityRadius);
-    const maxCellRadius = useTypedSelector(selectCityMaxCellRadius);
     const modifierContext = useTypedSelector(selectGlobalModifierApplyContext);
     const requirementSnapshot = useTypedSelector(selectGlobalSignalRequirementSnapshot);
-    const [isConfirming, setIsConfirming] = useState(false);
     const [isConfirmingExodus, setIsConfirmingExodus] = useState(false);
-
-    const handleExpandConfirm = () => {
-        if (!canExpandCityRadius) return;
-
-        dispatch(expandCityRadius());
-        dispatch(enqueueGlobalSignal({type: "cityExpanded"}));
-        setIsConfirming(false);
-        sendNotification({
-            title: "City Expanded",
-            message: EXPAND_WARNING,
-            scheme: "warning",
-        });
-    };
 
     const handleExodusConfirm = () => {
         dispatch(enqueueGlobalSignal({
@@ -59,25 +40,9 @@ export function CityExpansionControl() {
             scheme: "warning",
         });
     };
-    const expandDisabled = signatureStatus.isBesieged || !canExpandCityRadius;
-    const expandTitle = signatureStatus.isBesieged
-        ? EXPAND_BLOCK_REASON
-        : !canExpandCityRadius
-            ? EXPAND_MAX_REASON
-            : undefined;
-
     return (
         <>
             <div className={s.controlGroup}>
-                <button
-                    className={s.expandButton}
-                    type="button"
-                    disabled={expandDisabled}
-                    title={expandTitle}
-                    onClick={() => setIsConfirming(true)}
-                >
-                    Expand City
-                </button>
                 <button
                     className={s.exodusButton}
                     type="button"
@@ -88,15 +53,6 @@ export function CityExpansionControl() {
                     Exodus
                 </button>
             </div>
-            {isConfirming && (
-                <ConfirmationModal
-                    title="Expand City?"
-                    message={`${EXPAND_WARNING}. Maximum city size: ${maxCellRadius}.`}
-                    confirmLabel="Expand"
-                    onCancel={() => setIsConfirming(false)}
-                    onConfirm={handleExpandConfirm}
-                />
-            )}
             {isConfirmingExodus && (
                 <ConfirmationModal
                     title="Exodus?"

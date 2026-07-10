@@ -8,10 +8,20 @@ export interface CityBattlefieldState {
     detailSeed: number;
 }
 
+export interface CityFrontierRadii {
+    east: number;
+    southEast: number;
+    southWest: number;
+    west: number;
+    northWest: number;
+    northEast: number;
+}
+
 export interface CityState {
     hexes: HexCell[],
     cellRadius: number,
     maxCellRadius: number,
+    frontiers: CityFrontierRadii,
     terrainVectorMap: CityTerrainVectorMap,
     cityFootprint: number,
     builtStructureIds: string[],

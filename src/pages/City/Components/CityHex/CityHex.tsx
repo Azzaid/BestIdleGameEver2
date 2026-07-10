@@ -20,6 +20,7 @@ import {BUILDINGS_ATLAS, STRUCTURES_BY_ID} from "../../../../data/buildings/inde
 import {WALL_SEGMENT_BUILDINGS} from "../../../../data/wallSegments/index.ts";
 import {WALL_TOWER_BUILDINGS} from "../../../../data/wallSuperstructures/index.ts";
 import {CITY_HEX_SIZE} from "../../../../data/constants.ts";
+import type {CityExpansionOption, CityExpansionSideId} from "../../../../models/city/expansion.ts";
 
 const HEX_RADIUS_PX = CITY_HEX_SIZE / Math.sqrt(3);
 const HEX_STROKE_WIDTH = 3;
@@ -32,6 +33,8 @@ const SPRITE_HEIGHT = spriteSide;
 const HEX_BACKGROUND_PADDING = 1.04;
 const HEX_BACKGROUND_WIDTH = hexWidth * HEX_BACKGROUND_PADDING;
 const HEX_BACKGROUND_HEIGHT = HEX_RADIUS_PX * 2 * HEX_BACKGROUND_PADDING;
+const EXPANSION_ARROW_HALF_WIDTH = hexWidth;
+const EXPANSION_ARROW_HALF_HEIGHT = HEX_RADIUS_PX / 2;
 const UNCLAIMED_LAND_SHADE_OPACITY = 0.5;
 const OUTER_UNCLAIMED_LAND_SHADE_OPACITY = 0.75;
 const INITIAL_ZOOM_FACTOR = 1.35;
@@ -77,10 +80,18 @@ type Bounds = {
 export default function CityHex({
                                              cells,
                                              biome,
+                                             expansionOptions=[],
+                                             getExpansionDisabledReason,
+                                             onExpandSide,
+                                             showDebugAxes=false,
                                     onSelect=()=>{}
                                          }: {
     cells: HexCell[];
     biome: CityBiome;
+    expansionOptions?: readonly CityExpansionOption[];
+    getExpansionDisabledReason?: (option: CityExpansionOption) => string | undefined;
+    onExpandSide?: (sideId: CityExpansionSideId) => void;
+    showDebugAxes?: boolean;
     onSelect?: (cell: HexCell) => void;
 }) {
     // Precompute geometry
@@ -163,6 +174,14 @@ export default function CityHex({
     );
     const selectedOutlineKey = selectedPreparedCell ? getOutlineKey(selectedPreparedCell) : null;
     const hoveredOutlineKey = hoveredPreparedCell ? getOutlineKey(hoveredPreparedCell) : null;
+    const expansionControls = useMemo(
+        () => getExpansionControls(expansionOptions, preparedCells),
+        [expansionOptions, preparedCells],
+    );
+    const debugAxisLines = useMemo(
+        () => getDebugAxisLines(preparedCells),
+        [preparedCells],
+    );
 
     const viewExtent = getViewExtent(viewBounds);
     const viewBoxX = -viewExtent;
@@ -683,8 +702,162 @@ export default function CityHex({
                     color="#57d77a"
                     layerKey="selected"
                 />
+                {showDebugAxes && (
+                    <DebugAxisOverlay axisLines={debugAxisLines} />
+                )}
+                {onExpandSide && expansionControls.map((control) => {
+                    const disabledReason = getExpansionDisabledReason?.(control.option);
+                    const disabled = Boolean(disabledReason);
+
+                    return (
+                        <g
+                            key={control.option.side.id}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={disabled}
+                            aria-label={control.option.side.label}
+                            transform={`translate(${control.centerX} ${control.centerY})`}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                if (!disabled) onExpandSide(control.option.side.id);
+                            }}
+                            onKeyDown={(event) => {
+                                if (disabled || (event.key !== "Enter" && event.key !== " ")) return;
+                                event.preventDefault();
+                                onExpandSide(control.option.side.id);
+                            }}
+                            style={{cursor: disabled ? "not-allowed" : "pointer"}}
+                        >
+                            <title>
+                                {disabledReason ?? `${control.option.side.label} by ${control.option.addedHexCount} hexes`}
+                            </title>
+                            <g opacity={disabled ? 0.22 : 0.68}>
+                                <path
+                                    d={`M 0 ${-EXPANSION_ARROW_HALF_HEIGHT} L ${EXPANSION_ARROW_HALF_WIDTH} ${EXPANSION_ARROW_HALF_HEIGHT} L ${-EXPANSION_ARROW_HALF_WIDTH} ${EXPANSION_ARROW_HALF_HEIGHT} Z`}
+                                    transform={`rotate(${control.rotationDegrees})`}
+                                    fill="#d8f4ff"
+                                    stroke="#142a33"
+                                    strokeWidth="2"
+                                    vectorEffect="non-scaling-stroke"
+                                />
+                                <text
+                                    y="5"
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                    fill="#071014"
+                                    fontSize="9"
+                                    fontWeight="800"
+                                    style={{pointerEvents: "none"}}
+                                >
+                                    {control.option.addedHexCount}
+                                </text>
+                            </g>
+                        </g>
+                    );
+                })}
             </g>
         </svg>
+    );
+}
+
+function getExpansionControls(
+    expansionOptions: readonly CityExpansionOption[],
+    preparedCells: readonly PreparedHexCell[],
+) {
+    const preparedCellsByKey = new Map(preparedCells.map(cell => [cell.cellKey, cell]));
+
+    return expansionOptions.flatMap(option => {
+        if (option.addedHexCount === 0) return [];
+        const claimCells = option.boundaryHexes
+            .map(hex => preparedCellsByKey.get(hex.cellKey))
+            .filter((hex): hex is PreparedHexCell => Boolean(hex));
+        if (claimCells.length === 0) return [];
+
+        const arrowPosition = axialCoordinateToPixelPosition(
+            option.arrowCoordinate,
+            HEX_RADIUS_PX,
+            HEX_EDGE_GAP_PX,
+        );
+
+        return [{
+            option,
+            centerX: arrowPosition.x,
+            centerY: arrowPosition.y,
+            rotationDegrees: option.side.rotationDegrees,
+        }];
+    });
+}
+
+function getDebugAxisLines(preparedCells: readonly PreparedHexCell[]) {
+    const axisRange = Math.max(
+        2,
+        ...preparedCells.map(cell => axialDistance({column: 0, row: 0}, cell) + 1),
+    );
+    const axes = [
+        {
+            id: "x",
+            label: "x",
+            color: "#ff5656",
+            start: {column: -axisRange, row: 0},
+            end: {column: axisRange, row: 0},
+        },
+        {
+            id: "z",
+            label: "z",
+            color: "#57a8ff",
+            start: {column: 0, row: -axisRange},
+            end: {column: 0, row: axisRange},
+        },
+        {
+            id: "y",
+            label: "y",
+            color: "#65e07d",
+            start: {column: -axisRange, row: axisRange},
+            end: {column: axisRange, row: -axisRange},
+        },
+    ] as const;
+
+    return axes.map(axis => ({
+        ...axis,
+        startPoint: axialCoordinateToPixelPosition(axis.start, HEX_RADIUS_PX, HEX_EDGE_GAP_PX),
+        endPoint: axialCoordinateToPixelPosition(axis.end, HEX_RADIUS_PX, HEX_EDGE_GAP_PX),
+    }));
+}
+
+function DebugAxisOverlay({
+    axisLines,
+}: {
+    axisLines: ReturnType<typeof getDebugAxisLines>;
+}) {
+    return (
+        <g pointerEvents="none">
+            {axisLines.map(axis => (
+                <g key={axis.id}>
+                    <line
+                        x1={axis.startPoint.x}
+                        y1={axis.startPoint.y}
+                        x2={axis.endPoint.x}
+                        y2={axis.endPoint.y}
+                        stroke={axis.color}
+                        strokeWidth={2}
+                        strokeDasharray="8 5"
+                        vectorEffect="non-scaling-stroke"
+                    />
+                    <text
+                        x={axis.endPoint.x}
+                        y={axis.endPoint.y}
+                        dx={6}
+                        dy={-6}
+                        fill={axis.color}
+                        fontSize={12}
+                        fontWeight={800}
+                        style={{paintOrder: "stroke", stroke: "#050508", strokeWidth: 3}}
+                    >
+                        {axis.label}
+                    </text>
+                </g>
+            ))}
+        </g>
     );
 }
 

@@ -4,6 +4,7 @@ import {placeCityBuildings, resolveCityUpkeepAndSignature} from "../../pages/Cit
 import {STRUCTURES} from "../../data/buildings/index.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
 import type {CityResolution} from "../../models/city/Adjancency.ts";
+import {getCityExpansionOptions} from "../../models/city/expansion.ts";
 
 export const selectAllCityHexes = (state: RootState) => state.city.hexes;
 
@@ -16,9 +17,19 @@ export const selectCityCellRadius = (state: RootState) => state.city.cellRadius;
 
 export const selectCityMaxCellRadius = (state: RootState) => state.city.maxCellRadius;
 
+export const selectCityFrontiers = createSelector(
+    [(state: RootState) => state.city.frontiers],
+    (frontiers) => frontiers,
+);
+
 export const selectCanExpandCityRadius = createSelector(
     [selectCityCellRadius, selectCityMaxCellRadius],
     (cellRadius, maxCellRadius) => cellRadius < maxCellRadius
+);
+
+export const selectCityExpansionOptions = createSelector(
+    [selectAllCityHexes, selectCityMaxCellRadius, selectCityFrontiers],
+    (hexes, maxCellRadius, frontiers) => getCityExpansionOptions(hexes, maxCellRadius, frontiers),
 );
 
 export const selectCityFootprint = (state: RootState) => state.city.cityFootprint;

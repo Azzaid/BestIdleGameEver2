@@ -108,7 +108,7 @@ It must be acquired through expansion.
 
 # Expansion
 
-Expansion increases city size.
+Expansion increases city size one side at a time.
 
 The player gains:
 
@@ -162,13 +162,19 @@ The city cannot safely grow beyond its ability to defend itself.
 
 ---
 
-# City Radius
+# City Shape
 
-The city expands outward from its center.
+The city expands across its hex map by increasing one stored side radius.
 
-Each expansion increases radius.
+The city map renders six semi-transparent side arrows over claimable unclaimed strips.
 
-As radius increases:
+Each arrow claims that side's sector of the next big-hex ring. If a side's next radius is 2, 3, or 4, it claims 3, 4, or 5 cells respectively. The last claimed radius is stored per side, so neighboring sides do not drift after another side expands.
+
+Only the top wall side can move the top frontier upward. Other side expansions skip candidate cells above the current wall frontier.
+
+An arrow is disabled when no claimable strip remains, when the city is besieged, or when controlled territory is below the projected post-expansion city signature.
+
+As the controlled shape grows:
 
 - available land grows;
 - perimeter grows;

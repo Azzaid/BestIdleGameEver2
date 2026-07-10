@@ -26,6 +26,14 @@ import {
     getTerrainVectorMapKey,
     type CityTerrainVectorMap,
 } from "../../models/city/terrainVectors.ts";
+import {
+    getAxialCoordinateKey,
+    getAxialDistance,
+    getCityExpansionOptions,
+    getExpandedCityFrontiers,
+    getInitialCityFrontiers,
+    type CityExpansionSideId,
+} from "../../models/city/expansion.ts";
 
 const UNCLAIMED_REVEAL_RING_COUNT = 2;
 
@@ -67,7 +75,7 @@ const getInitialHexes = ((
             generatedCells.push({
                 column,
                 row,
-                cellKey: getTerrainVectorMapKey({column, row}),
+                cellKey: getAxialCoordinateKey({column, row}),
                 isUnclaimed,
                 kind: isWall ? "wall" : "city",
                 buildingKey: null,
@@ -83,6 +91,52 @@ const getInitialHexes = ((
     }
     return generatedCells;
 })
+
+const getGeneratedHexes = (
+    existingHexes: HexCell[],
+    mapRadius: number,
+    biome: CityBiome,
+    terrainVectorMap: CityTerrainVectorMap,
+) => {
+    const existingByKey = new Map(existingHexes.map(hex => [hex.cellKey, hex]));
+    const generatedCells: HexCell[] = [];
+
+    for (let column = -mapRadius; column <= mapRadius; column++) {
+        const rowMin = Math.max(-mapRadius, -column - mapRadius);
+        const rowMax = Math.min(mapRadius, -column + mapRadius);
+
+        for (let row = rowMin; row <= rowMax; row++) {
+            const cellKey = getAxialCoordinateKey({column, row});
+            const existingHex = existingByKey.get(cellKey);
+
+            if (existingHex) {
+                generatedCells.push(existingHex);
+                continue;
+            }
+
+            const terrainVector = terrainVectorMap[getTerrainVectorMapKey({column, row})] ?? DEVELOPMENT_VECTORS.medieval;
+            const background = getTerrainBackground(biome, true, terrainVector);
+
+            generatedCells.push({
+                column,
+                row,
+                cellKey,
+                isUnclaimed: true,
+                kind: "city",
+                buildingKey: null,
+                developmentVector: DEVELOPMENT_VECTORS.medieval,
+                backgroundSpriteId: background.backgroundSpriteId,
+                backgroundDevelopmentVector: background.backgroundDevelopmentVector,
+                wallKey: null,
+                wallDevelopmentVector: undefined,
+                wallTopKey: null,
+                wallTopDevelopmentVector: undefined,
+            });
+        }
+    }
+
+    return generatedCells;
+};
 
 const getResizedHexes = (
     existingHexes: HexCell[],
@@ -108,12 +162,6 @@ const getResizedHexes = (
     });
 }
 
-function getAxialDistance(a: {column: number; row: number}, b: {column: number; row: number}): number {
-    const deltaColumn = a.column - b.column;
-    const deltaRow = a.row - b.row;
-    return (Math.abs(deltaColumn) + Math.abs(deltaRow) + Math.abs(deltaColumn + deltaRow)) / 2;
-}
-
 const getStructurePartHexKeys = (hexes: HexCell[], targetHex: HexCell): string[] => {
     if (targetHex.kind !== "city" || !targetHex.partOfStructureId) return [];
 
@@ -137,11 +185,18 @@ const getDemolishedHexKeys = (hexes: HexCell[], targetHex: HexCell): string[] =>
 
 const getInitialState = (biome: CityBiome): CityState => {
     const terrainVectorMap = createCityTerrainVectorMap(maxCitySize + UNCLAIMED_REVEAL_RING_COUNT);
+    const frontiers = getInitialCityFrontiers(INITIAL_CITY_CELL_RADIUS);
 
     return {
-        hexes: getInitialHexes(INITIAL_CITY_CELL_RADIUS, biome, terrainVectorMap),
+        hexes: getGeneratedHexes(
+            getInitialHexes(INITIAL_CITY_CELL_RADIUS, biome, terrainVectorMap),
+            maxCitySize + UNCLAIMED_REVEAL_RING_COUNT,
+            biome,
+            terrainVectorMap,
+        ),
         cellRadius: INITIAL_CITY_CELL_RADIUS,
         maxCellRadius: maxCitySize,
+        frontiers,
         terrainVectorMap,
         cityFootprint: 0,
         builtStructureIds: [],
@@ -243,6 +298,7 @@ export const citySlice = createSlice({
         retreatCityRadius: (state) => {
             const nextRadius = Math.max(1, state.cellRadius - 1);
             state.cellRadius = nextRadius;
+            state.frontiers = getInitialCityFrontiers(nextRadius);
             state.hexes = getResizedHexes(state.hexes, nextRadius, state.biome, state.terrainVectorMap);
         },
         expandCityRadius: (state) => {
@@ -250,7 +306,61 @@ export const citySlice = createSlice({
             if (nextRadius === state.cellRadius) return;
 
             state.cellRadius = nextRadius;
+            state.frontiers = getInitialCityFrontiers(nextRadius);
             state.hexes = getResizedHexes(state.hexes, nextRadius, state.biome, state.terrainVectorMap);
+        },
+        expandCitySide: (state, action: PayloadAction<{sideId: CityExpansionSideId}>) => {
+            const option = getCityExpansionOptions(state.hexes, state.maxCellRadius, state.frontiers)
+                .find(option => option.side.id === action.payload.sideId);
+            if (!option || option.addedHexCount === 0) return;
+
+            const nextFrontiers = getExpandedCityFrontiers(state.frontiers, action.payload.sideId);
+            const expandedHexKeys = new Set(option.hexes.map(hex => hex.cellKey));
+            state.hexes.forEach(hex => {
+                if (!expandedHexKeys.has(hex.cellKey) || !hex.isUnclaimed) return;
+
+                const terrainVector = state.terrainVectorMap[hex.cellKey] ?? DEVELOPMENT_VECTORS.medieval;
+                Object.assign(hex, getTerrainBackground(state.biome, false, terrainVector));
+                hex.isUnclaimed = false;
+                hex.kind = "city";
+                hex.wallKey = null;
+                hex.wallDevelopmentVector = undefined;
+                hex.wallTopKey = null;
+                hex.wallTopDevelopmentVector = undefined;
+            });
+            state.frontiers = nextFrontiers;
+
+            const claimedHexes = state.hexes.filter(hex => !hex.isUnclaimed);
+            state.cellRadius = claimedHexes.reduce((radius, hex) => (
+                Math.max(radius, getAxialDistance(hex, {column: 0, row: 0}))
+            ), state.cellRadius);
+            const topRow = Math.min(...claimedHexes.map(hex => hex.row));
+
+            state.hexes.forEach(hex => {
+                if (hex.isUnclaimed) return;
+
+                if (hex.row === topRow) {
+                    hex.kind = "wall";
+                    hex.buildingKey = null;
+                    hex.spriteKey = null;
+                    hex.initialBuildingKey = null;
+                    hex.partOfStructureId = null;
+                    hex.structureCoreCellKey = null;
+                    hex.wallKey = hex.wallKey ?? walls.neutral.scrapBarricade;
+                    hex.wallDevelopmentVector = hex.wallDevelopmentVector ?? DEVELOPMENT_VECTORS.neutral;
+                    hex.wallTopKey = hex.column === 0 ? hex.wallTopKey ?? superstructures.neutral.oldStump : hex.wallTopKey ?? null;
+                    hex.wallTopDevelopmentVector = hex.wallTopKey ? hex.wallTopDevelopmentVector ?? DEVELOPMENT_VECTORS.neutral : undefined;
+                    return;
+                }
+
+                if (hex.kind === "wall") {
+                    hex.kind = "city";
+                    hex.wallKey = null;
+                    hex.wallDevelopmentVector = undefined;
+                    hex.wallTopKey = null;
+                    hex.wallTopDevelopmentVector = undefined;
+                }
+            });
         },
         demolishHex: (state, action: PayloadAction<{cellKey: string}>) => {
             const targetHex = state.hexes.find(hex => hex.cellKey === action.payload.cellKey);
@@ -299,6 +409,7 @@ export const {
     demolishWallTop,
     retreatCityRadius,
     expandCityRadius,
+    expandCitySide,
     recordSurvivedSiege,
     resetCityForMigration,
 } = citySlice.actions
