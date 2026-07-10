@@ -32,6 +32,7 @@ export type CityExpansionOption = {
     hexes: HexCell[];
     addedHexCount: number;
     arrowCoordinate: AxialCoordinate;
+    arrowRadius: number;
 };
 
 export function getCityExpansionOptions(
@@ -72,6 +73,7 @@ export function getCityExpansionOptions(
             hexes: completeCandidateHexes,
             addedHexCount: completeCandidateHexes.length,
             arrowCoordinate: getSideArrowCoordinate(side, nextRadius),
+            arrowRadius: nextRadius,
         };
     });
 }

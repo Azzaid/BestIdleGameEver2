@@ -35,6 +35,11 @@ const HEX_BACKGROUND_WIDTH = hexWidth * HEX_BACKGROUND_PADDING;
 const HEX_BACKGROUND_HEIGHT = HEX_RADIUS_PX * 2 * HEX_BACKGROUND_PADDING;
 const EXPANSION_ARROW_HALF_WIDTH = hexWidth;
 const EXPANSION_ARROW_HALF_HEIGHT = HEX_RADIUS_PX / 2;
+const MIN_EXPANSION_ARROW_SCALE = 0.56;
+const EXPANSION_ARROW_SCALE_PER_RADIUS = 0.14;
+const MAX_EXPANSION_ARROW_SCALE = 1.26;
+const AVAILABLE_EXPANSION_ARROW_OPACITY = 0.42;
+const DISABLED_EXPANSION_ARROW_OPACITY = 0.18;
 const UNCLAIMED_LAND_SHADE_OPACITY = 0.5;
 const OUTER_UNCLAIMED_LAND_SHADE_OPACITY = 0.75;
 const INITIAL_ZOOM_FACTOR = 1.35;
@@ -731,10 +736,10 @@ export default function CityHex({
                             <title>
                                 {disabledReason ?? `${control.option.side.label} by ${control.option.addedHexCount} hexes`}
                             </title>
-                            <g opacity={disabled ? 0.22 : 0.68}>
+                            <g opacity={disabled ? DISABLED_EXPANSION_ARROW_OPACITY : AVAILABLE_EXPANSION_ARROW_OPACITY}>
                                 <path
                                     d={`M 0 ${-EXPANSION_ARROW_HALF_HEIGHT} L ${EXPANSION_ARROW_HALF_WIDTH} ${EXPANSION_ARROW_HALF_HEIGHT} L ${-EXPANSION_ARROW_HALF_WIDTH} ${EXPANSION_ARROW_HALF_HEIGHT} Z`}
-                                    transform={`rotate(${control.rotationDegrees})`}
+                                    transform={`rotate(${control.rotationDegrees}) scale(${control.scale})`}
                                     fill="#d8f4ff"
                                     stroke="#142a33"
                                     strokeWidth="2"
@@ -784,8 +789,16 @@ function getExpansionControls(
             centerX: arrowPosition.x,
             centerY: arrowPosition.y,
             rotationDegrees: option.side.rotationDegrees,
+            scale: getExpansionArrowScale(option.arrowRadius),
         }];
     });
+}
+
+function getExpansionArrowScale(radius: number): number {
+    return Math.min(
+        MAX_EXPANSION_ARROW_SCALE,
+        MIN_EXPANSION_ARROW_SCALE + Math.max(0, radius - 2) * EXPANSION_ARROW_SCALE_PER_RADIUS,
+    );
 }
 
 function getDebugAxisLines(preparedCells: readonly PreparedHexCell[]) {
