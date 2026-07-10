@@ -1498,7 +1498,7 @@ function VisualAssetField(props: {
       ? {
         width: towerPartRenderedSize.width,
         height: towerPartRenderedSize.height,
-        transform: `rotate(${towerPartPreviewMetadata.rotationDegrees ?? 0}deg)`,
+        transform: `rotate(${towerPartPreviewMetadata?.rotationDegrees ?? 0}deg)`,
       }
     : undefined;
   const visibleOptions = props.options
