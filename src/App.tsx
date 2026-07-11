@@ -4,6 +4,7 @@ import {Provider} from "react-redux";
 import {store} from "./store";
 import { ThemeProvider } from './theme/ThemeProvider'
 import * as appTheme from './App.css.ts'
+import {AppErrorBoundary} from "./components/AppErrorBoundary.tsx";
 
 // Import page components
 import BattlePage from './pages/Battle/BattlePage'
@@ -229,9 +230,11 @@ function hasVerticalOverflow(element: HTMLElement) {
 function App() {
   return (
       <ThemeProvider initialTheme={'tech'}>
-          <Router>
-              <AppFrame />
-          </Router>
+          <AppErrorBoundary>
+              <Router>
+                  <AppFrame />
+              </Router>
+          </AppErrorBoundary>
       </ThemeProvider>
   )
 }

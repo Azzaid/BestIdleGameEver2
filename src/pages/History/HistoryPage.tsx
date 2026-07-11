@@ -2,7 +2,7 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import {ConfirmationModal} from "../../components/ConfirmationModal.tsx";
 import {GLOBAL_EVENTS} from "../../data/globalEvents/index.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
-import {clearPersistedState} from "../../store/persistence.ts";
+import {cleanSlateAndReload} from "../../store/cleanSlate.ts";
 import {
   selectForeseenGlobalEventIds,
   selectGlobalEventHistoryEntries,
@@ -55,11 +55,6 @@ export default function HistoryPage() {
     eventId,
     event: GLOBAL_EVENTS[eventId],
   }));
-
-  const cleanSlate = () => {
-    clearPersistedState();
-    window.location.reload();
-  };
 
   return (
     <section className={s.page}>
@@ -148,7 +143,7 @@ export default function HistoryPage() {
           title="Clean slate?"
           message="This will wipe the saved city and start again from an empty settlement. This cannot be undone."
           confirmLabel="Clean slate"
-          onConfirm={cleanSlate}
+          onConfirm={cleanSlateAndReload}
           onCancel={() => setIsCleanSlateConfirmationOpen(false)}
         />
       )}
