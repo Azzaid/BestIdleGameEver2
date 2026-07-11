@@ -37,6 +37,7 @@ import {
 } from "../../store/homogeneousValues/selectors.ts";
 import type { TowerAssemblyResolved } from "../../models/battle/towerParts.ts";
 import {createTowerDamageProfiles, resolveTowerAssemblyStatsAndSupport} from "../../models/battle/resolveTowerAssembly.ts";
+import {towerStatsToPixels} from "../../models/battle/towerStatsPixels.ts";
 import type { HomogeneousResolvedEntity } from "../../models/homogeneousValueResolution.ts";
 import {
     resolveEntityContributionsWithDerivedValues,
@@ -129,7 +130,7 @@ function createStandaloneTowerDefenses(
             id: entity.id,
             wallCellKey: entity.cellKey,
             wallColumn: entity.column,
-            stats,
+            stats: towerStatsToPixels(stats),
             damageProfiles,
             keywords,
             aimKeywords: ["closestToWall"],
@@ -187,7 +188,10 @@ const BattlePage = () => {
     const resolvedAvailableTowers = useTypedSelector(selectResolvedEffectiveAvailableTowers);
     const resolvedBattleTowersUnstable = useMemo(
         () => resolvedAvailableTowers
-            .map(({resolved}) => resolved)
+            .map(({resolved}) => ({
+                ...resolved,
+                stats: towerStatsToPixels(resolved.stats),
+            }))
             .filter((resolved) => resolved.warnings.length === 0),
         [resolvedAvailableTowers]
     );

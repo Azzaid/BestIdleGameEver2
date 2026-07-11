@@ -1,17 +1,20 @@
 import type {EnemyBlueprint, EnemyBlueprintAtlas} from "../../models/battle/enemyBlueprints.ts";
 import wastelandEnemyDefinitions from "./wasteland.json";
 import {ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY} from "./visuals.ts";
+import {toPixels} from "../constants.ts";
 
 type EnemyMovementKind = "standing" | "wallboundWobble" | "straight" | "randomLines" | "blink";
 
 type EnemyMovementDefinition = {
   kind: EnemyMovementKind;
-  speedPixelsPerSecond?: number;
-  wobbleAmplitudePixels?: number;
+  speedHexRadiusPerSecond?: number;
+  wobbleAmplitudeHexRadius?: number;
   sameTrajectoryTimeSeconds?: number;
 };
 
-type EnemyDefinition = Omit<EnemyBlueprint, "keywords" | "createMovement" | "createAttackMovement"> & {
+type EnemyDefinition = Omit<EnemyBlueprint, "keywords" | "createMovement" | "createAttackMovement" | "hitRadius" | "shotDistance"> & {
+  hitRadius: number;
+  shotDistance?: number;
   keywords: string[];
   movement?: EnemyMovementDefinition;
   attackMovement?: EnemyMovementDefinition;
@@ -33,6 +36,8 @@ function buildEnemies(definitions: readonly EnemyDefinition[]): Record<string, E
     definition.id,
     {
       ...definition,
+      hitRadius: toPixels(definition.hitRadius),
+      shotDistance: definition.shotDistance === undefined ? undefined : toPixels(definition.shotDistance),
       sprite: {
         ...definition.sprite,
         targetSpriteSize: ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[definition.sprite.textureKey]?.metadata?.targetSpriteSize,
@@ -58,10 +63,12 @@ function createMovement(
 
   const {
     kind,
-    speedPixelsPerSecond = 0,
-    wobbleAmplitudePixels = 0,
+    speedHexRadiusPerSecond = 0,
+    wobbleAmplitudeHexRadius = 0,
     sameTrajectoryTimeSeconds = 1,
   } = movementDefinition;
+  const speedPixelsPerSecond = toPixels(speedHexRadiusPerSecond);
+  const wobbleAmplitudePixels = toPixels(wobbleAmplitudeHexRadius);
 
   switch (kind) {
     case "standing":

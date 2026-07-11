@@ -6,7 +6,7 @@ import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
 import {getUpkeepValues, resolveCity} from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
-import {hexDistanceToCityPixels} from "../../data/constants.ts";
+import {toPixels} from "../../data/constants.ts";
 import type {
     HomogeneousCityEntityType,
     HomogeneousResolvedEntity,
@@ -85,12 +85,12 @@ export const selectWallResolution = createSelector(
         resolution.resilience = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0;
         resolution.camoLevel = Math.max(0, -(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.citySignature] ?? 0));
         resolution.ignoredThreat = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0;
-        resolution.pushBackDistance = hexDistanceToCityPixels(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackDistance] ?? 0);
+        resolution.pushBackDistance = toPixels(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackDistance] ?? 0);
         resolution.pushBacksPerSecond = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBacksPerSecond] ?? 0;
-        resolution.pushBackEffectZoneSize = hexDistanceToCityPixels(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackEffectZoneSize] ?? 0);
+        resolution.pushBackEffectZoneSize = toPixels(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackEffectZoneSize] ?? 0);
         resolution.zoneDotDamage = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage] ?? 0;
         resolution.zoneDotTicksPerSecond = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotTicksPerSecond] ?? 0;
-        resolution.zoneDotZoneSize = hexDistanceToCityPixels(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0);
+        resolution.zoneDotZoneSize = toPixels(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0);
         resolution.zoneDotKeywords = collectWallZoneDotKeywords(resolvedWallCity.resolvedWallSegments);
 
         return resolution;

@@ -1,5 +1,4 @@
 import {HOMOGENEOUS_VALUE_IDS} from "../data/homogeneousValues/index.ts";
-import {hexDistanceToCityPixels} from "../data/constants.ts";
 import {UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "./Upkeep.ts";
 import type {HomogeneousValueId} from "./homogeneousValues.ts";
 import type {TowerStatsResolved} from "./battle/towerParts.ts";
@@ -40,7 +39,7 @@ export function homogeneousValueTotalsToTowerStats(
     keywords: Set<string>,
 ): TowerStatsResolved {
     const distance = (valueId: HomogeneousValueId, fallback = 0) => (
-        hexDistanceToCityPixels(totals[valueId] ?? fallback)
+        totals[valueId] ?? fallback
     );
 
     return {

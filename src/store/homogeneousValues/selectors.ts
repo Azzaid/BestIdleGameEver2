@@ -1,6 +1,6 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
-import {hexDistanceToCityPixels} from "../../data/constants.ts";
+import {toPixels} from "../../data/constants.ts";
 import {resolveAetherAtmosphereFromTotals} from "../../models/city/aetherAtmosphereResolution.ts";
 import {createInitialHomogeneousValueTotals} from "../../models/homogeneousValueResolution.ts";
 import type {HomogeneousValueId, HomogeneousValueTotals} from "../../models/homogeneousValues.ts";
@@ -132,9 +132,9 @@ export const selectMonsterModifierValues = createSelector(
         hpMultiplier: totals[HOMOGENEOUS_VALUE_IDS.monsterHpMultiplier] ?? 1,
         speedFlat: totals[HOMOGENEOUS_VALUE_IDS.monsterSpeedFlat] ?? 0,
         speedMultiplier: totals[HOMOGENEOUS_VALUE_IDS.monsterSpeedMultiplier] ?? 1,
-        swayFlat: hexDistanceToCityPixels(totals[HOMOGENEOUS_VALUE_IDS.monsterSwayFlat] ?? 0),
+        swayFlat: toPixels(totals[HOMOGENEOUS_VALUE_IDS.monsterSwayFlat] ?? 0),
         swayMultiplier: totals[HOMOGENEOUS_VALUE_IDS.monsterSwayMultiplier] ?? 1,
-        threatDistanceFlat: hexDistanceToCityPixels(totals[HOMOGENEOUS_VALUE_IDS.monsterThreatDistanceFlat] ?? 0),
+        threatDistanceFlat: toPixels(totals[HOMOGENEOUS_VALUE_IDS.monsterThreatDistanceFlat] ?? 0),
         threatDistanceMultiplier: totals[HOMOGENEOUS_VALUE_IDS.monsterThreatDistanceMultiplier] ?? 1,
         regenAmountFlat: totals[HOMOGENEOUS_VALUE_IDS.monsterRegenAmountFlat] ?? 0,
         regenAmountMultiplier: totals[HOMOGENEOUS_VALUE_IDS.monsterRegenAmountMultiplier] ?? 1,

@@ -8,6 +8,7 @@ import {
 } from "../../data/enemies/visuals.ts";
 import type {EnemyKind} from "../../models/battle/enemy.ts";
 import type {EnemyVisualMetadata} from "../../models/battle/enemyVisualMetadata.ts";
+import {SpriteHexPreview} from "../../components/SpriteHexPreview.tsx";
 import * as s from "../EntityCreate/EntityCreatePage.css.ts";
 
 type MonsterRegion = "wasteland";
@@ -15,8 +16,8 @@ type MonsterMovementKind = "wallboundWobble" | "straight" | "randomLines" | "bli
 
 type MonsterMovementDefinition = {
   kind: MonsterMovementKind;
-  speedPixelsPerSecond: number;
-  wobbleAmplitudePixels?: number;
+  speedHexRadiusPerSecond: number;
+  wobbleAmplitudeHexRadius?: number;
   sameTrajectoryTimeSeconds?: number;
 };
 
@@ -63,14 +64,13 @@ type MonsterForm = {
   textureKey: string;
   sourceSpriteWidth: string;
   sourceSpriteHeight: string;
-  targetSpriteWidth: string;
-  targetSpriteHeight: string;
+  spriteZoom: string;
   rotationDegrees: string;
   swarmSize: string;
   swarmSizeMax: string;
   movementKind: MonsterMovementKind;
-  speedPixelsPerSecond: string;
-  wobbleAmplitudePixels: string;
+  speedHexRadiusPerSecond: string;
+  wobbleAmplitudeHexRadius: string;
   sameTrajectoryTimeSeconds: string;
 };
 
@@ -277,16 +277,24 @@ export default function MonsterEditPage() {
           <div className={s.grid}>
             <label className={s.field}>
               <span className={s.label}>Region</span>
-              <select className={s.input} value={form.region} onChange={event => updateForm("region", event.target.value as MonsterRegion)}>
-                {regionOptions.map(region => <option key={region} value={region}>{region}</option>)}
-              </select>
+              <SearchableSelect
+                value={form.region}
+                options={regionOptions.map(region => ({value: region, label: region}))}
+                placeholder="Search regions"
+                onChange={value => updateForm("region", value as MonsterRegion)}
+              />
             </label>
             <label className={s.field}>
               <span className={s.label}>Kind</span>
-              <select className={s.input} value={form.kind} onChange={event => updateForm("kind", event.target.value as EnemyKind)}>
-                <option value="melee">melee</option>
-                <option value="ranged">ranged</option>
-              </select>
+              <SearchableSelect
+                value={form.kind}
+                options={[
+                  {value: "melee", label: "melee"},
+                  {value: "ranged", label: "ranged"},
+                ]}
+                placeholder="Search kinds"
+                onChange={value => updateForm("kind", value as EnemyKind)}
+              />
             </label>
             <label className={`${s.field} ${s.fullWidth}`}>
               <span className={s.label}>Item name id part</span>
@@ -336,13 +344,7 @@ export default function MonsterEditPage() {
               </div>
             </label>
             <NumberField label="Rotation degrees" value={form.rotationDegrees} onChange={value => updateForm("rotationDegrees", value)} />
-            <label className={s.field}>
-              <span className={s.label}>Target size</span>
-              <span className={s.pairedFields}>
-                <input className={s.input} min={1} type="number" value={form.targetSpriteWidth} onChange={event => updateForm("targetSpriteWidth", event.target.value)} />
-                <input className={s.input} min={1} type="number" value={form.targetSpriteHeight} onChange={event => updateForm("targetSpriteHeight", event.target.value)} />
-              </span>
-            </label>
+            <NumberField label="Sprite zoom" value={form.spriteZoom} step="0.001" onChange={value => updateForm("spriteZoom", value)} />
             <label className={s.field}>
               <span className={s.label}>Source size</span>
               <span className={s.pairedFields}>
@@ -374,9 +376,9 @@ export default function MonsterEditPage() {
             <NumberField label="Pressure" value={form.pressure} onChange={value => updateForm("pressure", value)} />
             <NumberField label="Hit points" value={form.maxHitPoints} onChange={value => updateForm("maxHitPoints", value)} />
             <NumberField label="Armor" value={form.armor} onChange={value => updateForm("armor", value)} />
-            <NumberField label="Hit radius" value={form.hitRadius} onChange={value => updateForm("hitRadius", value)} />
+            <NumberField label="Hit radius (hexR)" value={form.hitRadius} onChange={value => updateForm("hitRadius", value)} />
             {form.kind === "ranged" && (
-              <NumberField label="Shot distance" value={form.shotDistance} onChange={value => updateForm("shotDistance", value)} />
+              <NumberField label="Shot distance (hexR)" value={form.shotDistance} onChange={value => updateForm("shotDistance", value)} />
             )}
           </div>
         </section>
@@ -388,12 +390,15 @@ export default function MonsterEditPage() {
           <div className={s.grid}>
             <label className={s.field}>
               <span className={s.label}>Movement type</span>
-              <select className={s.input} value={form.movementKind} onChange={event => updateForm("movementKind", event.target.value as MonsterMovementKind)}>
-                {movementKindOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-              </select>
+              <SearchableSelect
+                value={form.movementKind}
+                options={movementKindOptions}
+                placeholder="Search movement"
+                onChange={value => updateForm("movementKind", value as MonsterMovementKind)}
+              />
             </label>
-            <NumberField label="Speed pixels per second" value={form.speedPixelsPerSecond} onChange={value => updateForm("speedPixelsPerSecond", value)} />
-            <NumberField label="Wobble amplitude pixels" value={form.wobbleAmplitudePixels} onChange={value => updateForm("wobbleAmplitudePixels", value)} />
+            <NumberField label="Speed (hexR/s)" value={form.speedHexRadiusPerSecond} onChange={value => updateForm("speedHexRadiusPerSecond", value)} />
+            <NumberField label="Wobble amplitude (hexR)" value={form.wobbleAmplitudeHexRadius} onChange={value => updateForm("wobbleAmplitudeHexRadius", value)} />
             {form.movementKind === "randomLines" && (
               <NumberField label="Same trajectory time seconds" value={form.sameTrajectoryTimeSeconds} onChange={value => updateForm("sameTrajectoryTimeSeconds", value)} />
             )}
@@ -420,12 +425,68 @@ export default function MonsterEditPage() {
   );
 }
 
-function NumberField({label, value, onChange}: {label: string; value: string; onChange: (value: string) => void}) {
+function NumberField({
+  label,
+  value,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  step?: string;
+  onChange: (value: string) => void;
+}) {
   return (
     <label className={s.field}>
       <span className={s.label}>{label}</span>
-      <input className={s.input} type="number" value={value} onChange={event => onChange(event.target.value)} />
+      <input className={s.input} type="number" step={step} value={value} onChange={event => onChange(event.target.value)} />
     </label>
+  );
+}
+
+function SearchableSelect(props: {
+  value: string;
+  options: readonly {value: string; label: string}[];
+  placeholder: string;
+  onChange: (value: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const selected = props.options.find(option => option.value === props.value);
+  const visibleOptions = props.options
+    .filter(option => `${option.label} ${option.value}`.toLowerCase().includes(query.trim().toLowerCase()))
+    .slice(0, 16);
+
+  return (
+    <div className={s.multiSelect}>
+      {selected && (
+        <div className={s.chipList}>
+          <span className={s.chip}>{selected.label}</span>
+        </div>
+      )}
+      <input
+        className={s.multiSearch}
+        value={query}
+        onChange={event => setQuery(event.target.value)}
+        placeholder={selected ? selected.label : props.placeholder}
+      />
+      {visibleOptions.length > 0 && (
+        <div className={s.optionList}>
+          {visibleOptions.map(option => (
+            <button
+              key={option.value}
+              className={s.option}
+              type="button"
+              onClick={() => {
+                props.onChange(option.value);
+                setQuery("");
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -525,11 +586,10 @@ function MonsterVisualAssetField(props: {
         </div>
         <div className={s.visualPreviewBox}>
           {previewSrc ? (
-            <img
-              className={s.visualPreviewImage}
+            <SpriteHexPreview
               src={previewSrc}
               alt={previewLabel}
-              style={{
+              imageStyle={{
                 width: props.metadata.targetSpriteSize?.width,
                 height: props.metadata.targetSpriteSize?.height,
                 transform: `rotate(${props.metadata.rotationDegrees ?? 0}deg)`,
@@ -575,8 +635,8 @@ function createInitialForm(monsterId: string, monster: MonsterDefinition | null)
     swarmSize: stringifyOptionalNumber(source.swarmSize, ""),
     swarmSizeMax: stringifyOptionalNumber(source.swarmSizeMax, ""),
     movementKind: source.movement.kind,
-    speedPixelsPerSecond: String(source.movement.speedPixelsPerSecond),
-    wobbleAmplitudePixels: stringifyOptionalNumber(source.movement.wobbleAmplitudePixels, ""),
+    speedHexRadiusPerSecond: String(source.movement.speedHexRadiusPerSecond),
+    wobbleAmplitudeHexRadius: stringifyOptionalNumber(source.movement.wobbleAmplitudeHexRadius, ""),
     sameTrajectoryTimeSeconds: stringifyOptionalNumber(
       source.movement.sameTrajectoryTimeSeconds,
       source.movement.kind === "randomLines" ? "1" : "",
@@ -597,15 +657,15 @@ function createDefaultMonster(region: MonsterRegion, itemName: string): MonsterD
     pressure: 2,
     maxHitPoints: 4,
     armor: 0,
-    hitRadius: 12,
+    hitRadius: 0.1875,
     keywords: [],
     sprite: {
       textureKey: `enemy_${camelToSnake(normalizeIdPart(itemName))}`,
     },
     movement: {
       kind: "wallboundWobble",
-      speedPixelsPerSecond: 45,
-      wobbleAmplitudePixels: 8,
+      speedHexRadiusPerSecond: 0.7031,
+      wobbleAmplitudeHexRadius: 0.125,
     },
   };
 }
@@ -637,8 +697,8 @@ function createPreview(
     swarmSizeMax: parseOptionalNumber(form.swarmSizeMax) ?? undefined,
     movement: {
       kind: form.movementKind,
-      speedPixelsPerSecond: parseNumberOrFallback(form.speedPixelsPerSecond, 1),
-      wobbleAmplitudePixels: parseOptionalNumber(form.wobbleAmplitudePixels) ?? undefined,
+      speedHexRadiusPerSecond: parseNumberOrFallback(form.speedHexRadiusPerSecond, 1),
+      wobbleAmplitudeHexRadius: parseOptionalNumber(form.wobbleAmplitudeHexRadius) ?? undefined,
       sameTrajectoryTimeSeconds: form.movementKind === "randomLines"
         ? parseOptionalNumber(form.sameTrajectoryTimeSeconds) ?? 1
         : undefined,
@@ -746,33 +806,58 @@ function stringifyOptionalNumber(value: number | undefined, fallback: string): s
 
 function createMetadataFormFields(metadata: EnemyVisualMetadata | undefined): Pick<
   MonsterForm,
-  "sourceSpriteWidth" | "sourceSpriteHeight" | "targetSpriteWidth" | "targetSpriteHeight" | "rotationDegrees"
+  "sourceSpriteWidth" | "sourceSpriteHeight" | "spriteZoom" | "rotationDegrees"
 > {
+  const sourceSpriteSize = metadata?.sourceSpriteSize;
+  const targetSpriteSize = metadata?.targetSpriteSize;
+
   return {
-    sourceSpriteWidth: stringifyOptionalNumber(metadata?.sourceSpriteSize?.width, ""),
-    sourceSpriteHeight: stringifyOptionalNumber(metadata?.sourceSpriteSize?.height, ""),
-    targetSpriteWidth: stringifyOptionalNumber(metadata?.targetSpriteSize?.width, "48"),
-    targetSpriteHeight: stringifyOptionalNumber(metadata?.targetSpriteSize?.height, "48"),
+    sourceSpriteWidth: stringifyOptionalNumber(sourceSpriteSize?.width, ""),
+    sourceSpriteHeight: stringifyOptionalNumber(sourceSpriteSize?.height, ""),
+    spriteZoom: stringifyOptionalNumber(getSpriteZoom(sourceSpriteSize, targetSpriteSize), "1"),
     rotationDegrees: stringifyOptionalNumber(metadata?.rotationDegrees, "-90"),
   };
 }
 
 function createEnemyVisualMetadata(form: MonsterForm, fallbackMetadata?: EnemyVisualMetadata): EnemyVisualMetadata {
+  const sourceSpriteSize = {
+    width: parsePositiveNumberOrFallback(form.sourceSpriteWidth, fallbackMetadata?.sourceSpriteSize?.width ?? 1),
+    height: parsePositiveNumberOrFallback(form.sourceSpriteHeight, fallbackMetadata?.sourceSpriteSize?.height ?? 1),
+  };
+  const spriteZoom = parsePositiveNumberOrFallback(
+    form.spriteZoom,
+    getSpriteZoom(fallbackMetadata?.sourceSpriteSize, fallbackMetadata?.targetSpriteSize) ?? 1,
+  );
+
   return {
-    sourceSpriteSize: {
-      width: parsePositiveNumberOrFallback(form.sourceSpriteWidth, fallbackMetadata?.sourceSpriteSize?.width ?? 1),
-      height: parsePositiveNumberOrFallback(form.sourceSpriteHeight, fallbackMetadata?.sourceSpriteSize?.height ?? 1),
-    },
-    targetSpriteSize: {
-      width: parsePositiveNumberOrFallback(form.targetSpriteWidth, fallbackMetadata?.targetSpriteSize?.width ?? 48),
-      height: parsePositiveNumberOrFallback(form.targetSpriteHeight, fallbackMetadata?.targetSpriteSize?.height ?? 48),
-    },
+    sourceSpriteSize,
+    targetSpriteSize: scaleSpriteSize(sourceSpriteSize, spriteZoom),
     rotationDegrees: parseNumberOrFallback(form.rotationDegrees, fallbackMetadata?.rotationDegrees ?? -90),
   };
 }
 
+function getSpriteZoom(
+  sourceSpriteSize: {width: number; height: number} | undefined,
+  targetSpriteSize: {width: number; height: number} | undefined,
+): number | undefined {
+  if (!sourceSpriteSize || !targetSpriteSize) return undefined;
+  const widthZoom = targetSpriteSize.width / sourceSpriteSize.width;
+  const heightZoom = targetSpriteSize.height / sourceSpriteSize.height;
+  const zoom = Math.min(widthZoom, heightZoom);
+
+  return Number.isFinite(zoom) && zoom > 0 ? Number(zoom.toFixed(4)) : undefined;
+}
+
+function scaleSpriteSize(sourceSpriteSize: {width: number; height: number}, zoom: number) {
+  return {
+    width: Math.max(1, Math.round(sourceSpriteSize.width * zoom)),
+    height: Math.max(1, Math.round(sourceSpriteSize.height * zoom)),
+  };
+}
+
 function parsePositiveNumberOrFallback(value: string, fallback: number): number {
-  return Math.max(1, parseNumberOrFallback(value, fallback));
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function fitSpriteSize(sourceSpriteSize: {width: number; height: number}, maxWidth: number, maxHeight: number) {

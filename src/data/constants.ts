@@ -12,20 +12,14 @@ export const maxCitySize = 8;
 
 export const DEFAULT_INITIAL_CITY_BIOME: CityBiome = CITY_BIOMES.steppe;
 
-export const CITY_HEX_RADIUS = 32;
+export const CITY_HEX_RADIUS = 64;
 
 export const CITY_HEX_WIDTH = Math.sqrt(3) * CITY_HEX_RADIUS;
 
-export function hexDistanceToCityPixels(hexDistance: number) {
+export function toPixels(hexDistance: number) {
     return Number.isFinite(hexDistance)
         ? hexDistance * CITY_HEX_RADIUS
         : hexDistance;
-}
-
-export function cityPixelsToHexDistance(cityPixels: number) {
-    return Number.isFinite(cityPixels)
-        ? cityPixels / CITY_HEX_RADIUS
-        : cityPixels;
 }
 
 export const BATTLEFIELD_RANGE_MULTIPLIER = 1.35;

@@ -31,7 +31,6 @@ import {
 } from '../../models/homogeneousValueResolution.ts';
 import {getHomogeneousValueIdForUpkeepType, homogeneousValueTotalsToUpkeepAmount} from '../../models/homogeneousValueAdapters.ts';
 import {HOMOGENEOUS_VALUE_IDS, getHomogeneousValueDefinition} from '../../data/homogeneousValues/index.ts';
-import {cityPixelsToHexDistance} from '../../data/constants.ts';
 import {areRequirementsMet, getUnmetRequirements, type Requirement} from '../../models/progression/requirements.ts';
 import {DEVELOPMENT_VECTOR_LABELS, type DevelopmentVectorKey} from '../../models/DevlopmentVector.ts';
 
@@ -130,18 +129,13 @@ function resolveEffectValue(effect: HomogeneousValueEffect): number {
 }
 
 function formatOptionalLimit(value: number, valueId: string, zeroIsUnlimited = false): string {
-  const definition = getHomogeneousValueDefinition(valueId);
-  const displayValue = definition?.displayMethod === "distance"
-    ? cityPixelsToHexDistance(value)
-    : value;
-
   return Number.isFinite(value) && (!zeroIsUnlimited || value > 0)
-    ? formatHomogeneousValue(valueId, displayValue)
+    ? formatHomogeneousValue(valueId, value)
     : 'Unlimited';
 }
 
-function formatRuntimeDistance(cityPixels: number) {
-  return formatHomogeneousValue(HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit, cityPixelsToHexDistance(cityPixels));
+function formatTowerDistance(hexDistance: number) {
+  return formatHomogeneousValue(HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit, hexDistance);
 }
 
 function getSupportStatus(required: UpkeepAmount, available: UpkeepAmount) {
@@ -493,38 +487,38 @@ const BuildPage = () => {
     ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
     ['Shots/s', resolvedTower.stats.shotsPerSecond.toFixed(2)],
     ['Burst', resolvedTower.stats.burstCount.toFixed(0)],
-    ['Range', formatRuntimeDistance(resolvedTower.stats.targetingDistanceLimit)],
+    ['Range', formatTowerDistance(resolvedTower.stats.targetingDistanceLimit)],
     ['Max range', formatOptionalLimit(resolvedTower.stats.maximumRange, HOMOGENEOUS_VALUE_IDS.towerMaximumRange)],
     ['Min range', formatOptionalLimit(resolvedTower.stats.minimumRange, HOMOGENEOUS_VALUE_IDS.towerMinimumRange, true)],
-    ['Projectile speed', `${cityPixelsToHexDistance(resolvedTower.stats.projectileSpeed).toFixed(2)} hex/s`],
-    ['Projectile radius', formatRuntimeDistance(resolvedTower.stats.projectileRadius)],
+    ['Projectile speed', formatHomogeneousValue(HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed, resolvedTower.stats.projectileSpeed)],
+    ['Projectile radius', formatTowerDistance(resolvedTower.stats.projectileRadius)],
     ['Spread', `${resolvedTower.stats.projectileSpread.toFixed(2)} rad`],
     ['Rotation', `${resolvedTower.stats.rotationSpeed.toFixed(2)} rad/s`],
     ['Rotation limit', formatOptionalLimit(resolvedTower.stats.maximumRotationAngle, HOMOGENEOUS_VALUE_IDS.towerMaximumRotationAngle)],
     ['Weight', resolvedTower.stats.weight.toFixed(0)],
-    ['Area', formatRuntimeDistance(resolvedTower.stats.aoeRadius)],
+    ['Area', formatTowerDistance(resolvedTower.stats.aoeRadius)],
     ['Retarget', `${resolvedTower.stats.retargetCooldownSeconds.toFixed(2)} s`],
     ['Trigger', formatHomogeneousValue(HOMOGENEOUS_VALUE_IDS.towerTriggerTolerance, resolvedTower.stats.triggerTolerance)],
-    ['Zone push', `${formatRuntimeDistance(resolvedTower.stats.zonePushBackDistance)} @ ${resolvedTower.stats.zonePushBacksPerSecond.toFixed(2)}/s`],
-    ['Zone push size', formatRuntimeDistance(resolvedTower.stats.zonePushBackZoneSize)],
+    ['Zone push', `${formatTowerDistance(resolvedTower.stats.zonePushBackDistance)} @ ${resolvedTower.stats.zonePushBacksPerSecond.toFixed(2)}/s`],
+    ['Zone push size', formatTowerDistance(resolvedTower.stats.zonePushBackZoneSize)],
     ['Zone flee', `${resolvedTower.stats.zoneFleeDuration.toFixed(2)} s @ ${resolvedTower.stats.zoneFleesPerSecond.toFixed(2)}/s`],
-    ['Zone flee size', formatRuntimeDistance(resolvedTower.stats.zoneFleeZoneSize)],
+    ['Zone flee size', formatTowerDistance(resolvedTower.stats.zoneFleeZoneSize)],
     ['Zone circle', `${resolvedTower.stats.zoneCircleDuration.toFixed(2)} s @ ${resolvedTower.stats.zoneCirclesPerSecond.toFixed(2)}/s`],
-    ['Zone circle size', formatRuntimeDistance(resolvedTower.stats.zoneCircleZoneSize)],
+    ['Zone circle size', formatTowerDistance(resolvedTower.stats.zoneCircleZoneSize)],
     ['Zone DoT', `${resolvedTower.stats.zoneDotDamage.toFixed(1)} @ ${resolvedTower.stats.zoneDotTicksPerSecond.toFixed(2)}/s`],
-    ['Zone DoT size', formatRuntimeDistance(resolvedTower.stats.zoneDotZoneSize)],
+    ['Zone DoT size', formatTowerDistance(resolvedTower.stats.zoneDotZoneSize)],
     ['Zone stun', `${resolvedTower.stats.zoneStunDuration.toFixed(2)} s @ ${resolvedTower.stats.zoneStunsPerSecond.toFixed(2)}/s`],
-    ['Zone stun size', formatRuntimeDistance(resolvedTower.stats.zoneStunZoneSize)],
-    ['Target push', `${formatRuntimeDistance(resolvedTower.stats.singleTargetPushBackDistance)} @ ${resolvedTower.stats.singleTargetPushBacksPerSecond.toFixed(2)}/s`],
-    ['Target push range', formatRuntimeDistance(resolvedTower.stats.singleTargetPushBackRange)],
+    ['Zone stun size', formatTowerDistance(resolvedTower.stats.zoneStunZoneSize)],
+    ['Target push', `${formatTowerDistance(resolvedTower.stats.singleTargetPushBackDistance)} @ ${resolvedTower.stats.singleTargetPushBacksPerSecond.toFixed(2)}/s`],
+    ['Target push range', formatTowerDistance(resolvedTower.stats.singleTargetPushBackRange)],
     ['Target flee', `${resolvedTower.stats.singleTargetFleeDuration.toFixed(2)} s @ ${resolvedTower.stats.singleTargetFleesPerSecond.toFixed(2)}/s`],
-    ['Target flee range', formatRuntimeDistance(resolvedTower.stats.singleTargetFleeRange)],
+    ['Target flee range', formatTowerDistance(resolvedTower.stats.singleTargetFleeRange)],
     ['Target circle', `${resolvedTower.stats.singleTargetCircleDuration.toFixed(2)} s @ ${resolvedTower.stats.singleTargetCirclesPerSecond.toFixed(2)}/s`],
-    ['Target circle range', formatRuntimeDistance(resolvedTower.stats.singleTargetCircleRange)],
+    ['Target circle range', formatTowerDistance(resolvedTower.stats.singleTargetCircleRange)],
     ['Target DoT', `${resolvedTower.stats.singleTargetDotDamage.toFixed(1)} @ ${resolvedTower.stats.singleTargetDotTicksPerSecond.toFixed(2)}/s`],
-    ['Target DoT range', formatRuntimeDistance(resolvedTower.stats.singleTargetDotRange)],
+    ['Target DoT range', formatTowerDistance(resolvedTower.stats.singleTargetDotRange)],
     ['Target stun', `${resolvedTower.stats.singleTargetStunDuration.toFixed(2)} s @ ${resolvedTower.stats.singleTargetStunsPerSecond.toFixed(2)}/s`],
-    ['Target stun range', formatRuntimeDistance(resolvedTower.stats.singleTargetStunRange)],
+    ['Target stun range', formatTowerDistance(resolvedTower.stats.singleTargetStunRange)],
   ];
 
   return (

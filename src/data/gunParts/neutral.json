@@ -89,7 +89,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 13
+        "additive": 2
       },
       {
         "valueId": "tower.projectileSpread",

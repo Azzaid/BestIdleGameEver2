@@ -548,15 +548,6 @@ export const visualPreviewBox = style({
   background: vars.color.background.app,
 });
 
-export const visualPreviewImage = style({
-  display: "block",
-  maxWidth: "100%",
-  maxHeight: "180px",
-  objectFit: "contain",
-  borderRadius: "3px",
-  background: vars.color.background.surface,
-});
-
 export const visualMetadataPreview = style({
   maxHeight: "180px",
   overflow: "auto",

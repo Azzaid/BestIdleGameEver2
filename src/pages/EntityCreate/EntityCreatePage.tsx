@@ -50,6 +50,7 @@ import medievalGunPartDefinitions from "../../data/gunParts/medieval.json";
 import natureGunPartDefinitions from "../../data/gunParts/nature.json";
 import neutralGunPartDefinitions from "../../data/gunParts/neutral.json";
 import techGunPartDefinitions from "../../data/gunParts/tech.json";
+import {SpriteHexPreview} from "../../components/SpriteHexPreview.tsx";
 import * as s from "./EntityCreatePage.css.ts";
 
 type EntityType = "research" | "wallSegment" | "wallSuperstructure" | "building" | "gunPart";
@@ -539,28 +540,31 @@ export default function EntityCreatePage() {
           <div className={s.grid}>
             <label className={s.field}>
               <span className={s.label}>Entity type</span>
-              <select className={s.input} value={entityType} onChange={event => setEntityType(event.target.value as EntityType)}>
-                {entityTypeOptions.map(option => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
+              <SearchableSelect
+                value={entityType}
+                options={entityTypeOptions}
+                placeholder="Search entity types"
+                onChange={value => setEntityType(value as EntityType)}
+              />
             </label>
             <label className={s.field}>
               <span className={s.label}>Vector</span>
-              <select className={s.input} value={vector} onChange={event => setVector(event.target.value as DevelopmentVectorKey)}>
-                {vectorOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+              <SearchableSelect
+                value={vector}
+                options={vectorOptions.map(option => ({value: option, label: option}))}
+                placeholder="Search vectors"
+                onChange={value => setVector(value as DevelopmentVectorKey)}
+              />
             </label>
             {entityType === "gunPart" && (
               <label className={s.field}>
                 <span className={s.label}>Part type</span>
-                <select className={s.input} value={partType} onChange={event => setPartType(event.target.value as TowerPartSlot)}>
-                  {TOWER_PART_SLOT_ORDER.map(option => (
-                    <option key={option.key} value={option.key}>{option.label}</option>
-                  ))}
-                </select>
+                <SearchableSelect
+                  value={partType}
+                  options={TOWER_PART_SLOT_ORDER.map(option => ({value: option.key, label: option.label}))}
+                  placeholder="Search part types"
+                  onChange={value => setPartType(value as TowerPartSlot)}
+                />
               </label>
             )}
             {showBuildingFields && (
@@ -733,7 +737,7 @@ export default function EntityCreatePage() {
                   <input className={s.input} type="number" value={row.multiplier} onChange={event => updateEffectRow(row.id, {multiplier: event.target.value})} />
                 </label>
                 <label className={s.field}>
-                  <span className={s.label}>Radius</span>
+                  <span className={s.label}>Radius (hexR)</span>
                   <input className={s.input} type="number" value={row.radius} onChange={event => updateEffectRow(row.id, {radius: event.target.value})} />
                 </label>
                 <button className={s.dangerButton} type="button" onClick={() => removeEffectRow(row.id)} title="Remove effect">x</button>
@@ -982,10 +986,7 @@ export default function EntityCreatePage() {
         : undefined;
       const spriteMetadataResult = !spriteAction && visualAssetKind && effectiveVisualAssetId && visualAssetMetadataDraft
         ? await applySpriteMetadataSaveAction({
-          kind: visualAssetKind,
-          vector,
-          slot: entityType === "gunPart" ? partType : undefined,
-          fileStem: getSpriteFileStem(entityType, vector, partType, effectiveVisualAssetId),
+          ...getSpriteMetadataSaveTarget(entityType, vector, partType, effectiveVisualAssetId),
           metadata: visualAssetMetadataDraft,
         })
         : undefined;
@@ -1071,6 +1072,7 @@ export default function EntityCreatePage() {
       setSpriteDraft(null);
       setRemovedVisualAssetId("");
       setVisualAssetId(effectiveVisualAssetId);
+      if (spriteMetadataResult) setVisualAssetMetadataDraft(null);
       setProjectileSpriteDraft(null);
       setRemovedProjectileVisualAssetId("");
       setProjectileVisualAssetId(effectiveProjectileVisualAssetId);
@@ -1199,15 +1201,12 @@ function ValueSection(props: {
           <div key={row.id} className={s.row}>
             <label className={s.field}>
               <span className={s.label}>Value type</span>
-              <select
-                className={s.input}
+              <SearchableSelect
                 value={row.valueId}
-                onChange={event => props.onUpdate(row.id, {valueId: event.target.value})}
-              >
-                {HOMOGENEOUS_VALUE_DEFINITION_LIST.map(definition => (
-                  <option key={definition.id} value={definition.id}>{definition.label}</option>
-                ))}
-              </select>
+                options={HOMOGENEOUS_VALUE_DEFINITION_LIST.map(definition => ({value: definition.id, label: definition.label}))}
+                placeholder="Search values"
+                onChange={valueId => props.onUpdate(row.id, {valueId})}
+              />
             </label>
             <div className={s.field}>
               <span className={s.label}>Additional keywords</span>
@@ -1219,7 +1218,7 @@ function ValueSection(props: {
               />
             </div>
             <label className={s.field}>
-              <span className={s.label}>Additive</span>
+              <span className={s.label}>{getValueAmountLabel("Additive", row.valueId)}</span>
               <input className={s.input} type="number" value={row.additive} onChange={event => props.onUpdate(row.id, {additive: event.target.value})} />
             </label>
             <label className={s.field}>
@@ -1255,30 +1254,24 @@ function DerivedValueSection(props: {
           <div key={row.id} className={s.row}>
             <label className={s.field}>
               <span className={s.label}>Derived value</span>
-              <select
-                className={s.input}
+              <SearchableSelect
                 value={targetOptions.some(option => option.id === row.valueId) ? row.valueId : (targetOptions[0]?.id ?? "")}
-                onChange={event => props.onUpdate(row.id, {valueId: event.target.value})}
-              >
-                {targetOptions.map(definition => (
-                  <option key={definition.id} value={definition.id}>{definition.label}</option>
-                ))}
-              </select>
+                options={targetOptions.map(definition => ({value: definition.id, label: definition.label}))}
+                placeholder="Search values"
+                onChange={valueId => props.onUpdate(row.id, {valueId})}
+              />
             </label>
             <label className={s.field}>
               <span className={s.label}>Derived from</span>
-              <select
-                className={s.input}
+              <SearchableSelect
                 value={derivedSourceValueOptions.some(option => option.id === row.derivedFrom) ? row.derivedFrom : defaultDerivedSourceValueId}
-                onChange={event => props.onUpdate(row.id, {derivedFrom: event.target.value})}
-              >
-                {derivedSourceValueOptions.map(definition => (
-                  <option key={definition.id} value={definition.id}>{definition.label}</option>
-                ))}
-              </select>
+                options={derivedSourceValueOptions.map(definition => ({value: definition.id, label: definition.label}))}
+                placeholder="Search source values"
+                onChange={derivedFrom => props.onUpdate(row.id, {derivedFrom})}
+              />
             </label>
             <label className={s.field}>
-              <span className={s.label}>Derived multiplicator</span>
+              <span className={s.label}>{getValueAmountLabel("Derived multiplicator", row.valueId)}</span>
               <input className={s.input} type="number" value={row.derivedMultiplicator} onChange={event => props.onUpdate(row.id, {derivedMultiplicator: event.target.value})} />
             </label>
             <div className={s.field}>
@@ -1291,7 +1284,7 @@ function DerivedValueSection(props: {
               />
             </div>
             <label className={s.field}>
-              <span className={s.label}>Additive</span>
+              <span className={s.label}>{getValueAmountLabel("Additive", row.valueId)}</span>
               <input className={s.input} type="number" value={row.additive} onChange={event => props.onUpdate(row.id, {additive: event.target.value})} />
             </label>
             <label className={s.field}>
@@ -1332,12 +1325,12 @@ function BuildingIdSection(props: {
           <div key={row.id} className={s.idRow}>
             <label className={s.field}>
               <span className={s.label}>Building id</span>
-              <select className={s.input} value={row.buildingId} onChange={event => props.onUpdate(row.id, {buildingId: event.target.value})}>
-                <option value="">Select building</option>
-                {buildingIds.map(buildingId => (
-                  <option key={buildingId} value={buildingId}>{buildingId}</option>
-                ))}
-              </select>
+              <SearchableSelect
+                value={row.buildingId}
+                options={[{value: "", label: "Select building"}, ...buildingIds.map(buildingId => ({value: buildingId, label: buildingId}))]}
+                placeholder="Search buildings"
+                onChange={buildingId => props.onUpdate(row.id, {buildingId})}
+              />
             </label>
             <button className={s.dangerButton} type="button" onClick={() => props.onRemove(row.id)} title="Remove building id">x</button>
           </div>
@@ -1559,6 +1552,15 @@ function VisualAssetField(props: {
     });
   }
 
+  function updateSizedSpriteZoom(zoom: number) {
+    if (!previewMetadata || !isSizedSpriteMetadata(previewMetadata)) return;
+    const sourceSpriteSize = previewMetadata.sourceSpriteSize ?? previewMetadata.targetSpriteSize;
+
+    updateSizedSpriteMetadata({
+      targetSpriteSize: scaleSpriteSize(sourceSpriteSize, zoom),
+    });
+  }
+
   return (
     <section className={`${s.section} ${s.fullWidth}`}>
       <div className={s.sectionHeader}>
@@ -1624,7 +1626,7 @@ function VisualAssetField(props: {
         <div className={s.visualPreviewBox}>
           {previewSrc ? (
             <>
-              <img className={s.visualPreviewImage} style={previewImageStyle} src={previewSrc} alt={previewLabel} />
+              <SpriteHexPreview src={previewSrc} alt={previewLabel} imageStyle={previewImageStyle} />
               {previewMetadata && isBuildingSpriteMetadata(previewMetadata) && (
                 <div className={s.row}>
                   <label className={s.field}>
@@ -1632,8 +1634,8 @@ function VisualAssetField(props: {
                     <input
                       className={s.input}
                       type="number"
-                      min="0.01"
-                      step="0.05"
+                      min="0.001"
+                      step="0.001"
                       value={previewMetadata.zoom}
                       onChange={event => updateBuildingMetadata({zoom: parseNumberOrFallback(event.target.value, 1)})}
                     />
@@ -1662,40 +1664,17 @@ function VisualAssetField(props: {
               )}
               {previewMetadata && isSizedSpriteMetadata(previewMetadata) && (
                 <div className={s.spriteMetadataControls}>
-                  <div className={s.pairedFields}>
-                    <label className={s.field}>
-                      <span className={s.label}>Target Width</span>
-                      <input
-                        className={s.input}
-                        type="number"
-                        min="1"
-                        step="1"
-                        value={previewMetadata.targetSpriteSize.width}
-                        onChange={event => updateSizedSpriteMetadata({
-                          targetSpriteSize: {
-                            width: parsePositiveNumberOrFallback(event.target.value, previewMetadata.targetSpriteSize.width),
-                            height: previewMetadata.targetSpriteSize.height,
-                          },
-                        })}
-                      />
-                    </label>
-                    <label className={s.field}>
-                      <span className={s.label}>Target Height</span>
-                      <input
-                        className={s.input}
-                        type="number"
-                        min="1"
-                        step="1"
-                        value={previewMetadata.targetSpriteSize.height}
-                        onChange={event => updateSizedSpriteMetadata({
-                          targetSpriteSize: {
-                            width: previewMetadata.targetSpriteSize.width,
-                            height: parsePositiveNumberOrFallback(event.target.value, previewMetadata.targetSpriteSize.height),
-                          },
-                        })}
-                      />
-                    </label>
-                  </div>
+                  <label className={s.field}>
+                    <span className={s.label}>Sprite Zoom</span>
+                    <input
+                      className={s.input}
+                      type="number"
+                      min="0.001"
+                      step="0.001"
+                      value={getSizedSpriteZoom(previewMetadata)}
+                      onChange={event => updateSizedSpriteZoom(parsePositiveNumberOrFallback(event.target.value, getSizedSpriteZoom(previewMetadata)))}
+                    />
+                  </label>
                   <div className={s.pairedFields}>
                     <label className={s.field}>
                       <span className={s.label}>Source Width</span>
@@ -1792,39 +1771,36 @@ function RequirementSection(props: {
           <div key={row.id} className={s.requirementRow}>
             <label className={s.field}>
               <span className={s.label}>Type</span>
-              <select
-                className={s.input}
+              <SearchableSelect
                 value={row.type}
-                onChange={event => props.onUpdate(row.id, {type: event.target.value as RequirementType, target: "", amount: ""})}
-              >
-                {requirementTypeOptions.map(option => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
+                options={requirementTypeOptions}
+                placeholder="Search requirement types"
+                onChange={value => props.onUpdate(row.id, {type: value as RequirementType, target: "", amount: ""})}
+              />
             </label>
             {row.type === "buildingKeywordExists" ? (
               <label className={s.field}>
                 <span className={s.label}>Keyword</span>
-                <select className={s.input} value={row.target} onChange={event => props.onUpdate(row.id, {target: event.target.value})}>
-                  <option value="">Select keyword</option>
-                  {buildingKeywordOptions.map(keyword => (
-                    <option key={keyword} value={keyword}>{keyword}</option>
-                  ))}
-                </select>
+                <SearchableSelect
+                  value={row.target}
+                  options={[{value: "", label: "Select keyword"}, ...buildingKeywordOptions.map(keyword => ({value: keyword, label: keyword}))]}
+                  placeholder="Search keywords"
+                  onChange={target => props.onUpdate(row.id, {target})}
+                />
               </label>
             ) : row.type === "homogeneousValueAtLeast" || row.type === "homogeneousValueLessThan" ? (
               <>
                 <label className={s.field}>
                   <span className={s.label}>Value</span>
-                  <select className={s.input} value={row.target} onChange={event => props.onUpdate(row.id, {target: event.target.value})}>
-                    <option value="">Select value</option>
-                    {HOMOGENEOUS_VALUE_DEFINITION_LIST.map(definition => (
-                      <option key={definition.id} value={definition.id}>{definition.label}</option>
-                    ))}
-                  </select>
+                  <SearchableSelect
+                    value={row.target}
+                    options={[{value: "", label: "Select value"}, ...HOMOGENEOUS_VALUE_DEFINITION_LIST.map(definition => ({value: definition.id, label: definition.label}))]}
+                    placeholder="Search values"
+                    onChange={target => props.onUpdate(row.id, {target})}
+                  />
                 </label>
                 <label className={s.field}>
-                  <span className={s.label}>Amount</span>
+                  <span className={s.label}>{getValueAmountLabel("Amount", row.target)}</span>
                   <input className={s.input} type="number" value={row.amount} onChange={event => props.onUpdate(row.id, {amount: event.target.value})} />
                 </label>
               </>
@@ -1836,12 +1812,15 @@ function RequirementSection(props: {
             ) : (
               <label className={s.field}>
                 <span className={s.label}>{row.type === "buildingExists" ? "Building id" : "Technology id"}</span>
-                <select className={s.input} value={row.target} onChange={event => props.onUpdate(row.id, {target: event.target.value})}>
-                  <option value="">Select {row.type === "buildingExists" ? "building" : "technology"}</option>
-                  {(row.type === "buildingExists" ? buildingIds : technologyIds).map(id => (
-                    <option key={id} value={id}>{id}</option>
-                  ))}
-                </select>
+                <SearchableSelect
+                  value={row.target}
+                  options={[
+                    {value: "", label: `Select ${row.type === "buildingExists" ? "building" : "technology"}`},
+                    ...(row.type === "buildingExists" ? buildingIds : technologyIds).map(id => ({value: id, label: id})),
+                  ]}
+                  placeholder={`Search ${row.type === "buildingExists" ? "buildings" : "technologies"}`}
+                  onChange={target => props.onUpdate(row.id, {target})}
+                />
               </label>
             )}
             <button className={s.dangerButton} type="button" onClick={() => props.onRemove(row.id)} title="Remove requirement">x</button>
@@ -1903,6 +1882,52 @@ function SearchableMultiSelect(props: {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function SearchableSelect(props: {
+  value: string;
+  options: readonly {value: string; label: string}[];
+  placeholder: string;
+  onChange: (value: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const selected = props.options.find(option => option.value === props.value);
+  const visibleOptions = props.options
+    .filter(option => `${option.label} ${option.value}`.toLowerCase().includes(query.trim().toLowerCase()))
+    .slice(0, 16);
+
+  return (
+    <div className={s.multiSelect}>
+      {selected && (
+        <div className={s.chipList}>
+          <span className={s.chip}>{selected.label}</span>
+        </div>
+      )}
+      <input
+        className={s.multiSearch}
+        value={query}
+        onChange={event => setQuery(event.target.value)}
+        placeholder={selected ? selected.label : props.placeholder}
+      />
+      {visibleOptions.length > 0 && (
+        <div className={s.optionList}>
+          {visibleOptions.map(option => (
+            <button
+              key={option.value}
+              className={s.option}
+              type="button"
+              onClick={() => {
+                props.onChange(option.value);
+                setQuery("");
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -2137,6 +2162,36 @@ function getSpriteFileStem(
   return assetId;
 }
 
+function getSpriteMetadataSaveTarget(
+  entityType: EntityType,
+  vector: DevelopmentVectorKey,
+  partType: TowerPartSlot,
+  assetId: string,
+): {
+  kind: EntityVisualAssetKind;
+  vector: DevelopmentVectorKey;
+  slot?: TowerPartSlot;
+  fileStem: string;
+} {
+  const selectedAsset = ENTITY_VISUAL_ASSETS_BY_ID[assetId];
+  const targetKind = selectedAsset?.kind && selectedAsset.kind !== "projectile"
+    ? selectedAsset.kind
+    : getVisualAssetKind(entityType);
+  if (!targetKind) {
+    throw new Error(`Entity type "${entityType}" does not support sprite metadata.`);
+  }
+
+  const targetVector = selectedAsset?.vector ?? vector;
+  const targetSlot = selectedAsset?.kind === "gunPart" ? selectedAsset.slot : partType;
+
+  return {
+    kind: targetKind,
+    vector: targetVector,
+    slot: targetKind === "gunPart" ? targetSlot : undefined,
+    fileStem: getSpriteFileStem(targetKind, targetVector, targetSlot, assetId),
+  };
+}
+
 function getProjectileSpriteFileStem(vector: DevelopmentVectorKey, assetId: string): string {
   return assetId.startsWith(`${vector}_projectile_`)
     ? assetId
@@ -2207,9 +2262,22 @@ function getDefaultOutputSockets(partType: TowerPartSlot, center: {x: number; y:
 function fitSpriteSize(sourceSpriteSize: {width: number; height: number}, maxWidth: number, maxHeight: number) {
   const scale = Math.min(maxWidth / sourceSpriteSize.width, maxHeight / sourceSpriteSize.height);
 
+  return scaleSpriteSize(sourceSpriteSize, scale);
+}
+
+function getSizedSpriteZoom(metadata: SizedSpriteMetadata): number {
+  const sourceSpriteSize = metadata.sourceSpriteSize ?? metadata.targetSpriteSize;
+  const widthZoom = metadata.targetSpriteSize.width / sourceSpriteSize.width;
+  const heightZoom = metadata.targetSpriteSize.height / sourceSpriteSize.height;
+  const zoom = Math.min(widthZoom, heightZoom);
+
+  return Number.isFinite(zoom) && zoom > 0 ? Number(zoom.toFixed(4)) : 1;
+}
+
+function scaleSpriteSize(sourceSpriteSize: {width: number; height: number}, zoom: number) {
   return {
-    width: Math.max(1, Math.round(sourceSpriteSize.width * scale)),
-    height: Math.max(1, Math.round(sourceSpriteSize.height * scale)),
+    width: Math.max(1, Math.round(sourceSpriteSize.width * zoom)),
+    height: Math.max(1, Math.round(sourceSpriteSize.height * zoom)),
   };
 }
 
@@ -2738,6 +2806,15 @@ function getValidDerivedSourceValueId(valueId: string): string {
   return derivedSourceValueOptions.some(option => option.id === valueId)
     ? valueId
     : defaultDerivedSourceValueId;
+}
+
+function getValueAmountLabel(label: string, valueId: string): string {
+  const displayMethod = HOMOGENEOUS_VALUE_DEFINITION_LIST.find(definition => definition.id === valueId)?.displayMethod;
+
+  if (displayMethod === "distance") return `${label} (hexR)`;
+  if (displayMethod === "distancePerSecond") return `${label} (hexR/s)`;
+
+  return label;
 }
 
 function getValueRole(value: HomogeneousValueEffect): ValueRole {

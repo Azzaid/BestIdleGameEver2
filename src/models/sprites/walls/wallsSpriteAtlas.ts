@@ -20,10 +20,7 @@ export const wallSpriteMetadataAtlas: WallSpriteMetadataAtlas = {
 
 function getWallAssets(vector: "neutral" | "tech" | "nature" | "medieval" | "aether"): WallSegmentVisualAsset[] {
     return ENTITY_VISUAL_ASSETS.filter((asset): asset is WallSegmentVisualAsset => (
-        asset.kind === "wallSegment" && (
-            asset.vector === vector
-            || (vector === "neutral" && asset.vector === "medieval")
-        )
+        asset.kind === "wallSegment" && asset.vector === vector
     ));
 }
 

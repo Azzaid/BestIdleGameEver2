@@ -9,7 +9,7 @@
     "pressure": 2,
     "maxHitPoints": 10,
     "armor": 0,
-    "hitRadius": 12,
+    "hitRadius": 0.1875,
     "keywords": [
       "small",
       "swarm"
@@ -21,8 +21,8 @@
     "swarmSizeMax": 5,
     "movement": {
       "kind": "wallboundWobble",
-      "speedPixelsPerSecond": 65,
-      "wobbleAmplitudePixels": 14
+      "speedHexRadiusPerSecond": 1.0156,
+      "wobbleAmplitudeHexRadius": 0.2188
     }
   },
   {
@@ -35,7 +35,7 @@
     "pressure": 15,
     "maxHitPoints": 30,
     "armor": 5,
-    "hitRadius": 18,
+    "hitRadius": 0.2813,
     "keywords": [
       "armored"
     ],
@@ -44,8 +44,8 @@
     },
     "movement": {
       "kind": "straight",
-      "speedPixelsPerSecond": 34,
-      "wobbleAmplitudePixels": 6
+      "speedHexRadiusPerSecond": 0.5313,
+      "wobbleAmplitudeHexRadius": 0.0938
     }
   },
   {
@@ -58,18 +58,18 @@
     "pressure": 5,
     "maxHitPoints": 15,
     "armor": 0,
-    "hitRadius": 15,
+    "hitRadius": 0.2344,
     "keywords": [
       "ranged"
     ],
     "sprite": {
       "textureKey": "enemy_ridge_spitter"
     },
-    "shotDistance": 180,
+    "shotDistance": 2.8125,
     "movement": {
       "kind": "randomLines",
-      "speedPixelsPerSecond": 70,
-      "wobbleAmplitudePixels": 60,
+      "speedHexRadiusPerSecond": 1.0938,
+      "wobbleAmplitudeHexRadius": 0.9375,
       "sameTrajectoryTimeSeconds": 3
     }
   }
