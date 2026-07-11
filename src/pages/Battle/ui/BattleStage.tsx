@@ -77,6 +77,7 @@ export function BattleStage(props: {
     });
     const aspectRatio = props.battlefieldWidth / props.battlefieldHeight;
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+    const [stageError, setStageError] = useState<string | null>(null);
     const canvasIsReady = canvasSize.width > 0 && canvasSize.height > 0;
 
     useEffect(() => {
@@ -161,32 +162,36 @@ export function BattleStage(props: {
         };
 
         (async () => {
-            if (!hostRef.current || !canvasIsReady) return;
+            try {
+                if (!hostRef.current || !canvasIsReady) return;
 
-            const nextApp = new Application();
+                setStageError(null);
 
-            // v8: init() is async; use canvas via app.canvas; resize plugin via resizeTo.
-            await nextApp.init({
-                resizeTo: hostRef.current,               // auto-resize to the host <div>
-                backgroundColor: 0x0b0e13,
-                antialias: true,
-                webgl: { powerPreference: 'high-performance' }, // was powerPreference in v7
-            }); // :contentReference[oaicite:0]{index=0}
+                const nextApp = new Application();
 
-            if (disposed || !hostRef.current) {
-                nextApp.destroy({ removeView: true }, { children: true, texture: false, textureSource: false, context: true });
-                return;
-            }
+                await nextApp.init({
+                    resizeTo: hostRef.current,
+                    backgroundColor: 0x0b0e13,
+                    antialias: true,
+                    preference: 'webgl',
+                    powerPreference: 'default',
+                    failIfMajorPerformanceCaveat: false,
+                });
 
-            app = nextApp;
-            hostRef.current.appendChild(nextApp.canvas);
+                if (disposed || !hostRef.current) {
+                    nextApp.destroy({ removeView: true }, { children: true, texture: false, textureSource: false, context: true });
+                    return;
+                }
 
-            await loadBattleAssets({
-                backgroundId: props.backgroundId,
-                wallSegments: props.wallSegments,
-            });
+                app = nextApp;
+                hostRef.current.appendChild(nextApp.canvas);
 
-            if (disposed || app !== nextApp) return;
+                await loadBattleAssets({
+                    backgroundId: props.backgroundId,
+                    wallSegments: props.wallSegments,
+                });
+
+                if (disposed || app !== nextApp) return;
             const runtimeProps = runtimePropsRef.current;
 
             const viewportWidth = nextApp.renderer.width;
@@ -426,6 +431,15 @@ export function BattleStage(props: {
                     nextApp.renderer.off('resize', onResize);
                 }
             };
+            } catch (error) {
+                if (disposed) return;
+
+                const message = error instanceof Error
+                    ? error.message
+                    : String(error);
+                setStageError(message || "Unknown Battle renderer error");
+                destroyApp();
+            }
         })();
 
         return () => {
@@ -514,6 +528,28 @@ export function BattleStage(props: {
             style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}
         >
             <div ref={hostRef} style={hostStyle} />
+            {stageError && (
+                <div
+                    role="alert"
+                    style={{
+                        position: 'absolute',
+                        inset: 12,
+                        zIndex: 20,
+                        display: 'grid',
+                        placeItems: 'center',
+                        padding: 12,
+                        border: '1px solid #ff8a8a',
+                        borderRadius: 4,
+                        background: 'rgba(20, 8, 10, 0.92)',
+                        color: '#ffe4e4',
+                        fontSize: 13,
+                        fontWeight: 700,
+                        textAlign: 'center',
+                    }}
+                >
+                    Battle renderer failed: {stageError}
+                </div>
+            )}
         </div>
     );
 }

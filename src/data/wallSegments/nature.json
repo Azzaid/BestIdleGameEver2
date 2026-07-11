@@ -36,6 +36,16 @@
       "nature",
       "wallSegment"
     ],
-    "visualAssetId": "wallSegments.nature.livingWoodPalisade"
+    "visualAssetId": "wallSegments.nature.livingWoodPalisade",
+    "derivedValues": [
+      {
+        "valueId": "wall.resilience",
+        "derivedFrom": "resource.plants",
+        "derivedMultiplicator": 0.1,
+        "additionalKeywords": [
+          "production"
+        ]
+      }
+    ]
   }
 ]

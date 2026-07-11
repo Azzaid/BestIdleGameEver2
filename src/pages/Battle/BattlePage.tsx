@@ -3,7 +3,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import { useTypedDispatch, useTypedSelector } from "../../store/hooks.ts";
 import { selectHasAnyTowerBuild } from "../../store/towers/selectors.ts";
 import * as styles from './BattlePage.css.ts';
-import { selectCityBattlefield, selectCityHexes, selectCitySideHexes } from "../../store/city/selectors.ts";
+import { selectCityBattlefield, selectCityHexes } from "../../store/city/selectors.ts";
 import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from "../../data/constants.ts";
 import { Link } from "react-router-dom";
 import { recordControlledTerritoryReached, recordLastSiegeSignature } from "../../store/upkeep/slice.ts";
@@ -172,7 +172,6 @@ const BattlePage = () => {
     );
     const resolvedBattleTowers = useStableResolvedBattleTowers(resolvedBattleTowersUnstable);
     const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
-    const citySideHexes = useTypedSelector(selectCitySideHexes);
     const cityHexes = useTypedSelector(selectCityHexes);
     const cityBattlefield = useTypedSelector(selectCityBattlefield);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
@@ -267,7 +266,7 @@ const BattlePage = () => {
         ? toPercent(metrics.siegeElapsedSeconds, siegeDurationSeconds)
         : 0;
     const pressureProgressPercent = toPercent(metrics.siegePressure, metrics.wallResilience);
-    const wallLogicalWidth = citySideHexes * BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX;
+    const wallLogicalWidth = Math.max(1, battleWallSegments.length) * BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX;
     const standaloneDefenseRanges = standaloneTowerDefenses.map((defense) => Math.max(
         defense.stats.targetingDistanceLimit,
         defense.stats.zonePushBackZoneSize,
