@@ -28,7 +28,7 @@ export function AimingSystem(world: World, dt: number) {
       tower.maximumRotationAngle,
     );
     const delta = shortestAngleDelta(gunTf.rotationRadians, constrainedDesired);
-    const maxTurn = tower.rotationSpeed * dt;
+    const maxTurn = Math.max(0, tower.rotationSpeed) * dt;
     const applied = Math.max(-maxTurn, Math.min(maxTurn, delta));
 
     gunTf.rotationRadians = constrainTowerAimAngle(

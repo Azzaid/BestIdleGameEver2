@@ -6,11 +6,14 @@ import type {HomogeneousAdjacencyRule, HomogeneousDerivedValueEffect, Homogeneou
 import type {HomogeneousResolvedValueMap} from "../homogeneousValues.ts";
 import type {RequirementGate} from "../progression/requirements.ts";
 
+export type WallTopCategory = "tower" | "wallSuperstructure";
+
 export interface WallBuilding extends RequirementGate {
     id: string;
     name: string;
     type: BuildingTypesValue;
     vector?: DevelopmentVectorValue;
+    wallTopCategory?: WallTopCategory;
     keywords?: BuildingKeyword[];
     values?: HomogeneousValueEffect[];
     derivedValues?: HomogeneousDerivedValueEffect[];

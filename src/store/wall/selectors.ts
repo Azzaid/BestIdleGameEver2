@@ -1,11 +1,12 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
-import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS, isWallTopTower} from "../../data/wallSuperstructures/index.ts";
 import {selectCityHexes} from "../city/selectors.ts";
 import type {WallBuilding, WallResolution} from "../../models/city/Wall.ts";
 import {getUpkeepValues, resolveCity} from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
+import {hexDistanceToCityPixels} from "../../data/constants.ts";
 import type {
     HomogeneousCityEntityType,
     HomogeneousResolvedEntity,
@@ -21,7 +22,7 @@ export const selectUnlockedWallBuildingIds = createSelector(
 export const selectUnlockedWallBuildings = createSelector(
     [selectUnlockedWallBuildingIds],
     (ids): WallBuilding[] => ids.flatMap((id) => {
-        const wallBuilding = WALL_SEGMENT_BUILDINGS[id] ?? WALL_TOWER_BUILDINGS[id];
+        const wallBuilding = WALL_SEGMENT_BUILDINGS[id] ?? WALL_SUPERSTRUCTURE_BUILDINGS[id];
         return wallBuilding ? [wallBuilding] : [];
     })
 );
@@ -60,7 +61,7 @@ export const selectWallResolution = createSelector(
 
                 const wallBuilding = entityType === "wallSegment"
                     ? WALL_SEGMENT_BUILDINGS[wallBuildingKey]
-                    : WALL_TOWER_BUILDINGS[wallBuildingKey];
+                    : WALL_SUPERSTRUCTURE_BUILDINGS[wallBuildingKey];
                 if (!wallBuilding) return;
 
                 wallEntities.push({
@@ -84,12 +85,12 @@ export const selectWallResolution = createSelector(
         resolution.resilience = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0;
         resolution.camoLevel = Math.max(0, -(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.citySignature] ?? 0));
         resolution.ignoredThreat = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0;
-        resolution.pushBackDistance = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackDistance] ?? 0;
+        resolution.pushBackDistance = hexDistanceToCityPixels(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackDistance] ?? 0);
         resolution.pushBacksPerSecond = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBacksPerSecond] ?? 0;
-        resolution.pushBackEffectZoneSize = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackEffectZoneSize] ?? 0;
+        resolution.pushBackEffectZoneSize = hexDistanceToCityPixels(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackEffectZoneSize] ?? 0);
         resolution.zoneDotDamage = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage] ?? 0;
         resolution.zoneDotTicksPerSecond = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotTicksPerSecond] ?? 0;
-        resolution.zoneDotZoneSize = resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0;
+        resolution.zoneDotZoneSize = hexDistanceToCityPixels(resolution.homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0);
         resolution.zoneDotKeywords = collectWallZoneDotKeywords(resolvedWallCity.resolvedWallSegments);
 
         return resolution;
@@ -111,7 +112,9 @@ export const selectBuiltWallTowerCount = createSelector(
     (hexes): number => hexes.filter((hex) => {
         if (hex.kind !== "wall" || !hex.wallTopKey) return false;
 
-        return Boolean(WALL_TOWER_BUILDINGS[hex.wallTopKey]);
+        const wallSuperstructure = WALL_SUPERSTRUCTURE_BUILDINGS[hex.wallTopKey];
+
+        return Boolean(wallSuperstructure && isWallTopTower(wallSuperstructure));
     }).length
 );
 

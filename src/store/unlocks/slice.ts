@@ -3,7 +3,7 @@ import type {UnlocksState} from "../../models/store/unlocks.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
 import {TOWER_PARTS} from "../../data/gunParts/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
-import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 
 const initialState: UnlocksState = {
@@ -12,7 +12,7 @@ const initialState: UnlocksState = {
   ),
   unlockedTowerPartIds: getInitiallyUnlockedIds(TOWER_PARTS),
   unlockedWallSegmentIds: getInitiallyUnlockedIds(Object.values(WALL_SEGMENT_BUILDINGS)),
-  unlockedWallSuperstructureIds: getInitiallyUnlockedIds(Object.values(WALL_TOWER_BUILDINGS)),
+  unlockedWallSuperstructureIds: getInitiallyUnlockedIds(Object.values(WALL_SUPERSTRUCTURE_BUILDINGS)),
 };
 
 export const unlocksSlice = createSlice({
@@ -56,3 +56,4 @@ export const {
 } = unlocksSlice.actions;
 
 export default unlocksSlice;
+

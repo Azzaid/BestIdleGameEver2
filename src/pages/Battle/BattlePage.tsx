@@ -1,10 +1,9 @@
 import {BattleStage} from "./ui/BattleStage.tsx";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import { useTypedDispatch, useTypedSelector } from "../../store/hooks.ts";
-import { selectHasAnyTowerBuild } from "../../store/towers/selectors.ts";
 import * as styles from './BattlePage.css.ts';
 import { selectCityBattlefield, selectCityHexes } from "../../store/city/selectors.ts";
-import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX } from "../../data/constants.ts";
+import { CITY_HEX_WIDTH } from "../../data/constants.ts";
 import { Link } from "react-router-dom";
 import { recordControlledTerritoryReached, recordLastSiegeSignature } from "../../store/upkeep/slice.ts";
 import {
@@ -45,6 +44,7 @@ import {
 } from "../../models/homogeneousValueResolution.ts";
 import type {CityResolution} from "../../models/city/Adjancency.ts";
 import type {TowerDamageProfiles} from "../../models/battle/damage.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS, isWallTopTower} from "../../data/wallSuperstructures/index.ts";
 
 type BattleMode = "siege" | "pressure";
 
@@ -106,7 +106,16 @@ function createStandaloneTowerDefenses(
     cityValues: Record<string, number>,
 ): StandaloneTowerDefense[] {
     return wallEntities.flatMap((entity) => {
-        if (entity.entityType !== "wallSuperstructure" || !hasTowerScopedContribution(entity)) return [];
+        const wallSuperstructureId = getWallSuperstructureContentId(entity.id);
+        const wallSuperstructure = wallSuperstructureId
+            ? WALL_SUPERSTRUCTURE_BUILDINGS[wallSuperstructureId]
+            : undefined;
+        if (
+            entity.entityType !== "wallSuperstructure"
+            || !wallSuperstructure
+            || isWallTopTower(wallSuperstructure)
+            || !hasStandaloneWallSuperstructureBattleContribution(entity)
+        ) return [];
 
         const keywords = new Set(entity.effectiveKeywords);
         const contributions = resolveEntityContributionsWithDerivedValues(entity, cityValues);
@@ -137,10 +146,22 @@ function getDerivedSourceValues(cityResolution: CityResolution, controlledTerrit
     };
 }
 
-function hasTowerScopedContribution(entity: HomogeneousResolvedEntity) {
+function getWallSuperstructureContentId(resolvedEntityId: string) {
+    return resolvedEntityId.split(":").at(-1);
+}
+
+function hasStandaloneWallSuperstructureBattleContribution(entity: HomogeneousResolvedEntity) {
     return (
-        entity.resolvedContributions.some((contribution) => contribution.valueId.startsWith("tower."))
-        || (entity.derivedValues ?? []).some((contribution) => contribution.valueId.startsWith("tower."))
+        entity.resolvedContributions.some((contribution) => isStandaloneWallSuperstructureBattleValue(contribution.valueId))
+        || (entity.derivedValues ?? []).some((contribution) => isStandaloneWallSuperstructureBattleValue(contribution.valueId))
+    );
+}
+
+function isStandaloneWallSuperstructureBattleValue(valueId: string) {
+    return (
+        valueId.startsWith("tower.zone")
+        || valueId.startsWith("tower.singleTarget")
+        || valueId === HOMOGENEOUS_VALUE_IDS.towerProjectileDamage
     );
 }
 
@@ -171,7 +192,6 @@ const BattlePage = () => {
         [resolvedAvailableTowers]
     );
     const resolvedBattleTowers = useStableResolvedBattleTowers(resolvedBattleTowersUnstable);
-    const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
     const cityHexes = useTypedSelector(selectCityHexes);
     const cityBattlefield = useTypedSelector(selectCityBattlefield);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
@@ -226,6 +246,8 @@ const BattlePage = () => {
             .sort((left, right) => left.column - right.column)
             .map(hex => ({
                 cellKey: hex.cellKey,
+                column: hex.column,
+                row: hex.row,
                 wallKey: hex.wallKey ?? null,
                 wallDevelopmentVector: hex.wallDevelopmentVector ?? null,
                 wallTopKey: hex.wallTopKey ?? null,
@@ -266,7 +288,7 @@ const BattlePage = () => {
         ? toPercent(metrics.siegeElapsedSeconds, siegeDurationSeconds)
         : 0;
     const pressureProgressPercent = toPercent(metrics.siegePressure, metrics.wallResilience);
-    const wallLogicalWidth = Math.max(1, battleWallSegments.length) * BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX;
+    const wallLogicalWidth = Math.max(1, battleWallSegments.length) * CITY_HEX_WIDTH;
     const standaloneDefenseRanges = standaloneTowerDefenses.map((defense) => Math.max(
         defense.stats.targetingDistanceLimit,
         defense.stats.zonePushBackZoneSize,
@@ -369,7 +391,7 @@ const BattlePage = () => {
 
     return (
         <div className={styles.battlePage}>
-            {hasAnyTowerBuild || standaloneTowerDefenses.length > 0 ? (
+            {resolvedBattleTowers.length > 0 || standaloneTowerDefenses.length > 0 ? (
                 <div className={`${styles.battleShell} ${isSiege ? styles.battleShellSiege : ''}`}>
                     {isSiege && (
                         <div className={`${styles.battleProgress} ${styles.siegeProgress}`} aria-label="Siege duration">

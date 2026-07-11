@@ -10,41 +10,45 @@ import { wallSpriteMetadataAtlas } from '../../models/sprites/walls/wallsSpriteA
 import { wallTopSpriteMetadataAtlas } from '../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
 import { superstructures, walls } from '../../data/ids.ts';
 import type { BattleWallSegment } from '../../models/battle/wallSegment.ts';
-import { CITY_HEX_SIZE } from '../../data/constants.ts';
 import { DEFAULT_BATTLE_BACKGROUND_ID } from '../../models/battle/backgrounds.ts';
 import { BATTLE_BACKGROUNDS } from '../Battle/assets/backgrounds.ts';
+import { WALL_SEGMENT_BUILDINGS } from '../../data/wallSegments/index.ts';
+import { WALL_SUPERSTRUCTURE_BUILDINGS } from '../../data/wallSuperstructures/index.ts';
+import { CITY_HEX_WIDTH } from '../../data/constants.ts';
 
 const previewWallSegment: BattleWallSegment = {
   cellKey: 'tower-preview-wall',
+  column: 0,
+  row: 0,
   wallKey: walls.neutral.scrapBarricade,
   wallDevelopmentVector: DEVELOPMENT_VECTORS.neutral,
   wallTopKey: superstructures.neutral.oldStump,
   wallTopDevelopmentVector: DEVELOPMENT_VECTORS.neutral,
 };
 
-const wallMetadata = wallSpriteMetadataAtlas[DEVELOPMENT_VECTORS.neutral][walls.neutral.scrapBarricade];
-const wallTopMetadata = wallTopSpriteMetadataAtlas[DEVELOPMENT_VECTORS.neutral][superstructures.neutral.oldStump];
-const previewSegmentSize = 190;
-const previewCityToBattleScale = previewSegmentSize / CITY_HEX_SIZE;
+const previewWallTextureAlias = WALL_SEGMENT_BUILDINGS[walls.neutral.scrapBarricade]?.visualAssetId ?? walls.neutral.scrapBarricade;
+const previewWallTopTextureAlias = WALL_SUPERSTRUCTURE_BUILDINGS[superstructures.neutral.oldStump]?.visualAssetId ?? superstructures.neutral.oldStump;
+const wallMetadata = wallSpriteMetadataAtlas[DEVELOPMENT_VECTORS.neutral][previewWallTextureAlias];
+const wallTopMetadata = wallTopSpriteMetadataAtlas[DEVELOPMENT_VECTORS.neutral][previewWallTopTextureAlias];
 
 function createMountedTowerPreview(towerVisualDefinition: ReturnType<typeof createTowerVisualDefinitionFromAssembly>) {
   const scene = new Container();
   scene.sortableChildren = true;
 
-  const wall = new Sprite(Texture.from(walls.neutral.scrapBarricade));
+  const wall = new Sprite(Texture.from(previewWallTextureAlias));
   wall.anchor.set(0.5);
-  wall.width = wallMetadata.targetSpriteSize.width * previewCityToBattleScale;
-  wall.height = wallMetadata.targetSpriteSize.height * previewCityToBattleScale;
-  wall.rotation = (wallMetadata.rotationDegrees ?? 0) * Math.PI / 180;
+  wall.width = wallMetadata?.targetSpriteSize.width ?? CITY_HEX_WIDTH;
+  wall.height = wallMetadata?.targetSpriteSize.height ?? CITY_HEX_WIDTH;
+  wall.rotation = (wallMetadata?.rotationDegrees ?? 0) * Math.PI / 180;
   wall.position.set(0, 0);
   wall.zIndex = 1;
   scene.addChild(wall);
 
-  const towerBase = new Sprite(Texture.from(superstructures.neutral.oldStump));
+  const towerBase = new Sprite(Texture.from(previewWallTopTextureAlias));
   towerBase.anchor.set(0.5);
-  towerBase.width = wallTopMetadata.targetSpriteSize.width * previewCityToBattleScale;
-  towerBase.height = wallTopMetadata.targetSpriteSize.height * previewCityToBattleScale;
-  towerBase.rotation = (wallTopMetadata.rotationDegrees ?? 0) * Math.PI / 180;
+  towerBase.width = wallTopMetadata?.targetSpriteSize.width ?? CITY_HEX_WIDTH;
+  towerBase.height = wallTopMetadata?.targetSpriteSize.height ?? CITY_HEX_WIDTH;
+  towerBase.rotation = (wallTopMetadata?.rotationDegrees ?? 0) * Math.PI / 180;
   towerBase.position.set(0, 0);
   towerBase.zIndex = 2;
   scene.addChild(towerBase);

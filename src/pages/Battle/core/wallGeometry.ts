@@ -1,4 +1,4 @@
-import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX, CITY_HEX_SIZE } from '../../../data/constants.ts';
+import { CITY_HEX_WIDTH } from '../../../data/constants.ts';
 import { WALL_SEGMENT_BUILDINGS } from '../../../data/wallSegments/index.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
@@ -6,7 +6,7 @@ import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpri
 export function getWallContactY({
     wallY,
     wallSegments,
-    segmentSize = BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX,
+    segmentSize = CITY_HEX_WIDTH,
 }: {
     wallY: number;
     wallSegments: BattleWallSegment[];
@@ -14,7 +14,6 @@ export function getWallContactY({
 }) {
     if (wallSegments.length === 0) return wallY - 8;
 
-    const cityToBattleScale = segmentSize / CITY_HEX_SIZE;
     const nearestWallEdgeOffset = wallSegments.reduce((nearestOffset, segment) => {
         const wallSpriteMetadata = segment.wallKey && segment.wallDevelopmentVector
             ? wallSpriteMetadataAtlas[segment.wallDevelopmentVector][getWallSpriteLookupKey(segment.wallKey)]
@@ -22,7 +21,7 @@ export function getWallContactY({
 
         if (!wallSpriteMetadata) return Math.max(nearestOffset, segmentSize / 2);
 
-        const spriteHeight = wallSpriteMetadata.targetSpriteSize.height * cityToBattleScale;
+        const spriteHeight = wallSpriteMetadata.targetSpriteSize.height;
         const spriteTopOffset = spriteHeight / 2;
         const visibleTopOffset = wallSpriteMetadata.sourceVisiblePixelBounds
             ? wallSpriteMetadata.sourceVisiblePixelBounds.y

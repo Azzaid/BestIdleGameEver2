@@ -28,7 +28,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": -100
+        "additive": -3
       },
       {
         "valueId": "tower.weight",
@@ -42,7 +42,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 6
+        "additive": 0.2
       },
       {
         "valueId": "resource.people",
@@ -95,14 +95,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 100
+        "additive": 3
       },
       {
         "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 200
+        "additive": 6
       },
       {
         "valueId": "tower.projectileSpread",
@@ -162,7 +162,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 400
+        "additive": 13
       },
       {
         "valueId": "tower.shotsPerSecond",
@@ -190,7 +190,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 400
+        "additive": 13
       },
       {
         "valueId": "tower.weight",
@@ -263,7 +263,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 200
+        "additive": 6
       },
       {
         "valueId": "tower.shotsPerSecond",
@@ -277,7 +277,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 100
+        "additive": 3
       },
       {
         "valueId": "tower.projectileSpread",
@@ -291,7 +291,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 3
+        "additive": 0.2
       },
       {
         "valueId": "resource.people",
@@ -343,14 +343,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 200
+        "additive": 6
       },
       {
         "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 300
+        "additive": 9
       },
       {
         "valueId": "tower.projectileSpread",
@@ -409,7 +409,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 200
+        "additive": 6
       },
       {
         "valueId": "tower.shotsPerSecond",
@@ -423,7 +423,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 200
+        "additive": 6
       },
       {
         "valueId": "resource.people",
@@ -572,14 +572,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 100
+        "additive": 3
       },
       {
         "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 100
+        "additive": 3
       },
       {
         "valueId": "tower.projectileSpread",
@@ -629,7 +629,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 100
+        "additive": 3
       },
       {
         "valueId": "tower.projectileSpread",
@@ -701,7 +701,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 100
+        "additive": 3
       },
       {
         "valueId": "tower.weight",
@@ -715,7 +715,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 2
+        "additive": 0.2
       },
       {
         "valueId": "tower.projectileDamage",
@@ -767,7 +767,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 5
+        "additive": 0.2
       },
       {
         "valueId": "resource.people",

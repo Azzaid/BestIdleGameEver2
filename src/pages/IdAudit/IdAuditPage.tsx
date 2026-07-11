@@ -17,7 +17,7 @@ import {researchTree} from "../../data/research/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/gunParts/index.ts";
 import {TOWER_PART_VISUAL_ASSETS} from "../../data/gunParts/partVisualMetadata.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
-import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
 import {buildingsSpriteAtlas} from "../../models/sprites/buildings/buildingsSpriteAtlas.ts";
 import {wallSpritesAtlas} from "../../models/sprites/walls/wallsSpriteAtlas.ts";
 import {wallTopSpritesAtlas} from "../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
@@ -169,7 +169,7 @@ function createRows(): AuditRow[] {
   }
 
   for (const item of flattenGroupedIds(superstructures, "superstructures")) {
-    const data = WALL_TOWER_BUILDINGS[item.id];
+    const data = WALL_SUPERSTRUCTURE_BUILDINGS[item.id];
     const vector = item.groupName as DevelopmentVectorKey;
     const hasAsset = Boolean(wallTopSpritesAtlas[DEVELOPMENT_VECTORS[vector]]?.[item.id]?.src);
     rows.push({
@@ -240,7 +240,7 @@ function getUnregisteredRows(rows: readonly AuditRow[]): AuditRow[] {
     unregisteredRows.push(createUnregisteredRow("Wall", wall.id, wall.name));
   }
 
-  for (const tower of Object.values(WALL_TOWER_BUILDINGS)) {
+  for (const tower of Object.values(WALL_SUPERSTRUCTURE_BUILDINGS)) {
     if (registeredIds.has(tower.id)) continue;
     unregisteredRows.push(createUnregisteredRow("Tower", tower.id, tower.name));
   }
@@ -459,3 +459,4 @@ function StatusBadge({status}: {status: AuditStatus}) {
   if (status === "missing") return <span className={s.missingBadge}>Missing</span>;
   return <span className={s.neutralBadge}>N/A</span>;
 }
+

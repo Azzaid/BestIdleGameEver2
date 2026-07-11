@@ -23,6 +23,7 @@ import {
 } from "../../models/homogeneousValueResolution.ts";
 import {homogeneousValueTotalsToUpkeepAmount} from "../../models/homogeneousValueAdapters.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
+import {hexDistanceToCityPixels} from "../../data/constants.ts";
 import {BUILDING_TYPES} from "../../models/city/BuildingTypes.ts";
 import type {HomogeneousResolvedEntity, HomogeneousValueEntitySource} from "../../models/homogeneousValueResolution.ts";
 import {selectUnlockedTowerPartIds} from "../unlocks/selectors.ts";
@@ -128,12 +129,12 @@ export const selectEffectiveWallResolution = createSelector(
             resilience: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallResilience] ?? 0,
             camoLevel: Math.max(0, -(homogeneousValues[HOMOGENEOUS_VALUE_IDS.citySignature] ?? 0)),
             ignoredThreat: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallThreatSuppression] ?? 0,
-            pushBackDistance: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackDistance] ?? 0,
+            pushBackDistance: hexDistanceToCityPixels(homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackDistance] ?? 0),
             pushBacksPerSecond: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBacksPerSecond] ?? 0,
-            pushBackEffectZoneSize: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackEffectZoneSize] ?? 0,
+            pushBackEffectZoneSize: hexDistanceToCityPixels(homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallPushBackEffectZoneSize] ?? 0),
             zoneDotDamage: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotDamage] ?? 0,
             zoneDotTicksPerSecond: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotTicksPerSecond] ?? 0,
-            zoneDotZoneSize: homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0,
+            zoneDotZoneSize: hexDistanceToCityPixels(homogeneousValues[HOMOGENEOUS_VALUE_IDS.wallZoneDotZoneSize] ?? 0),
             zoneDotKeywords: collectWallZoneDotKeywords(cityResolution.resolvedWallSegments, derivedSourceValues),
             homogeneousValues,
             homogeneousResolvedValues: resolvedWallValues,

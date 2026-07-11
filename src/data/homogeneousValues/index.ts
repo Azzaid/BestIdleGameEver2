@@ -453,7 +453,7 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         id: HOMOGENEOUS_VALUE_IDS.towerProjectileSpeed,
         label: "Tower Projectile Speed",
         keywords: ["tower", "projectileSpeed"],
-        displayMethod: "distance",
+        displayMethod: "distancePerSecond",
         initialValue: BASE_TOWER_STATS.projectileSpeed,
     },
     [HOMOGENEOUS_VALUE_IDS.towerProjectileRadius]: {

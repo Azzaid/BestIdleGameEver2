@@ -55,7 +55,7 @@ export interface TowerData {
   singleTargetStunRange: number;
 
   // Runtime targeting state
-  rangePixels: number;
+  rangeCityPixels: number;
   currentTarget?: EntityId;
   gunEntity: EntityId;
   projectileSpawnOffset: { x: number; y: number };

@@ -1,8 +1,9 @@
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {BuildingKeyword} from "../../models/city/Keywords.ts";
-import type {WallBuilding, WallBuildingAtlas} from "../../models/city/Wall.ts";
+import type {WallBuilding, WallBuildingAtlas, WallTopCategory} from "../../models/city/Wall.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousDerivedValueEffect, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
+import {HOMOGENEOUS_VALUE_IDS} from "../homogeneousValues/index.ts";
 import aetherWallSuperstructureDefinitions from "./aether.json";
 import medievalWallSuperstructureDefinitions from "./medieval.json";
 import natureWallSuperstructureDefinitions from "./nature.json";
@@ -14,6 +15,7 @@ type WallSuperstructureDefinition = {
   id: string;
   name: string;
   description: string;
+  wallTopCategory?: WallTopCategory;
   keywords?: BuildingKeyword[];
   requirements?: Requirement[];
   buildRequirements?: Requirement[];
@@ -47,8 +49,6 @@ export const WALL_SUPERSTRUCTURE_BUILDINGS: Record<string, WallBuilding> = Objec
   {},
 );
 
-export {WALL_SUPERSTRUCTURE_BUILDINGS as WALL_TOWER_BUILDINGS};
-
 function buildWallSuperstructures(vector: DevelopmentVectorKey): Record<string, WallBuilding> {
   const tower = createWallSuperstructureFactory({
     vector: DEVELOPMENT_VECTORS[vector],
@@ -63,6 +63,7 @@ function buildWallSuperstructures(vector: DevelopmentVectorKey): Record<string, 
         definition.description,
         {
           keywords: definition.keywords,
+          wallTopCategory: definition.wallTopCategory,
           requirements: definition.requirements,
           buildRequirements: definition.buildRequirements,
           values: definition.values,
@@ -72,5 +73,19 @@ function buildWallSuperstructures(vector: DevelopmentVectorKey): Record<string, 
         },
       ),
     ]),
+  );
+}
+
+export function isWallTopTower(building: WallBuilding): boolean {
+  return (
+    building.wallTopCategory === "tower"
+    || building.values?.some((value) => (
+      value.valueId === HOMOGENEOUS_VALUE_IDS.towerMaximumWeight
+      || value.valueId === HOMOGENEOUS_VALUE_IDS.towerMaximumRange
+    ))
+    || building.derivedValues?.some((value) => (
+      value.valueId === HOMOGENEOUS_VALUE_IDS.towerMaximumWeight
+      || value.valueId === HOMOGENEOUS_VALUE_IDS.towerMaximumRange
+    ))
   );
 }

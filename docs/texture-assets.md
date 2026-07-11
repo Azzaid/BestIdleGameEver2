@@ -61,7 +61,7 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 4. Import and map both files in `src/data/entityVisualAssets.ts`, then register active runtime sprites in `src/models/sprites/walls/<vector>.ts` as a sprite asset keyed by the wall id: `{ src, metadata }`.
 5. Keep wall metadata JSON limited to image sizing, optional `rotationDegrees`, and visible-pixel bounds. Do not duplicate `id`, `spriteId`, or `wallId` in the JSON; the registry key is the wall id and battle texture alias.
 6. City rendering uses `wallSpritesAtlas`; battle loading uses `wallSpriteMetadataAtlas` and `wallSpritesAtlas`.
-7. Set `targetSpriteSize` to the intended city SVG size at zoom 1. City hex rendering centers that size on the hex and clips anything outside the hex border. Battle wall rendering scales that size by `BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX / CITY_HEX_SIZE`.
+7. Set `targetSpriteSize` to the intended city-pixel size at zoom 1. City hex rendering centers that size on the hex and clips anything outside the hex border. Battle wall rendering uses the same size directly; battle zoom is camera/display scale only.
 8. If the source PNG has transparent padding, set `sourceVisiblePixelBounds` to the opaque/content bounds in source image pixels. Battle enemy contact uses the top of these visible pixel bounds so enemies stop at the wall face, not the full transparent image box.
 
 ## Add A Wall-Top/Superstructure Texture

@@ -163,7 +163,7 @@ export function resolveTowerAssemblyStatsAndSupport(
 ): Pick<TowerAssemblyResolved, 'stats' | 'supportCost'> {
   const stats = homogeneousValueTotalsToTowerStats(getAvailableValues(resolvedValues), keywords);
   const supportCost = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedValues));
-  stats.rotationSpeed -= stats.weight * TOWER_WEIGHT_ROTATION_PENALTY;
+  stats.rotationSpeed = Math.max(0, stats.rotationSpeed - stats.weight * TOWER_WEIGHT_ROTATION_PENALTY);
 
   return {stats, supportCost};
 }

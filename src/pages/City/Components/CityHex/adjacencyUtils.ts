@@ -9,7 +9,7 @@ import type {Building, PlacedBuilding} from "../../../../models/city/Building.ts
 import {deductUpkeep} from "./upkeepUtils.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
 import {WALL_SEGMENT_BUILDINGS} from "../../../../data/wallSegments/index.ts";
-import {WALL_TOWER_BUILDINGS} from "../../../../data/wallSuperstructures/index.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS} from "../../../../data/wallSuperstructures/index.ts";
 import {SIGNATURE_PER_HEX} from "../../../../data/constants.ts";
 import {deepClone} from "../../../../utils/deepClone.ts";
 import {
@@ -119,7 +119,7 @@ export function resolveCityUpkeepAndSignature(
 
             const wallBuilding = entityType === "wallSegment"
                 ? WALL_SEGMENT_BUILDINGS[wallBuildingKey]
-                : WALL_TOWER_BUILDINGS[wallBuildingKey];
+                : WALL_SUPERSTRUCTURE_BUILDINGS[wallBuildingKey];
             if (!wallBuilding) return [];
 
             return [{
@@ -159,4 +159,5 @@ export function resolveCityUpkeepAndSignature(
 
     return resolvedCity
 }
+
 

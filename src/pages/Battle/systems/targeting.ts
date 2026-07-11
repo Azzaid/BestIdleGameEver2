@@ -3,7 +3,6 @@ import type { World } from '../../../models/battle/world.ts';
 import type {EntityId} from "../../../models/battle/common.ts";
 import {shortestAngleDelta} from "./towerAim.ts";
 
-
 /** Sort helper */
 function sortBy(_world: World, candidates: EntityId[], score: (id: EntityId) => number): EntityId[] {
     return candidates.slice().sort((a, b) => score(a) - score(b));

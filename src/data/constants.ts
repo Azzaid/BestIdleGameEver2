@@ -12,9 +12,21 @@ export const maxCitySize = 8;
 
 export const DEFAULT_INITIAL_CITY_BIOME: CityBiome = CITY_BIOMES.steppe;
 
-export const CITY_HEX_SIZE = Math.sqrt(3) * 32;
+export const CITY_HEX_RADIUS = 32;
 
-export const BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX = 150;
+export const CITY_HEX_WIDTH = Math.sqrt(3) * CITY_HEX_RADIUS;
+
+export function hexDistanceToCityPixels(hexDistance: number) {
+    return Number.isFinite(hexDistance)
+        ? hexDistance * CITY_HEX_RADIUS
+        : hexDistance;
+}
+
+export function cityPixelsToHexDistance(cityPixels: number) {
+    return Number.isFinite(cityPixels)
+        ? cityPixels / CITY_HEX_RADIUS
+        : cityPixels;
+}
 
 export const BATTLEFIELD_RANGE_MULTIPLIER = 1.35;
 
@@ -34,7 +46,7 @@ export const BASE_SIMULTANEOUS_MONSTERS_LIMIT = 40;
 
 export const MAX_TOWER_SLOTS = 5;
 
-export const TOWER_WEIGHT_ROTATION_PENALTY = 0.5;
+export const TOWER_WEIGHT_ROTATION_PENALTY = 0.2;
 
 export const BASE_TOWER_STATS = {
     rotationSpeed: 0,

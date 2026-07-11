@@ -2,7 +2,7 @@ import {createSelector} from "@reduxjs/toolkit";
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
 import {TOWER_PARTS} from "../../data/gunParts/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
-import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
 import {researchTree} from "../../data/research/index.ts";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import type {GunPart} from "../../models/battle/towerParts.ts";
@@ -64,12 +64,12 @@ export const selectVisibleWallSegmentIds = createSelector(
 
 export const selectUnlockableWallSuperstructureIds = createSelector(
   [selectRequirementResolutionData],
-  (data) => getRuleMetIds(Object.values(WALL_TOWER_BUILDINGS), data),
+  (data) => getRuleMetIds(Object.values(WALL_SUPERSTRUCTURE_BUILDINGS), data),
 );
 
 export const selectVisibleWallSuperstructureIds = createSelector(
   [selectRequirementResolutionData],
-  (data) => getVisibleIds(Object.values(WALL_TOWER_BUILDINGS), data),
+  (data) => getVisibleIds(Object.values(WALL_SUPERSTRUCTURE_BUILDINGS), data),
 );
 
 export const selectUnlockableTechnologyIds = createSelector(
@@ -125,3 +125,4 @@ export function resolveWallSuperstructureUnlocked(wallSuperstructure: WallBuildi
 export function resolveTechnologyUnlocked(technology: ResearchNodeData, data: RequirementResolutionData): boolean {
   return areRequirementsMet(technology.requirements, data);
 }
+

@@ -1,6 +1,6 @@
 import {BUILDINGS_ATLAS} from "../../../data/buildings/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../../data/wallSegments/index.ts";
-import {WALL_TOWER_BUILDINGS} from "../../../data/wallSuperstructures/index.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS} from "../../../data/wallSuperstructures/index.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey, type DevelopmentVectorValue} from "../../../models/DevlopmentVector.ts";
 import {researchGraphValidationErrors, researchTree} from "../../../data/research/index.ts";
 import {TOWER_PARTS} from "../../../data/gunParts/index.ts";
@@ -39,7 +39,7 @@ export const PROGRESSION_REGISTRY: ProgressionRegistry = {
     part.id,
     {name: part.name, vector: part.vector ?? getProgressionNodeVectorFromId(part.id)},
   ])),
-  structures: Object.fromEntries(Object.values(WALL_TOWER_BUILDINGS).map(wallSuperstructure => [
+  structures: Object.fromEntries(Object.values(WALL_SUPERSTRUCTURE_BUILDINGS).map(wallSuperstructure => [
     wallSuperstructure.id,
     {
       name: wallSuperstructure.name,
@@ -61,3 +61,4 @@ function getDevelopmentVectorKey(vector: DevelopmentVectorValue): DevelopmentVec
   return Object.entries(DEVELOPMENT_VECTORS)
     .find(([, value]) => value === vector)?.[0] as DevelopmentVectorKey | undefined;
 }
+

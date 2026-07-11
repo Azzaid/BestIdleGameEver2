@@ -15,7 +15,7 @@ import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
 import {researchTree} from "../../data/research/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/gunParts/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
-import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
 import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
 import {ENTITY_VISUAL_ASSETS_BY_ID} from "../../data/entityVisualAssets.ts";
 import type {Building} from "../../models/city/Building.ts";
@@ -615,11 +615,11 @@ function findContentRequirements(node: ProgressionGraphNode): readonly Requireme
 
     return building?.requirements
       ?? WALL_SEGMENT_BUILDINGS[node.id]?.requirements
-      ?? WALL_TOWER_BUILDINGS[node.id]?.requirements;
+      ?? WALL_SUPERSTRUCTURE_BUILDINGS[node.id]?.requirements;
   }
 
   if (node.kind === "research") return researchTree[node.id]?.requirements;
-  if (node.kind === "structure") return WALL_TOWER_BUILDINGS[node.id]?.requirements;
+  if (node.kind === "structure") return WALL_SUPERSTRUCTURE_BUILDINGS[node.id]?.requirements;
 
   return undefined;
 }
@@ -686,7 +686,7 @@ function getSelectedItemDetails(node: ProgressionGraphNode): SelectedItemDetails
 }
 
 function findBuildingContent(node: ProgressionGraphNode): Building | WallBuilding | undefined {
-  if (node.kind === "structure") return WALL_TOWER_BUILDINGS[node.id];
+  if (node.kind === "structure") return WALL_SUPERSTRUCTURE_BUILDINGS[node.id];
 
   const regularBuilding = Object.values(DEVELOPMENT_VECTORS)
     .map(vector => BUILDINGS_ATLAS[vector][node.id])
@@ -694,7 +694,7 @@ function findBuildingContent(node: ProgressionGraphNode): Building | WallBuildin
 
   return regularBuilding
     ?? WALL_SEGMENT_BUILDINGS[node.id]
-    ?? WALL_TOWER_BUILDINGS[node.id];
+    ?? WALL_SUPERSTRUCTURE_BUILDINGS[node.id];
 }
 
 function getVisualAsset(id: string | undefined) {
@@ -816,3 +816,4 @@ function truncateLabel(label: string, maxLength: number) {
   if (label.length <= maxLength) return label;
   return `${label.slice(0, Math.max(0, maxLength - 3))}...`;
 }
+

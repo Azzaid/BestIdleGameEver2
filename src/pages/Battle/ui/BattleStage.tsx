@@ -19,12 +19,12 @@ import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } 
 import type { BattleMetrics, BattleResult, MonsterMovementModifiers, WallZoneEffects } from '../../../models/battle/world.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import type { StandaloneTowerDefense, TowerData } from '../../../models/battle/tower.ts';
-import { BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX, CITY_HEX_SIZE } from '../../../data/constants.ts';
+import { CITY_HEX_WIDTH } from '../../../data/constants.ts';
 import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 import { wallTopSpriteMetadataAtlas } from '../../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
 import { getWallContactY } from '../core/wallGeometry.ts';
 import { WALL_SEGMENT_BUILDINGS } from '../../../data/wallSegments/index.ts';
-import { WALL_TOWER_BUILDINGS } from '../../../data/wallSuperstructures/index.ts';
+import { WALL_SUPERSTRUCTURE_BUILDINGS } from '../../../data/wallSuperstructures/index.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
 export function BattleStage(props: {
@@ -219,7 +219,7 @@ export function BattleStage(props: {
             const wallContactY = getWallContactY({
                 wallY,
                 wallSegments: props.wallSegments,
-                segmentSize: BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX,
+                segmentSize: CITY_HEX_WIDTH,
             });
             const world = createWorld({
                 battlefieldWidth: props.battlefieldWidth,
@@ -275,7 +275,7 @@ export function BattleStage(props: {
             const wallLayer = createBattleWallLayer({
                 wallSegments: props.wallSegments,
                 wallY,
-                segmentSize: BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX,
+                segmentSize: CITY_HEX_WIDTH,
                 battlefieldWidth: props.battlefieldWidth,
             });
             wallLayer.zIndex = 15;
@@ -293,7 +293,7 @@ export function BattleStage(props: {
                     towerCount: props.resolvedTowers.length,
                     wallSegments: props.wallSegments,
                     excludedWallCellKeys: standaloneTowerWallCellKeys,
-                    segmentSize: BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX,
+                    segmentSize: CITY_HEX_WIDTH,
                     battlefieldWidth: props.battlefieldWidth,
                     wallY,
                 });
@@ -318,7 +318,6 @@ export function BattleStage(props: {
                 const projectileSpawnOffset = launchSystemId
                     ? findTowerVisualSocketOffset(towerVisualDefinition, launchSystemId, 'muzzle') ?? { x: 0, y: 0 }
                     : { x: 0, y: 0 };
-
                 world.towersData.set(baseId, createTowerData({
                     stats: resolvedTower.stats,
                     damageProfiles: resolvedTower.damageProfiles,
@@ -336,7 +335,7 @@ export function BattleStage(props: {
                 const towerPosition = getStandaloneTowerDefensePosition({
                     defense,
                     wallSegments: props.wallSegments,
-                    segmentSize: BATTLEFIELD_PIXELS_PER_CITY_SIDE_HEX,
+                    segmentSize: CITY_HEX_WIDTH,
                     battlefieldWidth: props.battlefieldWidth,
                     wallY,
                 });
@@ -567,7 +566,6 @@ function createBattleWallLayer({
 }) {
     const wallLayer = new Container();
     wallLayer.sortableChildren = true;
-    const cityToBattleScale = segmentSize / CITY_HEX_SIZE;
     const wallTopAnchorY = getWallTopAnchorY(wallY);
 
     if (wallSegments.length === 0) {
@@ -581,7 +579,7 @@ function createBattleWallLayer({
     }
 
     wallSegments.forEach((segment, index) => {
-        const segmentCenterX = getSegmentCenterX(index, segmentSize);
+        const segmentCenterX = getBattleWallSegmentCenterX(segment, wallSegments, index, segmentSize);
         const textureAlias = segment.wallKey ? getWallSpriteLookupKey(segment.wallKey) : undefined;
         const wallSpriteMetadata = textureAlias && segment.wallDevelopmentVector
             ? wallSpriteMetadataAtlas[segment.wallDevelopmentVector][textureAlias]
@@ -589,8 +587,8 @@ function createBattleWallLayer({
 
         if (wallSpriteMetadata && textureAlias && Assets.cache.has(textureAlias)) {
             const sprite = new Sprite(Texture.from(textureAlias));
-            const spriteWidth = wallSpriteMetadata.targetSpriteSize.width * cityToBattleScale;
-            const spriteHeight = wallSpriteMetadata.targetSpriteSize.height * cityToBattleScale;
+            const spriteWidth = wallSpriteMetadata.targetSpriteSize.width;
+            const spriteHeight = wallSpriteMetadata.targetSpriteSize.height;
             sprite.anchor.set(0.5);
             sprite.x = segmentCenterX;
             sprite.y = wallY;
@@ -603,14 +601,14 @@ function createBattleWallLayer({
 
         const fallbackSegment = new Graphics();
         fallbackSegment
-            .rect(index * segmentSize, wallY - segmentSize / 2, segmentSize, segmentSize)
+            .rect(segmentCenterX - segmentSize / 2, wallY - segmentSize / 2, segmentSize, segmentSize)
             .fill(0x6f7787)
             .stroke({ color: 0xd9e2ff, width: 2 });
         wallLayer.addChild(fallbackSegment);
     });
 
     wallSegments.forEach((segment, index) => {
-        const segmentCenterX = getSegmentCenterX(index, segmentSize);
+        const segmentCenterX = getBattleWallSegmentCenterX(segment, wallSegments, index, segmentSize);
         const textureAlias = segment.wallTopKey ? getWallTopSpriteLookupKey(segment.wallTopKey) : undefined;
         const wallTopSpriteMetadata = textureAlias && segment.wallTopDevelopmentVector
             ? wallTopSpriteMetadataAtlas[segment.wallTopDevelopmentVector][textureAlias]
@@ -618,8 +616,8 @@ function createBattleWallLayer({
 
         if (wallTopSpriteMetadata && textureAlias && Assets.cache.has(textureAlias)) {
             const sprite = new Sprite(Texture.from(textureAlias));
-            const spriteWidth = wallTopSpriteMetadata.targetSpriteSize.width * cityToBattleScale;
-            const spriteHeight = wallTopSpriteMetadata.targetSpriteSize.height * cityToBattleScale;
+            const spriteWidth = wallTopSpriteMetadata.targetSpriteSize.width;
+            const spriteHeight = wallTopSpriteMetadata.targetSpriteSize.height;
             sprite.anchor.set(0.5);
             sprite.x = segmentCenterX;
             sprite.y = wallTopAnchorY;
@@ -649,6 +647,25 @@ function getSegmentCenterX(index: number, segmentSize: number) {
     return index * segmentSize + segmentSize / 2;
 }
 
+function getBattleWallSegmentCenterX(
+    segment: BattleWallSegment,
+    wallSegments: BattleWallSegment[],
+    index: number,
+    segmentSize: number,
+) {
+    const offsets = wallSegments.map(getWallSegmentAxialHorizontalOffset);
+    const minOffset = Math.min(...offsets);
+    const offset = getWallSegmentAxialHorizontalOffset(segment);
+
+    return Number.isFinite(offset) && Number.isFinite(minOffset)
+        ? (offset - minOffset) * segmentSize + segmentSize / 2
+        : getSegmentCenterX(index, segmentSize);
+}
+
+function getWallSegmentAxialHorizontalOffset(segment: Pick<BattleWallSegment, "column" | "row">) {
+    return segment.column + segment.row / 2;
+}
+
 function getWallTopAnchorY(wallY: number) {
     return wallY;
 }
@@ -658,7 +675,7 @@ function getWallSpriteLookupKey(wallKey: string) {
 }
 
 function getWallTopSpriteLookupKey(wallTopKey: string) {
-    return WALL_TOWER_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
+    return WALL_SUPERSTRUCTURE_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
 }
 
 function getTowerAnchorPosition({
@@ -678,14 +695,14 @@ function getTowerAnchorPosition({
     battlefieldWidth: number;
     wallY: number;
 }) {
-    const wallTopSegments = wallSegments
-        .map((segment, index) => ({ segment, index }))
-        .filter(({ segment }) => Boolean(segment.wallTopKey) && !excludedWallCellKeys.has(segment.cellKey));
-
-    const anchorSegment = wallTopSegments[towerIndex % Math.max(1, wallTopSegments.length)];
+    const anchorSegment = getTowerAnchorWallSegment({
+        towerIndex,
+        wallSegments,
+        excludedWallCellKeys,
+    });
     if (anchorSegment) {
         return {
-            x: getSegmentCenterX(anchorSegment.index, segmentSize),
+            x: getBattleWallSegmentCenterX(anchorSegment.segment, wallSegments, anchorSegment.index, segmentSize),
             y: getWallTopAnchorY(wallY),
         };
     }
@@ -694,6 +711,22 @@ function getTowerAnchorPosition({
         x: battlefieldWidth * (towerIndex + 1) / (towerCount + 1),
         y: getWallTopAnchorY(wallY),
     };
+}
+
+function getTowerAnchorWallSegment({
+    towerIndex,
+    wallSegments,
+    excludedWallCellKeys,
+}: {
+    towerIndex: number;
+    wallSegments: BattleWallSegment[];
+    excludedWallCellKeys: Set<string>;
+}) {
+    const wallTopSegments = wallSegments
+        .map((segment, index) => ({ segment, index }))
+        .filter(({ segment }) => Boolean(segment.wallTopKey) && !excludedWallCellKeys.has(segment.cellKey));
+
+    return wallTopSegments[towerIndex % Math.max(1, wallTopSegments.length)];
 }
 
 function getStandaloneTowerDefensePosition({
@@ -711,15 +744,23 @@ function getStandaloneTowerDefensePosition({
 }) {
     const segmentIndex = wallSegments.findIndex((segment) => segment.cellKey === defense.wallCellKey);
     if (segmentIndex >= 0) {
+        const segment = wallSegments[segmentIndex];
         return {
-            x: getSegmentCenterX(segmentIndex, segmentSize),
+            x: segment
+                ? getBattleWallSegmentCenterX(segment, wallSegments, segmentIndex, segmentSize)
+                : getSegmentCenterX(segmentIndex, segmentSize),
             y: getWallTopAnchorY(wallY),
         };
     }
 
     if (defense.wallColumn !== undefined) {
+        const matchingSegmentIndex = wallSegments.findIndex((segment) => segment.column === defense.wallColumn);
+        const matchingSegment = matchingSegmentIndex >= 0 ? wallSegments[matchingSegmentIndex] : undefined;
+
         return {
-            x: getSegmentCenterX(Math.max(0, defense.wallColumn), segmentSize),
+            x: matchingSegment
+                ? getBattleWallSegmentCenterX(matchingSegment, wallSegments, matchingSegmentIndex, segmentSize)
+                : battlefieldWidth / 2,
             y: getWallTopAnchorY(wallY),
         };
     }
@@ -796,7 +837,7 @@ function createTowerData({
         singleTargetStunDuration: stats.singleTargetStunDuration,
         singleTargetStunsPerSecond: stats.singleTargetStunsPerSecond,
         singleTargetStunRange: stats.singleTargetStunRange,
-        rangePixels: stats.targetingDistanceLimit,
+        rangeCityPixels: stats.targetingDistanceLimit,
         currentTarget: undefined,
         gunEntity,
         projectileSpawnOffset,

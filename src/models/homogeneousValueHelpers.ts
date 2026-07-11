@@ -57,7 +57,9 @@ export function formatHomogeneousValue(
         case "seconds":
             return `${numberFormatter.format(rawValue)}s`;
         case "distance":
-            return `${numberFormatter.format(rawValue)} px`;
+            return `${numberFormatter.format(rawValue)} hex`;
+        case "distancePerSecond":
+            return `${numberFormatter.format(rawValue)} hex/s`;
         case "kilometers":
             return `${numberFormatter.format(rawValue)} km`;
         case "triggerTolerance":

@@ -183,5 +183,7 @@ export function findTowerVisualSocketOffset(
     return undefined;
   }
 
-  return findInNode(towerVisualDefinition.root, { x: 0, y: 0 });
+  const rootSocket = towerVisualDefinition.root.part.rootSocket;
+
+  return findInNode(towerVisualDefinition.root, { x: -rootSocket.x, y: -rootSocket.y });
 }

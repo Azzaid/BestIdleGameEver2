@@ -18,11 +18,11 @@ import {
 } from "./hexUtils.ts";
 import {BUILDINGS_ATLAS, STRUCTURES_BY_ID} from "../../../../data/buildings/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../../../data/wallSegments/index.ts";
-import {WALL_TOWER_BUILDINGS} from "../../../../data/wallSuperstructures/index.ts";
-import {CITY_HEX_SIZE} from "../../../../data/constants.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS} from "../../../../data/wallSuperstructures/index.ts";
+import {CITY_HEX_RADIUS} from "../../../../data/constants.ts";
 import type {CityExpansionOption, CityExpansionSideId} from "../../../../models/city/expansion.ts";
 
-const HEX_RADIUS_PX = CITY_HEX_SIZE / Math.sqrt(3);
+const HEX_RADIUS_PX = CITY_HEX_RADIUS;
 const HEX_STROKE_WIDTH = 3;
 const HEX_EDGE_GAP_PX = 0;
 const hexWidth = Math.sqrt(3) * HEX_RADIUS_PX; // flat-to-flat
@@ -547,7 +547,7 @@ export default function CityHex({
                     const wallTopSpriteRotation = wallTopSpriteMetadata?.rotationDegrees ?? 0;
                     const hasForegroundTexture = Boolean(spriteUrl || wallSpriteUrl || wallTopSpriteUrl);
                     const wallName = wallKey ? WALL_SEGMENT_BUILDINGS[wallKey]?.name ?? wallKey : undefined;
-                    const wallTopName = wallTopKey ? WALL_TOWER_BUILDINGS[wallTopKey]?.name ?? wallTopKey : undefined;
+                    const wallTopName = wallTopKey ? WALL_SUPERSTRUCTURE_BUILDINGS[wallTopKey]?.name ?? wallTopKey : undefined;
                     const fallbackName = kind === "wall"
                         ? [wallName, wallTopName].filter(Boolean).join(" + ")
                         : buildingKey;
@@ -1079,5 +1079,6 @@ function getWallSpriteLookupKey(wallKey: string) {
 }
 
 function getWallTopSpriteLookupKey(wallTopKey: string) {
-    return WALL_TOWER_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
+    return WALL_SUPERSTRUCTURE_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
 }
+

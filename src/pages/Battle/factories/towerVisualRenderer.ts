@@ -169,7 +169,11 @@ export function buildTowerVisualContainer(
   container.sortableChildren = true;
 
   const partContainers = new Map<string, PIXI.Container>();
-  buildNode(towerVisualDefinition.root, options, partContainers, container, { x: 0, y: 0 });
+  const rootSocket = towerVisualDefinition.root.part.rootSocket;
+  buildNode(towerVisualDefinition.root, options, partContainers, container, {
+    x: -rootSocket.x,
+    y: -rootSocket.y,
+  });
 
   return { container, partContainers };
 }

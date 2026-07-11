@@ -3,6 +3,7 @@
     "id": "wallSuperstructures.nature.tentacleSquid",
     "name": "Tentacle squid",
     "description": "Small and weak. But when careffuly rooted onto the wall can push back creatures ten times heavier than itself.",
+    "wallTopCategory": "wallSuperstructure",
     "keywords": [
       "nature",
       "wallSuperstructure",
@@ -16,7 +17,7 @@
           "production",
           "push"
         ],
-        "additive": 24
+        "additive": 1
       },
       {
         "valueId": "wall.pushBacksPerSecond",
@@ -32,7 +33,7 @@
           "production",
           "push"
         ],
-        "additive": 96
+        "additive": 3
       },
       {
         "valueId": "resource.animals",
@@ -61,6 +62,7 @@
     "id": "wallSuperstructures.nature.toxicPuffShrooms",
     "visualAssetId": "wallSuperstructures.nature.toxicPuffShrooms",
     "name": "Poisonous cluster",
+    "wallTopCategory": "wallSuperstructure",
     "keywords": [
       "nature",
       "wallSuperstructure"
@@ -93,7 +95,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 200
+        "additive": 6
       },
       {
         "valueId": "tower.zoneDotTicksPerSecond",

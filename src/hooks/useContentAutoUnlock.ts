@@ -2,7 +2,7 @@ import {useEffect, useMemo, useRef} from "react";
 import {BUILDINGS_ATLAS} from "../data/buildings/index.ts";
 import {TOWER_PARTS_BY_ID} from "../data/gunParts/index.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../data/wallSegments/index.ts";
-import {WALL_TOWER_BUILDINGS} from "../data/wallSuperstructures/index.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS} from "../data/wallSuperstructures/index.ts";
 import {DEVELOPMENT_VECTORS} from "../models/DevlopmentVector.ts";
 import type {NewNotification} from "../models/notifications.ts";
 import {sendNotification} from "../lib/notifications/eventBus.ts";
@@ -97,7 +97,7 @@ export function useContentAutoUnlock(): void {
       action: ids => dispatch(unlockWallSuperstructures(ids)),
       kind: "Tower",
       keyPrefix: "wallSuperstructure",
-      getName: id => WALL_TOWER_BUILDINGS[id]?.name ?? id,
+      getName: id => WALL_SUPERSTRUCTURE_BUILDINGS[id]?.name ?? id,
       notifiedIds: notifiedUnlockIdsRef.current,
       notify,
     }));
@@ -282,7 +282,7 @@ function getVisibleContentName(
   if (kind === "building") return buildingNamesById[id] ?? id;
   if (kind === "towerPart") return TOWER_PARTS_BY_ID[id]?.name ?? id;
   if (kind === "wallSegment") return WALL_SEGMENT_BUILDINGS[id]?.name ?? id;
-  if (kind === "wallSuperstructure") return WALL_TOWER_BUILDINGS[id]?.name ?? id;
+  if (kind === "wallSuperstructure") return WALL_SUPERSTRUCTURE_BUILDINGS[id]?.name ?? id;
   return id;
 }
 

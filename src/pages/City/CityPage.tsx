@@ -25,7 +25,7 @@ import {
 } from "../../store/city/slice.ts";
 import {UPKEEP_SPRITES, UPKEEP_TYPES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
 import {WALL_SEGMENT_BUILDINGS} from "../../data/wallSegments/index.ts";
-import {WALL_TOWER_BUILDINGS} from "../../data/wallSuperstructures/index.ts";
+import {WALL_SUPERSTRUCTURE_BUILDINGS, isWallTopTower} from "../../data/wallSuperstructures/index.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
 import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
@@ -166,7 +166,7 @@ const CityPage = () => {
         [requirementResolutionData, unlockedWallSegmentIdSet],
     );
     const unavailableWallSuperstructureReasons = useMemo(
-        () => getUnavailableWallBuildingReasons(WALL_TOWER_BUILDINGS, unlockedWallSuperstructureIdSet, requirementResolutionData),
+        () => getUnavailableWallBuildingReasons(WALL_SUPERSTRUCTURE_BUILDINGS, unlockedWallSuperstructureIdSet, requirementResolutionData),
         [requirementResolutionData, unlockedWallSuperstructureIdSet],
     );
     const selectedExpansionOption = confirmingExpansionSide
@@ -223,7 +223,7 @@ const CityPage = () => {
         if (!selectedHex || signatureStatus.isBesieged) return;
         if (selectedHex.kind !== "wall" || selectedHex.wallTopKey) return;
         if (!unlockedWallSuperstructureIdSet.has(buildingKey)) return;
-        const wallTopBuilding = WALL_TOWER_BUILDINGS[buildingKey];
+        const wallTopBuilding = WALL_SUPERSTRUCTURE_BUILDINGS[buildingKey];
         if (!wallTopBuilding) return;
         if (!areRequirementsMet(wallTopBuilding.buildRequirements, requirementResolutionData)) return;
         const nextHex = {
@@ -284,7 +284,7 @@ const CityPage = () => {
         ))
         : undefined;
     const selectedWallBuilding = selectedHex?.wallKey ? WALL_SEGMENT_BUILDINGS[selectedHex.wallKey] : undefined;
-    const selectedWallTopBuilding = selectedHex?.wallTopKey ? WALL_TOWER_BUILDINGS[selectedHex.wallTopKey] : undefined;
+    const selectedWallTopBuilding = selectedHex?.wallTopKey ? WALL_SUPERSTRUCTURE_BUILDINGS[selectedHex.wallTopKey] : undefined;
     const selectedBuildingVector = selectedBuilding?.vector ?? (selectedHex?.kind === "city" ? selectedHex.developmentVector : undefined);
     const selectedBuildingIsNature = selectedBuildingVector === DEVELOPMENT_VECTORS.nature;
     const selectedStructureCandidates = selectedHex
@@ -515,7 +515,7 @@ function SelectedHexPanel({
 }: SelectedHexPanelProps) {
     const selectionTitle = getSelectionTitle(selectedHex, selectedBuilding, selectedWallBuilding, selectedWallTopBuilding);
     const selectionCoordinates = `${selectedHex.column}:${selectedHex.row}`;
-    const selectedWallTopLabel = selectedWallTopBuilding && isWallTopTowerMount(selectedWallTopBuilding)
+    const selectedWallTopLabel = selectedWallTopBuilding && isWallTopTower(selectedWallTopBuilding)
         ? "Tower"
         : "Wall Superstructure";
     const canDemolishSelectedBuilding = selectedHex.kind === "city" && selectedBuilding?.vector !== DEVELOPMENT_VECTORS.nature;
@@ -1121,13 +1121,13 @@ function WallBuildingSelector({
     const [activeWallTopCategory, setActiveWallTopCategory] = useState<WallTopCategory>("tower");
     const visibleWallSegments = Object.values(WALL_SEGMENT_BUILDINGS)
         .filter(building => visibleWallSegmentIds.has(building.id) && building.id !== currentWallKey);
-    const visibleWallTopBuildings = Object.values(WALL_TOWER_BUILDINGS)
+    const visibleWallTopBuildings = Object.values(WALL_SUPERSTRUCTURE_BUILDINGS)
         .filter(building => visibleWallSuperstructureIds.has(building.id));
-    const visibleTowerMounts = visibleWallTopBuildings.filter(isWallTopTowerMount);
-    const visibleWallSuperstructures = visibleWallTopBuildings.filter(building => !isWallTopTowerMount(building));
+    const visibleTowers = visibleWallTopBuildings.filter(isWallTopTower);
+    const visibleWallSuperstructures = visibleWallTopBuildings.filter(building => !isWallTopTower(building));
     const wallTopCategories = [
-        {category: "tower" as const, label: "Tower", buildings: visibleTowerMounts},
-        {category: "superstructure" as const, label: "Wall Superstructure", buildings: visibleWallSuperstructures},
+        {category: "tower" as const, label: "Tower", buildings: visibleTowers},
+        {category: "wallSuperstructure" as const, label: "Wall Superstructure", buildings: visibleWallSuperstructures},
     ].filter(option => option.buildings.length > 0);
     const activeCategoryIsAvailable = wallTopCategories.some(option => option.category === activeWallTopCategory);
     const selectedWallTopCategory = (
@@ -1196,11 +1196,7 @@ function formatActiveModifierSource(modifier: HomogeneousActiveModifier): string
         ?? modifier.sourceEntityId;
 }
 
-type WallTopCategory = "tower" | "superstructure";
-
-function isWallTopTowerMount(building: WallBuilding): boolean {
-    return !(building.keywords ?? []).map(String).includes("wallSuperstructure");
-}
+type WallTopCategory = "tower" | "wallSuperstructure";
 
 function WallBuildingList({
     title,

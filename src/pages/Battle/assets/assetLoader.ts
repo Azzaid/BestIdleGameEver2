@@ -10,7 +10,7 @@ import { wallTopSpriteMetadataAtlas, wallTopSpritesAtlas } from '../../../models
 import { BATTLE_ENEMY_BLUEPRINTS } from '../../../data/enemies/index.ts';
 import { ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY } from '../../../data/enemies/visuals.ts';
 import { WALL_SEGMENT_BUILDINGS } from '../../../data/wallSegments/index.ts';
-import { WALL_TOWER_BUILDINGS } from '../../../data/wallSuperstructures/index.ts';
+import { WALL_SUPERSTRUCTURE_BUILDINGS } from '../../../data/wallSuperstructures/index.ts';
 import { BATTLE_DAMAGE_AREA_VFX_DEFINITIONS } from '../../../data/battleDamageAreaVfx.ts';
 
 export async function loadBattleBackground(backgroundId: BattleBackgroundId): Promise<void> {
@@ -25,14 +25,19 @@ export async function loadBattleBackground(backgroundId: BattleBackgroundId): Pr
 }
 
 export async function loadTowerPartAssets(): Promise<void> {
-    const partIds = new Set(TOWER_PARTS.map((part) => part.id));
-    const towerPartAssetsToLoad = Object.entries(TOWER_PART_VISUAL_ASSETS)
-        .filter(([partId]) => partIds.has(partId))
-        .filter(([partId]) => !Assets.cache.has(partId))
-        .map(([partId, asset]) => ({
-            alias: partId,
-            src: asset.src,
-        }));
+    const partTextureKeys = new Set(TOWER_PARTS.map((part) => part.sprite.textureKey));
+    const towerPartAssetsToLoad = [...partTextureKeys]
+        .flatMap((textureKey) => {
+            if (Assets.cache.has(textureKey)) return [];
+
+            const asset = TOWER_PART_VISUAL_ASSETS[textureKey];
+            return asset
+                ? [{
+                    alias: textureKey,
+                    src: asset.src,
+                }]
+                : [];
+        });
     const projectileTextureKeys = new Set(
         TOWER_PARTS.flatMap((part) => (
             part.slot === 'ammo' && part.projectileSprite?.textureKey
@@ -141,5 +146,5 @@ function getWallSpriteLookupKey(wallKey: string) {
 }
 
 function getWallTopSpriteLookupKey(wallTopKey: string) {
-    return WALL_TOWER_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
+    return WALL_SUPERSTRUCTURE_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
 }
