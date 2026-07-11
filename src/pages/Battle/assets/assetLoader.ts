@@ -12,6 +12,7 @@ import { ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY } from '../../../data/enemies/visual
 import { WALL_SEGMENT_BUILDINGS } from '../../../data/wallSegments/index.ts';
 import { WALL_SUPERSTRUCTURE_BUILDINGS } from '../../../data/wallSuperstructures/index.ts';
 import { BATTLE_DAMAGE_AREA_VFX_DEFINITIONS } from '../../../data/battleDamageAreaVfx.ts';
+import type { BattlefieldTerrainHex } from '../../../models/battle/battlefieldTerrain.ts';
 
 export async function loadBattleBackground(backgroundId: BattleBackgroundId): Promise<void> {
     const background = BATTLE_BACKGROUNDS[backgroundId];
@@ -126,14 +127,35 @@ export async function loadBattleDamageAreaVfxAssets(): Promise<void> {
     await Assets.load(assetsToLoad);
 }
 
+export async function loadBattlefieldTerrainAssets(terrainHexes: readonly BattlefieldTerrainHex[]): Promise<void> {
+    const queuedAliases = new Set<string>();
+    const assetsToLoad = terrainHexes.flatMap((terrainHex) => {
+        const textureAlias = terrainHex.backgroundSpriteId;
+        if (!terrainHex.backgroundSpriteSrc || Assets.cache.has(textureAlias) || queuedAliases.has(textureAlias)) return [];
+
+        queuedAliases.add(textureAlias);
+
+        return [{
+            alias: textureAlias,
+            src: terrainHex.backgroundSpriteSrc,
+        }];
+    });
+
+    if (assetsToLoad.length === 0) return;
+
+    await Assets.load(assetsToLoad);
+}
+
 /** Loads only assets needed by the current battle scene. */
 export async function loadBattleAssets(args?: {
     backgroundId?: BattleBackgroundId;
     wallSegments?: BattleWallSegment[];
+    terrainHexes?: readonly BattlefieldTerrainHex[];
 }): Promise<void> {
     await loadEnemyAssets();
     await loadTowerPartAssets();
     await loadBattleWallAssets(args?.wallSegments ?? []);
+    await loadBattlefieldTerrainAssets(args?.terrainHexes ?? []);
     await loadBattleDamageAreaVfxAssets();
 
     if (args?.backgroundId) {

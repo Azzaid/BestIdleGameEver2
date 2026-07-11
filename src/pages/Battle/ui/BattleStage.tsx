@@ -1,4 +1,4 @@
-import { Application, Assets, Container, Graphics, Sprite, Texture, TilingSprite } from 'pixi.js';
+import { Application, Assets, Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createWorld, createEntityId } from '../core/world';
 import { runSystems } from '../systems/runSystems';
@@ -10,8 +10,6 @@ import {
     setCameraScale,
 } from '../core/camera';
 import { loadBattleAssets } from '../assets/assetLoader';
-import { BATTLE_BACKGROUNDS } from '../assets/backgrounds.ts';
-import type { BattleBackgroundId } from '../../../models/battle/backgrounds.ts';
 import type { TowerAssemblyResolved, TowerStatsResolved } from '../../../models/battle/towerParts.ts';
 import type { TowerDamageProfiles } from '../../../models/battle/damage.ts';
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
@@ -19,22 +17,23 @@ import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } 
 import type { BattleMetrics, BattleResult, MonsterMovementModifiers, WallZoneEffects } from '../../../models/battle/world.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import type { StandaloneTowerDefense, TowerData } from '../../../models/battle/tower.ts';
-import { CITY_HEX_WIDTH } from '../../../data/constants.ts';
+import { CITY_HEX_RADIUS, CITY_HEX_WIDTH } from '../../../data/constants.ts';
 import { wallSpriteMetadataAtlas } from '../../../models/sprites/walls/wallsSpriteAtlas.ts';
 import { wallTopSpriteMetadataAtlas } from '../../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
 import { getWallContactY } from '../core/wallGeometry.ts';
 import { WALL_SEGMENT_BUILDINGS } from '../../../data/wallSegments/index.ts';
 import { WALL_SUPERSTRUCTURE_BUILDINGS } from '../../../data/wallSuperstructures/index.ts';
+import type { BattlefieldTerrainHex } from '../../../models/battle/battlefieldTerrain.ts';
 
 /** Drop-in React component hosting the battle canvas (Pixi v8). */
 export function BattleStage(props: {
     wallLogicalWidth: number;   // TODO: derive from city hex row width (Redux)
     wallSegments: BattleWallSegment[];
+    terrainHexes: BattlefieldTerrainHex[];
     standaloneTowerDefenses: StandaloneTowerDefense[];
     battlefieldWidth: number;   // TODO: logical width in world units
     battlefieldHeight: number;  // TODO: logical height in world units
     wallY: number;
-    backgroundId: BattleBackgroundId;
     resolvedTowers: TowerAssemblyResolved[];
     initialThreat: number;
     targetThreat: number;
@@ -187,8 +186,8 @@ export function BattleStage(props: {
                 hostRef.current.appendChild(nextApp.canvas);
 
                 await loadBattleAssets({
-                    backgroundId: props.backgroundId,
                     wallSegments: props.wallSegments,
+                    terrainHexes: props.terrainHexes,
                 });
 
                 if (disposed || app !== nextApp) return;
@@ -245,12 +244,7 @@ export function BattleStage(props: {
             worldRef.current = world;
             camera.container.addChild(world.worldLayer);
 
-            const backgroundDefinition = BATTLE_BACKGROUNDS[props.backgroundId];
-            const battlefieldBackground = new TilingSprite({
-                texture: Texture.from(backgroundDefinition.textureAlias),
-                width: props.battlefieldWidth,
-                height: props.battlefieldHeight,
-            });
+            const battlefieldBackground = createBattlefieldTerrainLayer(props.terrainHexes);
             battlefieldBackground.zIndex = -100;
             world.worldLayer.addChild(battlefieldBackground);
 
@@ -453,10 +447,10 @@ export function BattleStage(props: {
         canvasIsReady,
         props.wallLogicalWidth,
         props.wallSegments,
+        props.terrainHexes,
         props.battlefieldWidth,
         props.battlefieldHeight,
         props.wallY,
-        props.backgroundId,
         props.resolvedTowers,
         props.standaloneTowerDefenses,
         props.showDebugOutlines,
@@ -641,6 +635,62 @@ function createBattleWallLayer({
     });
 
     return wallLayer;
+}
+
+function createBattlefieldTerrainLayer(terrainHexes: readonly BattlefieldTerrainHex[]) {
+    const terrainLayer = new Container();
+    terrainLayer.sortableChildren = true;
+
+    terrainHexes.forEach((terrainHex) => {
+        const fallbackHex = createTerrainHexShape(terrainHex.fallbackFill);
+        fallbackHex.x = terrainHex.centerX;
+        fallbackHex.y = terrainHex.centerY;
+        terrainLayer.addChild(fallbackHex);
+
+        if (!terrainHex.backgroundSpriteSrc) return;
+
+        const texture = Assets.cache.has(terrainHex.backgroundSpriteId)
+            ? Texture.from(terrainHex.backgroundSpriteId)
+            : Texture.from(terrainHex.backgroundSpriteSrc);
+        const texturedHex = createTexturedTerrainHex(texture);
+        texturedHex.x = terrainHex.centerX;
+        texturedHex.y = terrainHex.centerY;
+        terrainLayer.addChild(texturedHex);
+    });
+
+    return terrainLayer;
+}
+
+function createTerrainHexShape(fill: number) {
+    const hex = new Graphics();
+    const points = getBattlefieldHexPoints();
+
+    hex.poly(points).fill(fill);
+
+    return hex;
+}
+
+function createTexturedTerrainHex(texture: Texture) {
+    const hex = new Graphics();
+    const points = getBattlefieldHexPoints();
+
+    hex.poly(points).fill(texture);
+
+    return hex;
+}
+
+function getBattlefieldHexPoints() {
+    const points: number[] = [];
+
+    for (let index = 0; index < 6; index++) {
+        const angleRadians = (Math.PI / 180) * (60 * index - 30);
+        points.push(
+            CITY_HEX_RADIUS * Math.cos(angleRadians),
+            CITY_HEX_RADIUS * Math.sin(angleRadians),
+        );
+    }
+
+    return points;
 }
 
 function getSegmentCenterX(index: number, segmentSize: number) {

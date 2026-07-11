@@ -2,7 +2,7 @@ import {BattleStage} from "./ui/BattleStage.tsx";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import { useTypedDispatch, useTypedSelector } from "../../store/hooks.ts";
 import * as styles from './BattlePage.css.ts';
-import { selectCityBattlefield, selectCityHexes } from "../../store/city/selectors.ts";
+import { selectCityBiome, selectCityHexes } from "../../store/city/selectors.ts";
 import { CITY_HEX_WIDTH } from "../../data/constants.ts";
 import { Link } from "react-router-dom";
 import { recordControlledTerritoryReached, recordLastSiegeSignature } from "../../store/upkeep/slice.ts";
@@ -46,6 +46,7 @@ import {
 import type {CityResolution} from "../../models/city/Adjancency.ts";
 import type {TowerDamageProfiles} from "../../models/battle/damage.ts";
 import {WALL_SUPERSTRUCTURE_BUILDINGS, isWallTopTower} from "../../data/wallSuperstructures/index.ts";
+import {createBattlefieldTerrainHexes} from "./battlefieldTerrain.ts";
 
 type BattleMode = "siege" | "pressure";
 
@@ -197,7 +198,8 @@ const BattlePage = () => {
     );
     const resolvedBattleTowers = useStableResolvedBattleTowers(resolvedBattleTowersUnstable);
     const cityHexes = useTypedSelector(selectCityHexes);
-    const cityBattlefield = useTypedSelector(selectCityBattlefield);
+    const cityBiome = useTypedSelector(selectCityBiome);
+    const cityTerrainVectorMap = useTypedSelector(state => state.city.terrainVectorMap);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
     const controlledTerritory = useTypedSelector(selectControlledTerritory);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
@@ -308,9 +310,27 @@ const BattlePage = () => {
     );
     const battlefieldLength = longestTowerRange * BATTLEFIELD_RANGE_MULTIPLIER;
     const battlefieldHeight = battlefieldLength + BATTLE_WALL_APRON_HEIGHT;
+    const battlefieldTerrainHexes = useMemo(() => createBattlefieldTerrainHexes({
+        biome: cityBiome,
+        terrainVectorMap: cityTerrainVectorMap,
+        wallSegments: battleWallSegments,
+        battlefieldWidth: wallLogicalWidth,
+        battlefieldHeight,
+        wallY: battlefieldLength,
+    }), [
+        battleWallSegments,
+        battlefieldHeight,
+        battlefieldLength,
+        cityBiome,
+        cityTerrainVectorMap,
+        wallLogicalWidth,
+    ]);
     const battleKey = useMemo(() => [
         wallLogicalWidth,
         battlefieldHeight,
+        battlefieldTerrainHexes
+            .map(hex => `${hex.cellKey}:${hex.backgroundSpriteId}`)
+            .join("|"),
         resolvedBattleTowers.map(getResolvedTowerBattleKey).join("::"),
         standaloneTowerDefenses.map(getStandaloneTowerDefenseBattleKey).join("::"),
         battleWallSegments
@@ -325,6 +345,7 @@ const BattlePage = () => {
     ].join(":"), [
         wallLogicalWidth,
         battlefieldHeight,
+        battlefieldTerrainHexes,
         resolvedBattleTowers,
         standaloneTowerDefenses,
         battleWallSegments,
@@ -439,10 +460,10 @@ const BattlePage = () => {
                         key={battleKey}
                         wallLogicalWidth={wallLogicalWidth}
                         wallSegments={battleWallSegments}
+                        terrainHexes={battlefieldTerrainHexes}
                         battlefieldWidth={wallLogicalWidth}
                         battlefieldHeight={battlefieldHeight}
                         wallY={battlefieldLength}
-                        backgroundId={cityBattlefield.backgroundId}
                         resolvedTowers={resolvedBattleTowers}
                         standaloneTowerDefenses={standaloneTowerDefenses}
                         initialThreat={initialThreat}

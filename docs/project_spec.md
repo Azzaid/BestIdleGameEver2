@@ -1,6 +1,6 @@
 # Project Specification: Best Idle Game Ever 2
 
-Last updated: 2026-07-09 (local)
+Last updated: 2026-07-11 (local)
 
 This document is the repository's single project specification. It summarizes the implemented prototype and the current design direction from the rest of the `docs` folder. The focused design documents remain the deeper references for individual systems.
 
@@ -34,7 +34,7 @@ For portable technical decisions, data schema principles, value resolution rules
 
 The current app is a frontend-only prototype with multiple routed views:
 
-- Battle: Pixi/canvas battlefield rendering with enemy spawning, tower fire, projectiles, health bars, wall pressure, and battle state.
+- Battle: Pixi/canvas battlefield rendering with city-continuation hex terrain, enemy spawning, tower fire, projectiles, health bars, wall pressure, and battle state.
 - Build: tower assembly from component slots with resolved stats, support costs, warnings, keywords, and synergies.
 - Research: radial research tree with unlockable nodes and vector coloring.
 - City: SVG hex city visualization with clickable city and wall tiles, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
@@ -108,7 +108,7 @@ Texture asset layout:
 - City building textures and zoom/shift metadata live in `src/assets/buildings/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`.
 - City wall segment textures and metadata live in `src/assets/wallSegments/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`. Wall metadata controls runtime target size, optional rotation, and visible-pixel bounds for battle contact.
 - City wall-top/superstructure textures and metadata live in `src/assets/wallSuperstructures/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`. Wall-top metadata controls runtime target size and optional rotation in city and battle previews.
-- City hex background textures live in `src/assets/hexBackgrounds/<type>/<biome>/<vector>` and are cataloged through `src/data/cityHexBackgrounds.ts`. City state stores a biome, maximum city size, generated terrain vector map, and per-hex background sprite id/vector; migration rerolls the biome and terrain map, initial and cleared cells use `claimedTerrain`, and built cells use `buildingUnderlay`.
+- City hex background textures live in `src/assets/hexBackgrounds/<type>/<biome>/<vector>` and are cataloged through `src/data/cityHexBackgrounds.ts`. City state stores a biome, maximum city size, generated terrain vector map, and per-hex background sprite id/vector; migration rerolls the biome and terrain map, initial and cleared cells use `claimedTerrain`, and built cells use `buildingUnderlay`. Battle terrain is generated from the same hidden terrain vector map, extending it upward beyond the wall when needed and rendering only `claimedTerrain` hex sprites so the battlefield reads as a seamless continuation outside the city.
 - Tower component textures and metadata live in `src/assets/gunParts/<vector>` and are cataloged through `src/data/entityVisualAssets.ts`; tower part runtime metadata is derived in `src/data/gunParts/partVisualMetadata.ts`. Tower component sprite sizing uses a single metadata `zoom` value against the source image size so editor previews and Pixi rendering preserve proportions. Ammo projectile textures live in `src/assets/projectiles/<vector>` and are referenced from ammo definitions with `projectileSpriteTextureKey`.
 - Global event pictures live in `src/assets/events` and are discovered by the global event image catalog.
 - Local editor image writes go through dedicated file upload endpoints (`/entity-sprites`, `/global-event-images`, and `/hex-background-sprites`); JSON definition saves should reference image ids or visual asset ids instead of carrying image bytes. Homogeneous value definition edits go through `/homogeneous-values` because the registry is TypeScript-backed.
