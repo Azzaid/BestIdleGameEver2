@@ -106,6 +106,9 @@ export async function loadEnemyAssets(): Promise<void> {
         return asset ? [{
             alias: textureKey,
             src: asset.atlasSrc ?? asset.src,
+            data: asset.atlasImageFilename ? {
+                imageFilename: asset.atlasImageFilename,
+            } : undefined,
         }] : [];
     });
 

@@ -6,6 +6,7 @@ export type EnemyVisualAsset = {
   region: string;
   src: string;
   atlasSrc?: string;
+  atlasImageFilename?: string;
   animationFrames?: string[];
   fps?: number;
   metadata?: EnemyVisualMetadata;
@@ -42,6 +43,7 @@ export const ENEMY_VISUAL_ASSETS: readonly EnemyVisualAsset[] = Object.entries(e
       region: getRegionFromPath(path),
       src,
       atlasSrc: isPixiSpritesheet(json) ? enemyJsonUrls[jsonPath] : undefined,
+      atlasImageFilename: isPixiSpritesheet(json) ? getFilenameFromUrl(src) : undefined,
       animationFrames,
       fps: metadata?.fps,
       metadata,
@@ -63,6 +65,10 @@ function getFileStem(path: string): string {
 
 function replaceExtension(path: string, extension: "json" | "png"): string {
   return path.replace(/\.(json|png)$/i, `.${extension}`);
+}
+
+function getFilenameFromUrl(url: string): string {
+  return url.split(/[?#]/)[0]?.split("/").at(-1) ?? url;
 }
 
 function titleFromTextureKey(textureKey: string): string {
