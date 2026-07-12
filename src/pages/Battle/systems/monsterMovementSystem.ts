@@ -9,7 +9,9 @@ export function MonsterMovementSystem(world: World, dt: number) {
     let movement = world.movements.get(entityId);
     const transform = world.transforms.get(entityId);
     if (!movement || !transform) continue;
-    updateEnemyAttackMode(world, entityId);
+    if (!world.retreatingEnemyIds.has(entityId)) {
+      updateEnemyAttackMode(world, entityId);
+    }
     movement = world.movements.get(entityId);
     if (!movement) continue;
 
@@ -22,7 +24,9 @@ export function MonsterMovementSystem(world: World, dt: number) {
         world.enemyTowerStunRemainingSeconds.delete(entityId);
       }
       stopEnemyAtEngagementLine(world, entityId, enemy.hitRadius, getEnemyWallEngagementDistance(enemy.kind, enemy.shotDistance));
-      updateEnemyAttackMode(world, entityId);
+      if (!world.retreatingEnemyIds.has(entityId)) {
+        updateEnemyAttackMode(world, entityId);
+      }
       continue;
     }
 
@@ -45,12 +49,21 @@ export function MonsterMovementSystem(world: World, dt: number) {
       case 'wobble': {
         const speed = getMonsterMovementSpeed(world, movement.baseSpeedPixelsPerSecond);
         const swayAmplitude = getMonsterSwayAmplitude(world, movement.wobbleAmplitudePixels);
+        const previousX = transform.position.x;
+        const previousTimeAliveSeconds = movement.timeAliveSeconds;
+        const stepDistance = speed * dt;
+        const candidateTimeAliveSeconds = previousTimeAliveSeconds + dt;
+        const candidateX = getWobbleX(movement, swayAmplitude, candidateTimeAliveSeconds);
+        const nextTimeAliveSeconds = Math.abs(candidateX - previousX) <= stepDistance
+          ? candidateTimeAliveSeconds
+          : findReachableWobbleTime(movement, swayAmplitude, previousX, previousTimeAliveSeconds, candidateTimeAliveSeconds, stepDistance);
+        const nextX = getWobbleX(movement, swayAmplitude, nextTimeAliveSeconds);
+        const lateralDistance = Math.abs(nextX - previousX);
+        const forwardDistance = Math.sqrt(Math.max(0, stepDistance ** 2 - lateralDistance ** 2));
 
-        movement.timeAliveSeconds += dt;
-        transform.position.y += speed * dt;
-        transform.position.x = movement.initialX + Math.sin(
-          movement.timeAliveSeconds * 2 * Math.PI * movement.wobbleFrequencyHz
-        ) * swayAmplitude;
+        movement.timeAliveSeconds = nextTimeAliveSeconds;
+        transform.position.y += forwardDistance;
+        transform.position.x = nextX;
         transform.rotationRadians = Math.PI / 2;
         break;
       }
@@ -171,8 +184,10 @@ export function MonsterMovementSystem(world: World, dt: number) {
       }
     }
 
-    stopEnemyAtEngagementLine(world, entityId, enemy.hitRadius, getEnemyWallEngagementDistance(enemy.kind, enemy.shotDistance));
-    updateEnemyAttackMode(world, entityId);
+    if (!world.retreatingEnemyIds.has(entityId)) {
+      stopEnemyAtEngagementLine(world, entityId, enemy.hitRadius, getEnemyWallEngagementDistance(enemy.kind, enemy.shotDistance));
+      updateEnemyAttackMode(world, entityId);
+    }
   }
 }
 
@@ -213,6 +228,40 @@ function randomBetween(min: number, max: number) {
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(value, max));
+}
+
+function getWobbleX(
+  movement: Extract<MovementController, {kind: 'wobble'}>,
+  swayAmplitude: number,
+  timeAliveSeconds: number,
+) {
+  return movement.initialX + Math.sin(
+    timeAliveSeconds * 2 * Math.PI * movement.wobbleFrequencyHz
+  ) * swayAmplitude;
+}
+
+function findReachableWobbleTime(
+  movement: Extract<MovementController, {kind: 'wobble'}>,
+  swayAmplitude: number,
+  currentX: number,
+  minTimeAliveSeconds: number,
+  maxTimeAliveSeconds: number,
+  maxLateralDistance: number,
+) {
+  let low = minTimeAliveSeconds;
+  let high = maxTimeAliveSeconds;
+
+  for (let i = 0; i < 8; i++) {
+    const mid = (low + high) / 2;
+    const lateralDistance = Math.abs(getWobbleX(movement, swayAmplitude, mid) - currentX);
+    if (lateralDistance <= maxLateralDistance) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  return low;
 }
 
 function applyMonsterSway(

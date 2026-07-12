@@ -233,7 +233,7 @@ const server = createServer(async (request, response) => {
 
     try {
       await mkdir(target.dir, { recursive: true })
-      await writeFile(target.metadataPath, `${JSON.stringify(payload.metadata, null, 2)}\n`, 'utf8')
+      await writeSpriteMetadata(target.metadataPath, payload.metadata)
       sendJson(response, 200, {
         action: 'saved',
         file: target.relativeMetadataPath,
@@ -839,6 +839,41 @@ async function saveSpriteUpload(fields, imageFile) {
     file: target.relativeImagePath,
     metadataFile: target.relativeMetadataPath,
   }
+}
+
+async function writeSpriteMetadata(metadataPath, metadata) {
+  const existingMetadataFile = await readJsonFileIfExists(metadataPath)
+  const metadataFile = isPixiSpritesheetJson(existingMetadataFile)
+    ? {
+      ...existingMetadataFile,
+      meta: {
+        ...existingMetadataFile.meta,
+        enemyVisualMetadata: {
+          ...(isRecord(existingMetadataFile.meta.enemyVisualMetadata) ? existingMetadataFile.meta.enemyVisualMetadata : {}),
+          ...metadata,
+        },
+      },
+    }
+    : metadata
+
+  await writeFile(metadataPath, `${JSON.stringify(metadataFile, null, 2)}\n`, 'utf8')
+}
+
+async function readJsonFileIfExists(filePath) {
+  try {
+    return JSON.parse(await readFile(filePath, 'utf8'))
+  } catch (error) {
+    if (error.code === 'ENOENT') return undefined
+    return undefined
+  }
+}
+
+function isPixiSpritesheetJson(value) {
+  return isRecord(value) && isRecord(value.frames) && isRecord(value.meta)
+}
+
+function isRecord(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 }
 
 async function deleteSpriteAction(action) {

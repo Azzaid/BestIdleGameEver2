@@ -16,13 +16,15 @@ export const CITY_HEX_RADIUS = 64;
 
 export const CITY_HEX_WIDTH = Math.sqrt(3) * CITY_HEX_RADIUS;
 
+export const HEX_DISTANCE_PIXELS = CITY_HEX_RADIUS * 1.5;
+
 export function toPixels(hexDistance: number) {
     return Number.isFinite(hexDistance)
-        ? hexDistance * CITY_HEX_RADIUS
+        ? hexDistance * HEX_DISTANCE_PIXELS
         : hexDistance;
 }
 
-export const BATTLEFIELD_RANGE_MULTIPLIER = 1.35;
+export const BATTLEFIELD_RANGE_MULTIPLIER = 1;
 
 export const BATTLE_WALL_APRON_HEIGHT = 80;
 
@@ -40,7 +42,7 @@ export const BASE_SIMULTANEOUS_MONSTERS_LIMIT = 40;
 
 export const MAX_TOWER_SLOTS = 5;
 
-export const TOWER_WEIGHT_ROTATION_PENALTY = 0.2;
+export const TOWER_WEIGHT_ROTATION_PENALTY = 0.075;
 
 export const BASE_TOWER_STATS = {
     rotationSpeed: 0,

@@ -167,7 +167,6 @@ export default function MonsterEditPage() {
         })
         : undefined;
       const metadataResult = effectiveTextureKey
-        && !selectedVisualAsset?.atlasSrc
         ? await saveMonsterSpriteMetadata({
           region: form.region,
           textureKey: effectiveTextureKey,

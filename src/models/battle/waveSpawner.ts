@@ -41,7 +41,7 @@ export class WaveSpawner {
             swarmTemporalSpreadSec: 0.12,
             swarmSpeedSpreadRatio: 0.08,
             swarmWobbleFrequencySpreadRatio: 0.1,
-            swarmWobblePhaseSpreadSec: 0.4,
+            swarmWobblePhaseSpreadSec: 4,
             ...opts,
         };
     }
@@ -73,12 +73,19 @@ export class WaveSpawner {
                 swarmMembers.push(this.queue.shift()!);
             }
 
+            const swarmWobblePhaseOffset = this.randomBetween(0, this.options.swarmWobblePhaseSpreadSec);
+
             swarmMembers.forEach((_member, memberIndex) => {
                 const centeredIndex = memberIndex - (swarmMembers.length - 1) / 2;
                 const offsetX = centeredIndex * this.options.swarmSpatialSpreadPx;
                 const swarmDelay = memberIndex * (this.options.swarmTemporalSpreadSec / Math.max(1, swarmMembers.length - 1));
                 const delay = swarmDelay + this.randomBetween(0, this.options.spawnDelayJitterSeconds);
-                const modifiers = this.createSwarmMovementModifiers(centeredIndex, memberIndex, swarmMembers.length);
+                const modifiers = this.createSwarmMovementModifiers(
+                    centeredIndex,
+                    memberIndex,
+                    swarmMembers.length,
+                    swarmWobblePhaseOffset,
+                );
                 this.spawnEnemyWithDelay(world, bp, baseX + offsetX, baseY, delay, modifiers);
             });
 
@@ -158,17 +165,19 @@ export class WaveSpawner {
         centeredIndex: number,
         memberIndex: number,
         memberCount: number,
+        clusterPhaseOffset: number,
     ): MovementSpawnModifiers | undefined {
         if (memberCount <= 1) return undefined;
 
         const centerToEdgeDistance = Math.max(1, (memberCount - 1) / 2);
         const positionRatio = centeredIndex / centerToEdgeDistance;
         const phaseStep = this.options.swarmWobblePhaseSpreadSec / Math.max(1, memberCount - 1);
+        const memberPhaseJitter = this.randomBetween(-phaseStep * 0.35, phaseStep * 0.35);
 
         return {
             speedMultiplier: Math.max(0, 1 + positionRatio * this.options.swarmSpeedSpreadRatio),
             wobbleFrequencyMultiplier: Math.max(0, 1 - positionRatio * this.options.swarmWobbleFrequencySpreadRatio),
-            wobblePhaseOffsetSeconds: memberIndex * phaseStep,
+            wobblePhaseOffsetSeconds: clusterPhaseOffset + memberIndex * phaseStep + memberPhaseJitter,
         };
     }
 

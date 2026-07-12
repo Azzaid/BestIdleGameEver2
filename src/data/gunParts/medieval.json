@@ -81,7 +81,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 3
+        "additive": 4
       },
       {
         "valueId": "tower.weight",
@@ -95,14 +95,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 3
+        "additive": 2
       },
       {
         "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 6
+        "additive": 2
       },
       {
         "valueId": "tower.projectileSpread",
@@ -113,13 +113,6 @@
       },
       {
         "valueId": "resource.people",
-        "additionalKeywords": [
-          "upkeep"
-        ],
-        "additive": 2
-      },
-      {
-        "valueId": "resource.gold",
         "additionalKeywords": [
           "upkeep"
         ],
@@ -190,7 +183,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 13
+        "additive": 5
       },
       {
         "valueId": "tower.weight",
@@ -211,7 +204,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 1.5
+        "additive": 2
       },
       {
         "valueId": "resource.people",
@@ -263,21 +256,21 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 6
+        "additive": 1
       },
       {
         "valueId": "tower.shotsPerSecond",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 1
+        "additive": 0.5
       },
       {
         "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 3
+        "additive": 1
       },
       {
         "valueId": "tower.projectileSpread",
@@ -572,14 +565,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 3
+        "additive": 1
       },
       {
         "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 3
+        "additive": 2
       },
       {
         "valueId": "tower.projectileSpread",
@@ -587,6 +580,13 @@
           "production"
         ],
         "additive": -0.3
+      },
+      {
+        "valueId": "tower.projectileRadius",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 0.01
       },
       {
         "valueId": "resource.people",

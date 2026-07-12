@@ -17,6 +17,8 @@ export type GlobalEventTrigger =
   | {type: "siegeStarted"}
   | {type: "siegeSucceeded"}
   | {type: "siegeFailed"}
+  | {type: "siegeFailedTerritoryLost"}
+  | {type: "siegeFailedNoTerritoryLost"}
   | {type: "siegeEnded"}
   | {type: "technologyUnlocked"; technologyId?: string};
 

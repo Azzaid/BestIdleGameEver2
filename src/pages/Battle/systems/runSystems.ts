@@ -52,6 +52,7 @@ export function runSystems(world: World, dt: number) {
       world.enemyPushBackRemainingSeconds.delete(id);
       world.enemyTowerMovementOverrides.delete(id);
       world.enemyTowerStunRemainingSeconds.delete(id);
+      world.retreatingEnemyIds.delete(id);
       world.towerZoneDotProgress.delete(id);
       deleteTowerZoneEffectKeysForEntity(world.enemyTowerZoneCooldownRemainingSeconds, id);
       deleteTowerZoneEffectKeysForEntity(world.enemyTowerPushBacks, id);

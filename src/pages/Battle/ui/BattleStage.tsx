@@ -14,7 +14,7 @@ import type { TowerAssemblyResolved, TowerStatsResolved } from '../../../models/
 import type { TowerDamageProfiles } from '../../../models/battle/damage.ts';
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
 import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/gunParts/visuals.ts';
-import type { BattleMetrics, BattleResult, MonsterMovementModifiers, WallZoneEffects } from '../../../models/battle/world.ts';
+import type { BattleMetrics, BattleResult, MonsterMovementModifiers, SiegeOverwhelmedDecision, WallZoneEffects } from '../../../models/battle/world.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import type { StandaloneTowerDefense, TowerData } from '../../../models/battle/tower.ts';
 import { CITY_HEX_RADIUS, CITY_HEX_WIDTH } from '../../../data/constants.ts';
@@ -34,6 +34,8 @@ export function BattleStage(props: {
     battlefieldWidth: number;   // TODO: logical width in world units
     battlefieldHeight: number;  // TODO: logical height in world units
     wallY: number;
+    runtimeResetKey: string | number;
+    retreatEnemiesSignal: number;
     resolvedTowers: TowerAssemblyResolved[];
     initialThreat: number;
     targetThreat: number;
@@ -51,12 +53,15 @@ export function BattleStage(props: {
     showSiegeOutline: boolean;
     onBattleMetrics?: (metrics: BattleMetrics) => void;
     onBattleEnded?: (result: BattleResult) => void;
+    onSiegeOverwhelmed?: () => SiegeOverwhelmedDecision;
 }) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const hostRef = useRef<HTMLDivElement>(null);
     const worldRef = useRef<ReturnType<typeof createWorld> | null>(null);
     const siegeOutlineRef = useRef<Graphics | null>(null);
     const lastCompletesWhenThreatTargetReachedRef = useRef(props.completesWhenThreatTargetReached);
+    const lastRuntimeResetKeyRef = useRef(props.runtimeResetKey);
+    const lastRetreatEnemiesSignalRef = useRef(props.retreatEnemiesSignal);
     const runtimePropsRef = useRef({
         initialThreat: props.initialThreat,
         targetThreat: props.targetThreat,
@@ -73,6 +78,7 @@ export function BattleStage(props: {
         showSiegeOutline: props.showSiegeOutline,
         onBattleMetrics: props.onBattleMetrics,
         onBattleEnded: props.onBattleEnded,
+        onSiegeOverwhelmed: props.onSiegeOverwhelmed,
     });
     const aspectRatio = props.battlefieldWidth / props.battlefieldHeight;
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
@@ -96,6 +102,7 @@ export function BattleStage(props: {
             showSiegeOutline: props.showSiegeOutline,
             onBattleMetrics: props.onBattleMetrics,
             onBattleEnded: props.onBattleEnded,
+            onSiegeOverwhelmed: props.onSiegeOverwhelmed,
         };
     }, [
         props.initialThreat,
@@ -113,6 +120,7 @@ export function BattleStage(props: {
         props.showSiegeOutline,
         props.onBattleMetrics,
         props.onBattleEnded,
+        props.onSiegeOverwhelmed,
     ]);
 
     useEffect(() => {
@@ -240,6 +248,7 @@ export function BattleStage(props: {
                 wallZoneEffects: runtimeProps.wallZoneEffects,
                 onBattleMetrics: runtimeProps.onBattleMetrics,
                 onBattleEnded: runtimeProps.onBattleEnded,
+                onSiegeOverwhelmed: runtimeProps.onSiegeOverwhelmed,
             });
             worldRef.current = world;
             camera.container.addChild(world.worldLayer);
@@ -460,6 +469,23 @@ export function BattleStage(props: {
         const world = worldRef.current;
         if (!world) return;
 
+        if (lastRuntimeResetKeyRef.current !== props.runtimeResetKey) {
+            lastRuntimeResetKeyRef.current = props.runtimeResetKey;
+            world.currentThreat = props.initialThreat;
+            world.siegeElapsedSeconds = 0;
+            world.siegePressure = 0;
+            world.battleEnded = false;
+            world.lastBattleEndWasHandled = false;
+            world.pendingBattleOutcome = undefined;
+            world.siegeOverwhelmedWasHandled = false;
+            world.siegeMeterFrozen = false;
+            world.retreatingEnemyIds.clear();
+            world.waveScheduler.state.enabled = true;
+            world.waveScheduler.state.timeUntilNextWaveSeconds = 0;
+            world.waveScheduler.state.currentWaveIndex = 0;
+            world.waveScheduler.state.totalWavesSpawned = 0;
+        }
+
         const wasCompletingAtThreatTarget = lastCompletesWhenThreatTargetReachedRef.current;
         lastCompletesWhenThreatTargetReachedRef.current = props.completesWhenThreatTargetReached;
 
@@ -477,7 +503,13 @@ export function BattleStage(props: {
         world.config.wallZoneEffects = props.wallZoneEffects;
         world.config.onBattleMetrics = props.onBattleMetrics;
         world.config.onBattleEnded = props.onBattleEnded;
+        world.config.onSiegeOverwhelmed = props.onSiegeOverwhelmed;
         world.waveScheduler.config.timeBetweenWavesSeconds = props.timeBetweenWavesSeconds;
+
+        if (lastRetreatEnemiesSignalRef.current !== props.retreatEnemiesSignal) {
+            lastRetreatEnemiesSignalRef.current = props.retreatEnemiesSignal;
+            sendEnemiesToSideBorders(world);
+        }
 
         if (siegeOutlineRef.current) {
             siegeOutlineRef.current.visible = props.showSiegeOutline;
@@ -498,6 +530,8 @@ export function BattleStage(props: {
         }
     }, [
         props.initialThreat,
+        props.runtimeResetKey,
+        props.retreatEnemiesSignal,
         props.targetThreat,
         props.threatGrowthPerSecond,
         props.waveThreatToCityThreatRatio,
@@ -512,6 +546,7 @@ export function BattleStage(props: {
         props.showSiegeOutline,
         props.onBattleMetrics,
         props.onBattleEnded,
+        props.onSiegeOverwhelmed,
     ]);
 
     return (
@@ -545,6 +580,36 @@ export function BattleStage(props: {
             )}
         </div>
     );
+}
+
+function sendEnemiesToSideBorders(world: ReturnType<typeof createWorld>) {
+    const retreatSpeed = Math.max(160, world.config.battlefieldWidth * 0.28);
+    const removalPadding = 96;
+
+    for (const [enemyId, enemy] of world.enemiesData) {
+        const transform = world.transforms.get(enemyId);
+        if (!transform) continue;
+
+        const direction = transform.position.x < world.config.battlefieldWidth / 2 ? -1 : 1;
+        const exitX = direction < 0
+            ? -removalPadding
+            : world.config.battlefieldWidth + removalPadding;
+        const distanceToExit = Math.abs(exitX - transform.position.x);
+        const remainingSeconds = Math.max(1, distanceToExit / retreatSpeed + 0.4);
+
+        enemy.mode = 'walk';
+        world.retreatingEnemyIds.add(enemyId);
+        world.enemyTowerMovementOverrides.delete(enemyId);
+        world.enemyTowerStunRemainingSeconds.delete(enemyId);
+        world.movements.set(enemyId, {
+            kind: 'linear',
+            velocityPixelsPerSecond: {
+                x: direction * retreatSpeed,
+                y: 0,
+            },
+        });
+        world.lifespans.set(enemyId, {remainingSeconds});
+    }
 }
 
 function createBattleWallLayer({

@@ -123,6 +123,8 @@ const triggerTypes: TriggerType[] = [
   "siegeStarted",
   "siegeSucceeded",
   "siegeFailed",
+  "siegeFailedTerritoryLost",
+  "siegeFailedNoTerritoryLost",
   "siegeEnded",
   "technologyUnlocked",
 ];

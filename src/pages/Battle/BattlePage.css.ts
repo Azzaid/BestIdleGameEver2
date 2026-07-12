@@ -149,30 +149,6 @@ export const battleMetricValue = style({
   },
 });
 
-export const battleNotice = style({
-  position: 'absolute',
-  left: '50%',
-  bottom: 'max(34px, env(safe-area-inset-bottom, 0px))',
-  zIndex: 2,
-  width: 'min(680px, calc(100% - 20px))',
-  transform: 'translateX(-50%)',
-  padding: '8px 10px',
-  border: `1px solid ${vars.color.border.strong}`,
-  borderRadius: '3px',
-  backgroundColor: vars.color.background.surface,
-  boxShadow: vars.color.shadow.popover,
-  color: vars.color.text.heading,
-  fontWeight: 700,
-  textAlign: 'center',
-  '@media': {
-    '(max-width: 700px)': {
-      bottom: 'max(28px, env(safe-area-inset-bottom, 0px))',
-      padding: '7px 9px',
-      fontSize: '0.9rem',
-    },
-  },
-});
-
 export const battleLocked = style({
   display: 'grid',
   placeItems: 'center',

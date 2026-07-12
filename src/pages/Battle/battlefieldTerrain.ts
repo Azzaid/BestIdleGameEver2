@@ -3,7 +3,7 @@ import {
     getDevelopmentVectorKey,
     type CityBiome,
 } from "../../models/city/hexBackgrounds.ts";
-import {CITY_HEX_RADIUS, CITY_HEX_WIDTH} from "../../data/constants.ts";
+import {CITY_HEX_RADIUS, CITY_HEX_WIDTH, HEX_DISTANCE_PIXELS} from "../../data/constants.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import type {BattleWallSegment} from "../../models/battle/wallSegment.ts";
 import type {BattlefieldTerrainHex} from "../../models/battle/battlefieldTerrain.ts";
@@ -13,7 +13,6 @@ import {
     type CityTerrainVectorMap,
 } from "../../models/city/terrainVectors.ts";
 
-const HEX_VERTICAL_SPACING = CITY_HEX_RADIUS * 1.5;
 const HORIZONTAL_OVERSCAN_HEXES = 2;
 const VERTICAL_OVERSCAN_HEXES = 2;
 
@@ -48,12 +47,12 @@ export function createBattlefieldTerrainHexes({
 }): BattlefieldTerrainHex[] {
     const wallRow = getBattleWallRow(wallSegments);
     const minOffset = getBattleWallMinOffset(wallSegments, wallRow);
-    const minRow = wallRow - Math.ceil(wallY / HEX_VERTICAL_SPACING) - VERTICAL_OVERSCAN_HEXES;
-    const maxRow = wallRow + Math.ceil((battlefieldHeight - wallY) / HEX_VERTICAL_SPACING) + VERTICAL_OVERSCAN_HEXES;
+    const minRow = wallRow - Math.ceil(wallY / HEX_DISTANCE_PIXELS) - VERTICAL_OVERSCAN_HEXES;
+    const maxRow = wallRow + Math.ceil((battlefieldHeight - wallY) / HEX_DISTANCE_PIXELS) + VERTICAL_OVERSCAN_HEXES;
     const terrainHexes: BattlefieldTerrainHex[] = [];
 
     for (let row = minRow; row <= maxRow; row++) {
-        const rowCenterY = wallY + (row - wallRow) * HEX_VERTICAL_SPACING;
+        const rowCenterY = wallY + (row - wallRow) * HEX_DISTANCE_PIXELS;
         const minColumn = Math.floor(minOffset - row / 2 - HORIZONTAL_OVERSCAN_HEXES);
         const maxColumn = Math.ceil(minOffset + battlefieldWidth / CITY_HEX_WIDTH - row / 2 + HORIZONTAL_OVERSCAN_HEXES);
 

@@ -21,8 +21,8 @@
     "swarmSizeMax": 5,
     "movement": {
       "kind": "wallboundWobble",
-      "speedHexRadiusPerSecond": 1.0156,
-      "wobbleAmplitudeHexRadius": 0.2188
+      "speedHexRadiusPerSecond": 0.5,
+      "wobbleAmplitudeHexRadius": 0.2
     }
   },
   {
@@ -33,7 +33,7 @@
     "selectionWeight": 2,
     "kind": "melee",
     "pressure": 15,
-    "maxHitPoints": 30,
+    "maxHitPoints": 35,
     "armor": 5,
     "hitRadius": 0.2813,
     "keywords": [
@@ -44,7 +44,7 @@
     },
     "movement": {
       "kind": "straight",
-      "speedHexRadiusPerSecond": 0.5313,
+      "speedHexRadiusPerSecond": 0.2,
       "wobbleAmplitudeHexRadius": 0.0938
     }
   },
@@ -65,11 +65,11 @@
     "sprite": {
       "textureKey": "enemy_ridge_spitter"
     },
-    "shotDistance": 2.8125,
+    "shotDistance": 3,
     "movement": {
       "kind": "randomLines",
-      "speedHexRadiusPerSecond": 1.0938,
-      "wobbleAmplitudeHexRadius": 0.9375,
+      "speedHexRadiusPerSecond": 0.7,
+      "wobbleAmplitudeHexRadius": 1,
       "sameTrajectoryTimeSeconds": 3
     }
   }

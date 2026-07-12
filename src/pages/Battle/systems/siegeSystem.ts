@@ -3,11 +3,13 @@ import type { World } from '../../../models/battle/world.ts';
 export function SiegeSystem(world: World, dt: number) {
   if (world.battleEnded) return;
 
-  world.siegeElapsedSeconds += dt;
-  world.currentThreat = Math.min(
-    world.config.targetThreat,
-    world.currentThreat + world.config.threatGrowthPerSecond * dt
-  );
+  if (!world.siegeMeterFrozen) {
+    world.siegeElapsedSeconds += dt;
+    world.currentThreat = Math.min(
+      world.config.targetThreat,
+      world.currentThreat + world.config.threatGrowthPerSecond * dt
+    );
+  }
 
   const metrics = {
     threat: world.currentThreat,
@@ -19,28 +21,64 @@ export function SiegeSystem(world: World, dt: number) {
 
   world.config.onBattleMetrics?.(metrics);
 
-  if (world.siegePressure > world.config.wallResilience) {
-    world.battleEnded = true;
-    world.waveScheduler.state.enabled = false;
-    if (world.lastBattleEndWasHandled) return;
+  if (
+    world.config.completesWhenThreatTargetReached
+    && world.siegePressure > world.config.wallResilience
+  ) {
+    const decision = handleSiegeOverwhelmed(world);
+    if (decision === "waitForClear") {
+      beginPendingBattleOutcome(world, "overwhelmed");
+    }
+  } else if (
+    world.config.completesWhenThreatTargetReached
+    && world.currentThreat >= world.config.targetThreat
+  ) {
+    beginPendingBattleOutcome(world, "held");
+  }
 
-    world.lastBattleEndWasHandled = true;
-    world.config.onBattleEnded?.({
-      ...metrics,
-      outcome: "overwhelmed",
-    });
+  if (!world.pendingBattleOutcome || hasActiveEnemies(world) || world.spawners.length > 0) {
     return;
   }
 
-  if (world.config.completesWhenThreatTargetReached && world.currentThreat >= world.config.targetThreat) {
-    world.battleEnded = true;
-    world.waveScheduler.state.enabled = false;
-    if (world.lastBattleEndWasHandled) return;
+  world.battleEnded = true;
+  if (world.lastBattleEndWasHandled) return;
 
-    world.lastBattleEndWasHandled = true;
-    world.config.onBattleEnded?.({
-      ...metrics,
-      outcome: "held",
-    });
+  world.lastBattleEndWasHandled = true;
+  world.config.onBattleEnded?.({
+    ...metrics,
+    outcome: world.pendingBattleOutcome,
+  });
+}
+
+function beginPendingBattleOutcome(world: World, outcome: World["pendingBattleOutcome"]) {
+  world.pendingBattleOutcome = outcome;
+  world.waveScheduler.state.enabled = false;
+  world.spawners = [];
+}
+
+function handleSiegeOverwhelmed(world: World) {
+  if (world.siegeOverwhelmedWasHandled) {
+    return world.pendingBattleOutcome ? "waitForClear" : "continueFrozen";
   }
+
+  world.siegeOverwhelmedWasHandled = true;
+  const decision = world.config.onSiegeOverwhelmed?.() ?? "waitForClear";
+
+  if (decision === "continueFrozen") {
+    world.pendingBattleOutcome = undefined;
+    world.siegeMeterFrozen = true;
+    world.waveScheduler.state.enabled = true;
+    world.waveScheduler.state.timeUntilNextWaveSeconds = 0;
+    world.currentThreat = world.config.targetThreat;
+  }
+
+  return decision;
+}
+
+function hasActiveEnemies(world: World) {
+  for (const enemyId of world.enemiesData.keys()) {
+    if (!world.toRemove.has(enemyId)) return true;
+  }
+
+  return false;
 }

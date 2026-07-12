@@ -3,6 +3,9 @@ import wastelandEnemyDefinitions from "./wasteland.json";
 import {ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY} from "./visuals.ts";
 import {toPixels} from "../constants.ts";
 
+const DEFAULT_WALLBOUND_WOBBLE_FREQUENCY_HZ = 0.25;
+const WALLBOUND_WOBBLE_FREQUENCY_JITTER_RATIO = 0.18;
+
 type EnemyMovementKind = "standing" | "wallboundWobble" | "straight" | "randomLines" | "blink";
 
 type EnemyMovementDefinition = {
@@ -80,7 +83,9 @@ function createMovement(
         kind: "wobble",
         baseSpeedPixelsPerSecond: speedPixelsPerSecond * (modifiers?.speedMultiplier ?? 1),
         wobbleAmplitudePixels,
-        wobbleFrequencyHz: 0.25 * (modifiers?.wobbleFrequencyMultiplier ?? 1),
+        wobbleFrequencyHz: DEFAULT_WALLBOUND_WOBBLE_FREQUENCY_HZ
+          * (modifiers?.wobbleFrequencyMultiplier ?? 1)
+          * randomBetween(1 - WALLBOUND_WOBBLE_FREQUENCY_JITTER_RATIO, 1 + WALLBOUND_WOBBLE_FREQUENCY_JITTER_RATIO),
         timeAliveSeconds: modifiers?.wobblePhaseOffsetSeconds ?? 0,
         goalY: world.config.wallContactY,
         initialX: spawnX,
@@ -130,4 +135,8 @@ function createMovement(
       throw new Error(`Enemy "${definition.id}" has unsupported movement kind "${unsupportedKind}".`);
     }
   }
+}
+
+function randomBetween(min: number, max: number) {
+  return min + Math.random() * (max - min);
 }
