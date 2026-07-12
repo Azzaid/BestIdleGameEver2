@@ -133,10 +133,10 @@ export const clampPan = (
     return { tx, ty };
 }
 
-export const maxZoomThatFits = (bounds: Bounds, vbw: number, vbh: number) => {
+export const minZoomThatCovers = (bounds: Bounds, vbw: number, vbh: number) => {
     const contentW = bounds.maxX - bounds.minX;
     const contentH = bounds.maxY - bounds.minY;
-    return Math.min(vbw / contentW, vbh / contentH);
+    return Math.max(vbw / contentW, vbh / contentH);
 }
 
 // ---- Math helpers --------------------------------------------------------

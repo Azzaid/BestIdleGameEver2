@@ -15,6 +15,7 @@ import { SiegeSystem } from './siegeSystem.ts';
 import { WallZoneEffectsSystem } from './wallZoneEffectsSystem.ts';
 import { TowerZoneEffectsSystem } from './towerZoneEffectsSystem.ts';
 import { DamageAreaVfxSystem } from './damageAreaVfxSystem.ts';
+import { DebugTowerTargetingRadiusSystem } from './debugTowerTargetingRadiusSystem.ts';
 
 /** Per-frame update orchestrator */
 export function runSystems(world: World, dt: number) {
@@ -35,6 +36,7 @@ export function runSystems(world: World, dt: number) {
   DamageAreaVfxSystem(world, dt);
 
   HealthBarSystem(world);
+  DebugTowerTargetingRadiusSystem(world);
 
   // Cleanup
   if (world.toRemove.size) {
@@ -57,6 +59,8 @@ export function runSystems(world: World, dt: number) {
       deleteDamageAreaVfxPulseKeysForEntity(world.damageAreaVfxPulseTriggers, id);
       const hb = world.healthBars.get(id);
       if (hb) { hb.destroy(); world.healthBars.delete(id); }
+      const targetingRing = world.debugTowerTargetingRings.get(id);
+      if (targetingRing) { targetingRing.destroy(); world.debugTowerTargetingRings.delete(id); }
       const view = world.sprites.get(id);
       if (view) { view.destroy({ children: true }); world.sprites.delete(id); }
       world.projectileInfo.delete(id);

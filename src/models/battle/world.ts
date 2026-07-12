@@ -112,6 +112,7 @@ export interface World {
   worldLayer: PIXI.Container;
   sprites: Map<EntityId, PIXI.ContainerChild>;
   healthBars: Map<EntityId, PIXI.Graphics>;
+  debugTowerTargetingRings: Map<EntityId, PIXI.Graphics>;
   damageAreaVfxViews: Map<string, DamageAreaVfxView>;
   damageAreaVfxPulseTriggers: Map<string, number>;
 

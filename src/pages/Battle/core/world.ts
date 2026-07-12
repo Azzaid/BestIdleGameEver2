@@ -18,6 +18,7 @@ export function createWorld(config: WorldConfig): World {
       worldLayer,
       sprites: new Map(),
       healthBars: new Map(),
+      debugTowerTargetingRings: new Map(),
       damageAreaVfxViews: new Map(),
       damageAreaVfxPulseTriggers: new Map(),
       toRemove: new Set(),

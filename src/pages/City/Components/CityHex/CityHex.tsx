@@ -13,7 +13,7 @@ import {
 import {
     axialCoordinateToPixelPosition, axialDistance, clampPan,
     computeCityBounds,
-    getHexagonPolygonPoints, maxZoomThatFits,
+    getHexagonPolygonPoints, minZoomThatCovers,
     pixelPositionToAxialCoordinate,
     coordKey
 } from "./hexUtils.ts";
@@ -48,6 +48,7 @@ const MAX_ZOOM_FACTOR = 5;
 const WHEEL_ZOOM_IN_FACTOR = 1.12;
 const WHEEL_ZOOM_OUT_FACTOR = 0.88;
 const DRAG_CLICK_TOLERANCE_PX = 4;
+const HEX_ROW_CENTER_SPACING_PX = HEX_RADIUS_PX * 1.5;
 
 const HEX_SIDE_DEFINITIONS = [
     {columnDelta: 1, rowDelta: 0, startVertexIndex: 0, endVertexIndex: 1},
@@ -140,8 +141,11 @@ export default function CityHex({
     );
 
     const cameraBounds = useMemo(
-        () => computePointBounds(cameraCells) ?? viewBounds,
-        [cameraCells, viewBounds],
+        () => clampTopCameraBoundToWallRow(
+            computePointBounds(cameraCells) ?? viewBounds,
+            preparedCells,
+        ),
+        [cameraCells, preparedCells, viewBounds],
     );
 
     // Camera state
@@ -221,9 +225,9 @@ export default function CityHex({
     }, []);
 
     const clampZoomForCity = useCallback((zoom: number) => {
-        const minZoomThatFits = maxZoomThatFits(cameraBounds, viewport.width, viewport.height);
+        const minZoomThatCoversViewport = minZoomThatCovers(cameraBounds, viewport.width, viewport.height);
 
-        return Math.max(minZoomThatFits, Math.min(MAX_ZOOM_FACTOR, zoom));
+        return Math.max(minZoomThatCoversViewport, Math.min(MAX_ZOOM_FACTOR, zoom));
     }, [cameraBounds, viewport.height, viewport.width]);
 
     const clampCamera = useCallback((offsetX: number, offsetY: number, zoom: number): CameraState => {
@@ -253,9 +257,16 @@ export default function CityHex({
         const worldY = (svgPoint.y - currentOffset.y) / currentZoom;
         const nextOffsetX = svgPoint.x - worldX * zoom;
         const nextOffsetY = svgPoint.y - worldY * zoom;
+        const clampedCamera = clampCamera(nextOffsetX, nextOffsetY, zoom);
 
-        applyCamera(clampCamera(nextOffsetX, nextOffsetY, zoom));
-    }, [applyCamera, clampCamera, clampZoomForCity]);
+        applyCamera({
+            ...clampedCamera,
+            offsetY: Math.min(
+                clampedCamera.offsetY,
+                viewport.y - zoom * cameraBounds.minY,
+            ),
+        });
+    }, [applyCamera, cameraBounds.minY, clampCamera, clampZoomForCity, viewport.y]);
 
     const handleClick = (event: React.MouseEvent<SVGSVGElement>) => {
         if (suppressNextClickRef.current) {
@@ -1012,6 +1023,23 @@ function computePointBounds(points: readonly {centerX: number; centerY: number}[
     }
 
     return {minX, minY, maxX, maxY};
+}
+
+function clampTopCameraBoundToWallRow(
+    bounds: Bounds,
+    preparedCells: readonly PreparedHexCell[],
+): Bounds {
+    const topWallCenterY = preparedCells.reduce<number | null>((currentTop, cell) => {
+        if (cell.kind !== "wall" || cell.isUnclaimed) return currentTop;
+        return currentTop === null ? cell.centerY : Math.min(currentTop, cell.centerY);
+    }, null);
+
+    if (topWallCenterY === null) return bounds;
+
+    return {
+        ...bounds,
+        minY: Math.max(bounds.minY, topWallCenterY - HEX_ROW_CENTER_SPACING_PX),
+    };
 }
 
 function getViewExtent(bounds: Bounds): number {
