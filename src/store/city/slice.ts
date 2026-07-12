@@ -226,7 +226,7 @@ export const citySlice = createSlice({
             const hexToBuildIndex = state.hexes.findIndex(hex => hex.column === action.payload.column && hex.row === action.payload.row);
             if (hexToBuildIndex === -1) return;
             const currentHex = state.hexes[hexToBuildIndex];
-            if (currentHex.isUnclaimed || currentHex.kind !== "city" || currentHex.buildingKey || currentHex.partOfStructureId) return;
+            if (currentHex.isUnclaimed || currentHex.isLost || currentHex.kind !== "city" || currentHex.buildingKey || currentHex.partOfStructureId) return;
 
             const background = action.payload.developmentVector === DEVELOPMENT_VECTORS.neutral
                 ? {
@@ -247,7 +247,7 @@ export const citySlice = createSlice({
         },
         buildWall: (state, action: PayloadAction<{cellKey: string; wallKey: string; developmentVector: DevelopmentVectorValue}>) => {
             const hex = state.hexes.find(cell => cell.cellKey === action.payload.cellKey);
-            if (!hex || hex.isUnclaimed || hex.kind !== "wall" || hex.wallKey === action.payload.wallKey) return;
+            if (!hex || hex.isUnclaimed || hex.isLost || hex.kind !== "wall" || hex.wallKey === action.payload.wallKey) return;
 
             if (hex.wallKey) {
                 state.cityFootprint += FOOTPRINT_PER_DEMOLISHED_HEX;
@@ -257,7 +257,7 @@ export const citySlice = createSlice({
         },
         buildWallTop: (state, action: PayloadAction<{cellKey: string; wallTopKey: string; developmentVector: DevelopmentVectorValue}>) => {
             const hex = state.hexes.find(cell => cell.cellKey === action.payload.cellKey);
-            if (!hex || hex.isUnclaimed || hex.kind !== "wall" || hex.wallTopKey) return;
+            if (!hex || hex.isUnclaimed || hex.isLost || hex.kind !== "wall" || hex.wallTopKey) return;
 
             hex.wallTopKey = action.payload.wallTopKey;
             hex.wallTopDevelopmentVector = action.payload.developmentVector;
@@ -283,7 +283,7 @@ export const citySlice = createSlice({
 
             // Replace core and satellites with linked multistructure parts
             state.hexes.forEach(hex => {
-                if (hex.isUnclaimed || hex.kind !== "city") return;
+                if (hex.isUnclaimed || hex.isLost || hex.kind !== "city") return;
                 if (!involvedKeys.has(hex.cellKey)) return;
 
                 const initialBuildingKey = hex.initialBuildingKey ?? hex.buildingKey;
@@ -302,11 +302,25 @@ export const citySlice = createSlice({
                 state.builtStructureIds.push(structureId);
             }
         },
-        retreatCityRadius: (state) => {
-            const nextRadius = Math.max(1, state.cellRadius - 1);
-            state.cellRadius = nextRadius;
-            state.frontiers = getInitialCityFrontiers(nextRadius);
-            state.hexes = getResizedHexes(state.hexes, nextRadius, state.biome, state.terrainVectorMap);
+        loseUnprotectedCityTerritory: (state) => {
+            const activeWallHexes = state.hexes.filter(hex => !hex.isUnclaimed && !hex.isLost && hex.kind === "wall");
+            const wallLength = activeWallHexes.length;
+            const wallCoordinateRadius = activeWallHexes.reduce((radius, hex) => (
+                Math.max(radius, getAxialDistance(hex, {column: 0, row: 0}))
+            ), 1);
+            const protectedRadius = Math.max(1, wallLength - 1, wallCoordinateRadius);
+
+            state.frontiers = getInitialCityFrontiers(protectedRadius);
+            state.cellRadius = protectedRadius;
+            state.hexes.forEach(hex => {
+                if (hex.isUnclaimed || hex.isLost) return;
+                if (hex.kind === "wall") return;
+
+                const isInsideProtectedHex = getAxialDistance(hex, {column: 0, row: 0}) <= protectedRadius;
+                if (!isInsideProtectedHex) {
+                    hex.isLost = true;
+                }
+            });
         },
         expandCityRadius: (state) => {
             const nextRadius = Math.min(state.maxCellRadius, state.cellRadius + 1);
@@ -324,35 +338,40 @@ export const citySlice = createSlice({
             const nextFrontiers = getExpandedCityFrontiers(state.frontiers, action.payload.sideId);
             const expandedHexKeys = new Set(option.hexes.map(hex => hex.cellKey));
             state.hexes.forEach(hex => {
-                if (!expandedHexKeys.has(hex.cellKey) || !hex.isUnclaimed) return;
+                if (!expandedHexKeys.has(hex.cellKey) || (!hex.isUnclaimed && !hex.isLost)) return;
 
                 const terrainVector = state.terrainVectorMap[hex.cellKey] ?? DEVELOPMENT_VECTORS.medieval;
-                const baseTerrainBackground = hex.baseTerrainSpriteId
+                const baseTerrainBackground = !hex.isLost && hex.baseTerrainSpriteId
                     ? {
                         backgroundSpriteId: hex.baseTerrainSpriteId,
                         backgroundDevelopmentVector: hex.baseTerrainDevelopmentVector ?? terrainVector,
                     }
                     : selectBaseClaimedTerrainBackground(state.biome, terrainVector, hex);
-                Object.assign(hex, baseTerrainBackground);
+                if (!hex.isLost) {
+                    Object.assign(hex, baseTerrainBackground);
+                }
                 hex.baseTerrainSpriteId = baseTerrainBackground.backgroundSpriteId;
                 hex.baseTerrainDevelopmentVector = baseTerrainBackground.backgroundDevelopmentVector;
                 hex.isUnclaimed = false;
-                hex.kind = "city";
-                hex.wallKey = null;
-                hex.wallDevelopmentVector = undefined;
-                hex.wallTopKey = null;
-                hex.wallTopDevelopmentVector = undefined;
+                hex.isLost = false;
+                if (!hex.wallKey && !hex.wallTopKey) {
+                    hex.kind = "city";
+                    hex.wallKey = null;
+                    hex.wallDevelopmentVector = undefined;
+                    hex.wallTopKey = null;
+                    hex.wallTopDevelopmentVector = undefined;
+                }
             });
             state.frontiers = nextFrontiers;
 
-            const claimedHexes = state.hexes.filter(hex => !hex.isUnclaimed);
+            const claimedHexes = state.hexes.filter(hex => !hex.isUnclaimed && !hex.isLost);
             state.cellRadius = claimedHexes.reduce((radius, hex) => (
                 Math.max(radius, getAxialDistance(hex, {column: 0, row: 0}))
             ), state.cellRadius);
             const topRow = Math.min(...claimedHexes.map(hex => hex.row));
 
             state.hexes.forEach(hex => {
-                if (hex.isUnclaimed) return;
+                if (hex.isUnclaimed || hex.isLost) return;
 
                 if (hex.row === topRow) {
                     hex.kind = "wall";
@@ -405,7 +424,7 @@ export const citySlice = createSlice({
         },
         demolishWallTop: (state, action: PayloadAction<{cellKey: string}>) => {
             const targetHex = state.hexes.find(hex => hex.cellKey === action.payload.cellKey);
-            if (!targetHex || targetHex.isUnclaimed || targetHex.kind !== "wall" || !targetHex.wallTopKey) return;
+            if (!targetHex || targetHex.isUnclaimed || targetHex.isLost || targetHex.kind !== "wall" || !targetHex.wallTopKey) return;
 
             targetHex.wallTopKey = null;
             targetHex.wallTopDevelopmentVector = undefined;
@@ -424,7 +443,7 @@ export const {
     buildMultistructure,
     demolishHex,
     demolishWallTop,
-    retreatCityRadius,
+    loseUnprotectedCityTerritory,
     expandCityRadius,
     expandCitySide,
     recordSurvivedSiege,

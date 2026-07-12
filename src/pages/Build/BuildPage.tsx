@@ -13,7 +13,7 @@ import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
 import { selectActiveTower, selectActiveTowerDraftAssembly, selectAvailableTowerList, selectHasAnyTowerBuild } from '../../store/towers/selectors.ts';
 import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTower, selectTowerDraftPart } from '../../store/towers/slice.ts';
-import { selectCityResolution, selectCitySignatureStatus, selectResolvedEffectiveActiveTowerDraft } from '../../store/upkeep/selectors.ts';
+import { selectCityResolution, selectResolvedEffectiveActiveTowerDraft } from '../../store/upkeep/selectors.ts';
 import {selectRequirementResolutionData, selectUnlockedTowerPartIds, selectVisibleTowerPartIds} from "../../store/unlocks/selectors.ts";
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
 import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
@@ -237,14 +237,11 @@ const BuildPage = () => {
   const unlockedTowerPartIds = useTypedSelector(selectUnlockedTowerPartIds);
   const cityResolution = useTypedSelector(selectCityResolution);
   const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
-  const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>(TOWER_PART_SLOT_ORDER[0].key);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 8 });
   const [detailsPart, setDetailsPart] = useState<GunPart | null>(null);
   const isNarrowScreen = useMediaQuery('(max-width: 700px)');
-  const canModifyTower = !signatureStatus.isBesieged || !hasAnyTowerBuild;
-
   const selectSlot = (slot: TowerPartSlot) => {
     setActiveTab(slot);
     setPagination((current) => ({ ...current, pageIndex: 0 }));
@@ -294,8 +291,7 @@ const BuildPage = () => {
       <button
         className={s.clearHeaderButton}
         type="button"
-        disabled={!selectedPartId || !canModifyTower}
-        title={!canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined}
+        disabled={!selectedPartId}
         onClick={() => dispatch(clearTowerDraftPart({ slot: activeTab }))}
       >
         clear
@@ -307,7 +303,6 @@ const BuildPage = () => {
       const selected = selectedPartId === part.id;
       const unlocked = unlockedTowerPartIdSet.has(part.id);
       const buildRequirementsMet = areRequirementsMet(part.buildRequirements, requirementResolutionData);
-      const blockedTitle = !canModifyTower ? 'The city is besieged. Tower rebuilding is blocked.' : undefined;
       const lockedTitle = !unlocked ? 'This part is visible, but not permanently unlocked yet.' : undefined;
       const buildRequirementsTitle = !buildRequirementsMet
         ? formatUnmetBuildRequirements(getUnmetRequirements(part.buildRequirements, requirementResolutionData), requirementResolutionData)
@@ -316,11 +311,11 @@ const BuildPage = () => {
       return (
         <button
           className={`${selected ? s.removeButton : s.installButton} ${isNarrowScreen ? s.compactActionButton : ''}`}
-          disabled={!canModifyTower || (!selected && (!unlocked || !buildRequirementsMet))}
-          title={blockedTitle ?? lockedTitle ?? buildRequirementsTitle ?? (selected ? 'Remove this part from the draft tower.' : 'Install this part.')}
+          disabled={!selected && (!unlocked || !buildRequirementsMet)}
+          title={lockedTitle ?? buildRequirementsTitle ?? (selected ? 'Remove this part from the draft tower.' : 'Install this part.')}
           onClick={(event) => {
             event.stopPropagation();
-            if (!canModifyTower || (!selected && (!unlocked || !buildRequirementsMet))) return;
+            if (!selected && (!unlocked || !buildRequirementsMet)) return;
             if (selected) {
               dispatch(clearTowerDraftPart({ slot: activeTab }));
               return;
@@ -333,7 +328,7 @@ const BuildPage = () => {
         </button>
       );
     },
-  }), [activeTab, canModifyTower, dispatch, isNarrowScreen, requirementResolutionData, selectedPartId, unlockedTowerPartIdSet]);
+  }), [activeTab, dispatch, isNarrowScreen, requirementResolutionData, selectedPartId, unlockedTowerPartIdSet]);
 
   const dataColumns: ColumnDef<GunPart, unknown>[] = useMemo(() => [
     {
@@ -455,8 +450,7 @@ const BuildPage = () => {
   const selectedPartBuildRequirementsMet = selectedPartBuildRequirementFailures.length === 0;
   const canRebuild = hasEnoughUpkeep(resolvedTower.supportCost, cityResolution.effectiveUpkeep)
     && selectedPartBuildRequirementsMet
-    && hasCompleteDraft
-    && canModifyTower;
+    && hasCompleteDraft;
   const actionLabel = hasAnyTowerBuild ? 'Rebuild' : 'Build';
   const draftChanged = JSON.stringify(activeTower?.selectedPartIds ?? {}) !== JSON.stringify(towerDraftAssembly.selectedPartIds);
   const weightCapacityRatio = resolvedTower.stats.maximumWeight > 0
@@ -632,9 +626,7 @@ const BuildPage = () => {
                 <button
                   className={`${s.rebuildButton} ${hasAnyTowerBuild ? '' : s.buildButtonCentered}`}
                   disabled={!canRebuild}
-                  title={!canModifyTower
-                    ? 'The city is besieged. Tower rebuilding is blocked.'
-                    : !hasCompleteDraft ? warningTitle
+                  title={!hasCompleteDraft ? warningTitle
                     : !selectedPartBuildRequirementsMet ? formatUnmetBuildRequirements(selectedPartBuildRequirementFailures, requirementResolutionData)
                     : !canRebuild ? 'City support is too low for this draft tower' : undefined}
                   onClick={() => {

@@ -65,12 +65,13 @@ import {ConfirmationModal} from "../../components/ConfirmationModal.tsx";
 import {sendNotification} from "../../lib/notifications/eventBus.ts";
 import {enqueueGlobalSignal} from "../../store/globalEvents/slice.ts";
 import {SIGNATURE_PER_HEX} from "../../data/constants.ts";
+import {getAxialDistance} from "../../models/city/expansion.ts";
 import type {CityExpansionOption, CityExpansionSideId} from "../../models/city/expansion.ts";
 import {selectIsDebugModeEnabled} from "../../store/debug/selectors.ts";
 
-const BESIEGED_BUILD_BLOCK_REASON = "The city is besieged. Raise controlled territory in battle before building.";
-const EXPAND_BLOCK_REASON = "The city is besieged. Raise controlled territory in battle before expanding.";
 const EXPAND_WARNING = "City grows bigger, more noticeable and attracts more monsters";
+const LOST_TERRITORY_BLOCK_REASON = "Lost territory must be reclaimed before it can work, transform, or be rebuilt.";
+const BROKEN_STRUCTURE_BLOCK_REASON = "This multistructure is cut off. Reclaim every part before it can work again.";
 
 const CityPage = () => {
     const dispatch = useTypedDispatch();
@@ -98,7 +99,7 @@ const CityPage = () => {
     const [confirmingExpansionSide, setConfirmingExpansionSide] = useState<CityExpansionSideId | null>(null);
     const [globalEffectsOpen, setGlobalEffectsOpen] = useState(false);
     const selectHex = (hex: HexCell) => {
-        const selectedCoreHex = hex.partOfStructureId
+        const selectedCoreHex = hex.partOfStructureId && !hex.isLost
             ? hexes.find(candidate => candidate.cellKey === (hex.structureCoreCellKey ?? hex.cellKey)) ?? hex
             : hex;
 
@@ -108,18 +109,18 @@ const CityPage = () => {
     useEffect(() => {
         if (!selectedHex) return;
 
-        const currentHex = hexes.find(hex => hex.cellKey === selectedHex.cellKey);
+        const currentHex = allHexes.find(hex => hex.cellKey === selectedHex.cellKey);
         if (!currentHex) {
             setSelectedHex(null);
             return;
         }
 
-        const currentCoreHex = currentHex.partOfStructureId
+        const currentCoreHex = currentHex.partOfStructureId && !currentHex.isLost
             ? hexes.find(hex => hex.cellKey === (currentHex.structureCoreCellKey ?? currentHex.cellKey)) ?? currentHex
             : currentHex;
 
         setSelectedHex(currentCoreHex);
-    }, [hexes, selectedHex]);
+    }, [allHexes, hexes, selectedHex]);
     const unlockedBuildingIdSet = useMemo(() => new Set(unlockedBuildingIds), [unlockedBuildingIds]);
     const visibleBuildingIdSet = useMemo(() => new Set(visibleBuildingIds), [visibleBuildingIds]);
     const unlockedWallSegmentIdSet = useMemo(() => new Set(unlockedWallSegmentIds), [unlockedWallSegmentIds]);
@@ -128,7 +129,7 @@ const CityPage = () => {
     const visibleWallSuperstructureIdSet = useMemo(() => new Set(visibleWallSuperstructureIds), [visibleWallSuperstructureIds]);
     const builtStructureIdSet = useMemo(() => new Set(builtStructureIds), [builtStructureIds]);
     const unavailableBuildingReasons = useMemo(() => {
-        if (!selectedHex || selectedHex.kind !== "city" || selectedHex.buildingKey || selectedHex.partOfStructureId) {
+        if (!selectedHex || selectedHex.isLost || selectedHex.kind !== "city" || selectedHex.buildingKey || selectedHex.partOfStructureId) {
             return {};
         }
 
@@ -172,12 +173,15 @@ const CityPage = () => {
     const selectedExpansionOption = confirmingExpansionSide
         ? cityExpansionOptions.find(option => option.side.id === confirmingExpansionSide)
         : undefined;
+    const protectedCityRadius = getProtectedCityRadius(allHexes);
     const getExpansionDisabledReason = (option: CityExpansionOption) => {
         if (isDebugModeEnabled) return undefined;
-        if (signatureStatus.isBesieged) return EXPAND_BLOCK_REASON;
         if (option.addedHexCount === 0) return "No claimable land remains on this side.";
 
-        const requiredTerritory = getExpansionRequiredTerritory(cityResolution, option.addedHexCount);
+        const outsideProtectedHexCount = getOutsideProtectedExpansionHexCount(option, protectedCityRadius);
+        if (outsideProtectedHexCount === 0) return undefined;
+
+        const requiredTerritory = getExpansionRequiredTerritory(cityResolution, outsideProtectedHexCount);
         if (signatureStatus.controlledTerritory < requiredTerritory) {
             return `Requires controlled territory ${formatHomogeneousValue(HOMOGENEOUS_VALUE_IDS.cityControlledTerritory, requiredTerritory)}.`;
         }
@@ -186,7 +190,7 @@ const CityPage = () => {
     };
 
     const handleBuildingSelect = (buildingKey: string, developmentVector: DevelopmentVectorValue) => {
-        if (!selectedHex || signatureStatus.isBesieged) return;
+        if (!selectedHex || selectedHex.isLost) return;
         if (selectedHex.kind !== "city" || selectedHex.buildingKey || selectedHex.partOfStructureId) return;
         if (!unlockedBuildingIdSet.has(buildingKey)) return;
         if (!areRequirementsMet(BUILDINGS_ATLAS[developmentVector][buildingKey]?.buildRequirements, requirementResolutionData)) return;
@@ -200,7 +204,7 @@ const CityPage = () => {
     };
 
     const handleWallBuildingSelect = (buildingKey: string) => {
-        if (!selectedHex || signatureStatus.isBesieged) return;
+        if (!selectedHex || selectedHex.isLost) return;
         if (selectedHex.kind !== "wall" || selectedHex.wallKey === buildingKey) return;
         if (!unlockedWallSegmentIdSet.has(buildingKey)) return;
         const wallBuilding = WALL_SEGMENT_BUILDINGS[buildingKey];
@@ -220,7 +224,7 @@ const CityPage = () => {
     };
 
     const handleWallTopBuildingSelect = (buildingKey: string) => {
-        if (!selectedHex || signatureStatus.isBesieged) return;
+        if (!selectedHex || selectedHex.isLost) return;
         if (selectedHex.kind !== "wall" || selectedHex.wallTopKey) return;
         if (!unlockedWallSuperstructureIdSet.has(buildingKey)) return;
         const wallTopBuilding = WALL_SUPERSTRUCTURE_BUILDINGS[buildingKey];
@@ -240,13 +244,13 @@ const CityPage = () => {
     };
 
     const handleDemolishSelectedHex = () => {
-        if (!selectedHex || signatureStatus.isBesieged) return;
+        if (!selectedHex) return;
         dispatch(demolishHex({cellKey: selectedHex.cellKey}));
         setSelectedHex(null);
     };
 
     const handleDemolishSelectedWallTop = () => {
-        if (!selectedHex || signatureStatus.isBesieged || selectedHex.kind !== "wall" || !selectedHex.wallTopKey) return;
+        if (!selectedHex || selectedHex.kind !== "wall" || !selectedHex.wallTopKey) return;
         dispatch(demolishWallTop({cellKey: selectedHex.cellKey}));
         setSelectedHex({
             ...selectedHex,
@@ -256,7 +260,7 @@ const CityPage = () => {
     };
 
     const handleBuildStructure = (structureId: string, coreCellKey: string) => {
-        if (!selectedHex || signatureStatus.isBesieged) return;
+        if (!selectedHex || selectedHex.isLost) return;
         if (!unlockedBuildingIdSet.has(structureId)) return;
         const structureBuilding = getStructureBuilding(structureId);
         if (!areRequirementsMet(structureBuilding?.buildRequirements, requirementResolutionData)) return;
@@ -276,7 +280,9 @@ const CityPage = () => {
         });
     };
 
-    const selectedBuilding = selectedHex ? cityBuildings.get(selectedHex.cellKey) : undefined;
+    const selectedActiveBuilding = selectedHex ? cityBuildings.get(selectedHex.cellKey) : undefined;
+    const selectedBuilding = selectedHex ? selectedActiveBuilding ?? getStoredPlacedBuilding(selectedHex) : undefined;
+    const selectedStructureIsBroken = Boolean(selectedHex?.partOfStructureId && !selectedActiveBuilding);
     const selectedResolvedEntity = selectedHex
         ? cityResolution.resolvedHexes.find(entity => (
             entity.entityType === "building"
@@ -331,13 +337,19 @@ const CityPage = () => {
                         requirementResolutionData={requirementResolutionData}
                         isPartOfCompleteStructure={selectedHexIsPartOfCompleteStructure}
                         wallResolution={wallResolution}
-                        blocked={signatureStatus.isBesieged}
-                        blockedReason={BESIEGED_BUILD_BLOCK_REASON}
+                        blocked={false}
+                        blockedReason=""
+                        isLost={Boolean(selectedHex.isLost || selectedStructureIsBroken)}
+                        lostReason={selectedHex.isLost ? LOST_TERRITORY_BLOCK_REASON : BROKEN_STRUCTURE_BLOCK_REASON}
                         onBuildStructure={handleBuildStructure}
                         onDemolish={handleDemolishSelectedHex}
                         onDemolishWallTop={handleDemolishSelectedWallTop}
                     />
-                    {selectedHex.kind === "wall"
+                    {selectedHex.isLost
+                        ? <p className={s.buildingLockedNote}>
+                            {LOST_TERRITORY_BLOCK_REASON}
+                        </p>
+                        : selectedHex.kind === "wall"
                         ? <WallBuildingSelector
                             onBuildWall={handleWallBuildingSelect}
                             onBuildWallTop={handleWallTopBuildingSelect}
@@ -347,8 +359,8 @@ const CityPage = () => {
                             unavailableWallSuperstructureReasons={unavailableWallSuperstructureReasons}
                             currentWallKey={selectedHex.wallKey ?? null}
                             hasWallTop={Boolean(selectedHex.wallTopKey)}
-                            blocked={signatureStatus.isBesieged}
-                            blockedReason={BESIEGED_BUILD_BLOCK_REASON}
+                            blocked={false}
+                            blockedReason=""
                         />
                         : selectedHex.buildingKey || selectedHex.partOfStructureId
                             ? <p className={s.buildingLockedNote}>
@@ -360,8 +372,8 @@ const CityPage = () => {
                             onBuild={handleBuildingSelect}
                             unlockedBuildingIds={visibleBuildingIdSet}
                             unavailableBuildingReasons={unavailableBuildingReasons}
-                            blocked={signatureStatus.isBesieged}
-                            blockedReason={BESIEGED_BUILD_BLOCK_REASON}
+                            blocked={false}
+                            blockedReason=""
                         />
                     }
                 </div>
@@ -381,9 +393,31 @@ const CityPage = () => {
 
 function getExpansionRequiredTerritory(
     cityResolution: ReturnType<typeof selectTowerAwareCityResolution>,
-    addedHexCount: number,
+    outsideProtectedHexCount: number,
 ): number {
-    return cityResolution.effectiveSignature + SIGNATURE_PER_HEX * addedHexCount;
+    return cityResolution.effectiveSignature + SIGNATURE_PER_HEX * outsideProtectedHexCount;
+}
+
+function getProtectedCityRadius(hexes: readonly HexCell[]): number {
+    const activeWallHexes = hexes.filter(hex => (
+        !hex.isUnclaimed
+        && !hex.isLost
+        && hex.kind === "wall"
+    ));
+    const wallCoordinateRadius = activeWallHexes.reduce((radius, hex) => (
+        Math.max(radius, getAxialDistance(hex, {column: 0, row: 0}))
+    ), 1);
+
+    return Math.max(1, activeWallHexes.length - 1, wallCoordinateRadius);
+}
+
+function getOutsideProtectedExpansionHexCount(
+    option: CityExpansionOption,
+    protectedCityRadius: number,
+): number {
+    return option.hexes.filter(hex => (
+        getAxialDistance(hex, {column: 0, row: 0}) > protectedCityRadius
+    )).length;
 }
 
 function GlobalEffectsDrawer({
@@ -509,6 +543,8 @@ function SelectedHexPanel({
     wallResolution,
     blocked,
     blockedReason,
+    isLost,
+    lostReason,
     onBuildStructure,
     onDemolish,
     onDemolishWallTop,
@@ -519,6 +555,8 @@ function SelectedHexPanel({
         ? "Tower"
         : "Wall Superstructure";
     const canDemolishSelectedBuilding = selectedHex.kind === "city" && selectedBuilding?.vector !== DEVELOPMENT_VECTORS.nature;
+    const actionBlocked = blocked || isLost;
+    const actionBlockedReason = isLost ? lostReason : blockedReason;
 
     return (
         <aside className={s.selectionPanel}>
@@ -527,38 +565,46 @@ function SelectedHexPanel({
                 <span className={s.selectionCoordinates}>{selectionCoordinates}</span>
             </div>
 
+            {isLost && (
+                <p className={s.panelDescription}>{lostReason}</p>
+            )}
+
             {selectedBuilding && (
                 <div className={s.statSection}>
-                    <div className={s.sideBySideStats}>
-                        <HomogeneousContributionGroup
-                            title="Resolved production"
-                            effects={getHomogeneousProductionContributions({
-                                values: selectedResolvedEntity?.resolvedContributions
-                                    ?? selectedBuilding.effectiveHomogeneousValueEffects,
-                            })}
-                            baseEffects={getHomogeneousProductionContributions(selectedBuilding)}
-                        />
-                        <HomogeneousContributionGroup
-                            title="Resolved upkeep"
-                            effects={getHomogeneousRequirementContributions({
-                                values: selectedResolvedEntity?.resolvedContributions
-                                    ?? selectedBuilding.effectiveHomogeneousValueEffects,
-                            })}
-                            baseEffects={getHomogeneousRequirementContributions(selectedBuilding)}
-                        />
-                    </div>
+                    {!isLost && (
+                        <div className={s.sideBySideStats}>
+                            <HomogeneousContributionGroup
+                                title="Resolved production"
+                                effects={getHomogeneousProductionContributions({
+                                    values: selectedResolvedEntity?.resolvedContributions
+                                        ?? selectedBuilding.effectiveHomogeneousValueEffects,
+                                })}
+                                baseEffects={getHomogeneousProductionContributions(selectedBuilding)}
+                            />
+                            <HomogeneousContributionGroup
+                                title="Resolved upkeep"
+                                effects={getHomogeneousRequirementContributions({
+                                    values: selectedResolvedEntity?.resolvedContributions
+                                        ?? selectedBuilding.effectiveHomogeneousValueEffects,
+                                })}
+                                baseEffects={getHomogeneousRequirementContributions(selectedBuilding)}
+                            />
+                        </div>
+                    )}
                     {selectedResolvedEntity && (
                         <ActiveModifierList modifiers={selectedResolvedEntity.activeModifiers} />
                     )}
-                    <MultistructureStatus
-                        structureCandidates={structureCandidates}
-                        builtStructureIds={builtStructureIds}
-                        unlockedBuildingIds={unlockedBuildingIds}
-                        requirementResolutionData={requirementResolutionData}
-                        onBuildStructure={onBuildStructure}
-                        blocked={blocked}
-                        blockedReason={blockedReason}
-                    />
+                    {!isLost && (
+                        <MultistructureStatus
+                            structureCandidates={structureCandidates}
+                            builtStructureIds={builtStructureIds}
+                            unlockedBuildingIds={unlockedBuildingIds}
+                            requirementResolutionData={requirementResolutionData}
+                            onBuildStructure={onBuildStructure}
+                            blocked={actionBlocked}
+                            blockedReason={actionBlockedReason}
+                        />
+                    )}
                     <p className={s.panelDescription}>{selectedBuilding.adjacencyDescription}</p>
                     {canDemolishSelectedBuilding && (
                         <button
@@ -619,7 +665,7 @@ function SelectedHexPanel({
                 </div>
             )}
 
-            {!selectedBuilding && !selectedWallBuilding && !selectedWallTopBuilding && (
+            {!selectedBuilding && !selectedWallBuilding && !selectedWallTopBuilding && !isLost && (
                 <p className={s.panelDescription}>Empty tile. Choose something below to build here.</p>
             )}
         </aside>
@@ -1068,6 +1114,23 @@ function getBuildingName(buildingId: string): string {
     }
 
     return buildingId;
+}
+
+function getStoredPlacedBuilding(hex: HexCell): PlacedBuilding | undefined {
+    if (hex.kind !== "city" || !hex.buildingKey) return undefined;
+
+    const building = BUILDINGS_ATLAS[hex.developmentVector]?.[hex.buildingKey];
+    if (!building) return undefined;
+
+    return {
+        ...building,
+        column: hex.column,
+        row: hex.row,
+        effectiveProvidedUpkeep: {},
+        effectiveRequiredUpkeep: {},
+        effectiveSignature: 0,
+        effectiveHomogeneousValueEffects: [...(building.values ?? [])],
+    };
 }
 
 function getStructureBuilding(structureId: string) {

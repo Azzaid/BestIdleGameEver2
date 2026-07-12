@@ -58,7 +58,7 @@ export function getCompleteStructureIds(
 function getBaseBuildingComponents(hexes: readonly HexCell[]): StructureComponentCandidate[] {
     const structureComponents = new Map<string, HexCell[]>();
     const normalComponents = hexes.flatMap(hex => {
-        if (hex.kind !== "city" || !hex.buildingKey) return [];
+        if (hex.isUnclaimed || hex.isLost || hex.kind !== "city" || !hex.buildingKey) return [];
         if (hex.partOfStructureId) {
             const coreCellKey = hex.structureCoreCellKey ?? hex.cellKey;
             structureComponents.set(coreCellKey, [

@@ -4,17 +4,15 @@ import {resetCityForMigration} from "../store/city/slice.ts";
 import {selectGlobalSignalRequirementSnapshot} from "../store/globalEvents/selectors.ts";
 import {enqueueGlobalSignal} from "../store/globalEvents/slice.ts";
 import {useTypedDispatch, useTypedSelector} from "../store/hooks.ts";
-import {selectCitySignatureStatus, selectGlobalModifierApplyContext} from "../store/upkeep/selectors.ts";
+import {selectGlobalModifierApplyContext} from "../store/upkeep/selectors.ts";
 import {resetWallForMigration} from "../store/wall/slice.ts";
 import {ConfirmationModal} from "./ConfirmationModal.tsx";
 import * as s from "./CityExpansionControl.css.ts";
 
-const EXPAND_BLOCK_REASON = "The city is besieged. Raise controlled territory in battle before expanding.";
 const EXODUS_MESSAGE = "Are you ready to abandon city and move on in search for a better place?";
 
 export function CityExpansionControl() {
     const dispatch = useTypedDispatch();
-    const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const modifierContext = useTypedSelector(selectGlobalModifierApplyContext);
     const requirementSnapshot = useTypedSelector(selectGlobalSignalRequirementSnapshot);
     const [isConfirmingExodus, setIsConfirmingExodus] = useState(false);
@@ -46,8 +44,6 @@ export function CityExpansionControl() {
                 <button
                     className={s.exodusButton}
                     type="button"
-                    disabled={signatureStatus.isBesieged}
-                    title={signatureStatus.isBesieged ? EXPAND_BLOCK_REASON : undefined}
                     onClick={() => setIsConfirmingExodus(true)}
                 >
                     Exodus

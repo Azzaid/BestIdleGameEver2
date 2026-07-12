@@ -38,8 +38,9 @@ export const placeCityBuildings = (
     const placedCity = new Map<string, PlacedBuilding>();
 
     hexes.forEach((hexCell: HexCell) => {
-        if (hexCell.isUnclaimed) return;
+        if (hexCell.isUnclaimed || hexCell.isLost) return;
         const { column, row, cellKey, buildingKey, developmentVector } = hexCell;
+        if (hexCell.partOfStructureId && !isCompleteActiveStructurePart(hexes, hexCell)) return;
         if (hexCell.partOfStructureId && (hexCell.structureCoreCellKey ?? cellKey) !== cellKey) return;
 
         const building:Building | undefined = buildingKey ? BUILDINGS_ATLAS[developmentVector][buildingKey] : undefined;
@@ -68,6 +69,20 @@ export const placeCityBuildings = (
     return placedCity
 }
 
+function isCompleteActiveStructurePart(hexes: readonly HexCell[], hexCell: HexCell): boolean {
+    if (!hexCell.partOfStructureId) return true;
+
+    const coreCellKey = hexCell.structureCoreCellKey ?? hexCell.cellKey;
+    const structureParts = hexes.filter(hex => (
+        hex.kind === "city"
+        && hex.partOfStructureId === hexCell.partOfStructureId
+        && (hex.structureCoreCellKey ?? hex.cellKey) === coreCellKey
+    ));
+
+    return structureParts.length > 0
+        && structureParts.every(hex => !hex.isUnclaimed && !hex.isLost);
+}
+
 export function resolveCityUpkeepAndSignature(
     hexes: HexCell[],
     city: PlacedCityMap,
@@ -94,7 +109,7 @@ export function resolveCityUpkeepAndSignature(
         effectiveSignature: 0,
     };
 
-    const claimedHexes = hexes.filter(hex => !hex.isUnclaimed);
+    const claimedHexes = hexes.filter(hex => !hex.isUnclaimed && !hex.isLost);
     resolvedCity.territorySignature = claimedHexes.length * SIGNATURE_PER_HEX;
     const buildingEntities: HomogeneousValueEntitySource[] = [...city.entries()].map(([cellKey, building]) => ({
             id: cellKey,

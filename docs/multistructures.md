@@ -301,7 +301,7 @@ Current prototype behavior:
 - selecting any participating tile shows possible multistructure candidates;
 - complete candidates show a Transform action;
 - incomplete candidates show connected and missing adjacent buildings;
-- transformation is blocked during sieges;
+- transformation remains available during sieges when all parts are active and build requirements are met;
 - after transformation, all matched parts store the multistructure id and representative hex key;
 - research checks the built multistructure id from the linked structure rather than merely possible layouts.
 

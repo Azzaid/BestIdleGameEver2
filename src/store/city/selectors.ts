@@ -10,7 +10,7 @@ export const selectAllCityHexes = (state: RootState) => state.city.hexes;
 
 export const selectCityHexes = createSelector(
     [selectAllCityHexes],
-    (hexes) => hexes.filter(hex => !hex.isUnclaimed),
+    (hexes) => hexes.filter(hex => !hex.isUnclaimed && !hex.isLost),
 );
 
 export const selectCityCellRadius = (state: RootState) => state.city.cellRadius;
@@ -46,7 +46,7 @@ export const selectCitySideHexes = createSelector(
 );
 
 export const selectCityBuildings = createSelector(
-    [selectCityHexes],
+    [selectAllCityHexes],
     (hexes) => placeCityBuildings(hexes)
 );
 
@@ -56,13 +56,21 @@ export const selectCityStructureCandidates = createSelector(
 );
 
 export const selectCompleteCityStructureIds = createSelector(
-    [selectCityHexes],
+    [selectAllCityHexes],
     (hexes) => {
         const builtIds = new Set<string>();
         hexes.forEach(h => {
-            if (h.kind !== "city") return;
+            if (h.isUnclaimed || h.isLost || h.kind !== "city") return;
             if (h.partOfStructureId) {
-                builtIds.add(h.partOfStructureId);
+                const coreCellKey = h.structureCoreCellKey ?? h.cellKey;
+                const structureParts = hexes.filter(hex => (
+                    hex.kind === "city"
+                    && hex.partOfStructureId === h.partOfStructureId
+                    && (hex.structureCoreCellKey ?? hex.cellKey) === coreCellKey
+                ));
+                if (structureParts.every(hex => !hex.isUnclaimed && !hex.isLost)) {
+                    builtIds.add(h.partOfStructureId);
+                }
             }
         });
         return builtIds;

@@ -19,7 +19,7 @@ Current implementation note, 2026-06-24:
 
 - The app shell uses hash-routed pages for Battle, Tower, Research, City, and History.
 - The shared upkeep/signature bar appears outside Battle and includes city expansion controls on the City route.
-- Build and Research navigation become blocked during siege when the city has an effective tower build and debug mode is off.
+- Research navigation becomes blocked during siege. Tower rebuilding and city management remain available so the player can respond to pressure without leaving the city frozen.
 - Debug mode exposes Progression, IDs, Entity Create, Gun Part Editor, and Global Events tools.
 - Notifications are mounted at the app shell level, and force-level global events navigate to History.
 

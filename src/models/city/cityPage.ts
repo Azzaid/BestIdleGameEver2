@@ -19,6 +19,8 @@ export type SelectedHexPanelProps = {
     wallResolution: WallResolution;
     blocked: boolean;
     blockedReason: string;
+    isLost: boolean;
+    lostReason: string;
     onBuildStructure: (structureId: string, coreCellKey: string) => void;
     onDemolish: () => void;
     onDemolishWallTop: () => void;

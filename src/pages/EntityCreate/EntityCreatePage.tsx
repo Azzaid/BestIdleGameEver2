@@ -202,6 +202,7 @@ const entityKeywordOptions = Array.from(new Set([
   ...TOWER_PART_SLOT_ORDER.map(slot => slot.key),
 ])).sort();
 const localDataServerUrl = "http://127.0.0.1:4317";
+const hexRadiusNumberStep = "0.001";
 
 let nextRowId = 1;
 
@@ -738,7 +739,7 @@ export default function EntityCreatePage() {
                 </label>
                 <label className={s.field}>
                   <span className={s.label}>Radius (hexR)</span>
-                  <input className={s.input} type="number" value={row.radius} onChange={event => updateEffectRow(row.id, {radius: event.target.value})} />
+                  <input className={s.input} type="number" step={hexRadiusNumberStep} value={row.radius} onChange={event => updateEffectRow(row.id, {radius: event.target.value})} />
                 </label>
                 <button className={s.dangerButton} type="button" onClick={() => removeEffectRow(row.id)} title="Remove effect">x</button>
               </div>
@@ -1219,7 +1220,7 @@ function ValueSection(props: {
             </div>
             <label className={s.field}>
               <span className={s.label}>{getValueAmountLabel("Additive", row.valueId)}</span>
-              <input className={s.input} type="number" value={row.additive} onChange={event => props.onUpdate(row.id, {additive: event.target.value})} />
+              <input className={s.input} type="number" step={getValueAmountStep(row.valueId)} value={row.additive} onChange={event => props.onUpdate(row.id, {additive: event.target.value})} />
             </label>
             <label className={s.field}>
               <span className={s.label}>Multiplier</span>
@@ -1272,7 +1273,7 @@ function DerivedValueSection(props: {
             </label>
             <label className={s.field}>
               <span className={s.label}>{getValueAmountLabel("Derived multiplicator", row.valueId)}</span>
-              <input className={s.input} type="number" value={row.derivedMultiplicator} onChange={event => props.onUpdate(row.id, {derivedMultiplicator: event.target.value})} />
+              <input className={s.input} type="number" step={getValueAmountStep(row.valueId)} value={row.derivedMultiplicator} onChange={event => props.onUpdate(row.id, {derivedMultiplicator: event.target.value})} />
             </label>
             <div className={s.field}>
               <span className={s.label}>Additional keywords</span>
@@ -1285,7 +1286,7 @@ function DerivedValueSection(props: {
             </div>
             <label className={s.field}>
               <span className={s.label}>{getValueAmountLabel("Additive", row.valueId)}</span>
-              <input className={s.input} type="number" value={row.additive} onChange={event => props.onUpdate(row.id, {additive: event.target.value})} />
+              <input className={s.input} type="number" step={getValueAmountStep(row.valueId)} value={row.additive} onChange={event => props.onUpdate(row.id, {additive: event.target.value})} />
             </label>
             <label className={s.field}>
               <span className={s.label}>Multiplier</span>
@@ -1801,7 +1802,7 @@ function RequirementSection(props: {
                 </label>
                 <label className={s.field}>
                   <span className={s.label}>{getValueAmountLabel("Amount", row.target)}</span>
-                  <input className={s.input} type="number" value={row.amount} onChange={event => props.onUpdate(row.id, {amount: event.target.value})} />
+                  <input className={s.input} type="number" step={getValueAmountStep(row.target)} value={row.amount} onChange={event => props.onUpdate(row.id, {amount: event.target.value})} />
                 </label>
               </>
             ) : row.type === "globalFlagExists" || row.type === "globalFlagMissing" ? (
@@ -2815,6 +2816,14 @@ function getValueAmountLabel(label: string, valueId: string): string {
   if (displayMethod === "distancePerSecond") return `${label} (hexR/s)`;
 
   return label;
+}
+
+function getValueAmountStep(valueId: string): string | undefined {
+  const displayMethod = HOMOGENEOUS_VALUE_DEFINITION_LIST.find(definition => definition.id === valueId)?.displayMethod;
+
+  return displayMethod === "distance" || displayMethod === "distancePerSecond"
+    ? hexRadiusNumberStep
+    : undefined;
 }
 
 function getValueRole(value: HomogeneousValueEffect): ValueRole {

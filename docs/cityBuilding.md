@@ -166,13 +166,19 @@ The city cannot safely grow beyond its ability to defend itself.
 
 The city expands across its hex map by increasing one stored side radius.
 
-The city map renders six semi-transparent side arrows over claimable unclaimed strips.
+The city map renders six semi-transparent side arrows over claimable unclaimed or lost strips.
 
 Each arrow claims that side's sector of the next big-hex ring. If a side's next radius is 2, 3, or 4, it claims 3, 4, or 5 cells respectively. The last claimed radius is stored per side, so neighboring sides do not drift after another side expands.
 
 Only the top wall side can move the top frontier upward. Other side expansions skip candidate cells above the current wall frontier.
 
-An arrow is disabled when no claimable strip remains, when the city is besieged, or when controlled territory is below the projected post-expansion city signature.
+An arrow is disabled when no claimable strip remains. Controlled territory gates only newly claimed cells outside the wall-protected regular hex. Cells inside the protected hex can be claimed even while the city is besieged.
+
+If a failed siege causes territory loss, the wall stays on its current hexes. The active wall length defines a protected regular hex: a wall of `N` active cells protects radius `N - 1`. Claimed cells outside that protected hex become lost territory instead of reverting to empty unclaimed land.
+
+Lost hexes keep their current terrain and building sprites, stored building ids, and multistructure metadata. They do not contribute upkeep, production, adjacency, wall stats, research requirements, signature, or multistructure completion until reclaimed. Expanding back into a lost side reclaims those preserved cells and restores their stored contents.
+
+Multistructures with any lost part are disabled. They can still be demolished, but cannot transform, produce, or satisfy requirements until all parts are reclaimed.
 
 As the controlled shape grows:
 

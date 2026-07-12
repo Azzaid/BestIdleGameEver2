@@ -15,7 +15,6 @@ import HistoryPage from './pages/History/HistoryPage.tsx'
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedDispatch, useTypedSelector} from "./store/hooks.ts";
 import {selectCitySignatureStatus} from "./store/upkeep/selectors.ts";
-import {selectHasAnyTowerBuild} from "./store/towers/selectors.ts";
 import {selectIsDebugModeEnabled} from "./store/debug/selectors.ts";
 import {toggleDebugMode} from "./store/debug/slice.ts";
 import { NotificationCenter } from "./components/Notifications/NotificationCenter.tsx";
@@ -42,12 +41,10 @@ function AppFrame() {
   const lastTouchYRef = useRef<number | null>(null);
   const [isNavHidden, setIsNavHidden] = useState(false);
   const signatureStatus = useTypedSelector(selectCitySignatureStatus);
-  const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
   const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
   const unseenHistoryEntryCount = useTypedSelector(selectUnseenHistoryEntryIds).length;
   const isLocalDebugAvailable = import.meta.env.DEV;
   const isDebugToolsEnabled = isLocalDebugAvailable && isDebugModeEnabled;
-  const isBuildBlocked = signatureStatus.isBesieged && hasAnyTowerBuild;
   const shouldShowUpkeepBar = location.pathname !== "/" && location.pathname !== "/battle";
   const shouldShowCityExpansionControl = location.pathname === "/city";
 
@@ -157,7 +154,7 @@ function AppFrame() {
                               <Link className={appTheme.navBarLink} to="/battle">Battle</Link>
                           </li>
                           <li>
-                              <Link className={isBuildBlocked ? appTheme.navBarLinkBlocked : appTheme.navBarLink} to="/build">Tower</Link>
+                              <Link className={appTheme.navBarLink} to="/build">Tower</Link>
                           </li>
                           <li>
                               <Link className={signatureStatus.isBesieged ? appTheme.navBarLinkBlocked : appTheme.navBarLink} to="/research">Research</Link>
@@ -203,7 +200,7 @@ function AppFrame() {
                       <Routes>
                           <Route path="/" element={<BattlePage />} />
                           <Route path="/battle" element={<BattlePage />} />
-                          <Route path="/build" element={isBuildBlocked ? <BlockedPage title="Build Blocked" /> : <BuildPage/>} />
+                          <Route path="/build" element={<BuildPage/>} />
                           <Route path="/research" element={signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />} />
                           <Route path="/city" element={<CityPage />} />
                           <Route path="/history" element={<HistoryPage />} />
@@ -252,7 +249,7 @@ function BlockedPage({title}: {title: string}) {
       <section className={appTheme.blockedPage}>
           <h1 className={appTheme.blockedTitle}>{title}</h1>
           <p className={appTheme.blockedText}>
-              The city is besieged. Repel attack before starting research / building anything.
+              The city is besieged. Repel the attack before starting research.
           </p>
           <Link className={appTheme.blockedLink} to="/battle">To battle!</Link>
       </section>

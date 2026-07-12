@@ -515,10 +515,10 @@ Threat:
 Consequences:
 
 - research blocked;
-- expansion blocked;
+- expansion beyond the wall-protected hex is blocked until controlled territory catches up;
 - stronger attacks.
 
-The city still functions.
+The city still functions: buildings, demolition, tower rebuilding, and wall-protected claims remain available.
 
 The player must recover.
 

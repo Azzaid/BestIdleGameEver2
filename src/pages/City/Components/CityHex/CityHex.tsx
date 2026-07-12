@@ -292,7 +292,7 @@ export default function CityHex({
         const cellKey = coordKey({column, row});
         const selectedCell = cells.find((cell) => cell.cellKey === cellKey);
         if (!selectedCell || selectedCell.isUnclaimed) return;
-        const selectedCoreCell = selectedCell.partOfStructureId
+        const selectedCoreCell = selectedCell.partOfStructureId && !selectedCell.isLost
             ? cells.find((cell) => cell.cellKey === (selectedCell.structureCoreCellKey ?? selectedCell.cellKey)) ?? selectedCell
             : selectedCell;
 
@@ -502,6 +502,7 @@ export default function CityHex({
                         centerY,
                         cellKey,
                         isUnclaimed,
+                        isLost,
                         developmentVector,
                         backgroundSpriteId,
                         backgroundDevelopmentVector,
@@ -699,6 +700,15 @@ export default function CityHex({
                                     fill="#050508"
                                     fillOpacity={unclaimedShadeOpacity}
                                     clipPath={`url(#${clipId})`}
+                                />
+                            )}
+                            {isLost && (
+                                <use
+                                    href="#hexagonPath"
+                                    fill="#09090d"
+                                    fillOpacity={0.46}
+                                    clipPath={`url(#${clipId})`}
+                                    pointerEvents="none"
                                 />
                             )}
                             {isHovered && visibleHexSides.map(side => {
@@ -1030,7 +1040,7 @@ function clampTopCameraBoundToWallRow(
     preparedCells: readonly PreparedHexCell[],
 ): Bounds {
     const topWallCenterY = preparedCells.reduce<number | null>((currentTop, cell) => {
-        if (cell.kind !== "wall" || cell.isUnclaimed) return currentTop;
+        if (cell.kind !== "wall" || cell.isUnclaimed || cell.isLost) return currentTop;
         return currentTop === null ? cell.centerY : Math.min(currentTop, cell.centerY);
     }, null);
 

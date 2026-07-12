@@ -292,7 +292,7 @@ Threat interacts with:
 - settlement-site openness;
 - ending requirements.
 
-Containment is battle-proven defensive capacity. It gates expansion, research, megaprojects, and some endings. The player may temporarily exceed safe threat/containment margins, creating threat debt, blocked growth, and stronger attacks rather than immediate city destruction.
+Containment is battle-proven defensive capacity. It gates unprotected expansion, research, megaprojects, and some endings. The player may temporarily exceed safe threat/containment margins, creating threat debt and stronger attacks rather than immediate city destruction.
 
 Demolishing buildings permanently increases the current city's footprint. The in-world explanation is that rubble, waste, damaged machinery, polluted biomass, ritual residue, and other remains must be moved outside the walls to reclaim internal space, and those external footprints attract monsters. Obsolete early buildings therefore either occupy land or grow the city's signature budget. Migration is the clean way to escape accumulated demolition footprint.
 
@@ -338,9 +338,9 @@ Building data convention:
 City view implementation:
 
 - The City page renders an SVG hex map.
-- City state stores the full generated map through the site's maximum cell radius plus reveal padding. Unclaimed cells are identified with `isUnclaimed`; selectors expose claimed-only hexes for upkeep, wall, battle, and progression calculations.
+- City state stores the full generated map through the site's maximum cell radius plus reveal padding. Unclaimed cells are identified with `isUnclaimed`; lost-but-remembered cells use `isLost`. Gameplay selectors expose only active claimed hexes for upkeep, wall, battle, research, progression, and signature calculations.
 - Each city has a maximum cell radius determined when it is created. The current implementation sets it from the `maxCitySize` constant and precomputes a coherent terrain vector map through `maxCitySize + 2`.
-- City expansion is side-based: city state stores the last claimed radius for each big-hex side (`east`, `southEast`, `southWest`, `west`, `northWest`, `northEast`), and the SVG map renders one semi-transparent arrow over each claimable unclaimed side strip. Confirming an arrow increments that side's stored radius and claims that side's sector of the next big-hex ring, so radius 2 claims 3 cells, radius 3 claims 4 cells, and so on. Neighboring side radii do not move until their own side is expanded. Only the top wall side can move the top frontier upward; other side expansions skip candidate cells above the current wall frontier. A side arrow is disabled while besieged, when no claimable strip remains, or when controlled territory is below the projected post-expansion city signature.
+- City expansion is side-based: city state stores the last claimed radius for each big-hex side (`east`, `southEast`, `southWest`, `west`, `northWest`, `northEast`), and the SVG map renders one semi-transparent arrow over each claimable unclaimed or lost side strip. Confirming an arrow increments that side's stored radius and claims that side's sector of the next big-hex ring, so radius 2 claims 3 cells, radius 3 claims 4 cells, and so on. Neighboring side radii do not move until their own side is expanded. Only the top wall side can move the top frontier upward; other side expansions skip candidate cells above the current wall frontier. A side arrow is disabled when no claimable strip remains. Controlled territory gates only newly claimed cells outside the wall-protected regular hex; cells inside that protected hex can be claimed during siege. Reclaiming lost hexes restores their stored terrain, buildings, and structure markers instead of generating empty land.
 - Normal city hexes use city building data.
 - The top hex row is reserved for wall hexes and uses the wall build catalog.
 - Wall hexes have separate wall-segment and wall-top slots. Wall segments are replaced in place: the current segment is hidden from the wall list, choosing a different segment increases city footprint as if the previous segment were demolished. Wall-top occupants follow the city-building rebuild rule: a tower mount or wall superstructure must be demolished before another wall-top detail can be built.
@@ -382,10 +382,10 @@ Current battle/wall behavior:
 - Tower push-back or movement effects can move an attack-mode enemy out of its wall engagement distance; once outside that distance, the enemy switches back to walk mode.
 - `randomLines` monster movement picks a new downward-and-sideways trajectory every `sameTrajectoryTimeSeconds`, using `speedPixelsPerSecond` for forward movement and `wobbleAmplitudePixels` as the sideways speed scale.
 - Wall push-back and zone DoT values affect enemies inside rectangular battlefield zones measured upward from the wall contact line. Push-back speed is derived from push-back distance so the configured distance is covered over 0.5 seconds.
-- If combined siege pressure exceeds combined wall resilience, battle ends before the city signature target and the city retreats by one radius.
-- On retreat, cells outside the new radius are lost and the new top row is rebuilt as wall.
-- While besieged, research and city/wall building actions are disabled.
-- Tower rebuilding is blocked while besieged, except when the player has no committed tower yet.
+- If combined siege pressure exceeds combined wall resilience, battle ends before the city signature target and the city loses control of outlying territory. The wall stays on its current hexes.
+- Failed-siege loss derives a protected regular hex from the current wall length: a wall of `N` active wall cells protects a city radius of `N - 1`. Active claimed cells outside that protected hex become lost territory. Lost cells keep their current terrain and building sprites, stored building ids, and multistructure metadata, but contribute no values, requirements, adjacency, wall stats, research checks, or signature until reclaimed by expanding into that side again.
+- Multistructures with any lost part are mechanically disabled because lost parts are ignored by multistructure detection and city resolution. Their stored parts can still be demolished, and reclaiming all parts makes the structure eligible to function again.
+- While besieged, the city can still build, demolish, rebuild towers, change wall pieces, transform complete multistructures, reclaim wall-protected territory, and even migrate. Research remains paused while besieged.
 
 ## 12. Combat
 

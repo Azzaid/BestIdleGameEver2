@@ -47,7 +47,7 @@ export function getCityExpansionOptions(
         const boundaryHexes = getSideSectorCoordinates(side, frontiers[side.radiusKey])
             .map(coordinate => hexesByKey.get(getAxialCoordinateKey(coordinate)))
             .filter((hex): hex is HexCell => Boolean(hex))
-            .filter(hex => !hex.isUnclaimed);
+            .filter(hex => !hex.isUnclaimed && !hex.isLost);
         const candidateCoordinates = getSideSectorCoordinates(side, nextRadius);
         const candidateResults = candidateCoordinates.map(candidateCoordinate => {
             const candidate = hexesByKey.get(getAxialCoordinateKey(candidateCoordinate));
@@ -59,7 +59,7 @@ export function getCityExpansionOptions(
 
             return {
                 valid: true,
-                hex: candidate.isUnclaimed ? candidate : undefined,
+                hex: candidate.isUnclaimed || candidate.isLost ? candidate : undefined,
             };
         });
         const candidateHexes = candidateResults.flatMap(result => result.hex ? [result.hex] : []);

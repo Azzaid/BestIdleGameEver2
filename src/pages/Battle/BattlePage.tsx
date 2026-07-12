@@ -13,7 +13,7 @@ import {
     selectResolvedEffectiveAvailableTowers,
     selectTowerAwareCityResolution,
 } from "../../store/upkeep/selectors.ts";
-import { recordSurvivedSiege, retreatCityRadius } from "../../store/city/slice.ts";
+import { loseUnprotectedCityTerritory, recordSurvivedSiege } from "../../store/city/slice.ts";
 import { selectIsDebugModeEnabled } from "../../store/debug/selectors.ts";
 import {enqueueGlobalSignal} from "../../store/globalEvents/slice.ts";
 import type { BattleMetrics, BattleResult } from "../../models/battle/world.ts";
@@ -305,7 +305,7 @@ const BattlePage = () => {
         defense.stats.zoneStunZoneSize,
     ));
     const longestTowerRange = Math.max(
-        360,
+        0,
         ...resolvedBattleTowers.map((tower) => tower.stats.targetingDistanceLimit),
         ...standaloneDefenseRanges,
     );
@@ -392,7 +392,7 @@ const BattlePage = () => {
             dispatch(recordSurvivedSiege());
             dispatch(enqueueGlobalSignal({type: "siegeSucceeded"}));
             dispatch(enqueueGlobalSignal({type: "siegeEnded"}));
-            setBattleMessage("Siege is over. The wall shifts back into pressure watch.");
+            setBattleMessage("Siege is over. Pressure watch resumes.");
             setBattleMode("pressure");
             return;
         }
@@ -404,13 +404,13 @@ const BattlePage = () => {
             }
 
             if (isDebugModeEnabled) {
-                setBattleMessage("The wall was overwhelmed. Debug mode ignored the city retreat.");
+                setBattleMessage("The wall was overwhelmed. Debug mode ignored territory loss.");
                 setBattleMode("pressure");
                 return;
             }
 
-            dispatch(retreatCityRadius());
-            setBattleMessage("The wall was overwhelmed. The city retreated and pressure watch resumed.");
+            dispatch(loseUnprotectedCityTerritory());
+            setBattleMessage("The wall was overwhelmed. Outlying territory was lost and pressure watch resumed.");
             setBattleMode("pressure");
             return;
         }
