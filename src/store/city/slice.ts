@@ -15,6 +15,7 @@ import {detectMultistructures} from "../../models/city/multistructureDetection.t
 import {STRUCTURES, STRUCTURES_BY_ID} from "../../data/buildings/index.ts";
 import {superstructures, walls} from "../../data/ids.ts";
 import {CITY_HEX_BACKGROUND_SPRITE_POOL} from "../../data/cityHexBackgrounds.ts";
+import {selectBaseClaimedTerrainBackground} from "../../data/cityTerrainBackgrounds.ts";
 import {
     CITY_HEX_BACKGROUND_TYPES,
     type CityBiome,
@@ -71,6 +72,7 @@ const getInitialHexes = ((
             const isWall = !isUnclaimed && row === -cityRadius;
             const terrainVector = terrainVectorMap[getTerrainVectorMapKey({column, row})] ?? DEVELOPMENT_VECTORS.medieval;
             const background = getTerrainBackground(biome, isUnclaimed, terrainVector);
+            const baseTerrainBackground = selectBaseClaimedTerrainBackground(biome, terrainVector, {column, row});
 
             generatedCells.push({
                 column,
@@ -82,6 +84,8 @@ const getInitialHexes = ((
                 developmentVector: DEVELOPMENT_VECTORS.medieval,
                 backgroundSpriteId: background.backgroundSpriteId,
                 backgroundDevelopmentVector: background.backgroundDevelopmentVector,
+                baseTerrainSpriteId: baseTerrainBackground.backgroundSpriteId,
+                baseTerrainDevelopmentVector: baseTerrainBackground.backgroundDevelopmentVector,
                 wallKey: isWall ? walls.neutral.scrapBarricade : null,
                 wallDevelopmentVector: DEVELOPMENT_VECTORS.neutral,
                 wallTopKey: column === 0 && isWall ? superstructures.neutral.oldStump : null,
@@ -116,6 +120,7 @@ const getGeneratedHexes = (
 
             const terrainVector = terrainVectorMap[getTerrainVectorMapKey({column, row})] ?? DEVELOPMENT_VECTORS.medieval;
             const background = getTerrainBackground(biome, true, terrainVector);
+            const baseTerrainBackground = selectBaseClaimedTerrainBackground(biome, terrainVector, {column, row});
 
             generatedCells.push({
                 column,
@@ -127,6 +132,8 @@ const getGeneratedHexes = (
                 developmentVector: DEVELOPMENT_VECTORS.medieval,
                 backgroundSpriteId: background.backgroundSpriteId,
                 backgroundDevelopmentVector: background.backgroundDevelopmentVector,
+                baseTerrainSpriteId: baseTerrainBackground.backgroundSpriteId,
+                baseTerrainDevelopmentVector: baseTerrainBackground.backgroundDevelopmentVector,
                 wallKey: null,
                 wallDevelopmentVector: undefined,
                 wallTopKey: null,
@@ -320,7 +327,15 @@ export const citySlice = createSlice({
                 if (!expandedHexKeys.has(hex.cellKey) || !hex.isUnclaimed) return;
 
                 const terrainVector = state.terrainVectorMap[hex.cellKey] ?? DEVELOPMENT_VECTORS.medieval;
-                Object.assign(hex, getTerrainBackground(state.biome, false, terrainVector));
+                const baseTerrainBackground = hex.baseTerrainSpriteId
+                    ? {
+                        backgroundSpriteId: hex.baseTerrainSpriteId,
+                        backgroundDevelopmentVector: hex.baseTerrainDevelopmentVector ?? terrainVector,
+                    }
+                    : selectBaseClaimedTerrainBackground(state.biome, terrainVector, hex);
+                Object.assign(hex, baseTerrainBackground);
+                hex.baseTerrainSpriteId = baseTerrainBackground.backgroundSpriteId;
+                hex.baseTerrainDevelopmentVector = baseTerrainBackground.backgroundDevelopmentVector;
                 hex.isUnclaimed = false;
                 hex.kind = "city";
                 hex.wallKey = null;
@@ -372,14 +387,16 @@ export const citySlice = createSlice({
                 if (!demolishedHexKeys.has(hex.cellKey)) return;
 
                 hex.buildingKey = null;
-                Object.assign(
-                    hex,
-                    getTerrainBackground(
-                        state.biome,
-                        false,
-                        state.terrainVectorMap[hex.cellKey] ?? DEVELOPMENT_VECTORS.medieval,
-                    ),
-                );
+                const terrainVector = state.terrainVectorMap[hex.cellKey] ?? DEVELOPMENT_VECTORS.medieval;
+                const baseTerrainBackground = hex.baseTerrainSpriteId
+                    ? {
+                        backgroundSpriteId: hex.baseTerrainSpriteId,
+                        backgroundDevelopmentVector: hex.baseTerrainDevelopmentVector ?? terrainVector,
+                    }
+                    : selectBaseClaimedTerrainBackground(state.biome, terrainVector, hex);
+                Object.assign(hex, baseTerrainBackground);
+                hex.baseTerrainSpriteId = baseTerrainBackground.backgroundSpriteId;
+                hex.baseTerrainDevelopmentVector = baseTerrainBackground.backgroundDevelopmentVector;
                 hex.spriteKey = null;
                 hex.initialBuildingKey = null;
                 hex.partOfStructureId = null;

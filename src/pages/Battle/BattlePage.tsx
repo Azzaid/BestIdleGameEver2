@@ -2,7 +2,7 @@ import {BattleStage} from "./ui/BattleStage.tsx";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import { useTypedDispatch, useTypedSelector } from "../../store/hooks.ts";
 import * as styles from './BattlePage.css.ts';
-import { selectCityBiome, selectCityHexes } from "../../store/city/selectors.ts";
+import { selectAllCityHexes, selectCityBiome, selectCityHexes } from "../../store/city/selectors.ts";
 import { CITY_HEX_WIDTH } from "../../data/constants.ts";
 import { Link } from "react-router-dom";
 import { recordControlledTerritoryReached, recordLastSiegeSignature } from "../../store/upkeep/slice.ts";
@@ -197,6 +197,7 @@ const BattlePage = () => {
         [resolvedAvailableTowers]
     );
     const resolvedBattleTowers = useStableResolvedBattleTowers(resolvedBattleTowersUnstable);
+    const allCityHexes = useTypedSelector(selectAllCityHexes);
     const cityHexes = useTypedSelector(selectCityHexes);
     const cityBiome = useTypedSelector(selectCityBiome);
     const cityTerrainVectorMap = useTypedSelector(state => state.city.terrainVectorMap);
@@ -313,12 +314,23 @@ const BattlePage = () => {
     const battlefieldTerrainHexes = useMemo(() => createBattlefieldTerrainHexes({
         biome: cityBiome,
         terrainVectorMap: cityTerrainVectorMap,
+        baseTerrainBackgroundsByKey: Object.fromEntries(
+            allCityHexes.flatMap(hex => (
+                hex.baseTerrainSpriteId
+                    ? [[hex.cellKey, {
+                        backgroundSpriteId: hex.baseTerrainSpriteId,
+                        backgroundDevelopmentVector: hex.baseTerrainDevelopmentVector ?? hex.backgroundDevelopmentVector,
+                    }]]
+                    : []
+            )),
+        ),
         wallSegments: battleWallSegments,
         battlefieldWidth: wallLogicalWidth,
         battlefieldHeight,
         wallY: battlefieldLength,
     }), [
         battleWallSegments,
+        allCityHexes,
         battlefieldHeight,
         battlefieldLength,
         cityBiome,

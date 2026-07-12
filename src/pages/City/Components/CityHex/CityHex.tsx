@@ -4,6 +4,7 @@ import {wallSpriteMetadataAtlas, wallSpritesAtlas} from "../../../../models/spri
 import {wallTopSpriteMetadataAtlas, wallTopSpritesAtlas} from "../../../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
 import type {HexCell} from "../../../../models/city/HexGrid.ts";
 import {CITY_HEX_BACKGROUND_SPRITES_BY_ID} from "../../../../data/cityHexBackgrounds.ts";
+import {selectBaseClaimedTerrainBackground} from "../../../../data/cityTerrainBackgrounds.ts";
 import {
     CITY_BIOME_LABELS,
     getDevelopmentVectorKey,
@@ -182,6 +183,14 @@ export default function CityHex({
     const expansionControls = useMemo(
         () => getExpansionControls(expansionOptions, preparedCells),
         [expansionOptions, preparedCells],
+    );
+    const topExpansionPreviewCellKeys = useMemo(
+        () => new Set(
+            expansionOptions
+                .filter(option => option.side.id === "north-west")
+                .flatMap(option => option.hexes.map(hex => hex.cellKey)),
+        ),
+        [expansionOptions],
     );
     const debugAxisLines = useMemo(
         () => getDebugAxisLines(preparedCells),
@@ -485,6 +494,8 @@ export default function CityHex({
                         developmentVector,
                         backgroundSpriteId,
                         backgroundDevelopmentVector,
+                        baseTerrainSpriteId,
+                        baseTerrainDevelopmentVector,
                         buildingKey,
                         spriteKey,
                         initialBuildingKey,
@@ -496,10 +507,20 @@ export default function CityHex({
                         wallTopDevelopmentVector,
                     } = cell;
                     const isHovered = !isUnclaimed && cellKey === hoveredCellKey;
+                    const isClaimedTerrainPreview = isUnclaimed && topExpansionPreviewCellKeys.has(cellKey);
                     const clipId = `clip-${cellKey}`;
-                    const backgroundSprite = CITY_HEX_BACKGROUND_SPRITES_BY_ID[backgroundSpriteId];
+                    const fallbackBaseTerrainBackground = isClaimedTerrainPreview && !baseTerrainSpriteId
+                        ? selectBaseClaimedTerrainBackground(biome, backgroundDevelopmentVector, cell)
+                        : undefined;
+                    const visibleBackgroundSpriteId = isClaimedTerrainPreview
+                        ? baseTerrainSpriteId ?? fallbackBaseTerrainBackground?.backgroundSpriteId ?? backgroundSpriteId
+                        : backgroundSpriteId;
+                    const visibleBackgroundDevelopmentVector = isClaimedTerrainPreview
+                        ? baseTerrainDevelopmentVector ?? fallbackBaseTerrainBackground?.backgroundDevelopmentVector ?? backgroundDevelopmentVector
+                        : backgroundDevelopmentVector;
+                    const backgroundSprite = CITY_HEX_BACKGROUND_SPRITES_BY_ID[visibleBackgroundSpriteId];
                     const backgroundSpriteUrl = backgroundSprite?.src;
-                    const backgroundFill = getHexBackgroundFallbackFill(biome, backgroundDevelopmentVector, kind);
+                    const backgroundFill = getHexBackgroundFallbackFill(biome, visibleBackgroundDevelopmentVector, kind);
                     const citySpriteAtlas = kind === "city" ? buildingsSpriteAtlas[developmentVector] : undefined;
                     const building = kind === "city" && buildingKey
                         ? BUILDINGS_ATLAS[developmentVector]?.[buildingKey]
@@ -587,7 +608,7 @@ export default function CityHex({
                                     clipPath={`url(#${clipId})`}
                                     style={{ imageRendering: "pixelated", pointerEvents: "none" }}
                                 >
-                                    <title>{`${CITY_BIOME_LABELS[biome]} ${getDevelopmentVectorKey(backgroundDevelopmentVector)} terrain`}</title>
+                                    <title>{`${CITY_BIOME_LABELS[biome]} ${getDevelopmentVectorKey(visibleBackgroundDevelopmentVector)} terrain`}</title>
                                 </image>
                             )}
                             {spriteUrl && (
@@ -661,7 +682,7 @@ export default function CityHex({
                                     </text>
                                 </>
                             )}
-                            {isUnclaimed && (
+                            {isUnclaimed && !isClaimedTerrainPreview && (
                                 <use
                                     href="#hexagonPath"
                                     fill="#050508"

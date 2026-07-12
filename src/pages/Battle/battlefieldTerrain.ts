@@ -1,14 +1,9 @@
+import {getCityHexBackgroundSpriteSrc, selectBaseClaimedTerrainBackground} from "../../data/cityTerrainBackgrounds.ts";
 import {
-    CITY_HEX_BACKGROUND_SPRITES_BY_ID,
-    CITY_HEX_BACKGROUND_SPRITE_POOL,
-} from "../../data/cityHexBackgrounds.ts";
-import {
-    CITY_HEX_BACKGROUND_TYPES,
     getDevelopmentVectorKey,
-    selectCityHexBackgroundSprite,
     type CityBiome,
 } from "../../models/city/hexBackgrounds.ts";
-import {DEFAULT_INITIAL_CITY_BIOME, CITY_HEX_RADIUS, CITY_HEX_WIDTH} from "../../data/constants.ts";
+import {CITY_HEX_RADIUS, CITY_HEX_WIDTH} from "../../data/constants.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import type {BattleWallSegment} from "../../models/battle/wallSegment.ts";
 import type {BattlefieldTerrainHex} from "../../models/battle/battlefieldTerrain.ts";
@@ -34,6 +29,7 @@ const HEX_DIRECTIONS: readonly AxialCoordinate[] = [
 export function createBattlefieldTerrainHexes({
     biome,
     terrainVectorMap,
+    baseTerrainBackgroundsByKey,
     wallSegments,
     battlefieldWidth,
     battlefieldHeight,
@@ -41,6 +37,10 @@ export function createBattlefieldTerrainHexes({
 }: {
     biome: CityBiome;
     terrainVectorMap: CityTerrainVectorMap;
+    baseTerrainBackgroundsByKey?: Record<string, {
+        backgroundSpriteId: string;
+        backgroundDevelopmentVector: DevelopmentVectorValue;
+    }>;
     wallSegments: BattleWallSegment[];
     battlefieldWidth: number;
     battlefieldHeight: number;
@@ -69,23 +69,18 @@ export function createBattlefieldTerrainHexes({
             }
 
             const coordinate = {column, row};
+            const cellKey = getTerrainVectorMapKey(coordinate);
             const terrainVector = getExpandedTerrainVector(terrainVectorMap, coordinate);
-            const background = selectCityHexBackgroundSprite(
-                CITY_HEX_BACKGROUND_SPRITE_POOL,
-                CITY_HEX_BACKGROUND_TYPES.claimedTerrain,
-                biome,
-                terrainVector,
-                createCoordinateRandom(coordinate),
-                DEFAULT_INITIAL_CITY_BIOME,
-            );
+            const background = baseTerrainBackgroundsByKey?.[cellKey]
+                ?? selectBaseClaimedTerrainBackground(biome, terrainVector, coordinate);
 
             terrainHexes.push({
                 ...coordinate,
-                cellKey: getTerrainVectorMapKey(coordinate),
+                cellKey,
                 centerX,
                 centerY: rowCenterY,
                 backgroundSpriteId: background.backgroundSpriteId,
-                backgroundSpriteSrc: CITY_HEX_BACKGROUND_SPRITES_BY_ID[background.backgroundSpriteId]?.src,
+                backgroundSpriteSrc: getCityHexBackgroundSpriteSrc(background.backgroundSpriteId),
                 backgroundDevelopmentVector: background.backgroundDevelopmentVector,
                 fallbackFill: getBattlefieldTerrainFallbackFill(biome, terrainVector),
             });
@@ -166,15 +161,6 @@ function chooseMostCommonVector(
         }))
         .sort((left, right) => right.count - left.count || right.tieBreak - left.tieBreak)[0]?.vector
         ?? DEVELOPMENT_VECTORS.medieval;
-}
-
-function createCoordinateRandom(coordinate: AxialCoordinate) {
-    let index = 0;
-
-    return () => coordinateNoise({
-        column: coordinate.column + index++ * 17,
-        row: coordinate.row - index * 31,
-    });
 }
 
 function coordinateNoise({column, row}: AxialCoordinate): number {

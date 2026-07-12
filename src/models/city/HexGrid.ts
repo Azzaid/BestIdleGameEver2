@@ -13,6 +13,8 @@ export type HexCell = AxialCoordinate & {
     developmentVector: DevelopmentVectorValue;
     backgroundSpriteId: CityHexBackgroundSpriteId;
     backgroundDevelopmentVector: DevelopmentVectorValue;
+    baseTerrainSpriteId?: CityHexBackgroundSpriteId;
+    baseTerrainDevelopmentVector?: DevelopmentVectorValue;
     spriteKey?: string | null;
     initialBuildingKey?: string | null;
     partOfStructureId?: string | null;

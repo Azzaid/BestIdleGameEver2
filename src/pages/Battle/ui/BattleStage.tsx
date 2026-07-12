@@ -671,10 +671,17 @@ function createTerrainHexShape(fill: number) {
 }
 
 function createTexturedTerrainHex(texture: Texture) {
-    const hex = new Graphics();
-    const points = getBattlefieldHexPoints();
+    const hex = new Container();
+    const sprite = new Sprite(texture);
+    sprite.anchor.set(0.5);
+    sprite.width = CITY_HEX_WIDTH * 1.04;
+    sprite.height = CITY_HEX_RADIUS * 2.08;
 
-    hex.poly(points).fill(texture);
+    const mask = createTerrainHexShape(0xffffff);
+    sprite.mask = mask;
+
+    hex.addChild(mask);
+    hex.addChild(sprite);
 
     return hex;
 }
