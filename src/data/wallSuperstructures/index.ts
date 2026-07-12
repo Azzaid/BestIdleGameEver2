@@ -82,10 +82,10 @@ export function isWallTopTower(building: WallBuilding): boolean {
     || building.values?.some((value) => (
       value.valueId === HOMOGENEOUS_VALUE_IDS.towerMaximumWeight
       || value.valueId === HOMOGENEOUS_VALUE_IDS.towerMaximumRange
-    ))
+    )) === true
     || building.derivedValues?.some((value) => (
       value.valueId === HOMOGENEOUS_VALUE_IDS.towerMaximumWeight
       || value.valueId === HOMOGENEOUS_VALUE_IDS.towerMaximumRange
-    ))
+    )) === true
   );
 }

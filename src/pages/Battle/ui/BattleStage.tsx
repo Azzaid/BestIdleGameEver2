@@ -181,7 +181,6 @@ export function BattleStage(props: {
                     backgroundColor: 0x0b0e13,
                     antialias: true,
                     preference: 'webgl',
-                    powerPreference: 'default',
                     failIfMajorPerformanceCaveat: false,
                 });
 
