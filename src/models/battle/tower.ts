@@ -7,22 +7,22 @@ export const INITIAL_TOWER_AIM_RADIANS = -Math.PI / 2;
 
 export interface TowerData {
   // Resolved from the build phase (keywords + numeric mods)
-  rotationSpeed: number;   // rad/sec
+  rotationSpeed: number;   // deg/sec
   shotsPerSecond: number;
   burstCount: number;
   projectileDamageProfile: DamageProfile;
   projectileSpeed: number;
   projectileRadius: number;
-  projectileSpread: number;
+  projectileSpread: number; // deg
   projectileSprite?: SpriteInfo;
   aoeRadius: number;
   keywords: Set<string>;
   targetingDistanceLimit: number;
   maximumRange: number;
   minimumRange: number;
-  maximumRotationAngle: number;
+  maximumRotationAngle: number; // deg
   zeroRotationRadians: number;
-  triggerTolerance: number;
+  triggerTolerance: number; // deg
   zonePushBackDistance: number;
   zonePushBacksPerSecond: number;
   zonePushBackZoneSize: number;

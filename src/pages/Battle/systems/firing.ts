@@ -27,15 +27,16 @@ export function FiringSystem(world: World, dt: number) {
       projectileSpeed: tower.projectileSpeed,
       monsterMovementModifiers: world.config.monsterMovementModifiers,
     });
-    const triggerTolerance = Math.max(0, tower.triggerTolerance);
+    const triggerTolerance = degreesToRadians(Math.max(0, tower.triggerTolerance));
     const triggerDelta = shortestAngleDelta(center, desired);
     if (triggerTolerance < Math.PI && Math.abs(triggerDelta) > triggerTolerance) {
       continue;
     }
 
+    const spreadRadians = degreesToRadians(Math.max(0, tower.projectileSpread));
+
     for (let i = 0; i < tower.burstCount; i++) {
-      const t = tower.burstCount === 1 ? 0 : (i / (tower.burstCount - 1) - 0.5);
-      const angle = center + t * tower.projectileSpread;
+      const angle = center + (Math.random() - 0.5) * spreadRadians;
       const spawnPosition = getProjectileSpawnPosition(baseTf.position, center, tower.projectileSpawnOffset);
       const id = createEntityId(world);
       world.transforms.set(id, { position: spawnPosition, rotationRadians: angle });
@@ -58,6 +59,10 @@ export function FiringSystem(world: World, dt: number) {
     world.towerReloadRemainingSeconds.set(towerId, 1 / Math.max(0.0001, tower.shotsPerSecond));
     tower.retargetRemainingSeconds = tower.retargetCooldownSeconds;
   }
+}
+
+function degreesToRadians(value: number): number {
+  return value * Math.PI / 180;
 }
 
 function createProjectileDisplay(tower: TowerData): PIXI.ContainerChild {

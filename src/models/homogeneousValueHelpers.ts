@@ -60,6 +60,10 @@ export function formatHomogeneousValue(
             return `${numberFormatter.format(rawValue)} hex`;
         case "distancePerSecond":
             return `${numberFormatter.format(rawValue)} hex/s`;
+        case "degrees":
+            return `${integerFormatter.format(rawValue)} deg`;
+        case "degreesPerSecond":
+            return `${integerFormatter.format(rawValue)} deg/s`;
         case "kilometers":
             return `${numberFormatter.format(rawValue)} km`;
         case "triggerTolerance":

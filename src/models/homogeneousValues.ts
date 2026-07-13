@@ -25,6 +25,8 @@ export const HOMOGENEOUS_VALUE_DISPLAY_METHODS = [
     "seconds",
     "distance",
     "distancePerSecond",
+    "degrees",
+    "degreesPerSecond",
     "kilometers",
     "triggerTolerance",
     "damaged",

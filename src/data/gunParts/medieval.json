@@ -102,14 +102,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": -2
-      },
-      {
-        "valueId": "tower.targetingDistanceLimit",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 1
+        "additive": -10
       }
     ],
     "spriteTextureKey": "gunParts.medieval.barrel.carvedLog"
@@ -165,13 +158,6 @@
         "additive": 1
       },
       {
-        "valueId": "tower.rotationSpeed",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 2
-      },
-      {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
@@ -186,21 +172,28 @@
         "additive": 10
       },
       {
-        "valueId": "tower.projectileSpeed",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 4
-      },
-      {
-        "valueId": "tower.projectileSpread",
+        "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
         ],
         "additive": 3
       },
       {
-        "valueId": "tower.targetingDistanceLimit",
+        "valueId": "tower.rotationSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 50
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 25
+      },
+      {
+        "valueId": "tower.projectileSpeed",
         "additionalKeywords": [
           "production"
         ],
@@ -245,13 +238,6 @@
         "additive": 1
       },
       {
-        "valueId": "tower.projectileSpeed",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 1
-      },
-      {
         "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
@@ -270,14 +256,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 0.01
-      },
-      {
-        "valueId": "tower.projectileSpread",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": -1
+        "additive": 0.03
       }
     ],
     "spriteTextureKey": "gunParts.medieval.ammo.sharpenedStakes"
@@ -322,14 +301,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": -3
-      },
-      {
-        "valueId": "tower.targetingDistanceLimit",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 1
+        "additive": -15
       }
     ],
     "spriteTextureKey": "gunParts.medieval.barrel.boredTimberBarrel"
@@ -377,13 +349,6 @@
         "additive": 4
       },
       {
-        "valueId": "tower.projectileSpeed",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 2
-      },
-      {
         "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
@@ -415,13 +380,6 @@
     ],
     "values": [
       {
-        "valueId": "tower.rotationSpeed",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 3
-      },
-      {
         "valueId": "tower.weight",
         "additionalKeywords": [
           "production"
@@ -434,6 +392,13 @@
           "upkeep"
         ],
         "additive": 4
+      },
+      {
+        "valueId": "tower.rotationSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 70
       }
     ],
     "spriteTextureKey": "gunParts.medieval.platform.woodenRails"
@@ -537,14 +502,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": -1
-      },
-      {
-        "valueId": "tower.targetingDistanceLimit",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 1
+        "additive": -20
       }
     ],
     "spriteTextureKey": "gunParts.medieval.barrel.stoneRails"
@@ -590,13 +548,6 @@
         "additive": 1
       },
       {
-        "valueId": "tower.projectileSpread",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": -2
-      },
-      {
         "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
@@ -609,6 +560,13 @@
           "production"
         ],
         "additive": 1
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -5
       }
     ]
   },
@@ -633,13 +591,6 @@
       }
     ],
     "values": [
-      {
-        "valueId": "tower.rotationSpeed",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 1
-      },
       {
         "valueId": "tower.weight",
         "additionalKeywords": [
@@ -669,18 +620,25 @@
         "additive": 0.1
       },
       {
-        "valueId": "tower.projectileSpread",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": -1
-      },
-      {
         "valueId": "tower.targetingDistanceLimit",
         "additionalKeywords": [
           "production"
         ],
         "additive": 1
+      },
+      {
+        "valueId": "tower.rotationSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 30
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -5
       }
     ],
     "spriteTextureKey": "gunParts.medieval.platform.stoneRails"

@@ -179,7 +179,7 @@ export function TargetingSystem(world: World, dtSeconds?: number) {
             minimumDistance2,
             maximumDistance2,
             tower.zeroRotationRadians,
-            tower.maximumRotationAngle,
+            degreesToRadians(tower.maximumRotationAngle),
         ));
         if (currentAlive && currentInRange && tower.retargetRemainingSeconds > 0) {
             continue; // keep the current target during the hold window
@@ -196,7 +196,7 @@ export function TargetingSystem(world: World, dtSeconds?: number) {
                 minimumDistance2,
                 maximumDistance2,
                 tower.zeroRotationRadians,
-                tower.maximumRotationAngle,
+                degreesToRadians(tower.maximumRotationAngle),
             )) {
                 candidates.push(enemyId);
             }
@@ -213,6 +213,10 @@ export function TargetingSystem(world: World, dtSeconds?: number) {
 
         tower.currentTarget = chooseTargetByAimKeywords(world, towerId, candidates, tokens);
     }
+}
+
+function degreesToRadians(value: number): number {
+    return value * Math.PI / 180;
 }
 
 function getEffectiveMaximumTargetingDistance(

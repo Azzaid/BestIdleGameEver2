@@ -3,7 +3,7 @@
     "id": "enemies.wasteland.scrapling",
     "displayName": "Scrapling",
     "minimumCityVisibilityThreshold": 0,
-    "strengthCost": 5,
+    "strengthCost": 10,
     "selectionWeight": 7,
     "kind": "melee",
     "pressure": 2,

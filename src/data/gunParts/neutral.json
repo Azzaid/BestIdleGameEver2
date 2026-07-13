@@ -71,13 +71,6 @@
         "additive": 5
       },
       {
-        "valueId": "tower.projectileSpeed",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 3
-      },
-      {
         "valueId": "tower.burstCount",
         "additionalKeywords": [
           "production"
@@ -106,25 +99,32 @@
         "additive": 1
       },
       {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 30
+      },
+      {
         "valueId": "tower.rotationSpeed",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 1.5
+        "additive": 70
       },
       {
         "valueId": "tower.shotsPerSecond",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 1.5
+        "additive": 2
       },
       {
-        "valueId": "tower.projectileSpread",
+        "valueId": "tower.projectileSpeed",
         "additionalKeywords": [
           "production"
         ],
-        "additive": 5
+        "additive": 2
       }
     ],
     "spriteTextureKey": "gunParts.medieval.launchSystem.crudeSling"
@@ -160,13 +160,6 @@
         "additive": 2
       },
       {
-        "valueId": "tower.targetingDistanceLimit",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 1
-      },
-      {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
@@ -178,7 +171,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": -1
+        "additive": -5
       }
     ],
     "spriteTextureKey": "gunParts.medieval.barrel.hollowedTrunk"

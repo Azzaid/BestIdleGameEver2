@@ -255,7 +255,7 @@ What weapon fires at what target.
 
 Targeting behavior is determined by modules.
 
-Accuracy behavior is also part of the tower machine. Projectile radius, projectile spread, and trigger tolerance are tower values that components can tune. Trigger tolerance controls how close the current barrel angle must be to the desired target angle before the tower may fire.
+Accuracy behavior is also part of the tower machine. Projectile radius, projectile spread, trigger tolerance, and rotation limits are tower values that components can tune. Projectile spread, trigger tolerance, and maximum rotation angle are authored in degrees. Projectile spread is the full width of a random firing cone; every projectile, including single shots, receives a random angle offset from half the spread clockwise to half the spread counterclockwise. Trigger tolerance controls how close the current barrel angle must be to the desired target angle before the tower may fire.
 
 Examples:
 

@@ -42,7 +42,7 @@ export const BASE_SIMULTANEOUS_MONSTERS_LIMIT = 40;
 
 export const MAX_TOWER_SLOTS = 5;
 
-export const TOWER_WEIGHT_ROTATION_PENALTY = 0.075;
+export const TOWER_WEIGHT_ROTATION_PENALTY = 2;
 
 export const BASE_TOWER_STATS = {
     rotationSpeed: 0,
@@ -58,7 +58,7 @@ export const BASE_TOWER_STATS = {
     minimumRange: 0,
     maximumRotationAngle: Infinity,
     retargetCooldownSeconds: 0,
-    triggerTolerance: Math.PI,
+    triggerTolerance: 180,
     zonePushBackDistance: 0,
     zonePushBacksPerSecond: 0,
     zonePushBackZoneSize: 0,

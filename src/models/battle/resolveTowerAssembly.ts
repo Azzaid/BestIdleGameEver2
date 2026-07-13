@@ -164,6 +164,7 @@ export function resolveTowerAssemblyStatsAndSupport(
   const stats = homogeneousValueTotalsToTowerStats(getAvailableValues(resolvedValues), keywords);
   const supportCost = homogeneousValueTotalsToUpkeepAmount(getUpkeepValues(resolvedValues));
   stats.rotationSpeed = Math.max(0, stats.rotationSpeed - stats.weight * TOWER_WEIGHT_ROTATION_PENALTY);
+  stats.projectileSpread = Math.max(0, stats.projectileSpread);
 
   return {stats, supportCost};
 }

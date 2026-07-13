@@ -425,7 +425,7 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         id: HOMOGENEOUS_VALUE_IDS.towerRotationSpeed,
         label: "Tower Rotation Speed",
         keywords: ["tower", "rotationSpeed"],
-        displayMethod: "default",
+        displayMethod: "degreesPerSecond",
         initialValue: BASE_TOWER_STATS.rotationSpeed,
     },
     [HOMOGENEOUS_VALUE_IDS.towerShotsPerSecond]: {
@@ -467,7 +467,7 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         id: HOMOGENEOUS_VALUE_IDS.towerProjectileSpread,
         label: "Tower Projectile Spread",
         keywords: ["tower", "projectileSpread"],
-        displayMethod: "default",
+        displayMethod: "degrees",
         initialValue: BASE_TOWER_STATS.projectileSpread,
     },
     [HOMOGENEOUS_VALUE_IDS.towerAoeRadius]: {
@@ -504,7 +504,7 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         id: HOMOGENEOUS_VALUE_IDS.towerMaximumRotationAngle,
         label: "Tower Maximum Rotation Angle",
         keywords: ["tower", "maximumRotationAngle"],
-        displayMethod: "default",
+        displayMethod: "degrees",
         resolutionMethod: "minimum",
         initialValue: BASE_TOWER_STATS.maximumRotationAngle,
     },
@@ -519,7 +519,7 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         id: HOMOGENEOUS_VALUE_IDS.towerTriggerTolerance,
         label: "Tower Trigger Tolerance",
         keywords: ["tower", "triggerTolerance"],
-        displayMethod: "triggerTolerance",
+        displayMethod: "degrees",
         initialValue: BASE_TOWER_STATS.triggerTolerance,
     },
     [HOMOGENEOUS_VALUE_IDS.towerZonePushBackDistance]: {

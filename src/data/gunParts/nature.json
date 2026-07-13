@@ -46,18 +46,18 @@
         "additive": 2
       },
       {
-        "valueId": "tower.rotationSpeed",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 2
-      },
-      {
         "valueId": "tower.weight",
         "additionalKeywords": [
           "production"
         ],
         "additive": 3
+      },
+      {
+        "valueId": "tower.rotationSpeed",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 50
       }
     ],
     "derivedValues": [

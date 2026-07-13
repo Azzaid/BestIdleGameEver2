@@ -2814,6 +2814,8 @@ function getValueAmountLabel(label: string, valueId: string): string {
 
   if (displayMethod === "distance") return `${label} (hexR)`;
   if (displayMethod === "distancePerSecond") return `${label} (hexR/s)`;
+  if (displayMethod === "degrees") return `${label} (deg)`;
+  if (displayMethod === "degreesPerSecond") return `${label} (deg/s)`;
 
   return label;
 }
@@ -2821,7 +2823,7 @@ function getValueAmountLabel(label: string, valueId: string): string {
 function getValueAmountStep(valueId: string): string | undefined {
   const displayMethod = HOMOGENEOUS_VALUE_DEFINITION_LIST.find(definition => definition.id === valueId)?.displayMethod;
 
-  return displayMethod === "distance" || displayMethod === "distancePerSecond"
+  return displayMethod === "distance" || displayMethod === "distancePerSecond" || displayMethod === "degrees" || displayMethod === "degreesPerSecond"
     ? hexRadiusNumberStep
     : undefined;
 }
