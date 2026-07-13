@@ -14,7 +14,7 @@ import type { TowerAssemblyResolved, TowerStatsResolved } from '../../../models/
 import type { TowerDamageProfiles } from '../../../models/battle/damage.ts';
 import { buildTowerVisualContainer } from '../factories/towerVisualRenderer.ts';
 import { createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset } from '../../../data/gunParts/visuals.ts';
-import type { BattleMetrics, BattleResult, MonsterMovementModifiers, SiegeOverwhelmedDecision, WallZoneEffects } from '../../../models/battle/world.ts';
+import type { BattleMetrics, BattleResult, MonsterMovementModifiers, WallZoneEffects } from '../../../models/battle/world.ts';
 import type { BattleWallSegment } from '../../../models/battle/wallSegment.ts';
 import type { StandaloneTowerDefense, TowerData } from '../../../models/battle/tower.ts';
 import { CITY_HEX_RADIUS, CITY_HEX_WIDTH } from '../../../data/constants.ts';
@@ -53,7 +53,7 @@ export function BattleStage(props: {
     showSiegeOutline: boolean;
     onBattleMetrics?: (metrics: BattleMetrics) => void;
     onBattleEnded?: (result: BattleResult) => void;
-    onSiegeOverwhelmed?: () => SiegeOverwhelmedDecision;
+    onSiegeOverwhelmed?: () => void;
 }) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const hostRef = useRef<HTMLDivElement>(null);

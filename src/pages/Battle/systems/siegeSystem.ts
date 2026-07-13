@@ -23,17 +23,19 @@ export function SiegeSystem(world: World, dt: number) {
 
   if (
     world.config.completesWhenThreatTargetReached
+    && !world.siegeOverwhelmedWasHandled
     && world.siegePressure > world.config.wallResilience
   ) {
-    const decision = handleSiegeOverwhelmed(world);
-    if (decision === "waitForClear") {
-      beginPendingBattleOutcome(world, "overwhelmed");
-    }
+    handleSiegeOverwhelmed(world);
   } else if (
     world.config.completesWhenThreatTargetReached
+    && !world.pendingBattleOutcome
+    && !world.siegeOverwhelmedWasHandled
     && world.currentThreat >= world.config.targetThreat
   ) {
-    beginPendingBattleOutcome(world, "held");
+    world.pendingBattleOutcome = "held";
+    world.waveScheduler.state.enabled = false;
+    world.spawners = [];
   }
 
   if (!world.pendingBattleOutcome || hasActiveEnemies(world) || world.spawners.length > 0) {
@@ -50,29 +52,16 @@ export function SiegeSystem(world: World, dt: number) {
   });
 }
 
-function beginPendingBattleOutcome(world: World, outcome: World["pendingBattleOutcome"]) {
-  world.pendingBattleOutcome = outcome;
-  world.waveScheduler.state.enabled = false;
-  world.spawners = [];
-}
-
 function handleSiegeOverwhelmed(world: World) {
-  if (world.siegeOverwhelmedWasHandled) {
-    return world.pendingBattleOutcome ? "waitForClear" : "continueFrozen";
-  }
+  if (world.siegeOverwhelmedWasHandled) return;
 
   world.siegeOverwhelmedWasHandled = true;
-  const decision = world.config.onSiegeOverwhelmed?.() ?? "waitForClear";
-
-  if (decision === "continueFrozen") {
-    world.pendingBattleOutcome = undefined;
-    world.siegeMeterFrozen = true;
-    world.waveScheduler.state.enabled = true;
-    world.waveScheduler.state.timeUntilNextWaveSeconds = 0;
-    world.currentThreat = world.config.targetThreat;
-  }
-
-  return decision;
+  world.pendingBattleOutcome = undefined;
+  world.siegeMeterFrozen = true;
+  world.waveScheduler.state.enabled = true;
+  world.waveScheduler.state.timeUntilNextWaveSeconds = 0;
+  world.currentThreat = world.config.targetThreat;
+  world.config.onSiegeOverwhelmed?.();
 }
 
 function hasActiveEnemies(world: World) {

@@ -50,7 +50,6 @@ import type {TowerDamageProfiles} from "../../models/battle/damage.ts";
 import {WALL_SUPERSTRUCTURE_BUILDINGS, isWallTopTower} from "../../data/wallSuperstructures/index.ts";
 import {createBattlefieldTerrainHexes} from "./battlefieldTerrain.ts";
 import type { HexCell } from "../../models/city/HexGrid.ts";
-import type { SiegeOverwhelmedDecision } from "../../models/battle/world.ts";
 
 type BattleMode = "siege" | "pressure";
 
@@ -338,7 +337,6 @@ const BattlePage = () => {
     const [battleRunId, setBattleRunId] = useState(0);
     const [retreatEnemiesSignal, setRetreatEnemiesSignal] = useState(0);
     const [pendingTerritoryLossFailureId, setPendingTerritoryLossFailureId] = useState(0);
-    const processedFailedSiegeRef = useRef<"territoryLost" | "noTerritoryLost" | null>(null);
     const isSiege = battleMode === "siege" && signatureStatus.isBesieged;
     const cityThreat = Math.max(0, cityResolution.effectiveSignature);
     const targetThreat = isSiege
@@ -443,9 +441,6 @@ const BattlePage = () => {
         setBattleMode(mode);
         setBattleRunId(runId => runId + 1);
     }, [battleMode]);
-    const resetBattleRuntime = useCallback(() => {
-        setBattleRunId(runId => runId + 1);
-    }, []);
     const announceSiegeResult = useCallback((
         title: string,
         message: string,
@@ -489,80 +484,37 @@ const BattlePage = () => {
         if (pendingTerritoryLossFailureId === 0 || signatureStatus.isBesieged) return;
 
         setPendingTerritoryLossFailureId(0);
-        setRetreatEnemiesSignal(signal => signal + 1);
         startBattleMode("pressure");
     }, [pendingTerritoryLossFailureId, signatureStatus.isBesieged, startBattleMode]);
     const handleBattleEnded = useCallback((result: BattleResult) => {
         setMetrics(result);
-
-        if (result.outcome === "held") {
-            processedFailedSiegeRef.current = null;
-            dispatch(recordControlledTerritoryReached(result.threat));
-            dispatch(recordLastSiegeSignature(cityThreat));
-            dispatch(recordSurvivedSiege());
-            dispatch(enqueueGlobalSignal({type: "siegeSucceeded"}));
-            dispatch(enqueueGlobalSignal({type: "siegeEnded"}));
-            announceSiegeResult("Siege repelled", SIEGE_REPELLED_MESSAGE, "congratulation");
-            startBattleMode("pressure");
-            return;
-        }
-
-        if (result.outcome === "overwhelmed") {
-            if (processedFailedSiegeRef.current === "territoryLost") {
-                processedFailedSiegeRef.current = null;
-                setPendingTerritoryLossFailureId(0);
-                if (signatureStatus.isBesieged) {
-                    resetBattleRuntime();
-                } else {
-                    startBattleMode("pressure");
-                }
-                return;
-            }
-
-            if (!isSiege) {
-                startBattleMode("pressure");
-                return;
-            }
-
-            dispatch(enqueueGlobalSignal({type: "siegeFailedTerritoryLost"}));
-            dispatch(enqueueGlobalSignal({type: "siegeEnded"}));
-            announceSiegeResult("Siege overwhelmed", SIEGE_TERRITORY_LOST_MESSAGE, "alert");
-
-            if (isDebugModeEnabled) {
-                startBattleMode("pressure");
-                return;
-            }
-
-            dispatch(loseUnprotectedCityTerritory());
-            startBattleMode("pressure");
-            return;
-        }
-
+        dispatch(recordControlledTerritoryReached(result.threat));
+        dispatch(recordLastSiegeSignature(cityThreat));
+        dispatch(recordSurvivedSiege());
+        dispatch(enqueueGlobalSignal({type: "siegeSucceeded"}));
+        dispatch(enqueueGlobalSignal({type: "siegeEnded"}));
+        announceSiegeResult("Siege repelled", SIEGE_REPELLED_MESSAGE, "congratulation");
         startBattleMode("pressure");
-    }, [announceSiegeResult, cityThreat, dispatch, isDebugModeEnabled, isSiege, resetBattleRuntime, signatureStatus.isBesieged, startBattleMode]);
-    const handleSiegeOverwhelmed = useCallback((): SiegeOverwhelmedDecision => {
-        if (!isSiege) return "continueFrozen";
+    }, [announceSiegeResult, cityThreat, dispatch, startBattleMode]);
+    const handleSiegeOverwhelmed = useCallback(() => {
+        if (!isSiege) return;
 
         const lostHexCount = countHexesLostToFailedSiege(allCityHexes);
         if (lostHexCount === 0) {
-            processedFailedSiegeRef.current = "noTerritoryLost";
             dispatch(enqueueGlobalSignal({type: "siegeFailedNoTerritoryLost"}));
             announceSiegeResult("Siege not lifted", SIEGE_NOT_LIFTED_MESSAGE, "warning");
-            return "continueFrozen";
+            return;
         }
 
-        processedFailedSiegeRef.current = "territoryLost";
         dispatch(enqueueGlobalSignal({type: "siegeFailedTerritoryLost"}));
         dispatch(enqueueGlobalSignal({type: "siegeEnded"}));
         announceSiegeResult("Siege overwhelmed", SIEGE_TERRITORY_LOST_MESSAGE, "alert");
 
-        if (!isDebugModeEnabled) {
-            dispatch(loseUnprotectedCityTerritory());
-            setPendingTerritoryLossFailureId(id => id + 1);
-        }
+        dispatch(loseUnprotectedCityTerritory());
+        setPendingTerritoryLossFailureId(id => id + 1);
 
-        return "waitForClear";
-    }, [allCityHexes, announceSiegeResult, dispatch, isDebugModeEnabled, isSiege]);
+        setRetreatEnemiesSignal(signal => signal + 1);
+    }, [allCityHexes, announceSiegeResult, dispatch, isSiege]);
     const handleBattleMetrics = useCallback((nextMetrics: BattleMetrics) => {
         const nextSecond = Math.floor(nextMetrics.siegeElapsedSeconds);
         if (nextSecond === lastRenderedMetricsSecondRef.current) return;

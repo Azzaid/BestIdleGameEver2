@@ -77,7 +77,7 @@ export interface WorldConfig {
   wallZoneEffects: WallZoneEffects;
   onBattleMetrics?: (metrics: BattleMetrics) => void;
   onBattleEnded?: (result: BattleResult) => void;
-  onSiegeOverwhelmed?: () => SiegeOverwhelmedDecision;
+  onSiegeOverwhelmed?: () => void;
 }
 
 export interface BattleMetrics {
@@ -89,10 +89,8 @@ export interface BattleMetrics {
 }
 
 export interface BattleResult extends BattleMetrics {
-  outcome: "held" | "overwhelmed";
+  outcome: "held";
 }
-
-export type SiegeOverwhelmedDecision = "waitForClear" | "continueFrozen";
 
 export interface World {
   nextEntityId: number;
