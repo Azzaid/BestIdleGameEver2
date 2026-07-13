@@ -14,6 +14,7 @@ import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
 import { selectActiveTower, selectActiveTowerDraftAssembly, selectAvailableTowerList, selectHasAnyTowerBuild } from '../../store/towers/selectors.ts';
 import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTower, selectTowerDraftPart } from '../../store/towers/slice.ts';
 import { selectCityResolution, selectResolvedEffectiveActiveTowerDraft } from '../../store/upkeep/selectors.ts';
+import { selectAllCityHexes, selectCityBiome, selectCityHexes } from '../../store/city/selectors.ts';
 import {selectRequirementResolutionData, selectUnlockedTowerPartIds, selectVisibleTowerPartIds} from "../../store/unlocks/selectors.ts";
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
 import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
@@ -33,6 +34,12 @@ import {getHomogeneousValueIdForUpkeepType, homogeneousValueTotalsToUpkeepAmount
 import {HOMOGENEOUS_VALUE_IDS, getHomogeneousValueDefinition} from '../../data/homogeneousValues/index.ts';
 import {areRequirementsMet, getUnmetRequirements, type Requirement} from '../../models/progression/requirements.ts';
 import {DEVELOPMENT_VECTOR_LABELS, type DevelopmentVectorKey} from '../../models/DevlopmentVector.ts';
+import type { BattleWallSegment } from '../../models/battle/wallSegment.ts';
+import type { BattlefieldTerrainHex } from '../../models/battle/battlefieldTerrain.ts';
+import { CITY_HEX_WIDTH, HEX_DISTANCE_PIXELS } from '../../data/constants.ts';
+import { createBattlefieldTerrainHexes } from '../Battle/battlefieldTerrain.ts';
+import { getTowerAnchorPosition } from '../Battle/ui/BattleStage.tsx';
+import { getAxialDistance } from '../../models/city/expansion.ts';
 
 type ModifierRow = {
   key: string;
@@ -49,6 +56,31 @@ const vectorRowColors: Record<DevelopmentVectorKey, string> = {
   medieval: 'rgba(210, 160, 82, 0.2)',
   aether: 'rgba(172, 112, 255, 0.22)',
 };
+
+const PREVIEW_WALL_Y = HEX_DISTANCE_PIXELS * 2;
+const PREVIEW_BATTLEFIELD_HEIGHT = PREVIEW_WALL_Y + HEX_DISTANCE_PIXELS * 2;
+
+function getTowerAnchorWallSegment(
+  towerIndex: number,
+  wallSegments: readonly BattleWallSegment[],
+) {
+  const wallTopSegments = wallSegments
+    .map((segment, index) => ({ segment, index }))
+    .filter(({ segment }) => Boolean(segment.wallTopKey));
+
+  return wallTopSegments[towerIndex % Math.max(1, wallTopSegments.length)];
+}
+
+function getPreviewTerrainHexes(
+  terrainHexes: readonly BattlefieldTerrainHex[],
+  anchorSegment: BattleWallSegment | undefined,
+) {
+  if (!anchorSegment) return terrainHexes;
+
+  return terrainHexes.filter((terrainHex) => (
+    getAxialDistance(terrainHex, anchorSegment) <= 1
+  ));
+}
 
 function getPartKeywords(part: GunPart) {
   return Array.from(part.keywords);
@@ -236,6 +268,10 @@ const BuildPage = () => {
   const visibleTowerPartIds = useTypedSelector(selectVisibleTowerPartIds);
   const unlockedTowerPartIds = useTypedSelector(selectUnlockedTowerPartIds);
   const cityResolution = useTypedSelector(selectCityResolution);
+  const allCityHexes = useTypedSelector(selectAllCityHexes);
+  const cityHexes = useTypedSelector(selectCityHexes);
+  const cityBiome = useTypedSelector(selectCityBiome);
+  const cityTerrainVectorMap = useTypedSelector(state => state.city.terrainVectorMap);
   const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>(TOWER_PART_SLOT_ORDER[0].key);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -248,6 +284,64 @@ const BuildPage = () => {
   };
 
   const selectedPartId = towerDraftAssembly.selectedPartIds[activeTab];
+  const activeTowerIndex = Math.max(0, towers.findIndex((tower) => tower.id === activeTower?.id));
+  const battleWallSegments = useMemo<BattleWallSegment[]>(() => (
+    cityHexes
+      .filter(hex => hex.kind === 'wall')
+      .sort((left, right) => left.column - right.column)
+      .map(hex => ({
+        cellKey: hex.cellKey,
+        column: hex.column,
+        row: hex.row,
+        wallKey: hex.wallKey ?? null,
+        wallDevelopmentVector: hex.wallDevelopmentVector ?? null,
+        wallTopKey: hex.wallTopKey ?? null,
+        wallTopDevelopmentVector: hex.wallTopDevelopmentVector ?? null,
+      }))
+  ), [cityHexes]);
+  const previewBattlefieldWidth = Math.max(1, battleWallSegments.length) * CITY_HEX_WIDTH;
+  const activeTowerAnchorSegment = useMemo(
+    () => getTowerAnchorWallSegment(activeTowerIndex, battleWallSegments),
+    [activeTowerIndex, battleWallSegments],
+  );
+  const towerPreviewPosition = useMemo(() => getTowerAnchorPosition({
+    towerIndex: activeTowerIndex,
+    towerCount: Math.max(1, towers.length),
+    wallSegments: battleWallSegments,
+    excludedWallCellKeys: new Set(),
+    segmentSize: CITY_HEX_WIDTH,
+    battlefieldWidth: previewBattlefieldWidth,
+    wallY: PREVIEW_WALL_Y,
+  }), [activeTowerIndex, battleWallSegments, previewBattlefieldWidth, towers.length]);
+  const previewTerrainHexes = useMemo(() => {
+    const terrainHexes = createBattlefieldTerrainHexes({
+      biome: cityBiome,
+      terrainVectorMap: cityTerrainVectorMap,
+      baseTerrainBackgroundsByKey: Object.fromEntries(
+        allCityHexes.flatMap(hex => (
+          hex.baseTerrainSpriteId
+            ? [[hex.cellKey, {
+              backgroundSpriteId: hex.baseTerrainSpriteId,
+              backgroundDevelopmentVector: hex.baseTerrainDevelopmentVector ?? hex.backgroundDevelopmentVector,
+            }]]
+            : []
+        )),
+      ),
+      wallSegments: battleWallSegments,
+      battlefieldWidth: previewBattlefieldWidth,
+      battlefieldHeight: PREVIEW_BATTLEFIELD_HEIGHT,
+      wallY: PREVIEW_WALL_Y,
+    });
+
+    return getPreviewTerrainHexes(terrainHexes, activeTowerAnchorSegment?.segment);
+  }, [
+    activeTowerAnchorSegment,
+    allCityHexes,
+    battleWallSegments,
+    cityBiome,
+    cityTerrainVectorMap,
+    previewBattlefieldWidth,
+  ]);
   const visibleTowerPartIdSet = useMemo(() => new Set(visibleTowerPartIds), [visibleTowerPartIds]);
   const unlockedTowerPartIdSet = useMemo(() => new Set(unlockedTowerPartIds), [unlockedTowerPartIds]);
   const availableSlotOptions = useMemo(() => (
@@ -543,7 +637,13 @@ const BuildPage = () => {
         <div className={s.assemblyGrid}>
           <div className={s.towerPreview}>
             <div className={s.towerImage}>
-              <TowerAssemblyPreview resolvedTower={resolvedTower} />
+              <TowerAssemblyPreview
+                resolvedTower={resolvedTower}
+                wallSegments={battleWallSegments}
+                terrainHexes={previewTerrainHexes}
+                towerWorldPosition={towerPreviewPosition}
+                wallY={PREVIEW_WALL_Y}
+              />
             </div>
           </div>
 

@@ -99,7 +99,7 @@ Content data layout:
 - `src/data/enemies` uses grouped atlas modules, keyed by enemy ecosystem/family and flattened for battle spawning.
 - `src/data/globalEvents` and `src/data/globalModifiers` define event content, event images, flags, and global modifiers.
 - `src/data/ids.ts` derives grouped content IDs from the active atlases for buildings, research, gun parts, enemies, walls, and superstructures.
-- `/ids` renders an audit table that compares registered ids against data definitions, progression rules, and available assets.
+- `/ids` renders an audit table that compares registered ids against data definitions, progression rules, and available assets. In development it also exposes a column chooser and split production/upkeep homogeneous value inputs for bulk editing simple additive effects through the local data server.
 - `/content-plan` renders a high-level content planning tree. It reads and writes `local-game-data-server/data/high-level-content-plan.json` through the local development data server's `/game-files/high-level-content-plan.json` endpoint, links plan nodes to existing entity IDs, and can open `/entity-create/new` with the node header and description prefilled as an entity draft.
 - Content auto-unlock notifications are batched when several buildings, tower parts, walls, or superstructures unlock together. Discovery notifications append notification-style History entries; temporary visibility changes remain notification-only, and paired "now available" messages are suppressed when discovery already covered the same item.
 

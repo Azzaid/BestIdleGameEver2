@@ -1,74 +1,57 @@
-import { Application, Container, Sprite, Texture, TilingSprite } from 'pixi.js';
-import { useEffect, useMemo, useRef } from 'react';
+import { Application, Container } from 'pixi.js';
+import { useEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import type { TowerAssemblyPreviewProps } from '../../models/build/towerAssemblyPreview.ts';
 import { createTowerVisualDefinitionFromAssembly } from '../../data/gunParts/visuals.ts';
 import { loadBattleAssets } from '../Battle/assets/assetLoader.ts';
 import { buildTowerVisualContainer } from '../Battle/factories/towerVisualRenderer.ts';
 import { INITIAL_TOWER_AIM_RADIANS } from '../../models/battle/tower.ts';
-import { DEVELOPMENT_VECTORS } from '../../models/DevlopmentVector.ts';
-import { wallSpriteMetadataAtlas } from '../../models/sprites/walls/wallsSpriteAtlas.ts';
-import { wallTopSpriteMetadataAtlas } from '../../models/sprites/wallTops/wallTopSpriteAtlas.ts';
-import { superstructures, walls } from '../../data/ids.ts';
-import type { BattleWallSegment } from '../../models/battle/wallSegment.ts';
-import { DEFAULT_BATTLE_BACKGROUND_ID } from '../../models/battle/backgrounds.ts';
-import { BATTLE_BACKGROUNDS } from '../Battle/assets/backgrounds.ts';
-import { WALL_SEGMENT_BUILDINGS } from '../../data/wallSegments/index.ts';
-import { WALL_SUPERSTRUCTURE_BUILDINGS } from '../../data/wallSuperstructures/index.ts';
 import { CITY_HEX_WIDTH } from '../../data/constants.ts';
+import {
+  createBattlefieldTerrainLayer,
+  createBattleWallLayer,
+} from '../Battle/ui/BattleStage.tsx';
 
-const previewWallSegment: BattleWallSegment = {
-  cellKey: 'tower-preview-wall',
-  column: 0,
-  row: 0,
-  wallKey: walls.neutral.scrapBarricade,
-  wallDevelopmentVector: DEVELOPMENT_VECTORS.neutral,
-  wallTopKey: superstructures.neutral.oldStump,
-  wallTopDevelopmentVector: DEVELOPMENT_VECTORS.neutral,
-};
-
-const previewWallTextureAlias = WALL_SEGMENT_BUILDINGS[walls.neutral.scrapBarricade]?.visualAssetId ?? walls.neutral.scrapBarricade;
-const previewWallTopTextureAlias = WALL_SUPERSTRUCTURE_BUILDINGS[superstructures.neutral.oldStump]?.visualAssetId ?? superstructures.neutral.oldStump;
-const wallMetadata = wallSpriteMetadataAtlas[DEVELOPMENT_VECTORS.neutral][previewWallTextureAlias];
-const wallTopMetadata = wallTopSpriteMetadataAtlas[DEVELOPMENT_VECTORS.neutral][previewWallTopTextureAlias];
-
-function createMountedTowerPreview(towerVisualDefinition: ReturnType<typeof createTowerVisualDefinitionFromAssembly>) {
+function createMountedTowerPreview(
+  towerVisualDefinition: ReturnType<typeof createTowerVisualDefinitionFromAssembly>,
+  towerWorldPosition: { x: number; y: number },
+) {
   const scene = new Container();
   scene.sortableChildren = true;
 
-  const wall = new Sprite(Texture.from(previewWallTextureAlias));
-  wall.anchor.set(0.5);
-  wall.width = wallMetadata?.targetSpriteSize.width ?? CITY_HEX_WIDTH;
-  wall.height = wallMetadata?.targetSpriteSize.height ?? CITY_HEX_WIDTH;
-  wall.rotation = (wallMetadata?.rotationDegrees ?? 0) * Math.PI / 180;
-  wall.position.set(0, 0);
-  wall.zIndex = 1;
-  scene.addChild(wall);
-
-  const towerBase = new Sprite(Texture.from(previewWallTopTextureAlias));
-  towerBase.anchor.set(0.5);
-  towerBase.width = wallTopMetadata?.targetSpriteSize.width ?? CITY_HEX_WIDTH;
-  towerBase.height = wallTopMetadata?.targetSpriteSize.height ?? CITY_HEX_WIDTH;
-  towerBase.rotation = (wallTopMetadata?.rotationDegrees ?? 0) * Math.PI / 180;
-  towerBase.position.set(0, 0);
-  towerBase.zIndex = 2;
-  scene.addChild(towerBase);
-
   const { container: tower } = buildTowerVisualContainer(towerVisualDefinition);
-  tower.position.set(0, 0);
+  tower.position.set(towerWorldPosition.x, towerWorldPosition.y);
   tower.rotation = INITIAL_TOWER_AIM_RADIANS;
   tower.scale.set(1.35);
-  tower.zIndex = 3;
+  tower.zIndex = 30;
   scene.addChild(tower);
 
   return scene;
 }
 
-export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProps) {
+function getPreviewZoom(width: number) {
+  return Math.max(0.1, width / CITY_HEX_WIDTH);
+}
+
+export function TowerAssemblyPreview({
+  resolvedTower,
+  wallSegments,
+  terrainHexes,
+  towerWorldPosition,
+  wallY,
+}: TowerAssemblyPreviewProps) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const worldLayerRef = useRef<Container | null>(null);
+  const towerSceneRef = useRef<Container | null>(null);
+  const resizePreviewRef = useRef<(() => void) | null>(null);
+  const towerWorldPositionRef = useRef(towerWorldPosition);
   const towerVisualDefinition = useMemo(
     () => createTowerVisualDefinitionFromAssembly(resolvedTower),
     [resolvedTower]
   );
+  const towerVisualDefinitionRef = useRef(towerVisualDefinition);
+
+  towerWorldPositionRef.current = towerWorldPosition;
+  towerVisualDefinitionRef.current = towerVisualDefinition;
 
   useEffect(() => {
     const hostElement = hostRef.current;
@@ -98,43 +81,57 @@ export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProp
       app = previewApp;
       hostElement.appendChild(previewApp.canvas);
       await loadBattleAssets({
-        backgroundId: DEFAULT_BATTLE_BACKGROUND_ID,
-        wallSegments: [previewWallSegment],
+        wallSegments,
+        terrainHexes,
       });
 
       if (disposed || !app) return;
 
       app.stage.sortableChildren = true;
 
-      const backgroundDefinition = BATTLE_BACKGROUNDS[DEFAULT_BATTLE_BACKGROUND_ID];
-      const background = new TilingSprite({
-        texture: Texture.from(backgroundDefinition.textureAlias),
-        width: app.renderer.width,
-        height: app.renderer.height,
-      });
-      background.zIndex = -10;
-      app.stage.addChild(background);
+      const worldLayer = new Container();
+      worldLayer.sortableChildren = true;
+      app.stage.addChild(worldLayer);
 
-      const scene = createMountedTowerPreview(towerVisualDefinition);
-      scene.zIndex = 1;
-      app.stage.addChild(scene);
+      const terrainLayer = createBattlefieldTerrainLayer(terrainHexes);
+      terrainLayer.zIndex = -100;
+      worldLayer.addChild(terrainLayer);
+
+      const wallLayer = createBattleWallLayer({
+        wallSegments,
+        wallY,
+        segmentSize: CITY_HEX_WIDTH,
+        battlefieldWidth: Math.max(1, wallSegments.length) * CITY_HEX_WIDTH,
+      });
+      wallLayer.zIndex = 15;
+      worldLayer.addChild(wallLayer);
+
+      worldLayerRef.current = worldLayer;
+      replaceTowerPreview(
+        worldLayer,
+        towerSceneRef,
+        towerVisualDefinitionRef.current,
+        towerWorldPositionRef.current,
+      );
 
       const resizePreview = () => {
         if (!app) return;
         const width = Math.max(1, hostElement.clientWidth);
         const height = Math.max(1, hostElement.clientHeight);
-        const scale = Math.min(1.8, Math.max(1.25, Math.min(width / 320, height / 300) * 1.5));
+        const scale = getPreviewZoom(width);
+        const towerScreenY = height * 0.58;
+        const currentTowerWorldPosition = towerWorldPositionRef.current;
 
         app.renderer.resize(width, height);
-        background.width = width;
-        background.height = height;
-        background.tileScale.set(scale * 0.45);
-        background.tilePosition.set(width * 0.08, height * 0.1);
-        scene.position.set(width / 2, height * 0.6);
-        scene.scale.set(scale);
+        worldLayer.position.set(
+          width / 2 - currentTowerWorldPosition.x * scale,
+          towerScreenY - currentTowerWorldPosition.y * scale,
+        );
+        worldLayer.scale.set(scale);
       };
 
       resizePreview();
+      resizePreviewRef.current = resizePreview;
       resizeObserver = new ResizeObserver(resizePreview);
       resizeObserver.observe(hostElement);
     };
@@ -144,11 +141,45 @@ export function TowerAssemblyPreview({ resolvedTower }: TowerAssemblyPreviewProp
     return () => {
       disposed = true;
       resizeObserver?.disconnect();
+      worldLayerRef.current = null;
+      towerSceneRef.current = null;
+      resizePreviewRef.current = null;
       if (app) {
         app.destroy(true, { children: true, texture: false, textureSource: false, context: true });
       }
     };
-  }, [towerVisualDefinition]);
+  }, [terrainHexes, wallSegments, wallY]);
+
+  useEffect(() => {
+    const worldLayer = worldLayerRef.current;
+    if (!worldLayer) return;
+
+    replaceTowerPreview(
+      worldLayer,
+      towerSceneRef,
+      towerVisualDefinition,
+      towerWorldPosition,
+    );
+    resizePreviewRef.current?.();
+  }, [towerVisualDefinition, towerWorldPosition]);
 
   return <div ref={hostRef} style={{ position: 'absolute', inset: 0 }} aria-label="Tower assembly preview" />;
+}
+
+function replaceTowerPreview(
+  worldLayer: Container,
+  towerSceneRef: MutableRefObject<Container | null>,
+  towerVisualDefinition: ReturnType<typeof createTowerVisualDefinitionFromAssembly>,
+  towerWorldPosition: { x: number; y: number },
+) {
+  const previousScene = towerSceneRef.current;
+  if (previousScene) {
+    worldLayer.removeChild(previousScene);
+    previousScene.destroy({ children: true });
+  }
+
+  const scene = createMountedTowerPreview(towerVisualDefinition, towerWorldPosition);
+  scene.zIndex = 30;
+  worldLayer.addChild(scene);
+  towerSceneRef.current = scene;
 }

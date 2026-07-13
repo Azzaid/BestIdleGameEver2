@@ -22,6 +22,7 @@ Endpoints:
 - `GET /game-files/high-level-content-plan.json`
 - `PUT /game-files/high-level-content-plan.json`
 - `POST /entities`
+- `POST /entity-values`
 - `POST /entity-sprites`
 - `POST /entity-sprite-metadata`
 - `DELETE /entity-sprites`
@@ -48,6 +49,8 @@ The target file is selected from the entity `id`:
 - `wallSuperstructures.{vector}.{item}` -> `src/data/wallSuperstructures/{vector}.json`
 
 The server appends new entities and updates existing entities with the same ID. Set `GAME_DATA_DIR` to point at a different data root for tests.
+
+`POST /entity-values` bulk-updates simple homogeneous value additives on existing entity definitions. Send JSON with `updates`, where each update includes an `id` and a `values` object keyed by homogeneous value id. Value entries use `{ "production": "5", "upkeep": "4" }`; empty strings remove simple production/upkeep additives for that value id. The endpoint also accepts the older compact string form (`5`, `u:4`, or `p:5,u:4`). Complex effects with multipliers, removed keywords, or extra value keywords are preserved for detailed editing in `/entity-create/:entityId`.
 
 `POST /entity-sprites` saves sprite PNG files under `src/assets` with paired metadata JSON for sprite-backed entity types. Send it as `multipart/form-data`:
 

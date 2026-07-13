@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState, type TouchEvent, type UIEvent, type WheelEvent } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode, type TouchEvent, type UIEvent, type WheelEvent } from 'react'
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
 import {Provider} from "react-redux";
 import {store} from "./store";
@@ -45,8 +45,6 @@ function AppFrame() {
   const unseenHistoryEntryCount = useTypedSelector(selectUnseenHistoryEntryIds).length;
   const isLocalDebugAvailable = import.meta.env.DEV;
   const isDebugToolsEnabled = isLocalDebugAvailable && isDebugModeEnabled;
-  const shouldShowUpkeepBar = location.pathname !== "/" && location.pathname !== "/battle";
-  const shouldShowCityExpansionControl = location.pathname === "/city";
 
   useResearchAutoUnlock();
   useContentAutoUnlock();
@@ -77,7 +75,7 @@ function AppFrame() {
       resizeObserver.disconnect();
       window.removeEventListener("resize", showNavWhenContentDoesNotScroll);
     };
-  }, []);
+  }, [location.pathname]);
 
   const updateNavForDirection = (deltaY: number, currentScrollTop = contentRef.current?.scrollTop ?? 0) => {
     const contentElement = contentRef.current;
@@ -133,6 +131,19 @@ function AppFrame() {
     lastTouchYRef.current = currentTouchY;
   };
 
+  const renderScrollableRoute = (children: ReactNode) => (
+      <main
+          ref={contentRef}
+          className={appTheme.appContent}
+          onScroll={handleContentScroll}
+          onWheel={handleContentWheel}
+          onTouchStart={handleContentTouchStart}
+          onTouchMove={handleContentTouchMove}
+      >
+          {children}
+      </main>
+  );
+
   return (
               <div className={appTheme.appContainer}>
                   <nav className={`${appTheme.appNav} ${isNavHidden ? appTheme.appNavHidden : ""}`}>
@@ -186,36 +197,38 @@ function AppFrame() {
                   </nav>
                   <NotificationCenter />
                   <VictoryEventOverlay />
-                  {shouldShowUpkeepBar && (
-                      <UpkeepBar rightSlot={shouldShowCityExpansionControl ? <CityExpansionControl /> : undefined}/>
-                  )}
-                  <main
-                      ref={contentRef}
-                      className={appTheme.appContent}
-                      onScroll={handleContentScroll}
-                      onWheel={handleContentWheel}
-                      onTouchStart={handleContentTouchStart}
-                      onTouchMove={handleContentTouchMove}
-                  >
-                      <Routes>
-                          <Route path="/" element={<BattlePage />} />
-                          <Route path="/battle" element={<BattlePage />} />
-                          <Route path="/build" element={<BuildPage/>} />
-                          <Route path="/research" element={signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />} />
-                          <Route path="/city" element={<CityPage />} />
-                          <Route path="/history" element={<HistoryPage />} />
-                          {DevToolsRouteGate && (
-                              <Route
-                                  path="/*"
-                                  element={(
-                                      <Suspense fallback={null}>
-                                          <DevToolsRouteGate enabled={isDebugToolsEnabled} />
-                                      </Suspense>
-                                  )}
-                              />
+                  <Routes>
+                      <Route path="/" element={renderScrollableRoute(<BattlePage />)} />
+                      <Route path="/battle" element={renderScrollableRoute(<BattlePage />)} />
+                      <Route path="/build" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<BuildPage />)}</UpkeepBarRouteFrame>} />
+                      <Route
+                          path="/research"
+                          element={(
+                              <UpkeepBarRouteFrame>
+                                  {renderScrollableRoute(signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />)}
+                              </UpkeepBarRouteFrame>
                           )}
-                      </Routes>
-                  </main>
+                      />
+                      <Route
+                          path="/city"
+                          element={(
+                              <UpkeepBarRouteFrame rightSlot={<CityExpansionControl />}>
+                                  {renderScrollableRoute(<CityPage />)}
+                              </UpkeepBarRouteFrame>
+                          )}
+                      />
+                      <Route path="/history" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<HistoryPage />)}</UpkeepBarRouteFrame>} />
+                      {DevToolsRouteGate && (
+                          <Route
+                              path="/*"
+                              element={renderScrollableRoute(
+                                  <Suspense fallback={null}>
+                                      <DevToolsRouteGate enabled={isDebugToolsEnabled} />
+                                  </Suspense>
+                              )}
+                          />
+                      )}
+                  </Routes>
               </div>
   )
 }
@@ -242,6 +255,15 @@ function AppWithProviders() {
           <App />
       </Provider>
   )
+}
+
+function UpkeepBarRouteFrame({children, rightSlot}: {children: ReactNode; rightSlot?: ReactNode}) {
+  return (
+      <>
+          <UpkeepBar rightSlot={rightSlot} />
+          {children}
+      </>
+  );
 }
 
 function BlockedPage({title}: {title: string}) {

@@ -38,6 +38,13 @@
           "production"
         ],
         "additive": 0.05
+      },
+      {
+        "valueId": "tower.shotsPerSecond",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -0.5
       }
     ],
     "projectileSpriteTextureKey": "projectiles.neutral.stoneBasket",
@@ -71,13 +78,6 @@
         "additive": 3
       },
       {
-        "valueId": "tower.shotsPerSecond",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 1
-      },
-      {
         "valueId": "tower.burstCount",
         "additionalKeywords": [
           "production"
@@ -90,13 +90,6 @@
           "production"
         ],
         "additive": 2
-      },
-      {
-        "valueId": "tower.projectileSpread",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 3
       },
       {
         "valueId": "tower.weight",
@@ -118,6 +111,20 @@
           "production"
         ],
         "additive": 1.5
+      },
+      {
+        "valueId": "tower.shotsPerSecond",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1.5
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
       }
     ],
     "spriteTextureKey": "gunParts.medieval.launchSystem.crudeSling"
@@ -146,21 +153,7 @@
     ],
     "values": [
       {
-        "valueId": "tower.projectileDamage",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 2
-      },
-      {
         "valueId": "tower.weight",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": 2
-      },
-      {
-        "valueId": "tower.projectileSpeed",
         "additionalKeywords": [
           "production"
         ],
@@ -174,18 +167,18 @@
         "additive": 1
       },
       {
-        "valueId": "tower.projectileSpread",
-        "additionalKeywords": [
-          "production"
-        ],
-        "additive": -0.1
-      },
-      {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
         ],
         "additive": 1
+      },
+      {
+        "valueId": "tower.projectileSpread",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": -1
       }
     ],
     "spriteTextureKey": "gunParts.medieval.barrel.hollowedTrunk"

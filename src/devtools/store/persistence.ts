@@ -1,4 +1,10 @@
-import { initialDevToolsState, type DevToolsState, type IdAuditStatusFilter } from "./state.ts";
+import {
+  defaultVisibleIdAuditBaseColumns,
+  idAuditBaseColumnIds,
+  initialDevToolsState,
+  type DevToolsState,
+  type IdAuditStatusFilter,
+} from "./state.ts";
 
 const DEVTOOLS_STORAGE_KEY = "best-idle-game-ever-2:devtools";
 const DEVTOOLS_SAVE_VERSION = 1;
@@ -61,8 +67,33 @@ function sanitizeIdAuditFilters(value: unknown): Partial<DevToolsState["idAudit"
   if (isStatusFilter(value.progressionFilter)) filters.progressionFilter = value.progressionFilter;
   if (isStatusFilter(value.assetFilter)) filters.assetFilter = value.assetFilter;
   if (typeof value.problemsOnly === "boolean") filters.problemsOnly = value.problemsOnly;
+  if (isRecord(value.visibleBaseColumns)) {
+    filters.visibleBaseColumns = sanitizeVisibleBaseColumns(value.visibleBaseColumns);
+  }
+  if (isRecord(value.visibleValueIds)) {
+    filters.visibleValueIds = sanitizeVisibleValueIds(value.visibleValueIds);
+  }
 
   return filters;
+}
+
+function sanitizeVisibleBaseColumns(value: Record<string, unknown>): DevToolsState["idAudit"]["visibleBaseColumns"] {
+  const columns = {...defaultVisibleIdAuditBaseColumns};
+
+  for (const columnId of idAuditBaseColumnIds) {
+    if (typeof value[columnId] === "boolean") {
+      columns[columnId] = value[columnId];
+    }
+  }
+
+  return columns;
+}
+
+function sanitizeVisibleValueIds(value: Record<string, unknown>): Record<string, boolean> {
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter((entry): entry is [string, boolean] => typeof entry[0] === "string" && typeof entry[1] === "boolean"),
+  );
 }
 
 function isCurrentSaveFile(value: unknown): value is DevToolsSaveFile {

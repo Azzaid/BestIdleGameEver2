@@ -1,5 +1,5 @@
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
-import {useMemo} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {Link} from "react-router-dom";
 import {PROGRESSION_RULES} from "../Progression/data/rules.ts";
 import {getRuleForTarget} from "../Progression/data/progression.ts";
@@ -25,14 +25,22 @@ import type {ProgressionNodeKind} from "../Progression/data/types.ts";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {Building} from "../../models/city/Building.ts";
 import type {WallBuilding} from "../../models/city/Wall.ts";
-import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
+import {HOMOGENEOUS_VALUE_DEFINITION_LIST, HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
+import type {HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import {
   getProducedValues,
   resolveHomogeneousValueContributions,
 } from "../../models/homogeneousValueResolution.ts";
 import {useDevToolsDispatch, useDevToolsSelector} from "../../devtools/store/hooks.ts";
 import {selectIdAuditFilters} from "../../devtools/store/selectors.ts";
-import {setIdAuditFilters, type IdAuditStatusFilter} from "../../devtools/store/state.ts";
+import {
+  setAllIdAuditValueColumnVisibility,
+  setIdAuditBaseColumnVisibility,
+  setIdAuditFilters,
+  setIdAuditValueColumnVisibility,
+  type IdAuditBaseColumnId,
+  type IdAuditStatusFilter,
+} from "../../devtools/store/state.ts";
 import * as s from "./IdAuditPage.css.ts";
 
 type AuditStatus = "ok" | "missing" | "none";
@@ -42,11 +50,39 @@ type AuditRow = {
   path: string;
   id: string;
   name?: string;
+  pathStatus: IdentifierPathStatus;
   dataStatus: AuditStatus;
   progressionStatus: AuditStatus;
   assetStatus: AuditStatus;
   notes: string;
+  valuesEditable: boolean;
+  homogeneousValues: readonly HomogeneousValueEffect[];
 };
+
+type IdentifierPathStatus = "ok" | "mismatch";
+
+type SaveStatus = {
+  kind: "idle" | "saving" | "success" | "error";
+  message: string;
+};
+
+type ValueRole = "production" | "upkeep";
+type ValueCellDraft = Record<ValueRole, string>;
+type ValueDrafts = Record<string, Record<string, ValueCellDraft>>;
+
+const localDataServerUrl = "http://127.0.0.1:4317";
+
+const baseColumnOptions: {id: IdAuditBaseColumnId; label: string}[] = [
+  {id: "category", label: "Category"},
+  {id: "path", label: "Identifier Path"},
+  {id: "id", label: "ID"},
+  {id: "name", label: "Name"},
+  {id: "data", label: "Data"},
+  {id: "progression", label: "Progression"},
+  {id: "assets", label: "Assets"},
+  {id: "notes", label: "Notes"},
+  {id: "edit", label: "Edit"},
+];
 
 const metadataModules = import.meta.glob("../../assets/gunParts/**/*.json", {
   eager: true,
@@ -95,10 +131,13 @@ function createRows(): AuditRow[] {
       path: item.path,
       id: item.id,
       name: data?.name,
+      pathStatus: getIdentifierPathStatus(item.path, item.id),
       dataStatus: data ? "ok" : "missing",
       progressionStatus: getProgressionStatus("building", item.id),
       assetStatus: hasAsset ? "ok" : "none",
       notes: data ? `${vector} / ${data.type.description ?? "building"} / asset ${hasAsset ? "yes" : "no"}` : "No building definition",
+      valuesEditable: Boolean(data),
+      homogeneousValues: data?.values ?? [],
     });
   }
 
@@ -109,10 +148,13 @@ function createRows(): AuditRow[] {
       path: item.path,
       id: item.id,
       name: data?.name,
+      pathStatus: getIdentifierPathStatus(item.path, item.id),
       dataStatus: data ? "ok" : "missing",
       progressionStatus: getProgressionStatus("research", item.id),
       assetStatus: "none",
       notes: data ? data.summary ?? "" : "No research node",
+      valuesEditable: false,
+      homogeneousValues: [],
     });
   }
 
@@ -129,10 +171,13 @@ function createRows(): AuditRow[] {
       path: `gunParts.${item.vector}.${item.slot}.${item.key}`,
       id: item.id,
       name: data?.name,
+      pathStatus: getIdentifierPathStatus(`gunParts.${item.vector}.${item.slot}.${item.key}`, item.id),
       dataStatus: data ? "ok" : "missing",
       progressionStatus: getProgressionStatus("towerPart", item.id),
       assetStatus: hasPng && hasJson && isRegistered ? "ok" : "missing",
       notes: data ? `${data.slot ?? "unknown slot"} / texture ${textureKey} / PNG ${hasPng ? "yes" : "no"} / JSON ${hasJson ? "yes" : "no"} / registry ${isRegistered ? "yes" : "no"}` : "No tower part definition",
+      valuesEditable: Boolean(data),
+      homogeneousValues: data?.values ?? [],
     });
   }
 
@@ -143,12 +188,15 @@ function createRows(): AuditRow[] {
       path: item.path,
       id: item.id,
       name: data?.displayName,
+      pathStatus: getIdentifierPathStatus(item.path, item.id),
       dataStatus: data ? "ok" : "missing",
       progressionStatus: "none",
       assetStatus: data?.sprite.textureKey && ENEMY_VISUAL_ASSETS_BY_TEXTURE_KEY[data.sprite.textureKey] ? "ok" : "missing",
       notes: data
         ? `${data.kind} / pressure ${data.pressure} / minimum visibility ${data.minimumCityVisibilityThreshold ?? 0} / texture ${data.sprite.textureKey}`
         : "No enemy blueprint",
+      valuesEditable: false,
+      homogeneousValues: [],
     });
   }
 
@@ -161,10 +209,13 @@ function createRows(): AuditRow[] {
       path: item.path,
       id: item.id,
       name: data?.name,
+      pathStatus: getIdentifierPathStatus(item.path, item.id),
       dataStatus: data ? "ok" : "missing",
       progressionStatus: "none",
       assetStatus: hasAsset ? "ok" : "none",
       notes: data ? `${describeWallBuildingStats(data)} / asset ${hasAsset ? "yes" : "no"}` : "No wall segment definition",
+      valuesEditable: Boolean(data),
+      homogeneousValues: data?.values ?? [],
     });
   }
 
@@ -177,10 +228,13 @@ function createRows(): AuditRow[] {
       path: item.path,
       id: item.id,
       name: data?.name,
+      pathStatus: getIdentifierPathStatus(item.path, item.id),
       dataStatus: data ? "ok" : "missing",
       progressionStatus: "none",
       assetStatus: hasAsset ? "ok" : "none",
       notes: data ? `${describeWallBuildingStats(data)} / asset ${hasAsset ? "yes" : "no"}` : "No wall superstructure definition",
+      valuesEditable: Boolean(data),
+      homogeneousValues: data?.values ?? [],
     });
   }
 
@@ -223,10 +277,13 @@ function getUnregisteredRows(rows: readonly AuditRow[]): AuditRow[] {
       category: "Tower Part Asset",
       path: "missing identificator asset",
       id,
+      pathStatus: "mismatch",
       dataStatus: TOWER_PARTS_BY_ID[id] ? "ok" : "missing",
       progressionStatus: "none",
       assetStatus: "ok",
       notes: "Asset file exists but id is not in derived data ids",
+      valuesEditable: false,
+      homogeneousValues: [],
     });
   }
 
@@ -254,15 +311,21 @@ function createUnregisteredRow(category: string, id: string, name?: string): Aud
     path: "missing identificator",
     id,
     name,
+    pathStatus: "mismatch",
     dataStatus: "ok",
     progressionStatus: "none",
     assetStatus: "none",
     notes: "Definition exists but id is not in derived data ids",
+    valuesEditable: false,
+    homogeneousValues: [],
   };
 }
 
 export default function IdAuditPage() {
   const dispatch = useDevToolsDispatch();
+  const [valueDrafts, setValueDrafts] = useState<ValueDrafts>({});
+  const [baselineDrafts, setBaselineDrafts] = useState<ValueDrafts>({});
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>({kind: "idle", message: ""});
   const {
     search,
     categoryFilter,
@@ -270,10 +333,22 @@ export default function IdAuditPage() {
     progressionFilter,
     assetFilter,
     problemsOnly,
+    visibleBaseColumns,
+    visibleValueIds,
   } = useDevToolsSelector(selectIdAuditFilters);
   const registeredRows = useMemo(() => createRows(), []);
   const rows = useMemo(() => [...registeredRows, ...getUnregisteredRows(registeredRows)], [registeredRows]);
+  const initialValueDrafts = useMemo(() => createValueDrafts(rows), [rows]);
   const categories = useMemo(() => [...new Set(rows.map(row => row.category))].sort(), [rows]);
+  const homogeneousValueColumns = HOMOGENEOUS_VALUE_DEFINITION_LIST;
+  const visibleHomogeneousValueColumns = useMemo(
+    () => homogeneousValueColumns.filter(definition => visibleValueIds[definition.id] ?? true),
+    [homogeneousValueColumns, visibleValueIds],
+  );
+  useEffect(() => {
+    setValueDrafts(initialValueDrafts);
+    setBaselineDrafts(initialValueDrafts);
+  }, [initialValueDrafts]);
   const filteredRows = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -283,7 +358,8 @@ export default function IdAuditPage() {
       .filter(row => progressionFilter === "any" || row.progressionStatus === progressionFilter)
       .filter(row => assetFilter === "any" || row.assetStatus === assetFilter)
       .filter(row => !problemsOnly || (
-        row.dataStatus === "missing"
+        row.pathStatus === "mismatch"
+        || row.dataStatus === "missing"
         || row.progressionStatus === "missing"
         || row.assetStatus === "missing"
         || row.path.startsWith("missing identificator")
@@ -299,10 +375,75 @@ export default function IdAuditPage() {
         ].some(value => value.toLowerCase().includes(query));
       });
   }, [assetFilter, categoryFilter, dataFilter, problemsOnly, progressionFilter, rows, search]);
+  const changedRows = useMemo(() => (
+    rows
+      .filter(row => row.valuesEditable)
+      .filter(row => !areDraftRowsEqual(valueDrafts[row.id] ?? {}, baselineDrafts[row.id] ?? {}))
+  ), [baselineDrafts, rows, valueDrafts]);
   const missingData = rows.filter(row => row.dataStatus === "missing").length;
   const missingProgression = rows.filter(row => row.progressionStatus === "missing").length;
   const missingAssets = rows.filter(row => row.assetStatus === "missing").length;
+  const pathMismatches = rows.filter(row => row.pathStatus === "mismatch").length;
   const unregistered = rows.filter(row => row.path.startsWith("missing identificator")).length;
+
+  function updateValueDraft(entityId: string, valueId: string, role: ValueRole, value: string) {
+    setValueDrafts(current => ({
+      ...current,
+      [entityId]: {
+        ...(current[entityId] ?? {}),
+        [valueId]: {
+          ...getValueCellDraft(current[entityId]?.[valueId]),
+          [role]: value,
+        },
+      },
+    }));
+    setSaveStatus({kind: "idle", message: ""});
+  }
+
+  function toggleBaseColumn(columnId: IdAuditBaseColumnId, visible: boolean) {
+    dispatch(setIdAuditBaseColumnVisibility({columnId, visible}));
+  }
+
+  function toggleValueColumn(valueId: string, visible: boolean) {
+    dispatch(setIdAuditValueColumnVisibility({valueId, visible}));
+  }
+
+  async function saveValueDrafts() {
+    if (changedRows.length === 0 || saveStatus.kind === "saving") return;
+
+    setSaveStatus({kind: "saving", message: "Saving homogeneous values..."});
+
+    try {
+      const response = await fetch(`${localDataServerUrl}/entity-values`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          updates: changedRows.map(row => ({
+            id: row.id,
+            values: getChangedValueDrafts(valueDrafts[row.id] ?? {}, baselineDrafts[row.id] ?? {}),
+          })),
+        }),
+      });
+      const responseBody = await response.json().catch(() => null) as {error?: string; updated?: number} | null;
+
+      if (!response.ok) {
+        throw new Error(responseBody?.error ?? `Local data server returned ${response.status}.`);
+      }
+
+      setBaselineDrafts(valueDrafts);
+      setSaveStatus({
+        kind: "success",
+        message: `Saved ${responseBody?.updated ?? changedRows.length} entities.`,
+      });
+    } catch (error) {
+      setSaveStatus({
+        kind: "error",
+        message: error instanceof Error
+          ? error.message
+          : "Could not reach local data server at http://127.0.0.1:4317.",
+      });
+    }
+  }
 
   return (
     <section className={s.page}>
@@ -319,6 +460,7 @@ export default function IdAuditPage() {
         <SummaryItem label="Missing Data" value={missingData} />
         <SummaryItem label="Missing Progression" value={missingProgression} />
         <SummaryItem label="Missing Assets" value={missingAssets} />
+        <SummaryItem label="Path Mismatch" value={pathMismatches} />
         <SummaryItem label="Unregistered Data" value={unregistered} />
       </div>
 
@@ -368,33 +510,135 @@ export default function IdAuditPage() {
         </label>
       </section>
 
+      <div className={s.toolbar}>
+        <button
+          className={s.saveButton}
+          type="button"
+          disabled={changedRows.length === 0 || saveStatus.kind === "saving"}
+          onClick={saveValueDrafts}
+        >
+          {saveStatus.kind === "saving" ? "Saving..." : `Save${changedRows.length > 0 ? ` (${changedRows.length})` : ""}`}
+        </button>
+        {saveStatus.message && (
+          <span className={saveStatus.kind === "error" ? s.errorText : s.statusText}>{saveStatus.message}</span>
+        )}
+        <details className={s.columnChooser}>
+          <summary className={s.columnChooserSummary}>Columns</summary>
+          <div className={s.columnChooserPanel}>
+            <div className={s.columnChooserGroup}>
+              <span className={s.columnChooserTitle}>Table</span>
+              <div className={s.columnOptions}>
+                {baseColumnOptions.map(column => (
+                  <label key={column.id} className={s.columnOption}>
+                    <input
+                      type="checkbox"
+                      checked={visibleBaseColumns[column.id]}
+                      onChange={event => toggleBaseColumn(column.id, event.target.checked)}
+                    />
+                    {column.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className={s.columnChooserGroup}>
+              <div className={s.columnChooserHeader}>
+                <span className={s.columnChooserTitle}>Homogeneous values</span>
+                <div className={s.columnChooserActions}>
+                  <button
+                    className={s.smallButton}
+                    type="button"
+                    onClick={() => dispatch(setAllIdAuditValueColumnVisibility(
+                      Object.fromEntries(homogeneousValueColumns.map(definition => [definition.id, true])),
+                    ))}
+                  >
+                    Show all
+                  </button>
+                  <button
+                    className={s.smallButton}
+                    type="button"
+                    onClick={() => dispatch(setAllIdAuditValueColumnVisibility(
+                      Object.fromEntries(homogeneousValueColumns.map(definition => [definition.id, false])),
+                    ))}
+                  >
+                    Hide all
+                  </button>
+                </div>
+              </div>
+              <div className={s.valueColumnOptions}>
+                {homogeneousValueColumns.map(definition => (
+                  <label key={definition.id} className={s.columnOption} title={definition.id}>
+                    <input
+                      type="checkbox"
+                      checked={visibleValueIds[definition.id] ?? true}
+                      onChange={event => toggleValueColumn(definition.id, event.target.checked)}
+                    />
+                    <span className={s.mono}>{definition.id}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+
       <div className={s.tableWrap}>
         <table className={s.table}>
           <thead>
             <tr>
-              <th className={s.headCell}>Category</th>
-              <th className={s.headCell}>Identifier Path</th>
-              <th className={s.headCell}>ID</th>
-              <th className={s.headCell}>Name</th>
-              <th className={s.headCell}>Data</th>
-              <th className={s.headCell}>Progression</th>
-              <th className={s.headCell}>Assets</th>
-              <th className={s.headCell}>Notes</th>
-              <th className={s.headCell}>Edit</th>
+              {visibleBaseColumns.category && <th className={s.headCell}>Category</th>}
+              {visibleBaseColumns.path && <th className={s.headCell}>Identifier Path</th>}
+              {visibleBaseColumns.id && <th className={s.headCell}>ID</th>}
+              {visibleBaseColumns.name && <th className={s.headCell}>Name</th>}
+              {visibleBaseColumns.data && <th className={s.headCell}>Data</th>}
+              {visibleBaseColumns.progression && <th className={s.headCell}>Progression</th>}
+              {visibleBaseColumns.assets && <th className={s.headCell}>Assets</th>}
+              {visibleBaseColumns.notes && <th className={s.headCell}>Notes</th>}
+              {visibleHomogeneousValueColumns.map(definition => (
+                <th key={definition.id} className={`${s.headCell} ${s.valueHeadCell}`} title={definition.id}>
+                  {getShortValueColumnLabel(definition.label, definition.id)}
+                </th>
+              ))}
+              {visibleBaseColumns.edit && <th className={s.headCell}>Edit</th>}
             </tr>
           </thead>
           <tbody>
             {filteredRows.map(row => (
               <tr key={`${row.category}:${row.path}:${row.id}`}>
-                <td className={s.cell}>{row.category}</td>
-                <td className={`${s.cell} ${s.mono}`}>{row.path}</td>
-                <td className={`${s.cell} ${s.mono}`}>{row.id}</td>
-                <td className={s.cell}>{row.name ?? <span className={s.muted}>Missing</span>}</td>
-                <td className={s.cell}><StatusBadge status={row.dataStatus} /></td>
-                <td className={s.cell}><StatusBadge status={row.progressionStatus} /></td>
-                <td className={s.cell}><StatusBadge status={row.assetStatus} /></td>
-                <td className={s.cell}>{row.notes}</td>
-                <td className={s.cell}>
+                {visibleBaseColumns.category && <td className={s.cell}>{row.category}</td>}
+                {visibleBaseColumns.path && (
+                  <td className={s.cell} title={row.path}>
+                    <IdentifierPathBadge status={row.pathStatus} />
+                  </td>
+                )}
+                {visibleBaseColumns.id && <td className={`${s.cell} ${s.mono}`}>{row.id}</td>}
+                {visibleBaseColumns.name && <td className={s.cell}>{row.name ?? <span className={s.muted}>Missing</span>}</td>}
+                {visibleBaseColumns.data && <td className={s.cell}><StatusBadge status={row.dataStatus} /></td>}
+                {visibleBaseColumns.progression && <td className={s.cell}><StatusBadge status={row.progressionStatus} /></td>}
+                {visibleBaseColumns.assets && <td className={s.cell}><StatusBadge status={row.assetStatus} /></td>}
+                {visibleBaseColumns.notes && <td className={s.cell}>{row.notes}</td>}
+                {visibleHomogeneousValueColumns.map(definition => (
+                  <td key={definition.id} className={`${s.cell} ${s.valueCell}`}>
+                    <div className={s.valueInputPair}>
+                      <input
+                        className={`${s.valueInput} ${s.provideInput}`}
+                        value={getValueCellDraft(valueDrafts[row.id]?.[definition.id]).production}
+                        disabled={!row.valuesEditable}
+                        title={`${row.id} / ${definition.id} production`}
+                        aria-label={`${row.id} ${definition.id} production`}
+                        onChange={event => updateValueDraft(row.id, definition.id, "production", event.target.value)}
+                      />
+                      <input
+                        className={`${s.valueInput} ${s.upkeepInput}`}
+                        value={getValueCellDraft(valueDrafts[row.id]?.[definition.id]).upkeep}
+                        disabled={!row.valuesEditable}
+                        title={`${row.id} / ${definition.id} upkeep`}
+                        aria-label={`${row.id} ${definition.id} upkeep`}
+                        onChange={event => updateValueDraft(row.id, definition.id, "upkeep", event.target.value)}
+                      />
+                    </div>
+                  </td>
+                ))}
+                {visibleBaseColumns.edit && <td className={s.cell}>
                   {row.category === "Enemy" ? (
                     <Link className={s.editLink} to={`/monster-edit/${encodeURIComponent(row.id)}`}>Edit</Link>
                   ) : isEditableEntityCategory(row.category) ? (
@@ -405,7 +649,7 @@ export default function IdAuditPage() {
                   ) : (
                     <span className={s.muted}>N/A</span>
                   )}
-                </td>
+                </td>}
               </tr>
             ))}
           </tbody>
@@ -421,6 +665,115 @@ function isEditableEntityCategory(category: string): boolean {
     || category === "Tower Part"
     || category === "Wall"
     || category === "Tower";
+}
+
+function getIdentifierPathStatus(path: string, id: string): IdentifierPathStatus {
+  return normalizeIdentifierPath(path) === id ? "ok" : "mismatch";
+}
+
+function normalizeIdentifierPath(path: string): string {
+  const [collection, ...rest] = path.split(".");
+  const normalizedCollection = getIdentifierPathCollection(collection);
+
+  return [normalizedCollection, ...rest].join(".");
+}
+
+function getIdentifierPathCollection(collection: string | undefined): string {
+  if (collection === "technologies") return "research";
+  if (collection === "walls") return "wallSegments";
+  if (collection === "superstructures") return "wallSuperstructures";
+  return collection ?? "";
+}
+
+function createValueDrafts(rows: readonly AuditRow[]): ValueDrafts {
+  return Object.fromEntries(
+    rows
+      .filter(row => row.valuesEditable)
+      .map(row => [
+        row.id,
+        Object.fromEntries(
+          HOMOGENEOUS_VALUE_DEFINITION_LIST.map(definition => [
+            definition.id,
+            formatValueCell(row.homogeneousValues, definition.id),
+          ]),
+        ),
+      ]),
+  );
+}
+
+function formatValueCell(values: readonly HomogeneousValueEffect[], valueId: string): ValueCellDraft {
+  const simpleEffects = values.filter(value => value.valueId === valueId && isSimpleAdditiveValueEffect(value));
+  const production = simpleEffects.find(value => getCellValueRole(value) === "production")?.additive;
+  const upkeep = simpleEffects.find(value => getCellValueRole(value) === "upkeep")?.additive;
+
+  return {
+    production: production === undefined ? "" : String(production),
+    upkeep: upkeep === undefined ? "" : String(upkeep),
+  };
+}
+
+function isSimpleAdditiveValueEffect(value: HomogeneousValueEffect): boolean {
+  const extraKeywords = (value.additionalKeywords ?? []).filter(keyword => keyword !== "production" && keyword !== "upkeep");
+
+  return extraKeywords.length === 0
+    && !value.removedKeywords?.length
+    && (value.multiplier === undefined || value.multiplier === null)
+    && typeof value.additive === "number";
+}
+
+function getCellValueRole(value: HomogeneousValueEffect): "production" | "upkeep" {
+  return value.additionalKeywords?.includes("upkeep") ? "upkeep" : "production";
+}
+
+function areDraftRowsEqual(left: Record<string, ValueCellDraft>, right: Record<string, ValueCellDraft>): boolean {
+  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+
+  for (const key of keys) {
+    const leftDraft = getValueCellDraft(left[key]);
+    const rightDraft = getValueCellDraft(right[key]);
+    if (leftDraft.production !== rightDraft.production || leftDraft.upkeep !== rightDraft.upkeep) return false;
+  }
+
+  return true;
+}
+
+function getChangedValueDrafts(
+  currentValues: Record<string, ValueCellDraft>,
+  baselineValues: Record<string, ValueCellDraft>,
+): Record<string, ValueCellDraft> {
+  const changedValues: Record<string, ValueCellDraft> = {};
+  const keys = new Set([...Object.keys(currentValues), ...Object.keys(baselineValues)]);
+
+  for (const key of keys) {
+    const currentDraft = getValueCellDraft(currentValues[key]);
+    const baselineDraft = getValueCellDraft(baselineValues[key]);
+
+    if (currentDraft.production === baselineDraft.production && currentDraft.upkeep === baselineDraft.upkeep) continue;
+
+    changedValues[key] = {
+      production: currentDraft.production.trim(),
+      upkeep: currentDraft.upkeep.trim(),
+    };
+  }
+
+  return changedValues;
+}
+
+function getValueCellDraft(value: ValueCellDraft | undefined): ValueCellDraft {
+  return {
+    production: value?.production ?? "",
+    upkeep: value?.upkeep ?? "",
+  };
+}
+
+function getShortValueColumnLabel(label: string, id: string): string {
+  const lastIdPart = id.split(".").at(-1) ?? id;
+  const compactLabel = label
+    .replace(/\b(Multiplier|Single-Target|Controlled|Projectile|Distance|Duration|Seconds|Per|Tower|Monster|Wall)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return compactLabel || lastIdPart;
 }
 
 function StatusSelect({
@@ -458,5 +811,10 @@ function StatusBadge({status}: {status: AuditStatus}) {
   if (status === "ok") return <span className={s.okBadge}>OK</span>;
   if (status === "missing") return <span className={s.missingBadge}>Missing</span>;
   return <span className={s.neutralBadge}>N/A</span>;
+}
+
+function IdentifierPathBadge({status}: {status: IdentifierPathStatus}) {
+  if (status === "ok") return <span className={s.okBadge}>OK</span>;
+  return <span className={s.missingBadge}>Mismatch</span>;
 }
 

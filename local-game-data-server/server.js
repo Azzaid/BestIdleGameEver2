@@ -197,6 +197,32 @@ const server = createServer(async (request, response) => {
     return
   }
 
+  if (request.method === 'POST' && url.pathname === '/entity-values') {
+    let updates
+
+    try {
+      const body = await readRequestBody(request)
+      const payload = JSON.parse(body)
+      updates = payload?.updates
+    } catch (error) {
+      sendJson(response, 400, { error: 'Request body must be valid JSON' })
+      return
+    }
+
+    if (!Array.isArray(updates)) {
+      sendJson(response, 400, { error: 'Updates must be an array' })
+      return
+    }
+
+    try {
+      const result = await saveEntityValueUpdates(updates)
+      sendJson(response, 200, result)
+    } catch (error) {
+      sendJson(response, error.statusCode ?? 500, { error: error.message ?? 'Failed to save entity values' })
+    }
+    return
+  }
+
   if (request.method === 'POST' && url.pathname === '/entity-sprites') {
     try {
       const upload = await readMultipartFormData(request)
@@ -604,6 +630,200 @@ function resolveEntityFile(entity) {
     filePath,
     relativePath: path.relative(path.join(__dirname, '..'), filePath).replaceAll(path.sep, '/'),
   }
+}
+
+async function saveEntityValueUpdates(updates) {
+  const updatesByFile = new Map()
+
+  for (const update of updates) {
+    if (!update || Array.isArray(update) || typeof update !== 'object') {
+      const error = new Error('Each update must be a JSON object')
+      error.statusCode = 400
+      throw error
+    }
+
+    const target = resolveEntityFile({ id: update.id })
+
+    if (!target.ok) {
+      const error = new Error(target.error)
+      error.statusCode = target.statusCode
+      throw error
+    }
+
+    if (!update.values || Array.isArray(update.values) || typeof update.values !== 'object') {
+      const error = new Error(`Values for "${update.id}" must be a JSON object`)
+      error.statusCode = 400
+      throw error
+    }
+
+    const parsedValues = parseEntityValueCells(update.id, update.values)
+    const fileUpdates = updatesByFile.get(target.filePath) ?? []
+    fileUpdates.push({
+      id: update.id,
+      values: parsedValues,
+      relativePath: target.relativePath,
+    })
+    updatesByFile.set(target.filePath, fileUpdates)
+  }
+
+  const touchedFiles = []
+  let updated = 0
+
+  for (const [filePath, fileUpdates] of updatesByFile.entries()) {
+    const fileContents = await readFile(filePath, 'utf8')
+    const entities = JSON.parse(fileContents)
+
+    if (!Array.isArray(entities)) {
+      const error = new Error('Target data file must contain a JSON array')
+      error.statusCode = 500
+      throw error
+    }
+
+    for (const update of fileUpdates) {
+      const entity = entities.find(item => item?.id === update.id)
+
+      if (!entity) {
+        const error = new Error(`Entity "${update.id}" was not found in ${update.relativePath}`)
+        error.statusCode = 404
+        throw error
+      }
+
+      entity.values = mergeSimpleEntityValues(entity.values, update.values)
+      if (entity.values.length === 0) {
+        delete entity.values
+      }
+      updated += 1
+    }
+
+    await writeFile(filePath, `${JSON.stringify(entities, null, 2)}\n`, 'utf8')
+    touchedFiles.push(path.relative(path.join(__dirname, '..'), filePath).replaceAll(path.sep, '/'))
+  }
+
+  return {
+    action: 'updated',
+    updated,
+    files: touchedFiles,
+  }
+}
+
+function parseEntityValueCells(entityId, values) {
+  return Object.fromEntries(
+    Object.entries(values).map(([valueId, cellValue]) => {
+      return [valueId, parseEntityValueCell(entityId, valueId, cellValue)]
+    }),
+  )
+}
+
+function parseEntityValueCell(entityId, valueId, cellValue) {
+  if (cellValue && !Array.isArray(cellValue) && typeof cellValue === 'object') {
+    return parseEntityValueCellRoles(entityId, valueId, cellValue)
+  }
+
+  if (typeof cellValue !== 'string') {
+    const error = new Error(`Value "${valueId}" for "${entityId}" must be a string or role object`)
+    error.statusCode = 400
+    throw error
+  }
+
+  const trimmed = cellValue.trim()
+  if (!trimmed) return []
+
+  const tokens = trimmed.split(',').map(token => token.trim()).filter(Boolean)
+  const effectsByRole = new Map()
+
+  for (const token of tokens) {
+    const prefixed = token.match(/^(p|production|u|upkeep)\s*:\s*(.+)$/i)
+    const role = prefixed
+      ? normalizeEntityValueRole(prefixed[1])
+      : 'production'
+    const rawNumber = prefixed ? prefixed[2] : token
+    const additive = Number(rawNumber)
+
+    if (!Number.isFinite(additive)) {
+      const error = new Error(`Invalid number "${rawNumber}" for ${entityId} / ${valueId}`)
+      error.statusCode = 400
+      throw error
+    }
+
+    if (effectsByRole.has(role)) {
+      const error = new Error(`Duplicate ${role} value for ${entityId} / ${valueId}`)
+      error.statusCode = 400
+      throw error
+    }
+
+    effectsByRole.set(role, {
+      valueId,
+      additionalKeywords: [role],
+      additive,
+    })
+  }
+
+  return [...effectsByRole.values()]
+}
+
+function parseEntityValueCellRoles(entityId, valueId, cellValue) {
+  const effects = []
+
+  for (const role of ['production', 'upkeep']) {
+    const rawValue = cellValue[role]
+
+    if (rawValue === undefined || rawValue === null || rawValue === '') continue
+
+    if (typeof rawValue !== 'string') {
+      const error = new Error(`${role} value for ${entityId} / ${valueId} must be a string`)
+      error.statusCode = 400
+      throw error
+    }
+
+    const trimmed = rawValue.trim()
+    if (!trimmed) continue
+
+    const additive = Number(trimmed)
+
+    if (!Number.isFinite(additive)) {
+      const error = new Error(`Invalid ${role} number "${rawValue}" for ${entityId} / ${valueId}`)
+      error.statusCode = 400
+      throw error
+    }
+
+    effects.push({
+      valueId,
+      additionalKeywords: [role],
+      additive,
+    })
+  }
+
+  return effects
+}
+
+function normalizeEntityValueRole(role) {
+  return role.toLowerCase().startsWith('u') ? 'upkeep' : 'production'
+}
+
+function mergeSimpleEntityValues(currentValues, valuesById) {
+  const editedValueIds = new Set(Object.keys(valuesById))
+  const retainedValues = Array.isArray(currentValues)
+    ? currentValues.filter(value => !editedValueIds.has(value?.valueId) || !isSimpleEntityValueEffect(value))
+    : []
+  const nextSimpleValues = Object.values(valuesById).flatMap(value => value)
+
+  return [
+    ...retainedValues,
+    ...nextSimpleValues,
+  ]
+}
+
+function isSimpleEntityValueEffect(value) {
+  if (!value || Array.isArray(value) || typeof value !== 'object') return false
+
+  const extraKeywords = Array.isArray(value.additionalKeywords)
+    ? value.additionalKeywords.filter(keyword => keyword !== 'production' && keyword !== 'upkeep')
+    : []
+
+  return extraKeywords.length === 0
+    && (!Array.isArray(value.removedKeywords) || value.removedKeywords.length === 0)
+    && (value.multiplier === undefined || value.multiplier === null)
+    && typeof value.additive === 'number'
 }
 
 function updateHomogeneousValueDefinitionSource(source, definition) {

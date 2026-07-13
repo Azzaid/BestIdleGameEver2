@@ -611,7 +611,7 @@ function sendEnemiesToSideBorders(world: ReturnType<typeof createWorld>) {
     }
 }
 
-function createBattleWallLayer({
+export function createBattleWallLayer({
     wallSegments,
     wallY,
     segmentSize,
@@ -701,7 +701,7 @@ function createBattleWallLayer({
     return wallLayer;
 }
 
-function createBattlefieldTerrainLayer(terrainHexes: readonly BattlefieldTerrainHex[]) {
+export function createBattlefieldTerrainLayer(terrainHexes: readonly BattlefieldTerrainHex[]) {
     const terrainLayer = new Container();
     terrainLayer.sortableChildren = true;
 
@@ -768,7 +768,7 @@ function getSegmentCenterX(index: number, segmentSize: number) {
     return index * segmentSize + segmentSize / 2;
 }
 
-function getBattleWallSegmentCenterX(
+export function getBattleWallSegmentCenterX(
     segment: BattleWallSegment,
     wallSegments: BattleWallSegment[],
     index: number,
@@ -787,7 +787,7 @@ function getWallSegmentAxialHorizontalOffset(segment: Pick<BattleWallSegment, "c
     return segment.column + segment.row / 2;
 }
 
-function getWallTopAnchorY(wallY: number) {
+export function getWallTopAnchorY(wallY: number) {
     return wallY;
 }
 
@@ -799,7 +799,7 @@ function getWallTopSpriteLookupKey(wallTopKey: string) {
     return WALL_SUPERSTRUCTURE_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
 }
 
-function getTowerAnchorPosition({
+export function getTowerAnchorPosition({
     towerIndex,
     towerCount,
     wallSegments,
