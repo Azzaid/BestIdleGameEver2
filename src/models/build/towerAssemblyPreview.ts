@@ -5,7 +5,7 @@ import type { BattleWallSegment } from '../battle/wallSegment.ts';
 export interface TowerAssemblyPreviewProps {
   resolvedTower: TowerAssemblyResolved;
   wallSegments: BattleWallSegment[];
-  terrainHexes: BattlefieldTerrainHex[];
+  terrainHexes: readonly BattlefieldTerrainHex[];
   towerWorldPosition: { x: number; y: number };
   wallY: number;
 }
