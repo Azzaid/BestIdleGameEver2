@@ -70,7 +70,13 @@ export function applyCameraTransform(camera: Camera): void {
     camera.position.x = Math.max(0, Math.min(camera.position.x, maxX));
     camera.position.y = Math.max(0, Math.min(camera.position.y, maxY));
 
+    const centeredOffsetX = Math.max(0, (viewportWidth - worldWidth * camera.scale) / 2);
+    const centeredOffsetY = Math.max(0, (viewportHeight - worldHeight * camera.scale) / 2);
+
     // Map world -> screen for the container that holds the world layer:
     camera.container.scale.set(camera.scale);
-    camera.container.position.set(-camera.position.x * camera.scale, -camera.position.y * camera.scale);
+    camera.container.position.set(
+        centeredOffsetX - camera.position.x * camera.scale,
+        centeredOffsetY - camera.position.y * camera.scale,
+    );
 }

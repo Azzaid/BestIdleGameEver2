@@ -80,7 +80,6 @@ export function BattleStage(props: {
         onBattleEnded: props.onBattleEnded,
         onSiegeOverwhelmed: props.onSiegeOverwhelmed,
     });
-    const aspectRatio = props.battlefieldWidth / props.battlefieldHeight;
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
     const [stageError, setStageError] = useState<string | null>(null);
     const canvasIsReady = canvasSize.width > 0 && canvasSize.height > 0;
@@ -131,13 +130,7 @@ export function BattleStage(props: {
             const { width, height } = wrapper.getBoundingClientRect();
             if (width <= 0 || height <= 0) return;
 
-            const heightLimitedWidth = height * aspectRatio;
-            if (heightLimitedWidth <= width) {
-                setCanvasSize({ width: heightLimitedWidth, height });
-                return;
-            }
-
-            setCanvasSize({ width, height: width / aspectRatio });
+            setCanvasSize({ width, height });
         };
 
         updateCanvasSize();
@@ -147,7 +140,7 @@ export function BattleStage(props: {
         return () => {
             resizeObserver.disconnect();
         };
-    }, [aspectRatio]);
+    }, []);
 
     const hostStyle = useMemo(() => ({
         width: `${canvasSize.width}px`,
@@ -711,25 +704,33 @@ export function createBattlefieldTerrainLayer(terrainHexes: readonly Battlefield
         fallbackHex.y = terrainHex.centerY;
         terrainLayer.addChild(fallbackHex);
 
-        if (!terrainHex.backgroundSpriteSrc) return;
+        if (terrainHex.backgroundSpriteSrc) {
+            const texture = Assets.cache.has(terrainHex.backgroundSpriteId)
+                ? Texture.from(terrainHex.backgroundSpriteId)
+                : Texture.from(terrainHex.backgroundSpriteSrc);
+            const texturedHex = createTexturedTerrainHex(texture);
+            texturedHex.x = terrainHex.centerX;
+            texturedHex.y = terrainHex.centerY;
+            terrainLayer.addChild(texturedHex);
+        }
 
-        const texture = Assets.cache.has(terrainHex.backgroundSpriteId)
-            ? Texture.from(terrainHex.backgroundSpriteId)
-            : Texture.from(terrainHex.backgroundSpriteSrc);
-        const texturedHex = createTexturedTerrainHex(texture);
-        texturedHex.x = terrainHex.centerX;
-        texturedHex.y = terrainHex.centerY;
-        terrainLayer.addChild(texturedHex);
+        if (terrainHex.shadeOpacity) {
+            const shade = createTerrainHexShape(0x050508, terrainHex.shadeOpacity);
+            shade.x = terrainHex.centerX;
+            shade.y = terrainHex.centerY;
+            terrainLayer.addChild(shade);
+        }
     });
 
     return terrainLayer;
 }
 
-function createTerrainHexShape(fill: number) {
+function createTerrainHexShape(fill: number, alpha = 1) {
     const hex = new Graphics();
     const points = getBattlefieldHexPoints();
 
     hex.poly(points).fill(fill);
+    hex.alpha = alpha;
 
     return hex;
 }

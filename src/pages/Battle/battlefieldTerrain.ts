@@ -1,4 +1,8 @@
-import {getCityHexBackgroundSpriteSrc, selectBaseClaimedTerrainBackground} from "../../data/cityTerrainBackgrounds.ts";
+import {
+    getCityHexBackgroundSpriteSrc,
+    selectBaseClaimedTerrainBackground,
+    selectClaimableTerrainBackground,
+} from "../../data/cityTerrainBackgrounds.ts";
 import {
     getDevelopmentVectorKey,
     type CityBiome,
@@ -15,6 +19,8 @@ import {
 
 const HORIZONTAL_OVERSCAN_HEXES = 2;
 const VERTICAL_OVERSCAN_HEXES = 2;
+const SIDE_FIELD_SHADE_OPACITY = 0.5;
+const OUTER_SIDE_FIELD_SHADE_OPACITY = 0.75;
 
 const HEX_DIRECTIONS: readonly AxialCoordinate[] = [
     {column: 1, row: 0},
@@ -70,8 +76,16 @@ export function createBattlefieldTerrainHexes({
             const coordinate = {column, row};
             const cellKey = getTerrainVectorMapKey(coordinate);
             const terrainVector = getExpandedTerrainVector(terrainVectorMap, coordinate);
-            const background = baseTerrainBackgroundsByKey?.[cellKey]
-                ?? selectBaseClaimedTerrainBackground(biome, terrainVector, coordinate);
+            const sideFieldDepth = getBattlefieldSideFieldDepth(centerX, battlefieldWidth);
+            const shadeOpacity = sideFieldDepth > 1
+                ? OUTER_SIDE_FIELD_SHADE_OPACITY
+                : sideFieldDepth === 1
+                    ? SIDE_FIELD_SHADE_OPACITY
+                    : undefined;
+            const background = sideFieldDepth > 0
+                ? selectClaimableTerrainBackground(biome, terrainVector, coordinate)
+                : baseTerrainBackgroundsByKey?.[cellKey]
+                    ?? selectBaseClaimedTerrainBackground(biome, terrainVector, coordinate);
 
             terrainHexes.push({
                 ...coordinate,
@@ -82,11 +96,24 @@ export function createBattlefieldTerrainHexes({
                 backgroundSpriteSrc: getCityHexBackgroundSpriteSrc(background.backgroundSpriteId),
                 backgroundDevelopmentVector: background.backgroundDevelopmentVector,
                 fallbackFill: getBattlefieldTerrainFallbackFill(biome, terrainVector),
+                shadeOpacity,
             });
         }
     }
 
     return terrainHexes;
+}
+
+function getBattlefieldSideFieldDepth(centerX: number, battlefieldWidth: number) {
+    if (centerX < 0) {
+        return Math.max(1, Math.ceil(Math.abs(centerX) / CITY_HEX_WIDTH));
+    }
+
+    if (centerX > battlefieldWidth) {
+        return Math.max(1, Math.ceil((centerX - battlefieldWidth) / CITY_HEX_WIDTH));
+    }
+
+    return 0;
 }
 
 function getBattleWallRow(wallSegments: readonly BattleWallSegment[]) {

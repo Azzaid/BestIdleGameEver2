@@ -23,6 +23,21 @@ export function selectBaseClaimedTerrainBackground(
     );
 }
 
+export function selectClaimableTerrainBackground(
+    biome: CityBiome,
+    vector: DevelopmentVectorValue,
+    coordinate: AxialCoordinate,
+) {
+    return selectCityHexBackgroundSprite(
+        CITY_HEX_BACKGROUND_SPRITE_POOL,
+        CITY_HEX_BACKGROUND_TYPES.claimableTerrain,
+        biome,
+        vector,
+        createCoordinateRandom(coordinate),
+        DEFAULT_INITIAL_CITY_BIOME,
+    );
+}
+
 export function getCityHexBackgroundSpriteSrc(spriteId: string) {
     return CITY_HEX_BACKGROUND_SPRITES_BY_ID[spriteId]?.src;
 }

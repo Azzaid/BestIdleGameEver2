@@ -11,4 +11,5 @@ export type BattlefieldTerrainHex = {
     backgroundSpriteSrc?: string;
     backgroundDevelopmentVector: DevelopmentVectorValue;
     fallbackFill: number;
+    shadeOpacity?: number;
 };
