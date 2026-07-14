@@ -1,5 +1,6 @@
 import {style} from "@vanilla-extract/css";
 import {vars} from "../../theme/theme.css.ts";
+import * as hud from "../../theme/hud.css.ts";
 
 export const page = style({
   minHeight: "100%",
@@ -8,16 +9,15 @@ export const page = style({
   color: vars.color.text.primary,
 });
 
-export const book = style({
+export const book = style([
+  hud.compactPanel,
+  {
   display: "grid",
   maxWidth: "920px",
   margin: "0 auto",
-  border: `1px solid ${vars.color.border.strong}`,
-  borderRadius: 6,
-  background: vars.color.background.surface,
-  boxShadow: vars.color.shadow.card,
   overflow: "hidden",
-});
+  },
+]);
 
 export const header = style({
   display: "flex",
@@ -50,23 +50,14 @@ export const title = style({
   fontSize: "1.35rem",
 });
 
-export const cleanSlateButton = style({
+export const cleanSlateButton = style([
+  hud.secondaryButton,
+  {
   flexShrink: 0,
   minHeight: "34px",
   padding: "7px 11px",
-  border: `1px solid ${vars.color.border.strong}`,
-  borderRadius: 4,
-  background: vars.color.background.app,
-  color: vars.color.text.heading,
-  cursor: "pointer",
-  fontWeight: 800,
-  selectors: {
-    "&:hover": {
-      borderColor: vars.color.border.selected,
-      background: vars.color.background.surfaceHover,
-    },
   },
-});
+]);
 
 export const timeline = style({
   display: "grid",
@@ -92,8 +83,8 @@ export const eventCard = style({
 export const eventCardHighlighted = style([
   eventCard,
   {
-    background: vars.color.state.selectedBg,
-    boxShadow: `inset 3px 0 0 ${vars.color.brand.primary}`,
+    background: hud.hudAccentSoft,
+    boxShadow: `inset 3px 0 0 ${hud.hudAccent}, 0 0 18px color-mix(in oklab, ${hud.hudAccent} 18%, transparent)`,
   },
 ]);
 
@@ -140,8 +131,8 @@ export const eventDescription = style({
 export const eventHint = style({
   margin: "2px 0 0",
   padding: "8px 10px",
-  borderLeft: `3px solid ${vars.color.border.focus}`,
-  background: vars.color.background.app,
+  borderLeft: `3px solid ${hud.hudAccent}`,
+  background: hud.hudAccentSoft,
   color: vars.color.text.muted,
   lineHeight: 1.45,
 });
@@ -193,7 +184,7 @@ export const foreseenItem = style({
   display: "grid",
   gap: "4px",
   padding: "0 0 10px 12px",
-  borderLeft: `3px solid ${vars.color.border.focus}`,
+  borderLeft: `3px solid ${hud.hudAccent}`,
 });
 
 export const foreseenTitle = style({

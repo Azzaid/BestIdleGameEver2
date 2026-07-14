@@ -286,7 +286,8 @@ const CityPage = () => {
         : undefined;
     const selectedWallBuilding = selectedHex?.wallKey ? WALL_SEGMENT_BUILDINGS[selectedHex.wallKey] : undefined;
     const selectedWallTopBuilding = selectedHex?.wallTopKey ? WALL_SUPERSTRUCTURE_BUILDINGS[selectedHex.wallTopKey] : undefined;
-    const selectedBuildingVector = selectedBuilding?.vector ?? (selectedHex?.kind === "city" ? selectedHex.developmentVector : undefined);
+    const selectedBuildingVector = selectedBuilding?.vector;
+    const selectedPanelVector = selectedBuildingVector ?? selectedWallTopBuilding?.vector ?? selectedWallBuilding?.vector ?? DEVELOPMENT_VECTORS.neutral;
     const selectedBuildingIsNature = selectedBuildingVector === DEVELOPMENT_VECTORS.nature;
     const selectedStructureCandidates = selectedHex
         ? structureCandidates.filter(candidate => (
@@ -313,6 +314,7 @@ const CityPage = () => {
                         selectedResolvedEntity={selectedResolvedEntity}
                         selectedWallBuilding={selectedWallBuilding}
                         selectedWallTopBuilding={selectedWallTopBuilding}
+                        panelVector={selectedPanelVector}
                         structureCandidates={selectedStructureCandidates}
                         builtStructureIds={builtStructureIdSet}
                         unlockedBuildingIds={unlockedBuildingIdSet}
@@ -519,6 +521,7 @@ function SelectedHexPanel({
     selectedResolvedEntity,
     selectedWallBuilding,
     selectedWallTopBuilding,
+    panelVector,
     structureCandidates,
     builtStructureIds,
     unlockedBuildingIds,
@@ -543,7 +546,7 @@ function SelectedHexPanel({
     const actionBlockedReason = isLost ? lostReason : blockedReason;
 
     return (
-        <aside className={s.selectionPanel}>
+        <aside className={`${s.selectionPanel} ${s.panelFrame[panelVector ?? DEVELOPMENT_VECTORS.neutral]}`}>
             <div className={s.selectionHeader}>
                 <h2 className={s.selectionTitle}>{selectionTitle}</h2>
                 <span className={s.selectionCoordinates}>{selectionCoordinates}</span>
@@ -1273,7 +1276,7 @@ function WallBuildingList({
                     const buildBlocked = blocked || Boolean(unavailableReason);
 
                     return (
-                        <article key={building.id} className={s.wallCard}>
+                        <article key={building.id} className={`${s.wallCard} ${s.panelFrame[building.vector ?? DEVELOPMENT_VECTORS.neutral]}`}>
                             <div>
                                 <h4 className={s.wallCardTitle}>{building.name}</h4>
                                 <WallStats wallBuilding={building} />

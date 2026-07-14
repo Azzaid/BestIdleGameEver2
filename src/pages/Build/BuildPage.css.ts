@@ -1,5 +1,9 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '../../theme/theme.css.ts';
+import * as hud from '../../theme/hud.css.ts';
+
+export const panelFrame = hud.panelFrame;
+export const tableRowFrame = hud.rowFrame;
 
 export const buildPage = style({
   display: 'flex',
@@ -16,9 +20,12 @@ export const buildPage = style({
   },
 });
 
-export const assemblyPanel = style({
+export const assemblyPanel = style([
+  hud.compactPanel,
+  {
   overflow: 'hidden',
-});
+  },
+]);
 
 export const towerSelector = style({
   display: 'flex',
@@ -40,24 +47,24 @@ export const towerSelectorButton = style({
   maxWidth: '180px',
   minHeight: '28px',
   padding: '4px 9px',
-  border: `1px solid ${vars.color.border.default}`,
+  border: `1px solid ${hud.hudBorder}`,
   borderBottom: 0,
   borderRadius: '4px 4px 0 0',
-  backgroundColor: vars.color.background.surface,
-  color: vars.color.text.primary,
+  backgroundColor: hud.hudAccentSoft,
+  color: hud.hudText,
   cursor: 'pointer',
   whiteSpace: 'nowrap',
   selectors: {
     '&:hover': {
-      borderColor: vars.color.brand.primary,
+      borderColor: hud.hudAccent,
     },
   },
 });
 
 export const towerSelectorButtonActive = style({
-  borderColor: vars.color.brand.primary,
-  backgroundColor: vars.color.state.selectedBg,
-  color: vars.color.text.heading,
+  borderColor: hud.hudAccent,
+  backgroundColor: hud.hudAccentSoft,
+  color: hud.hudText,
 });
 
 export const towerSelectorName = style({
@@ -72,8 +79,8 @@ export const towerSelectorName = style({
 export const assemblyGrid = style({
   display: 'grid',
   gridTemplateColumns: 'minmax(260px, 1fr) minmax(0, 2fr)',
-    backgroundColor: vars.color.background.surface,
-    border: `1px solid ${vars.color.border.default}`,
+    backgroundColor: 'transparent',
+    border: `1px solid ${hud.hudBorder}`,
     borderRadius: '4px',
   gap: 0,
   alignItems: 'stretch',
@@ -87,11 +94,11 @@ export const assemblyGrid = style({
 export const towerPreview = style({
   display: 'flex',
   minHeight: '300px',
-  borderRight: `1px solid ${vars.color.border.default}`,
+  borderRight: `1px solid ${hud.hudBorder}`,
   '@media': {
     '(max-width: 900px)': {
       borderRight: 0,
-      borderBottom: `1px solid ${vars.color.border.default}`,
+      borderBottom: `1px solid ${hud.hudBorder}`,
     },
     '(max-width: 700px)': {
       minHeight: '220px',
@@ -118,24 +125,24 @@ export const slotButton = style({
   alignItems: 'center',
   minHeight: '26px',
   padding: '4px 8px',
-  border: `1px solid ${vars.color.border.default}`,
+  border: `1px solid ${hud.hudBorder}`,
   borderBottom: 0,
   borderRadius: '4px 4px 0 0',
-  backgroundColor: vars.color.background.surface,
-  color: vars.color.text.primary,
+  backgroundColor: hud.hudAccentSoft,
+  color: hud.hudText,
   cursor: 'pointer',
   whiteSpace: 'nowrap',
   selectors: {
     '&:hover': {
-      borderColor: vars.color.brand.primary,
+      borderColor: hud.hudAccent,
     },
   },
 });
 
 export const slotButtonActive = style({
-  borderColor: vars.color.brand.primary,
-  backgroundColor: vars.color.state.selectedBg,
-  color: vars.color.text.heading,
+  borderColor: hud.hudAccent,
+  backgroundColor: hud.hudAccentSoft,
+  color: hud.hudText,
 });
 
 export const slotLabel = style({
@@ -149,7 +156,7 @@ export const towerStats = style({
   flexDirection: 'column',
   padding: '10px',
     borderRadius: '4px',
-  backgroundColor: vars.color.background.surface,
+  backgroundColor: 'transparent',
   '@media': {
     '(max-width: 700px)': {
       padding: '8px',
@@ -177,15 +184,15 @@ export const panelTitle = style({
   fontSize: '16px',
 });
 
-export const weightCapacityPanel = style({
+export const weightCapacityPanel = style([
+  hud.compactPanel,
+  {
   display: 'grid',
   gap: '6px',
   marginTop: '8px',
   padding: '8px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '4px',
-  backgroundColor: vars.color.state.selectedBg,
-});
+  },
+]);
 
 export const weightCapacityPanelOver = style({
   borderColor: vars.color.state.error,
@@ -216,7 +223,7 @@ export const weightCapacityTrack = style({
   position: 'relative',
   height: '9px',
   overflow: 'hidden',
-  border: `1px solid ${vars.color.border.default}`,
+  border: `1px solid ${hud.hudBorder}`,
   borderRadius: '4px',
   backgroundColor: vars.color.background.surface,
 });
@@ -226,7 +233,7 @@ export const weightCapacityFill = style({
   inset: '0 auto 0 0',
   maxWidth: '100%',
   borderRadius: '4px',
-  backgroundColor: vars.color.brand.primary,
+  backgroundColor: hud.hudAccent,
 });
 
 export const weightCapacityFillOver = style({
@@ -240,12 +247,13 @@ export const statsGrid = style({
   marginTop: '8px',
 });
 
-export const statItem = style({
+export const statItem = style([
+  hud.statCell,
+  {
   minHeight: '48px',
   padding: '7px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '4px',
-});
+  },
+]);
 
 export const statLabel = style({
   display: 'block',
@@ -290,12 +298,13 @@ export const inlineList = style({
   gap: '6px',
 });
 
-export const costPill = style({
+export const costPill = style([
+  hud.chip,
+  {
   padding: '2px 6px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '3px',
   fontSize: '12px',
-});
+  },
+]);
 
 export const missingCostPill = style({
   padding: '2px 6px',
@@ -316,14 +325,14 @@ export const synergyList = style({
   gap: '5px',
 });
 
-export const synergyItem = style({
+export const synergyItem = style([
+  hud.compactPanel,
+  {
   display: 'grid',
   gap: '3px',
   padding: '6px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '4px',
-  backgroundColor: vars.color.state.selectedBg,
-});
+  },
+]);
 
 export const warningList = style({
   display: 'grid',
@@ -338,9 +347,12 @@ export const warningItem = style({
   backgroundColor: vars.color.state.selectedBg,
 });
 
-export const partsPanel = style({
+export const partsPanel = style([
+  hud.compactPanel,
+  {
   overflow: 'hidden',
-});
+  },
+]);
 
 export const columnDropdown = style({
   position: 'relative',
@@ -404,20 +416,20 @@ export const columnToggle = style({
   whiteSpace: 'nowrap',
 });
 
-export const tableContainer = style({
+export const tableContainer = style([
+  hud.compactPanel,
+  {
   maxHeight: '360px',
   overflow: 'auto',
   padding: '0 6px',
-    border: `1px solid ${vars.color.border.default}`,
-    borderRadius: '4px',
-    backgroundColor: vars.color.background.surface,
   WebkitOverflowScrolling: 'touch',
   '@media': {
     '(max-width: 700px)': {
       padding: '0 4px',
     },
   },
-});
+  },
+]);
 
 export const partsTable = style({
   width: '100%',
@@ -474,18 +486,18 @@ export const tableRow = style({
 
 export const tableCell = style({
   padding: '5px 6px',
-  borderTop: `1px solid ${vars.color.border.default}`,
-  borderBottom: `1px solid ${vars.color.border.default}`,
+  borderTop: `1px solid ${hud.hudBorder}`,
+  borderBottom: `1px solid ${hud.hudBorder}`,
   fontSize: '13px',
   verticalAlign: 'top',
   selectors: {
     '&:first-child': {
-      borderLeft: `1px solid ${vars.color.border.default}`,
+      borderLeft: `1px solid ${hud.hudBorder}`,
       borderTopLeftRadius: '3px',
       borderBottomLeftRadius: '3px',
     },
     '&:last-child': {
-      borderRight: `1px solid ${vars.color.border.default}`,
+      borderRight: `1px solid ${hud.hudBorder}`,
       borderTopRightRadius: '3px',
       borderBottomRightRadius: '3px',
     },
@@ -510,7 +522,7 @@ export const weightValue = style({
 });
 
 export const selectedRow = style({
-  outline: `2px solid ${vars.color.brand.primary}`,
+  outline: `2px solid ${hud.hudAccent}`,
 });
 
 export const partNameCell = style({
@@ -526,13 +538,13 @@ export const keywords = style({
   gap: '4px',
 });
 
-export const keyword = style({
+export const keyword = style([
+  hud.chip,
+  {
   padding: '1px 5px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '3px',
   fontSize: '12px',
-  backgroundColor: vars.color.state.selectedBg,
-});
+  },
+]);
 
 export const modifierRows = style({
   display: 'grid',
@@ -547,21 +559,19 @@ export const modifierRow = style({
   whiteSpace: 'nowrap',
 });
 
-export const installButton = style({
+export const installButton = style([
+  hud.button,
+  {
   minWidth: '78px',
   padding: '4px 7px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '3px',
-  backgroundColor: vars.color.brand.primary,
-  color: vars.color.text.inverse,
-  cursor: 'pointer',
   selectors: {
     '&:disabled': {
       cursor: 'not-allowed',
       opacity: 0.55,
     },
   },
-});
+  },
+]);
 
 export const removeButton = style({
   minWidth: '78px',
@@ -580,23 +590,20 @@ export const removeButton = style({
   },
 });
 
-export const rebuildButton = style({
+export const rebuildButton = style([
+  hud.button,
+  {
   flex: 1,
   minHeight: '32px',
   padding: '6px 10px',
-  border: `1px solid ${vars.color.brand.primary}`,
-  borderRadius: '3px',
-  backgroundColor: vars.color.brand.primary,
-  color: vars.color.text.inverse,
-  fontWeight: 700,
-  cursor: 'pointer',
   selectors: {
     '&:disabled': {
       cursor: 'not-allowed',
       opacity: 0.55,
     },
   },
-});
+  },
+]);
 
 export const compactActionButton = style({
   minWidth: '28px',
@@ -612,22 +619,20 @@ export const buildButtonCentered = style({
   flex: '0 1 180px',
 });
 
-export const cancelButton = style({
+export const cancelButton = style([
+  hud.secondaryButton,
+  {
   flex: 1,
   minHeight: '32px',
   padding: '6px 10px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '3px',
-  backgroundColor: vars.color.background.surface,
-  color: vars.color.text.primary,
-  cursor: 'pointer',
   selectors: {
     '&:disabled': {
       cursor: 'not-allowed',
       opacity: 0.55,
     },
   },
-});
+  },
+]);
 
 export const paginationBar = style({
   display: 'flex',
@@ -644,21 +649,19 @@ export const paginationControls = style({
   gap: '6px',
 });
 
-export const paginationButton = style({
+export const paginationButton = style([
+  hud.secondaryButton,
+  {
   minHeight: '28px',
   padding: '4px 8px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '3px',
-  backgroundColor: vars.color.background.surface,
-  color: vars.color.text.primary,
-  cursor: 'pointer',
   selectors: {
     '&:disabled': {
       cursor: 'not-allowed',
       opacity: 0.5,
     },
   },
-});
+  },
+]);
 
 export const paginationSummary = style({
   fontSize: '13px',
@@ -691,10 +694,10 @@ export const partDetailsSheet = style({
   maxHeight: 'min(76vh, 620px)',
   overflowY: 'auto',
   padding: '12px',
-  border: `1px solid ${vars.color.border.default}`,
+  border: `1px solid ${hud.hudBorder}`,
   borderBottom: 0,
   borderRadius: '8px 8px 0 0',
-  backgroundColor: vars.color.background.surface,
+  backgroundColor: 'transparent',
   boxShadow: '0 -14px 32px rgba(0, 0, 0, 0.24)',
   transform: 'translate(-50%, calc(100% + 18px))',
   transition: 'transform 190ms ease',
@@ -732,7 +735,7 @@ export const partPreviewFrame = style({
   placeItems: 'center',
   width: '92px',
   height: '72px',
-  border: `1px solid ${vars.color.border.default}`,
+  border: `1px solid ${hud.hudBorder}`,
   borderRadius: '4px',
   backgroundColor: vars.color.background.surfaceHover,
   overflow: 'hidden',
@@ -777,15 +780,14 @@ export const partDetailsDescription = style({
   lineHeight: 1.35,
 });
 
-export const partDetailsCloseButton = style({
+export const partDetailsCloseButton = style([
+  hud.secondaryButton,
+  {
   width: '28px',
   height: '28px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '3px',
-  backgroundColor: vars.color.background.surface,
-  color: vars.color.text.primary,
-  cursor: 'pointer',
-});
+  padding: 0,
+  },
+]);
 
 export const partDetailsSection = style({
   display: 'grid',
@@ -797,13 +799,13 @@ export const valueList = style({
   gap: '4px',
 });
 
-export const valueRow = style({
+export const valueRow = style([
+  hud.statCell,
+  {
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1fr) max-content',
   gap: '12px',
   padding: '5px 7px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '4px',
-  backgroundColor: vars.color.background.surfaceHover,
   fontSize: '13px',
-});
+  },
+]);

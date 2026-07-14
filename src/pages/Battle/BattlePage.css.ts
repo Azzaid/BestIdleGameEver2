@@ -1,5 +1,6 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '../../theme/theme.css.ts';
+import * as hud from '../../theme/hud.css.ts';
 
 export const battlePage = style({
   height: '100%',
@@ -114,22 +115,21 @@ export const pressureProgressFill = style([
   },
 ]);
 
-export const battleMetric = style({
+export const battleMetric = style([
+  hud.compactPanel,
+  {
   display: 'grid',
   gap: '2px',
   minWidth: '112px',
   padding: '6px 8px',
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '3px',
-  backgroundColor: vars.color.background.surface,
-  boxShadow: vars.color.shadow.card,
   '@media': {
     '(max-width: 700px)': {
       minWidth: '88px',
       padding: '5px 7px',
     },
   },
-});
+  },
+]);
 
 export const battleMetricLabel = style({
   color: vars.color.text.muted,
@@ -149,7 +149,9 @@ export const battleMetricValue = style({
   },
 });
 
-export const battleLocked = style({
+export const battleLocked = style([
+  hud.compactPanel,
+  {
   display: 'grid',
   placeItems: 'center',
   alignContent: 'center',
@@ -158,7 +160,8 @@ export const battleLocked = style({
   textAlign: 'center',
   color: vars.color.text.primary,
   pointerEvents: 'auto',
-});
+  },
+]);
 
 export const battleLockedTitle = style({
   margin: 0,
@@ -171,16 +174,14 @@ export const battleLockedText = style({
   maxWidth: '520px',
 });
 
-export const battleLockedLink = style({
+export const battleLockedLink = style([
+  hud.button,
+  {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: '32px',
   padding: '6px 10px',
-  borderRadius: '3px',
-  border: `1px solid ${vars.color.brand.primary}`,
-  background: vars.color.brand.primary,
-  color: vars.color.text.inverse,
   textDecoration: 'none',
-  fontWeight: 700,
-});
+  },
+]);

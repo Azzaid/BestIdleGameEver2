@@ -1,5 +1,6 @@
 import {keyframes, style} from "@vanilla-extract/css";
 import {vars} from "../../theme/theme.css.ts";
+import * as hud from "../../theme/hud.css.ts";
 
 const pulse = keyframes({
   "0%, 100%": {transform: "scale(1)", filter: "brightness(1)"},
@@ -72,7 +73,9 @@ export const spark = style({
   animationDelay: "var(--spark-delay)",
 });
 
-export const panel = style({
+export const panel = style([
+  hud.compactPanel,
+  {
   position: "relative",
   zIndex: 1,
   display: "grid",
@@ -81,16 +84,13 @@ export const panel = style({
   maxHeight: "calc(100vh - 36px)",
   overflowY: "auto",
   padding: "clamp(20px, 5vw, 48px)",
-  border: `2px solid ${vars.color.text.inverse}`,
-  borderRadius: 8,
-  background: `linear-gradient(180deg, color-mix(in srgb, ${vars.color.background.surface} 88%, transparent), color-mix(in srgb, ${vars.color.background.app} 90%, transparent))`,
   color: vars.color.text.primary,
-  boxShadow: `0 0 0 6px color-mix(in srgb, ${vars.color.state.warning} 35%, transparent), 0 24px 80px rgba(0, 0, 0, 0.55)`,
+  boxShadow: `0 0 0 6px color-mix(in srgb, ${vars.color.state.warning} 28%, transparent), 0 24px 80px rgba(0, 0, 0, 0.55)`,
   textAlign: "center",
   animation: `${pulse} 1600ms ease-in-out infinite`,
   selectors: {
     "&::before": {
-      content: "",
+      content: '""',
       position: "absolute",
       inset: 0,
       background: `linear-gradient(90deg, transparent, color-mix(in srgb, ${vars.color.text.inverse} 58%, transparent), transparent)`,
@@ -98,7 +98,8 @@ export const panel = style({
       pointerEvents: "none",
     },
   },
-});
+  },
+]);
 
 export const kicker = style({
   margin: 0,
@@ -150,24 +151,18 @@ export const actions = style({
   flexWrap: "wrap",
 });
 
-export const primaryButton = style({
+export const primaryButton = style([
+  hud.button,
+  {
   minHeight: "38px",
   padding: "8px 14px",
-  borderRadius: 4,
-  border: `1px solid ${vars.color.brand.primary}`,
-  background: vars.color.brand.primary,
-  color: vars.color.text.inverse,
-  cursor: "pointer",
-  fontWeight: 900,
-});
+  },
+]);
 
-export const secondaryButton = style({
+export const secondaryButton = style([
+  hud.secondaryButton,
+  {
   minHeight: "38px",
   padding: "8px 14px",
-  borderRadius: 4,
-  border: `1px solid ${vars.color.border.default}`,
-  background: vars.color.background.surface,
-  color: vars.color.text.primary,
-  cursor: "pointer",
-  fontWeight: 800,
-});
+  },
+]);

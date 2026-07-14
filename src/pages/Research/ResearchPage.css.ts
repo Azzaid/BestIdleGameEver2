@@ -1,5 +1,6 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '../../theme/theme.css.ts';
+import * as hud from '../../theme/hud.css.ts';
 
 export const researchPage = style({
   padding: '10px max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px))',
@@ -28,47 +29,46 @@ export const researchHeader = style({
   },
 });
 
-export const researchPoints = style({
+export const researchPoints = style([
+  hud.compactPanel,
+  {
   fontSize: '14px',
   fontWeight: 'bold',
   padding: '6px 9px',
-  backgroundColor: vars.color.background.surface,
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '3px',
-  boxShadow: '0 2px 0 rgba(0, 0, 0, 0.12)',
   '@media': {
     '(max-width: 700px)': {
       fontSize: '13px',
       padding: '5px 8px',
     },
   },
-});
+  },
+]);
 
 export const researchFilters = style({});
 
-export const researchSelect = style({
+export const researchSelect = style([
+  hud.compactPanel,
+  {
   padding: '5px 8px',
-  borderRadius: '3px',
-  border: `1px solid ${vars.color.border.default}`,
-  background: vars.color.background.surface,
   color: vars.color.text.primary,
   fontSize: '13px',
   maxWidth: '100%',
-});
+  },
+]);
 
-export const researchTree = style({
+export const researchTree = style([
+  hud.compactPanel,
+  {
   position: 'relative',
   width: '100%',
   height: '100%',
   maxHeight: '100%',
-  backgroundColor: vars.color.background.app,
-  border: `1px solid ${vars.color.border.default}`,
-  borderRadius: '4px',
   overflow: 'hidden',
   overscrollBehavior: 'contain',
   touchAction: 'none',
   minHeight: 0,
-});
+  },
+]);
 
 export const researchTreeControls = style({
   position: 'absolute',
@@ -86,18 +86,19 @@ export const researchTreeControls = style({
   },
 });
 
-export const researchTreeControl = style({
+export const researchTreeControl = style([
+  hud.secondaryButton,
+  {
   minHeight: '28px',
   padding: '3px 8px',
-  borderRadius: '3px',
-  boxShadow: '0 2px 0 rgba(0, 0, 0, 0.14)',
   '@media': {
     '(max-width: 700px)': {
       minHeight: '32px',
       padding: '3px 7px',
     },
   },
-});
+  },
+]);
 
 export const treeCanvas = style({
   position: 'relative',

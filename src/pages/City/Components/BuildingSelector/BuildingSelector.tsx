@@ -83,7 +83,7 @@ export function BuildingSelector({
                     const spriteUrl = buildingsSpriteAtlas[building.vector][building.id]?.src;
 
                     return (
-                        <article key={building.id} role="listitem" className={s.card} aria-labelledby={`${building.id}-name`}>
+                        <article key={building.id} role="listitem" className={`${s.card} ${s.cardFrame[building.vector]}`} aria-labelledby={`${building.id}-name`}>
                             {/* Zone 1 — Header (name + cost + build btn) */}
                             <header className={s.zoneHeader}>
                                 <div className={s.titleLine}>

@@ -1,5 +1,6 @@
 import {style} from "@vanilla-extract/css";
 import {vars} from "../theme/theme.css.ts";
+import * as hud from "../theme/hud.css.ts";
 
 export const page = style({
   minHeight: "100vh",
@@ -10,16 +11,15 @@ export const page = style({
   color: vars.color.text.primary,
 });
 
-export const panel = style({
+export const panel = style([
+  hud.compactPanel,
+  {
   width: "min(720px, 100%)",
   display: "grid",
   gap: "14px",
   padding: "18px",
-  border: `1px solid ${vars.color.border.strong}`,
-  borderRadius: 6,
-  background: vars.color.background.surface,
-  boxShadow: vars.color.shadow.card,
-});
+  },
+]);
 
 export const header = style({
   display: "grid",
@@ -67,18 +67,10 @@ export const actions = style({
   justifyContent: "flex-end",
 });
 
-export const primaryButton = style({
+export const primaryButton = style([
+  hud.button,
+  {
   minHeight: "34px",
   padding: "7px 11px",
-  border: `1px solid ${vars.color.border.selected}`,
-  borderRadius: 4,
-  background: vars.color.brand.primary,
-  color: vars.color.text.primary,
-  cursor: "pointer",
-  fontWeight: 800,
-  selectors: {
-    "&:hover": {
-      filter: "brightness(1.06)",
-    },
   },
-});
+]);

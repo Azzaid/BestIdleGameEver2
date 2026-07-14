@@ -10,6 +10,7 @@ import BuildPage from './pages/Build/BuildPage'
 import ResearchPage from './pages/Research/ResearchPage'
 import CityPage from './pages/City/CityPage'
 import HistoryPage from './pages/History/HistoryPage.tsx'
+import HudLabPage from './pages/HudLab/HudLabPage.tsx'
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedDispatch, useTypedSelector} from "./store/hooks.ts";
 import {selectCitySignatureStatus} from "./store/upkeep/selectors.ts";
@@ -52,6 +53,7 @@ function GameShell() {
     setConfirmingExpansionSide: setConfirmingCityExpansionSide,
   };
   const cityCanvasIsInteractive = location.pathname === "/city" || location.pathname === "/";
+  const cityWorldOverlayIsVisible = cityCanvasIsInteractive || location.pathname === "/hud-lab";
 
   useResearchAutoUnlock();
   useContentAutoUnlock();
@@ -190,6 +192,9 @@ function GameShell() {
                                   )}
                               </Link>
                           </li>
+                          <li>
+                              <Link className={appTheme.navBarLink} to="/hud-lab">HUD Lab</Link>
+                          </li>
                           {isDebugToolsEnabled && (
                               <li>
                                   <Link className={appTheme.navBarLink} to="/dev">Dev</Link>
@@ -205,7 +210,7 @@ function GameShell() {
                   />
                   <NotificationCenter />
                   <VictoryEventOverlay />
-                  <div className={`${appTheme.appRouteLayer} ${cityCanvasIsInteractive ? appTheme.appRouteLayerWorldOverlay : ""}`}>
+                  <div className={`${appTheme.appRouteLayer} ${cityWorldOverlayIsVisible ? appTheme.appRouteLayerWorldOverlay : ""}`}>
                       <Routes>
                           <Route path="/" element={<Navigate to="/city" replace />} />
                           <Route path="/build" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<BuildPage />)}</UpkeepBarRouteFrame>} />
@@ -226,6 +231,7 @@ function GameShell() {
                               )}
                           />
                           <Route path="/history" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<HistoryPage />)}</UpkeepBarRouteFrame>} />
+                          <Route path="/hud-lab" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<HudLabPage />, {worldOverlay: true})}</UpkeepBarRouteFrame>} />
                           <Route path="*" element={<Navigate to="/city" replace />} />
                       </Routes>
                   </div>

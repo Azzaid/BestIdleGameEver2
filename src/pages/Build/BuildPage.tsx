@@ -816,7 +816,7 @@ const BuildPage = () => {
                 return (
                   <tr
                     key={row.id}
-                    className={`${s.tableRow} ${selected ? s.selectedRow : ''}`}
+                    className={`${s.tableRow} ${s.tableRowFrame[row.original.vector ?? 'neutral']} ${selected ? s.selectedRow : ''}`}
                     style={getVectorRowStyle(row.original.vector)}
                     onClick={() => setDetailsPart(row.original)}
                     tabIndex={0}
@@ -877,7 +877,7 @@ const BuildPage = () => {
       </section>
 
       <div className={`${s.partDetailsShade} ${detailsPart ? s.partDetailsShadeOpen : ''}`} onClick={() => setDetailsPart(null)} />
-      <aside className={`${s.partDetailsSheet} ${detailsPart ? s.partDetailsSheetOpen : ''}`} aria-hidden={!detailsPart}>
+      <aside className={`${s.partDetailsSheet} ${detailsPart ? `${s.panelFrame[detailsPart.vector ?? 'neutral']} ${s.partDetailsSheetOpen}` : ''}`} aria-hidden={!detailsPart}>
         {detailsPart ? (
           <>
             <div className={s.partDetailsHeader}>

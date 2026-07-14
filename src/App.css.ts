@@ -1,5 +1,6 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from './theme/theme.css.ts';
+import * as hud from './theme/hud.css.ts';
 
 export const appContainer = style({
   display: 'flex',
@@ -23,7 +24,9 @@ export const appRouteLayerWorldOverlay = style({
   pointerEvents: 'none',
 });
 
-export const appNav = style({
+export const appNav = style([
+  hud.compactPanel,
+  {
   backgroundColor: vars.color.background.navbar,
   boxSizing: 'border-box',
   minHeight: 'calc(30px + env(safe-area-inset-top, 0px))',
@@ -35,10 +38,11 @@ export const appNav = style({
   gap: '6px',
   overflow: 'hidden',
   borderBottom: `1px solid ${vars.color.border.strong}`,
-  boxShadow: '0 2px 0 rgba(0, 0, 0, 0.12)',
+  boxShadow: `0 0 18px color-mix(in oklab, ${hud.hudAccent} 18%, transparent), 0 2px 0 rgba(0, 0, 0, 0.12)`,
   zIndex: 100,
   transition: 'min-height 140ms ease, max-height 140ms ease, padding 140ms ease, opacity 100ms ease, transform 140ms ease, box-shadow 140ms ease',
-});
+  },
+]);
 
 export const appNavHidden = style({
   minHeight: 0,
@@ -79,9 +83,10 @@ export const debugToggle = style({
   gap: '4px',
   minHeight: '24px',
   padding: '2px 6px',
-  border: `1px solid ${vars.color.border.default}`,
+  border: `1px solid ${hud.hudBorder}`,
   borderRadius: '3px',
-  color: vars.color.text.primary,
+  background: hud.hudAccentSoft,
+  color: hud.hudText,
   fontSize: '0.72rem',
   fontWeight: 700,
   cursor: 'pointer',
@@ -124,14 +129,18 @@ export const navBarLink = style({
         textDecoration: 'none',
         minHeight: '30px',
         padding: '5px 8px',
-        transition: 'background-color 0.12s',
+        border: '1px solid transparent',
+        borderRadius: 4,
+        transition: 'background-color 0.12s, border-color 0.12s, box-shadow 0.12s',
         whiteSpace: 'nowrap',
         fontSize: '0.78rem',
         fontWeight: 700,
         lineHeight: '18px',
     selectors: {
         '&:hover': {
-            backgroundColor: vars.color.border.focus,
+            borderColor: hud.hudBorder,
+            backgroundColor: hud.hudAccentSoft,
+            boxShadow: `0 0 12px color-mix(in oklab, ${hud.hudAccent} 18%, transparent)`,
         },
     },
     '@media': {
@@ -185,7 +194,9 @@ export const themeSwitcher = style({
   flex: '0 0 auto',
 });
 
-export const blockedPage = style({
+export const blockedPage = style([
+  hud.compactPanel,
+  {
   display: 'grid',
   placeItems: 'center',
   alignContent: 'center',
@@ -195,7 +206,8 @@ export const blockedPage = style({
   paddingBottom: 'max(clamp(12px, 4vw, 20px), env(safe-area-inset-bottom, 0px))',
   color: vars.color.text.primary,
   textAlign: 'center',
-});
+  },
+]);
 
 export const blockedTitle = style({
   margin: 0,
@@ -209,16 +221,14 @@ export const blockedText = style({
   color: vars.color.text.primary,
 });
 
-export const blockedLink = style({
+export const blockedLink = style([
+  hud.button,
+  {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: '32px',
   padding: '6px 10px',
-  borderRadius: '3px',
-  border: `1px solid ${vars.color.brand.primary}`,
-  background: vars.color.brand.primary,
-  color: vars.color.text.inverse,
   textDecoration: 'none',
-  fontWeight: 700,
-});
+  },
+]);

@@ -17,6 +17,13 @@ const styles: StyleMap = {
 };
 
 const DEFAULT_TOAST_MS = 4000;
+const neutralHud = {
+  accent: "hsl(186 54% 48%)",
+  soft: "hsl(186 54% 48% / 0.13)",
+  surface: "hsl(45 38% 86% / 0.72)",
+  border: "hsl(32 22% 38% / 0.34)",
+  glow: "0 0 18px hsl(186 54% 48% / 0.24), 0 10px 24px rgba(0, 0, 0, 0.18)",
+};
 
 export function NotificationCenter() {
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -78,11 +85,13 @@ export function NotificationCenter() {
     justifyContent: "center",
     width: 40,
     height: 40,
-    borderRadius: 8,
-    border: `1px solid ${vars.color.border.default}`,
-    background: vars.color.background.navbar,
+    borderRadius: 6,
+    border: `1px solid ${neutralHud.border}`,
+    background: neutralHud.surface,
     color: vars.color.text.primary,
     cursor: "pointer",
+    boxShadow: neutralHud.glow,
+    backdropFilter: "blur(8px) saturate(1.14)",
   };
 
   const badgeStyle: React.CSSProperties = {
@@ -111,12 +120,13 @@ export function NotificationCenter() {
     maxHeight: "70vh",
     overflow: "auto",
     zIndex: 999,
-    background: vars.color.background.surface,
+    background: neutralHud.surface,
     color: vars.color.text.primary,
-    border: `1px solid ${vars.color.border.default}`,
+    border: `1px solid ${neutralHud.border}`,
     borderTop: "none",
-    borderRadius: "0 0 12px 12px",
-    boxShadow: vars.color.shadow.popover,
+    borderRadius: "0 0 8px 8px",
+    boxShadow: neutralHud.glow,
+    backdropFilter: "blur(8px) saturate(1.14)",
   };
 
   const panelHeader: React.CSSProperties = {
@@ -124,10 +134,10 @@ export function NotificationCenter() {
     alignItems: "center",
     justifyContent: "space-between",
     padding: "12px 16px",
-    borderBottom: `1px solid ${vars.color.border.default}`,
+    borderBottom: `1px solid ${neutralHud.border}`,
     position: "sticky",
     top: 0,
-    background: vars.color.background.surface,
+    background: neutralHud.surface,
     zIndex: 1,
   };
 
@@ -149,9 +159,11 @@ export function NotificationCenter() {
     gap: 12,
     alignItems: "start",
     padding: "10px 12px",
-    borderTop: `3px solid ${styles[scheme].accent}`,
-    background: vars.color.background.surfaceHover,
+    border: `1px solid ${neutralHud.border}`,
+    borderTop: `2px solid ${styles[scheme].accent}`,
+    background: `linear-gradient(145deg, rgba(255, 255, 255, 0.22), transparent 36%), ${neutralHud.surface}`,
     color: vars.color.text.primary,
+    boxShadow: `0 0 14px color-mix(in oklab, ${styles[scheme].accent} 20%, transparent)`,
   });
 
   const imageStyle: React.CSSProperties = {
@@ -159,7 +171,7 @@ export function NotificationCenter() {
     height: 36,
     objectFit: "cover",
     borderRadius: 6,
-    border: `1px solid ${vars.color.border.default}`,
+    border: `1px solid ${neutralHud.border}`,
     background: vars.color.background.surface,
   };
 
@@ -182,9 +194,10 @@ export function NotificationCenter() {
     ...notifCardStyle(scheme),
     gridTemplateColumns: "32px 1fr 20px",
     padding: "8px 10px",
-    borderRadius: 10,
-    boxShadow: vars.color.shadow.card,
+    borderRadius: 6,
+    boxShadow: neutralHud.glow,
     alignItems: "start",
+    backdropFilter: "blur(8px) saturate(1.14)",
   });
 
   return (
@@ -215,14 +228,14 @@ export function NotificationCenter() {
             <button
               type="button"
               onClick={() => markAllRead()}
-              style={{ padding: "6px 10px", borderRadius: 6, border: `1px solid ${vars.color.border.default}`, background: vars.color.background.surfaceHover, color: vars.color.text.primary, cursor: "pointer" }}
+              style={{ padding: "6px 10px", borderRadius: 4, border: `1px solid ${neutralHud.border}`, background: neutralHud.soft, color: vars.color.text.primary, cursor: "pointer", fontWeight: 800 }}
             >
               Mark all read
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              style={{ padding: "6px 10px", borderRadius: 6, border: `1px solid ${vars.color.border.default}`, background: vars.color.background.surfaceHover, color: vars.color.text.primary, cursor: "pointer" }}
+              style={{ padding: "6px 10px", borderRadius: 4, border: `1px solid ${neutralHud.border}`, background: neutralHud.soft, color: vars.color.text.primary, cursor: "pointer", fontWeight: 800 }}
             >
               Close
             </button>
@@ -233,7 +246,7 @@ export function NotificationCenter() {
             <li style={{ padding: 16, color: vars.color.text.muted }}>No notifications yet.</li>
           )}
           {items.map(n => (
-            <li key={n.id} style={{ borderBottom: `1px solid ${vars.color.border.default}` }}>
+            <li key={n.id} style={{ borderBottom: `1px solid ${neutralHud.border}` }}>
               <div style={notifCardStyle(n.scheme)}>
                 {n.imageUrl
                   ? <img src={n.imageUrl} alt="" style={imageStyle} />

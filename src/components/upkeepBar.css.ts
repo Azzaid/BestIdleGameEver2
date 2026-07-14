@@ -1,13 +1,16 @@
 import {style} from "@vanilla-extract/css";
 import {vars} from "../theme/theme.css.ts";
+import * as hud from "../theme/hud.css.ts";
 
-export const upkeepBar = style({
+export const upkeepBar = style([
+    hud.compactPanel,
+    {
     display: 'flex',
     minHeight: '46px',
     padding: '4px max(8px, env(safe-area-inset-right, 0px)) 4px max(8px, env(safe-area-inset-left, 0px))',
     width: '100%',
     boxSizing: 'border-box',
-    backgroundColor: vars.color.background.navbar,
+    backgroundColor: 'transparent',
     color: vars.color.text.heading,
     gap: '10px',
     alignItems: 'center',
@@ -25,7 +28,10 @@ export const upkeepBar = style({
             overflow: 'hidden',
         },
     },
-});
+    },
+]);
+
+export const vectorCardFrame = hud.panelFrame;
 
 export const rightSlot = style({
     marginLeft: 'auto',
@@ -80,6 +86,8 @@ export const vectorCard = style({
     display: 'grid',
     gap: '2px',
     flex: '0 0 auto',
+    minHeight: '30px',
+    padding: '4px 7px',
     fontSize: '0.9rem',
     '@media': {
         '(max-width: 520px)': {
@@ -155,7 +163,9 @@ export const natureBalanceIcon = style({
     pointerEvents: 'none',
 });
 
-export const natureTooltip = style({
+export const natureTooltip = style([
+    hud.panelFrame.nature,
+    {
     position: 'absolute',
     top: 'calc(100% + 8px)',
     left: '50%',
@@ -163,11 +173,6 @@ export const natureTooltip = style({
     display: 'grid',
     gap: '6px',
     padding: '8px',
-    border: `1px solid ${vars.color.border.default}`,
-    borderRadius: 4,
-    background: vars.color.background.surface,
-    color: vars.color.text.primary,
-    boxShadow: '0 8px 18px rgba(0, 0, 0, 0.22)',
     opacity: 0,
     pointerEvents: 'none',
     transform: 'translate(-50%, -4px)',
@@ -185,7 +190,8 @@ export const natureTooltip = style({
             transform: 'translate(-50%, 0)',
         },
     },
-});
+    },
+]);
 
 export const natureTooltipTitle = style({
     fontSize: '0.78rem',
@@ -252,7 +258,9 @@ export const aetherOrb = style({
     },
 });
 
-export const aetherTooltip = style({
+export const aetherTooltip = style([
+    hud.panelFrame.aether,
+    {
     position: 'absolute',
     top: 'calc(100% + 8px)',
     left: '50%',
@@ -260,11 +268,6 @@ export const aetherTooltip = style({
     display: 'grid',
     gap: '6px',
     padding: '8px',
-    border: `1px solid ${vars.color.border.default}`,
-    borderRadius: 4,
-    background: vars.color.background.surface,
-    color: vars.color.text.primary,
-    boxShadow: '0 8px 18px rgba(0, 0, 0, 0.22)',
     opacity: 0,
     transform: 'translate(-50%, -4px)',
     pointerEvents: 'none',
@@ -287,7 +290,8 @@ export const aetherTooltip = style({
             pointerEvents: 'auto',
         },
     },
-});
+    },
+]);
 
 export const aetherTooltipTitle = style({
     fontSize: '0.78rem',
@@ -303,13 +307,16 @@ export const aetherTooltipRow = style({
     fontSize: '0.85rem',
 });
 
-export const signatureMeter = style({
+export const signatureMeter = style([
+    hud.compactPanel,
+    {
     position: 'relative',
     flex: '0 0 clamp(220px, 30vw, 380px)',
     width: 'clamp(220px, 30vw, 380px)',
     maxWidth: 'calc(100vw - 24px)',
     display: 'grid',
     gap: '4px',
+    padding: '6px 8px',
     '@media': {
         '(max-width: 760px)': {
             flex: '1 1 190px',
@@ -321,7 +328,8 @@ export const signatureMeter = style({
             minWidth: 0,
         },
     },
-});
+    },
+]);
 
 export const signatureMeterTitle = style({
     textAlign: 'center',
@@ -344,7 +352,7 @@ export const signatureTrack = style({
     borderRadius: '3px',
     overflow: 'hidden',
     background: 'rgb(43 48 55 / 0.24)',
-    border: `1px solid ${vars.color.border.default}`,
+    border: `1px solid ${hud.hudBorder}`,
 });
 
 export const signatureFill = style({
@@ -354,7 +362,9 @@ export const signatureFill = style({
     transition: 'width 180ms ease, background-color 180ms ease',
 });
 
-export const signatureTooltip = style({
+export const signatureTooltip = style([
+    hud.compactPanel,
+    {
     position: 'absolute',
     top: 'calc(100% + 8px)',
     left: '50%',
@@ -362,11 +372,6 @@ export const signatureTooltip = style({
     display: 'grid',
     gap: '6px',
     padding: '8px',
-    border: `1px solid ${vars.color.border.default}`,
-    borderRadius: 4,
-    background: vars.color.background.surface,
-    color: vars.color.text.primary,
-    boxShadow: '0 8px 18px rgba(0, 0, 0, 0.22)',
     opacity: 0,
     pointerEvents: 'none',
     transform: 'translate(-50%, -4px)',
@@ -384,7 +389,8 @@ export const signatureTooltip = style({
             transform: 'translate(-50%, 0)',
         },
     },
-});
+    },
+]);
 
 export const signatureTooltipRow = style({
     display: 'flex',

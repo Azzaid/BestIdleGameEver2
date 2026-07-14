@@ -1,5 +1,8 @@
 import { style, styleVariants } from '@vanilla-extract/css';
 import {vars} from "../../theme/theme.css.ts";
+import * as hud from "../../theme/hud.css.ts";
+
+export const panelFrame = hud.panelFrame;
 
 export const cityPage = style({
     position: 'relative',
@@ -70,7 +73,9 @@ export const globalEffectsToggle = style({
     },
 });
 
-export const globalEffectsPanel = style({
+export const globalEffectsPanel = style([
+    hud.compactPanel,
+    {
     display: 'grid',
     alignContent: 'start',
     gap: '8px',
@@ -78,13 +83,9 @@ export const globalEffectsPanel = style({
     minHeight: 0,
     overflowY: 'auto',
     padding: '10px',
-    border: `1px solid ${vars.color.border.default}`,
-    background: vars.color.background.surface,
-    color: vars.color.text.primary,
-    borderRadius: '4px 0 0 4px',
-    boxShadow: '0 8px 18px rgba(0, 0, 0, 0.24)',
     scrollbarGutter: 'stable',
-});
+    },
+]);
 
 export const globalModifierList = style({
     display: 'grid',
@@ -92,14 +93,14 @@ export const globalModifierList = style({
     gap: '6px',
 });
 
-export const globalModifierCard = style({
+export const globalModifierCard = style([
+    hud.compactPanel,
+    {
     display: 'grid',
     gap: '6px',
     padding: '7px',
-    border: `1px solid ${vars.color.border.default}`,
-    background: vars.color.background.app,
-    borderRadius: 4,
-});
+    },
+]);
 
 export const globalModifierHeader = style({
     display: 'flex',
@@ -170,10 +171,6 @@ export const selectionPanel = style({
     display: 'grid',
     gap: '8px',
     padding: '10px',
-    border: `1px solid ${vars.color.border.default}`,
-    background: vars.color.background.surface,
-    color: vars.color.text.primary,
-    borderRadius: 4,
     '@media': {
         '(max-width: 520px)': {
             padding: '8px',
@@ -259,14 +256,14 @@ export const multistructureStatus = style({
     gap: '8px',
 });
 
-export const multistructureCandidate = style({
+export const multistructureCandidate = style([
+    hud.compactPanel,
+    {
     display: 'grid',
     gap: '6px',
     padding: '7px',
-    border: `1px solid ${vars.color.border.default}`,
-    background: vars.color.background.app,
-    borderRadius: 4,
-});
+    },
+]);
 
 export const structureListTitle = style({
     margin: '0 0 4px',
@@ -358,9 +355,6 @@ export const wallCard = style({
     gap: '8px',
     alignItems: 'start',
     padding: '8px',
-    border: `1px solid ${vars.color.border.default}`,
-    background: vars.color.background.surface,
-    borderRadius: 4,
     color: vars.color.text.primary,
     '@media': {
         '(max-width: 520px)': {
@@ -375,29 +369,24 @@ export const wallCardTitle = style({
     fontSize: '0.95rem',
 });
 
-export const wallBuildButton = style({
+export const wallBuildButton = style([
+    hud.button,
+    {
     padding: '5px 9px',
-    borderRadius: 3,
-    border: `1px solid ${vars.color.border.selected}`,
-    background: vars.color.brand.primary,
-    color: vars.color.text.primary,
-    cursor: 'pointer',
     selectors: {
         '&:disabled': {
             cursor: 'not-allowed',
             opacity: 0.55,
         },
     },
-});
+    },
+]);
 
-export const demolishButton = style({
+export const demolishButton = style([
+    hud.secondaryButton,
+    {
     justifySelf: 'start',
     padding: '5px 9px',
-    borderRadius: 3,
-    border: `1px solid ${vars.color.border.default}`,
-    background: vars.color.background.app,
-    color: vars.color.text.primary,
-    cursor: 'pointer',
     selectors: {
         '&:hover': {
             borderColor: vars.color.state.error,
@@ -408,14 +397,15 @@ export const demolishButton = style({
             opacity: 0.55,
         },
     },
-});
+    },
+]);
 
-export const buildingLockedNote = style({
+export const buildingLockedNote = style([
+    hud.compactPanel,
+    {
     margin: 0,
     padding: '8px',
-    border: `1px solid ${vars.color.border.default}`,
-    borderRadius: 4,
-    background: vars.color.background.surface,
     color: vars.color.text.muted,
     lineHeight: 1.4,
-});
+    },
+]);

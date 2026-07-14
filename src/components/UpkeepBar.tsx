@@ -56,7 +56,7 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
                     if (!visibleResources.length) return null;
 
                     return (
-                        <div key={vector} className={s.vectorCard}>
+                        <div key={vector} className={`${s.vectorCard} ${s.vectorCardFrame[vector]}`}>
                             {visibleResources.map(resource => {
                                 return (
                                     <div key={resource} className={s.resourceEntry}>

@@ -57,9 +57,14 @@ export function NodeCard({
         <g>
             <rect
                 x={-nodeWidth / 2} y={-nodeHeight / 2}
-                rx={14} ry={14}
+                rx={8} ry={8}
                 width={nodeWidth} height={nodeHeight}
-                fill={vectorTheme.color.background.surface} stroke={vectorTheme.color.border.default} strokeWidth={2.5}
+                fill={vectorTheme.color.background.surface}
+                fillOpacity={0.82}
+                stroke={vectorTheme.color.brand.primary}
+                strokeOpacity={canResearch ? 0.92 : isResearched ? 0.78 : 0.42}
+                strokeWidth={1.5}
+                style={{filter: `drop-shadow(0 0 8px ${vectorTheme.color.brand.primary}) drop-shadow(0 8px 14px rgb(0 0 0 / 0.22))`}}
             />
             <circle cx={0} cy={-nodeHeight / 2} r={5.5} fill={vectorTheme.color.brand.primaryHover}/>
             <text

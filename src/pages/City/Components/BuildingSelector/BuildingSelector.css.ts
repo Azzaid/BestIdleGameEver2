@@ -1,6 +1,7 @@
 import { style, styleVariants } from "@vanilla-extract/css";
 import {tokens} from "../../../../theme/tokens.css.ts";
 import {vars} from "../../../../theme/theme.css.ts";
+import * as hud from "../../../../theme/hud.css.ts";
 
 // Component wrapper (can inherit data-theme from parent)
 export const wrapper = style({
@@ -23,9 +24,9 @@ export const tabButton = styleVariants({
         gap: tokens.space.xs,
         padding: `${tokens.space.xs} ${tokens.space.md}`,
         borderRadius: tokens.radius.pill,
-        border: `1px solid ${vars.color.border.selected}`,
-        background: vars.color.background.surface,
-        color: vars.color.text.heading,
+        border: `1px solid ${hud.hudBorder}`,
+        background: hud.hudAccentSoft,
+        color: hud.hudText,
         fontSize: tokens.font.md,
         cursor: "pointer",
         selectors: {
@@ -39,12 +40,12 @@ export const tabButton = styleVariants({
         padding: `${tokens.space.xs} ${tokens.space.md}`,
         borderRadius: tokens.radius.pill,
         border: `1px solid ${vars.color.border.default}`,
-        background: "transparent",
+        background: "color-mix(in oklab, transparent 70%, white 3%)",
         color: vars.color.text.primary,
         fontSize: tokens.font.md,
         cursor: "pointer",
         selectors: {
-            "&:hover:not([disabled])": { background: "color-mix(in oklab, var(--surface) 85%, var(--text) 15%)" },
+            "&:hover:not([disabled])": { background: hud.hudAccentSoft, borderColor: hud.hudBorder },
             "&[disabled]": { opacity: 0.4, cursor: "not-allowed" },
         },
     },
@@ -74,12 +75,10 @@ export const list = style({
     gap: tokens.space.lg,
 });
 
+export const cardFrame = hud.panelFrame;
+
 // Card
 export const card = style({
-    background: vars.color.background.surface,
-    borderRadius: tokens.radius.lg,
-    boxShadow: `${tokens.shadow.card}, ${tokens.shadow.inset}`,
-    border: `1px solid ${vars.color.border.default}`,
     overflow: "hidden",
     display: "grid",
     gridTemplateRows: "auto auto auto auto",
@@ -90,7 +89,7 @@ export const zoneHeader = style({
     gridTemplateColumns: "1fr auto",
     alignItems: "center",
     padding: `${tokens.space.sm} ${tokens.space.md}`,
-    borderBottom: `1px solid ${vars.color.border.default}`,
+    borderBottom: `1px solid ${hud.hudBorder}`,
     gap: tokens.space.sm,
 });
 
@@ -113,10 +112,10 @@ export const costLabel = style({ opacity: 0.7 });
 // Build button
 export const buildBtn = style({
     padding: `${tokens.space.xs} ${tokens.space.lg}`,
-    borderRadius: tokens.radius.pill,
-    background: vars.color.brand.primary,
-    color: vars.color.text.primary,
-    border: `1px solid color-mix(in oklab, var(--accent) 70%, black 15%)`,
+    borderRadius: tokens.radius.md,
+    background: `linear-gradient(180deg, color-mix(in oklab, ${hud.hudAccent} 62%, white 16%), color-mix(in oklab, ${hud.hudAccent} 82%, black 18%))`,
+    color: "white",
+    border: `1px solid color-mix(in oklab, ${hud.hudAccent} 68%, black 12%)`,
     cursor: "pointer",
     fontSize: tokens.font.md,
     fontWeight: 600,
@@ -133,7 +132,7 @@ export const effectsRow = style({
     gridTemplateColumns: "148px minmax(0, 1fr) minmax(0, 1fr)",
     gap: tokens.space.lg,
     padding: `${tokens.space.md} ${tokens.space.lg}`,
-    borderBottom: `1px solid ${vars.color.border.default}`,
+    borderBottom: `1px solid ${hud.hudBorder}`,
     '@media': {
         '(max-width: 520px)': {
             gridTemplateColumns: '112px minmax(0, 1fr)',
@@ -146,7 +145,7 @@ export const zoneRow = style({
     gridTemplateColumns: "148px 1fr",
     gap: tokens.space.lg,
     padding: `${tokens.space.md} ${tokens.space.lg}`,
-    borderBottom: `1px solid ${vars.color.border.default}`,
+    borderBottom: `1px solid ${hud.hudBorder}`,
     '@media': {
         '(max-width: 520px)': {
             gridTemplateColumns: '112px 1fr',
@@ -199,12 +198,12 @@ export const zoneDesc = style({
 
 export const description = style({
     margin: 0,
-    color: vars.color.text.primary,
+    color: hud.hudText,
     fontSize: tokens.font.md,
 });
 
 export const muted = style({
-    color: vars.color.text.primary,
+    color: hud.hudText,
     fontSize: tokens.font.md,
 });
 
@@ -212,8 +211,8 @@ export const muted = style({
 export const previewSvg = style({
     width: 126,
     height: 126,
-    "--tile-fill": vars.color.background.surfaceHover,
-    "--tile-stroke": vars.color.border.default,
+    "--tile-fill": hud.hudAccentSoft,
+    "--tile-stroke": hud.hudBorder,
     '@media': {
         '(max-width: 520px)': {
             width: 96,
