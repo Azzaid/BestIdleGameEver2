@@ -1,4 +1,4 @@
-import { Application, Assets, Container, Graphics, Sprite, Texture } from 'pixi.js';
+import { Application, Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createWorld, createEntityId } from '../core/world';
 import { runSystems } from '../systems/runSystems';
@@ -152,6 +152,7 @@ export function BattleStage(props: {
         let disposed = false;
         let cleanupInput = () => {};
         let cleanupResize = () => {};
+        let cleanupLoading = () => {};
 
         const destroyApp = () => {
             const currentApp = app;
@@ -185,12 +186,23 @@ export function BattleStage(props: {
                 app = nextApp;
                 hostRef.current.appendChild(nextApp.canvas);
 
+                const loadingOverlay = createBattleLoadingOverlay(nextApp);
+                cleanupLoading = loadingOverlay.destroy;
+                loadingOverlay.setProgress(0);
+
                 await loadBattleAssets({
                     wallSegments: props.wallSegments,
                     terrainHexes: props.terrainHexes,
+                    onProgress: progress => {
+                        if (!disposed && app === nextApp) {
+                            loadingOverlay.setProgress(progress);
+                        }
+                    },
                 });
 
                 if (disposed || app !== nextApp) return;
+                cleanupLoading();
+                cleanupLoading = () => {};
             const runtimeProps = runtimePropsRef.current;
 
             const viewportWidth = nextApp.renderer.width;
@@ -442,6 +454,7 @@ export function BattleStage(props: {
             siegeOutlineRef.current = null;
             cleanupInput();
             cleanupResize();
+            cleanupLoading();
             destroyApp();
         };
     }, [
@@ -572,6 +585,100 @@ export function BattleStage(props: {
             )}
         </div>
     );
+}
+
+function createBattleLoadingOverlay(app: Application) {
+    const overlay = new Container();
+    const backdrop = new Graphics();
+    const panel = new Graphics();
+    const progressTrack = new Graphics();
+    const progressFill = new Graphics();
+    const title = new Text({
+        text: 'Preparing battle',
+        style: {
+            fill: 0xf3f7ff,
+            fontFamily: 'Inter, system-ui, sans-serif',
+            fontSize: 16,
+            fontWeight: '800',
+        },
+    });
+    const percentText = new Text({
+        text: '0%',
+        style: {
+            fill: 0x9fb2d0,
+            fontFamily: 'Inter, system-ui, sans-serif',
+            fontSize: 12,
+            fontWeight: '700',
+        },
+    });
+    let currentProgress = 0;
+    let destroyed = false;
+
+    title.anchor.set(0.5);
+    percentText.anchor.set(0.5);
+    overlay.addChild(backdrop, panel, progressTrack, progressFill, title, percentText);
+    app.stage.addChild(overlay);
+
+    const draw = () => {
+        const width = app.renderer.width;
+        const height = app.renderer.height;
+        const panelWidth = Math.min(360, Math.max(220, width - 48));
+        const panelHeight = 104;
+        const panelX = (width - panelWidth) / 2;
+        const panelY = (height - panelHeight) / 2;
+        const trackX = panelX + 24;
+        const trackY = panelY + 58;
+        const trackWidth = panelWidth - 48;
+        const trackHeight = 10;
+        const progressWidth = Math.max(0, Math.min(1, currentProgress)) * trackWidth;
+
+        backdrop
+            .clear()
+            .rect(0, 0, width, height)
+            .fill({color: 0x0b0e13});
+        panel
+            .clear()
+            .roundRect(panelX, panelY, panelWidth, panelHeight, 6)
+            .fill({color: 0x111827, alpha: 0.96})
+            .stroke({color: 0x28415f, width: 1});
+        progressTrack
+            .clear()
+            .roundRect(trackX, trackY, trackWidth, trackHeight, 3)
+            .fill({color: 0x05080d})
+            .stroke({color: 0x31445f, width: 1});
+        progressFill
+            .clear()
+            .roundRect(trackX, trackY, progressWidth, trackHeight, 3)
+            .fill({color: 0x58c7f3});
+
+        title.x = width / 2;
+        title.y = panelY + 32;
+        percentText.text = `${Math.round(Math.max(0, Math.min(1, currentProgress)) * 100)}%`;
+        percentText.x = width / 2;
+        percentText.y = panelY + 82;
+    };
+
+    const setProgress = (progress: number) => {
+        if (destroyed) return;
+
+        currentProgress = progress;
+        draw();
+    };
+    const destroy = () => {
+        if (destroyed) return;
+
+        destroyed = true;
+        app.renderer.off('resize', draw);
+        overlay.destroy({children: true});
+    };
+
+    app.renderer.on('resize', draw);
+    draw();
+
+    return {
+        setProgress,
+        destroy,
+    };
 }
 
 function sendEnemiesToSideBorders(world: ReturnType<typeof createWorld>) {

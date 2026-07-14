@@ -1,4 +1,5 @@
 import { Assets } from 'pixi.js';
+import type { ProgressCallback, UnresolvedAsset } from 'pixi.js';
 import { BATTLE_BACKGROUNDS } from './backgrounds.ts';
 import type { BattleBackgroundId } from '../../../models/battle/backgrounds.ts';
 import { TOWER_PARTS } from '../../../data/gunParts/index.ts';
@@ -14,18 +15,43 @@ import { WALL_SUPERSTRUCTURE_BUILDINGS } from '../../../data/wallSuperstructures
 import { BATTLE_DAMAGE_AREA_VFX_DEFINITIONS } from '../../../data/battleDamageAreaVfx.ts';
 import type { BattlefieldTerrainHex } from '../../../models/battle/battlefieldTerrain.ts';
 
+type BattleAsset = UnresolvedAsset;
+
+type LoadBattleAssetsOptions = {
+    backgroundId?: BattleBackgroundId;
+    wallSegments?: BattleWallSegment[];
+    terrainHexes?: readonly BattlefieldTerrainHex[];
+    onProgress?: ProgressCallback;
+};
+
 export async function loadBattleBackground(backgroundId: BattleBackgroundId): Promise<void> {
+    const assetsToLoad = collectBattleBackgroundAssets(backgroundId);
+
+    if (assetsToLoad.length === 0) return;
+
+    await Assets.load(assetsToLoad);
+}
+
+function collectBattleBackgroundAssets(backgroundId: BattleBackgroundId): BattleAsset[] {
     const background = BATTLE_BACKGROUNDS[backgroundId];
 
-    if (Assets.cache.has(background.textureAlias)) return;
+    if (Assets.cache.has(background.textureAlias)) return [];
 
-    await Assets.load({
+    return [{
         alias: background.textureAlias,
         src: background.src,
-    });
+    }];
 }
 
 export async function loadTowerPartAssets(): Promise<void> {
+    const assetsToLoad = collectTowerPartAssets();
+
+    if (assetsToLoad.length === 0) return;
+
+    await Assets.load(assetsToLoad);
+}
+
+function collectTowerPartAssets(): BattleAsset[] {
     const partTextureKeys = new Set(TOWER_PARTS.map((part) => part.sprite.textureKey));
     const towerPartAssetsToLoad = [...partTextureKeys]
         .flatMap((textureKey) => {
@@ -55,12 +81,18 @@ export async function loadTowerPartAssets(): Promise<void> {
     });
     const assetsToLoad = [...towerPartAssetsToLoad, ...projectileAssetsToLoad];
 
+    return assetsToLoad;
+}
+
+export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): Promise<void> {
+    const assetsToLoad = collectBattleWallAssets(wallSegments);
+
     if (assetsToLoad.length === 0) return;
 
     await Assets.load(assetsToLoad);
 }
 
-export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): Promise<void> {
+function collectBattleWallAssets(wallSegments: BattleWallSegment[]): BattleAsset[] {
     const queuedAliases = new Set<string>();
     const wallAssetsToLoad = wallSegments.flatMap((segment) => {
         if (!segment.wallKey || !segment.wallDevelopmentVector) return [];
@@ -92,12 +124,18 @@ export async function loadBattleWallAssets(wallSegments: BattleWallSegment[]): P
     });
     const assetsToLoad = [...wallAssetsToLoad, ...wallTopAssetsToLoad];
 
+    return assetsToLoad;
+}
+
+export async function loadEnemyAssets(): Promise<void> {
+    const assetsToLoad = collectEnemyAssets();
+
     if (assetsToLoad.length === 0) return;
 
     await Assets.load(assetsToLoad);
 }
 
-export async function loadEnemyAssets(): Promise<void> {
+function collectEnemyAssets(): BattleAsset[] {
     const textureKeys = new Set(Object.values(BATTLE_ENEMY_BLUEPRINTS).map(enemy => enemy.sprite.textureKey));
     const assetsToLoad = [...textureKeys].flatMap(textureKey => {
         if (Assets.cache.has(textureKey)) return [];
@@ -112,12 +150,18 @@ export async function loadEnemyAssets(): Promise<void> {
         }] : [];
     });
 
+    return assetsToLoad;
+}
+
+export async function loadBattleDamageAreaVfxAssets(): Promise<void> {
+    const assetsToLoad = collectBattleDamageAreaVfxAssets();
+
     if (assetsToLoad.length === 0) return;
 
     await Assets.load(assetsToLoad);
 }
 
-export async function loadBattleDamageAreaVfxAssets(): Promise<void> {
+function collectBattleDamageAreaVfxAssets(): BattleAsset[] {
     const assetsToLoad = BATTLE_DAMAGE_AREA_VFX_DEFINITIONS
         .filter(definition => definition.src && !Assets.cache.has(definition.textureAlias))
         .map(definition => ({
@@ -125,12 +169,18 @@ export async function loadBattleDamageAreaVfxAssets(): Promise<void> {
             src: definition.src,
         }));
 
+    return assetsToLoad;
+}
+
+export async function loadBattlefieldTerrainAssets(terrainHexes: readonly BattlefieldTerrainHex[]): Promise<void> {
+    const assetsToLoad = collectBattlefieldTerrainAssets(terrainHexes);
+
     if (assetsToLoad.length === 0) return;
 
     await Assets.load(assetsToLoad);
 }
 
-export async function loadBattlefieldTerrainAssets(terrainHexes: readonly BattlefieldTerrainHex[]): Promise<void> {
+function collectBattlefieldTerrainAssets(terrainHexes: readonly BattlefieldTerrainHex[]): BattleAsset[] {
     const queuedAliases = new Set<string>();
     const assetsToLoad = terrainHexes.flatMap((terrainHex) => {
         const textureAlias = terrainHex.backgroundSpriteId;
@@ -144,26 +194,28 @@ export async function loadBattlefieldTerrainAssets(terrainHexes: readonly Battle
         }];
     });
 
-    if (assetsToLoad.length === 0) return;
-
-    await Assets.load(assetsToLoad);
+    return assetsToLoad;
 }
 
 /** Loads only assets needed by the current battle scene. */
-export async function loadBattleAssets(args?: {
-    backgroundId?: BattleBackgroundId;
-    wallSegments?: BattleWallSegment[];
-    terrainHexes?: readonly BattlefieldTerrainHex[];
-}): Promise<void> {
-    await loadEnemyAssets();
-    await loadTowerPartAssets();
-    await loadBattleWallAssets(args?.wallSegments ?? []);
-    await loadBattlefieldTerrainAssets(args?.terrainHexes ?? []);
-    await loadBattleDamageAreaVfxAssets();
+export async function loadBattleAssets(args?: LoadBattleAssetsOptions): Promise<void> {
+    const assetsToLoad = dedupeBattleAssets([
+        ...collectEnemyAssets(),
+        ...collectTowerPartAssets(),
+        ...collectBattleWallAssets(args?.wallSegments ?? []),
+        ...collectBattlefieldTerrainAssets(args?.terrainHexes ?? []),
+        ...collectBattleDamageAreaVfxAssets(),
+        ...(args?.backgroundId ? collectBattleBackgroundAssets(args.backgroundId) : []),
+    ]);
 
-    if (args?.backgroundId) {
-        await loadBattleBackground(args.backgroundId);
+    if (assetsToLoad.length === 0) {
+        args?.onProgress?.(1);
+        return;
     }
+
+    args?.onProgress?.(0);
+    await Assets.load(assetsToLoad, args?.onProgress);
+    args?.onProgress?.(1);
 }
 
 function getWallSpriteLookupKey(wallKey: string) {
@@ -172,4 +224,17 @@ function getWallSpriteLookupKey(wallKey: string) {
 
 function getWallTopSpriteLookupKey(wallTopKey: string) {
     return WALL_SUPERSTRUCTURE_BUILDINGS[wallTopKey]?.visualAssetId ?? wallTopKey;
+}
+
+function dedupeBattleAssets(assets: BattleAsset[]) {
+    const queuedAliases = new Set<string>();
+
+    return assets.filter((asset) => {
+        const alias = Array.isArray(asset.alias) ? asset.alias[0] : asset.alias;
+        if (!alias) return true;
+        if (queuedAliases.has(alias)) return false;
+
+        queuedAliases.add(alias);
+        return true;
+    });
 }
