@@ -98,18 +98,19 @@ export function CityWorldUnderlay({
     const siegeModifierValues = useTypedSelector(selectSiegeModifierValues);
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const worldViewMode = useTypedSelector(selectWorldViewMode);
-    const {setConfirmingExpansionSide, setSelectedHex} = useCityCanvasInteraction();
+    const {selectedHex, setConfirmingExpansionSide, setSelectedHex} = useCityCanvasInteraction();
     const [battleMode, setBattleMode] = useState<BattleMode>(() => signatureStatus.isBesieged ? "siege" : "pressure");
     const [battleRunId, setBattleRunId] = useState(0);
     const [retreatEnemiesSignal, setRetreatEnemiesSignal] = useState(0);
     const [pendingTerritoryLossFailureId, setPendingTerritoryLossFailureId] = useState(0);
     const [clearSelectionSignal, setClearSelectionSignal] = useState(0);
-    const [cameraFocusRequest, setCameraFocusRequest] = useState<{target: WorldViewMode; id: number}>({
+    const [cameraFocusRequest, setCameraFocusRequest] = useState<{target: WorldViewMode; id: number; focusCellKey?: string | null}>({
         target: "city",
         id: 0,
     });
     const lastRenderedMetricsSecondRef = useRef(-1);
     const hasAnnouncedSiegeStartedRef = useRef(false);
+    const previousWorldViewModeRef = useRef<WorldViewMode>(worldViewMode);
     const protectedCityRadius = getProtectedCityRadius(allHexes);
     const occupiedCellKeys = useMemo(
         () => new Set(allHexes.filter(hex => !hex.isUnclaimed).map(hex => hex.cellKey)),
@@ -294,11 +295,22 @@ export function CityWorldUnderlay({
         startBattleMode("siege");
     }, [battleMode, signatureStatus.isBesieged, startBattleMode]);
     useEffect(() => {
+        const previousWorldViewMode = previousWorldViewModeRef.current;
+        previousWorldViewModeRef.current = worldViewMode;
+
+        if (worldViewMode === previousWorldViewMode && worldViewMode !== "tower") return;
+
         setCameraFocusRequest(request => ({
             target: worldViewMode,
             id: request.id + 1,
+            focusCellKey: worldViewMode === "tower" ? selectedHex?.cellKey ?? null : null,
         }));
-    }, [worldViewMode]);
+    }, [selectedHex?.cellKey, worldViewMode]);
+    useEffect(() => {
+        if (worldViewMode !== "tower" || selectedHex) return;
+
+        dispatch(setWorldViewMode("city"));
+    }, [dispatch, selectedHex, worldViewMode]);
     useEffect(() => {
         if (pendingTerritoryLossFailureId === 0 || signatureStatus.isBesieged) return;
 

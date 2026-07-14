@@ -606,7 +606,7 @@ const BattlePage = () => {
                     <p className={styles.battleLockedText}>
                         Assemble the first tower and rebuild it before sending defenders to the wall.
                     </p>
-                    <Link className={styles.battleLockedLink} to="/build">Build First Tower</Link>
+                    <Link className={styles.battleLockedLink} to="/city">Build First Tower</Link>
                 </section>
             )}
         </div>

@@ -6,7 +6,6 @@ import { ThemeProvider } from './theme/ThemeProvider'
 import * as appTheme from './App.css.ts'
 import {AppErrorBoundary} from "./components/AppErrorBoundary.tsx";
 
-import BuildPage from './pages/Build/BuildPage'
 import ResearchPage from './pages/Research/ResearchPage'
 import CityPage from './pages/City/CityPage'
 import HistoryPage from './pages/History/HistoryPage.tsx'
@@ -172,9 +171,6 @@ function GameShell() {
                       </div>
                       <ul className={appTheme.navLinks}>
                           <li>
-                              <Link className={appTheme.navBarLink} to="/build">Tower</Link>
-                          </li>
-                          <li>
                               <Link className={signatureStatus.isBesieged ? appTheme.navBarLinkBlocked : appTheme.navBarLink} to="/research">Research</Link>
                           </li>
                           <li>
@@ -213,7 +209,7 @@ function GameShell() {
                   <div className={`${appTheme.appRouteLayer} ${cityWorldOverlayIsVisible ? appTheme.appRouteLayerWorldOverlay : ""}`}>
                       <Routes>
                           <Route path="/" element={<Navigate to="/city" replace />} />
-                          <Route path="/build" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<BuildPage />)}</UpkeepBarRouteFrame>} />
+                          <Route path="/build" element={<Navigate to="/city" replace />} />
                           <Route
                               path="/research"
                               element={(

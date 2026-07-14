@@ -11,14 +11,12 @@ import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/gunParts/index.ts
 import { TOWER_PART_VISUAL_ASSETS } from '../../data/gunParts/partVisualMetadata.ts';
 import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
-import { selectActiveTower, selectActiveTowerDraftAssembly, selectAvailableTowerList, selectHasAnyTowerBuild } from '../../store/towers/selectors.ts';
-import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTower, selectTowerDraftPart } from '../../store/towers/slice.ts';
+import { selectActiveTower, selectActiveTowerDraftAssembly, selectHasAnyTowerBuild } from '../../store/towers/selectors.ts';
+import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTowerDraftPart } from '../../store/towers/slice.ts';
 import { selectCityResolution, selectResolvedEffectiveActiveTowerDraft } from '../../store/upkeep/selectors.ts';
-import { selectAllCityHexes, selectCityBiome, selectCityHexes } from '../../store/city/selectors.ts';
 import {selectRequirementResolutionData, selectUnlockedTowerPartIds, selectVisibleTowerPartIds} from "../../store/unlocks/selectors.ts";
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
 import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
-import { TowerAssemblyPreview } from './TowerAssemblyPreview.tsx';
 import type { SupportStatusItem } from '../../models/build/buildPage.ts';
 import {
   formatHomogeneousValue,
@@ -34,12 +32,7 @@ import {getHomogeneousValueIdForUpkeepType, homogeneousValueTotalsToUpkeepAmount
 import {HOMOGENEOUS_VALUE_IDS, getHomogeneousValueDefinition} from '../../data/homogeneousValues/index.ts';
 import {areRequirementsMet, getUnmetRequirements, type Requirement} from '../../models/progression/requirements.ts';
 import {DEVELOPMENT_VECTOR_LABELS, type DevelopmentVectorKey} from '../../models/DevlopmentVector.ts';
-import type { BattleWallSegment } from '../../models/battle/wallSegment.ts';
-import type { BattlefieldTerrainHex } from '../../models/battle/battlefieldTerrain.ts';
-import { CITY_HEX_WIDTH, HEX_DISTANCE_PIXELS } from '../../data/constants.ts';
-import { createBattlefieldTerrainHexes } from '../Battle/battlefieldTerrain.ts';
-import { getTowerAnchorPosition } from '../Battle/ui/BattleStage.tsx';
-import { getAxialDistance } from '../../models/city/expansion.ts';
+import { CITY_HEX_RADIUS } from '../../data/constants.ts';
 
 type ModifierRow = {
   key: string;
@@ -56,31 +49,6 @@ const vectorRowColors: Record<DevelopmentVectorKey, string> = {
   medieval: 'rgba(210, 160, 82, 0.2)',
   aether: 'rgba(172, 112, 255, 0.22)',
 };
-
-const PREVIEW_WALL_Y = HEX_DISTANCE_PIXELS * 2;
-const PREVIEW_BATTLEFIELD_HEIGHT = PREVIEW_WALL_Y + HEX_DISTANCE_PIXELS * 2;
-
-function getTowerAnchorWallSegment(
-  towerIndex: number,
-  wallSegments: readonly BattleWallSegment[],
-) {
-  const wallTopSegments = wallSegments
-    .map((segment, index) => ({ segment, index }))
-    .filter(({ segment }) => Boolean(segment.wallTopKey));
-
-  return wallTopSegments[towerIndex % Math.max(1, wallTopSegments.length)];
-}
-
-function getPreviewTerrainHexes(
-  terrainHexes: readonly BattlefieldTerrainHex[],
-  anchorSegment: BattleWallSegment | undefined,
-) {
-  if (!anchorSegment) return terrainHexes;
-
-  return terrainHexes.filter((terrainHex) => (
-    getAxialDistance(terrainHex, anchorSegment) <= 1
-  ));
-}
 
 function getPartKeywords(part: GunPart) {
   return Array.from(part.keywords);
@@ -258,20 +226,19 @@ function getAvailableUpkeepForSlot(
   return addUpkeep(remainingUpkeep, currentSlotPartCost);
 }
 
-const BuildPage = () => {
+const BuildPage = ({
+  onCloseTowerEdit,
+}: {
+  onCloseTowerEdit?: () => void;
+}) => {
   const dispatch = useTypedDispatch();
   const activeTower = useTypedSelector(selectActiveTower);
-  const towers = useTypedSelector(selectAvailableTowerList);
   const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
   const towerDraftAssembly = useTypedSelector(selectActiveTowerDraftAssembly);
   const resolvedTower = useTypedSelector(selectResolvedEffectiveActiveTowerDraft);
   const visibleTowerPartIds = useTypedSelector(selectVisibleTowerPartIds);
   const unlockedTowerPartIds = useTypedSelector(selectUnlockedTowerPartIds);
   const cityResolution = useTypedSelector(selectCityResolution);
-  const allCityHexes = useTypedSelector(selectAllCityHexes);
-  const cityHexes = useTypedSelector(selectCityHexes);
-  const cityBiome = useTypedSelector(selectCityBiome);
-  const cityTerrainVectorMap = useTypedSelector(state => state.city.terrainVectorMap);
   const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>(TOWER_PART_SLOT_ORDER[0].key);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -284,64 +251,6 @@ const BuildPage = () => {
   };
 
   const selectedPartId = towerDraftAssembly.selectedPartIds[activeTab];
-  const activeTowerIndex = Math.max(0, towers.findIndex((tower) => tower.id === activeTower?.id));
-  const battleWallSegments = useMemo<BattleWallSegment[]>(() => (
-    cityHexes
-      .filter(hex => hex.kind === 'wall')
-      .sort((left, right) => left.column - right.column)
-      .map(hex => ({
-        cellKey: hex.cellKey,
-        column: hex.column,
-        row: hex.row,
-        wallKey: hex.wallKey ?? null,
-        wallDevelopmentVector: hex.wallDevelopmentVector ?? null,
-        wallTopKey: hex.wallTopKey ?? null,
-        wallTopDevelopmentVector: hex.wallTopDevelopmentVector ?? null,
-      }))
-  ), [cityHexes]);
-  const previewBattlefieldWidth = Math.max(1, battleWallSegments.length) * CITY_HEX_WIDTH;
-  const activeTowerAnchorSegment = useMemo(
-    () => getTowerAnchorWallSegment(activeTowerIndex, battleWallSegments),
-    [activeTowerIndex, battleWallSegments],
-  );
-  const towerPreviewPosition = useMemo(() => getTowerAnchorPosition({
-    towerIndex: activeTowerIndex,
-    towerCount: Math.max(1, towers.length),
-    wallSegments: battleWallSegments,
-    excludedWallCellKeys: new Set(),
-    segmentSize: CITY_HEX_WIDTH,
-    battlefieldWidth: previewBattlefieldWidth,
-    wallY: PREVIEW_WALL_Y,
-  }), [activeTowerIndex, battleWallSegments, previewBattlefieldWidth, towers.length]);
-  const previewTerrainHexes = useMemo(() => {
-    const terrainHexes = createBattlefieldTerrainHexes({
-      biome: cityBiome,
-      terrainVectorMap: cityTerrainVectorMap,
-      baseTerrainBackgroundsByKey: Object.fromEntries(
-        allCityHexes.flatMap(hex => (
-          hex.baseTerrainSpriteId
-            ? [[hex.cellKey, {
-              backgroundSpriteId: hex.baseTerrainSpriteId,
-              backgroundDevelopmentVector: hex.baseTerrainDevelopmentVector ?? hex.backgroundDevelopmentVector,
-            }]]
-            : []
-        )),
-      ),
-      wallSegments: battleWallSegments,
-      battlefieldWidth: previewBattlefieldWidth,
-      battlefieldHeight: PREVIEW_BATTLEFIELD_HEIGHT,
-      wallY: PREVIEW_WALL_Y,
-    });
-
-    return getPreviewTerrainHexes(terrainHexes, activeTowerAnchorSegment?.segment);
-  }, [
-    activeTowerAnchorSegment,
-    allCityHexes,
-    battleWallSegments,
-    cityBiome,
-    cityTerrainVectorMap,
-    previewBattlefieldWidth,
-  ]);
   const visibleTowerPartIdSet = useMemo(() => new Set(visibleTowerPartIds), [visibleTowerPartIds]);
   const unlockedTowerPartIdSet = useMemo(() => new Set(unlockedTowerPartIds), [unlockedTowerPartIds]);
   const availableSlotOptions = useMemo(() => (
@@ -571,6 +480,9 @@ const BuildPage = () => {
   const detailsSupportCost = detailsPart ? getSupportStatus(getPartSupportCost(detailsPart), {}) : [];
   const detailsPreviewAsset = detailsPart ? TOWER_PART_VISUAL_ASSETS[detailsPart.sprite.textureKey] ?? TOWER_PART_VISUAL_ASSETS[detailsPart.id] : undefined;
   const warningTitle = resolvedTower.warnings.map((warning) => warning.message).join(' ');
+  const towerViewportOpeningStyle: CSSProperties = {
+    minHeight: `${CITY_HEX_RADIUS * 2}px`,
+  };
   const statRows = [
     ['Damage', resolvedTower.stats.projectileDamage.toFixed(1)],
     ['Shots/s', resolvedTower.stats.shotsPerSecond.toFixed(2)],
@@ -612,43 +524,29 @@ const BuildPage = () => {
   return (
     <div className={s.buildPage}>
       <section className={s.assemblyPanel}>
-        <div className={s.towerSelector} aria-label="Tower slots">
-          {towers.map((tower) => {
-            const selected = tower.id === activeTower?.id;
-            const committedPartsCount = Object.keys(tower.selectedPartIds).length;
-            const status = committedPartsCount > 0 ? `${committedPartsCount} parts` : 'Empty';
-
-            return (
-              <button
-                key={tower.id}
-                className={`${s.towerSelectorButton} ${selected ? s.towerSelectorButtonActive : ''}`}
-                title={`${tower.name}: ${status}`}
-                onClick={() => {
-                  dispatch(selectTower({ towerId: tower.id }));
-                  setPagination((current) => ({ ...current, pageIndex: 0 }));
-                }}
-              >
-                <span className={s.towerSelectorName}>{tower.name}</span>
-              </button>
-            );
-          })}
-        </div>
+        <div
+          className={s.towerViewportOpening}
+          data-tower-viewport-opening="true"
+          style={towerViewportOpeningStyle}
+          aria-hidden
+        />
 
         <div className={s.assemblyGrid}>
-          <div className={s.towerPreview}>
-            <div className={s.towerImage}>
-              <TowerAssemblyPreview
-                resolvedTower={resolvedTower}
-                wallSegments={battleWallSegments}
-                terrainHexes={previewTerrainHexes}
-                towerWorldPosition={towerPreviewPosition}
-                wallY={PREVIEW_WALL_Y}
-              />
-            </div>
-          </div>
-
           <aside className={s.towerStats}>
-            <h2 className={s.panelTitle}>Resolved Build</h2>
+            <div className={s.panelHeader}>
+              <h2 className={s.panelTitle}>Resolved Build</h2>
+              {onCloseTowerEdit && (
+                <button
+                  className={s.panelCloseButton}
+                  type="button"
+                  aria-label="Close tower editor"
+                  title="Close tower editor"
+                  onClick={onCloseTowerEdit}
+                >
+                  x
+                </button>
+              )}
+            </div>
             <div
               className={`${s.weightCapacityPanel} ${isOverweight ? s.weightCapacityPanelOver : ''}`}
               aria-label={`Tower weapon weight ${formatWeightAmount(resolvedTower.stats.weight)} of ${formatWeightAmount(resolvedTower.stats.maximumWeight)}`}

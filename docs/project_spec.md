@@ -59,14 +59,14 @@ Entry points and app shell:
 
 - `src/main.tsx` loads global styles and renders the app.
 - `src/App.tsx` wires `Provider`, `ThemeProvider`, the outer app error boundary, `HashRouter`, navigation, game routes, lazy development-tool route gating, content auto-unlock hooks, global event signals/history navigation, notifications, and the shared upkeep bar.
-- `src/store` contains Redux setup, slices, typed hooks, and selectors. `src/store/worldView` owns the current world screen mode (`city` or `battle`) so UI components and mechanics can show, hide, enable, or pause behavior based on whether the player is focused on city building or the battlefield.
+- `src/store` contains Redux setup, slices, typed hooks, and selectors. `src/store/worldView` owns the current world screen mode (`city`, `battle`, or `tower`) so UI components and mechanics can show, hide, enable, or pause behavior based on whether the player is focused on city building, the battlefield, or a selected tower edit overlay.
 - `src/devtools` contains development-only route/nav modules and devtools UI state. Devtools UI state is persisted separately from the gameplay save and should not be added to the game Redux persistence payload.
 - `src/theme` contains the vanilla-extract theme contract and runtime theme provider.
 
 Primary routes:
 
 - `/` redirects to `/city`.
-- `/build` renders tower assembly.
+- `/build` redirects to `/city`; tower assembly opens as a city-screen tower mode overlay from a selected wall-top tower.
 - `/research` renders research.
 - `/city` renders the city view.
 - `/history` renders happened global events and foreseen event hints.
@@ -420,7 +420,7 @@ Towers are machines designed from components, not fixed tower classes.
 
 Current implementation:
 
-- The Build page stores selected tower part ids in Redux.
+- The tower editor stores selected tower part ids in Redux and opens as a modal overlay on the City screen for the selected wall-top tower.
 - `src/models/battle/resolveTowerAssembly.ts` resolves stats, support costs, keywords, targeting behavior, warnings, and synergies.
 - Build and Battle share resolved tower state.
 - Tower projectile radius, projectile spread, trigger tolerance, maximum range, minimum range, maximum rotation angle, weight, and maximum supported weapon weight are resolved as homogeneous tower values alongside damage, speed, range, reload, rotation, and area. Rotation speed is authored and displayed in degrees per second, while projectile spread, trigger tolerance, and maximum rotation angle are authored and displayed in degrees. Projectile spread is a full random firing cone applied to every projectile. Battle math converts angle values to radians at runtime. Maximum range, minimum range, and maximum rotation angle default to unlimited when no source contributes them. If multiple sources contribute maximum range or maximum rotation angle, the lower value wins; if multiple sources contribute minimum range, the higher value wins. Tower builds whose resolved weight exceeds their resolved maximum supported weapon weight are invalid until the player adds enough supporting capacity or removes weight.

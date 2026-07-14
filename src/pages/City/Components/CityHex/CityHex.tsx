@@ -86,7 +86,7 @@ type Bounds = {
     maxY: number;
 };
 
-type CameraRuleId = "city" | "battle";
+type CameraRuleId = "city" | "battle" | "tower";
 
 type StageTransform = {
     scale: number;
@@ -115,7 +115,7 @@ export default function CityHex({
     showDebugAxes?: boolean;
     battlefieldHexes?: readonly BattlefieldTerrainHex[];
     battleRuntime?: CityBattleRuntimeConfig | null;
-    cameraFocusRequest?: {target: "city" | "battle"; id: number};
+    cameraFocusRequest?: {target: CameraRuleId; id: number; focusCellKey?: string | null};
     clearSelectionSignal?: number;
     onSelect?: (cell: HexCell | null) => void;
 }) {
@@ -204,6 +204,16 @@ export default function CityHex({
             : battleFocusBounds ?? cityCameraBounds,
         [battleFocusBounds, battleRuntime, cityCameraBounds],
     );
+    const towerCameraBounds = useMemo(() => {
+        const focusCellKey = cameraFocusRequest?.target === "tower"
+            ? cameraFocusRequest.focusCellKey
+            : null;
+        const focusCell = focusCellKey ? preparedCellsByKey.get(focusCellKey) : undefined;
+
+        return focusCell
+            ? getSingleHexCameraBounds(focusCell)
+            : cityCameraBounds;
+    }, [cameraFocusRequest, cityCameraBounds, preparedCellsByKey]);
     const battlefieldCellKeys = useMemo(
         () => new Set(battlefieldHexes.map(hex => hex.cellKey)),
         [battlefieldHexes],
@@ -302,11 +312,15 @@ export default function CityHex({
     }, [applyCamera, cancelCameraAnimation]);
 
     const clampZoomForRule = useCallback((zoom: number, rule: CameraRuleId = activeCameraRule) => {
-        const ruleBounds = rule === "battle" ? battleCameraBounds : cityCameraBounds;
+        if (rule === "tower") {
+            return Math.max(0.1, Math.min(maxZoomFactor, zoom));
+        }
+
+        const ruleBounds = getCameraRuleBounds(rule, cityCameraBounds, battleCameraBounds, towerCameraBounds);
         const minZoomThatCoversViewport = minZoomThatCovers(ruleBounds, viewport.width, viewport.height);
 
         return Math.max(minZoomThatCoversViewport, Math.min(maxZoomFactor, zoom));
-    }, [activeCameraRule, battleCameraBounds, cityCameraBounds, maxZoomFactor, viewport.height, viewport.width]);
+    }, [activeCameraRule, battleCameraBounds, cityCameraBounds, maxZoomFactor, towerCameraBounds, viewport.height, viewport.width]);
 
     const clampCamera = useCallback((
         offsetX: number,
@@ -314,11 +328,11 @@ export default function CityHex({
         zoom: number,
         rule: CameraRuleId = activeCameraRule,
     ): CameraState => {
-        if (cameraClampRulesDisabledRef.current) {
+        if (cameraClampRulesDisabledRef.current || rule === "tower") {
             return {zoom, offsetX, offsetY};
         }
 
-        const ruleBounds = rule === "battle" ? battleCameraBounds : cityCameraBounds;
+        const ruleBounds = getCameraRuleBounds(rule, cityCameraBounds, battleCameraBounds, towerCameraBounds);
         const clamped = clampPan(
             offsetX,
             offsetY,
@@ -335,7 +349,7 @@ export default function CityHex({
             offsetX: clamped.tx,
             offsetY: clamped.ty,
         };
-    }, [activeCameraRule, battleCameraBounds, cityCameraBounds, viewport]);
+    }, [activeCameraRule, battleCameraBounds, cityCameraBounds, towerCameraBounds, viewport]);
 
     const zoomAtViewPoint = useCallback((viewPoint: {x: number; y: number}, targetZoom: number) => {
         const zoom = clampZoomForRule(targetZoom);
@@ -649,11 +663,18 @@ export default function CityHex({
         if (!cameraFocusRequest) return;
 
         const targetRule = cameraFocusRequest.target;
-        const targetBounds = targetRule === "battle"
-            ? battleCameraBounds
-            : cityCameraBounds;
-        const focusZoom = clampZoomForRule(Math.max(CAMERA_FOCUS_ZOOM_FACTOR, zoomFactorRef.current), targetRule);
-        animateCamera(getCameraCenteredOnBounds(targetBounds, viewport, focusZoom), () => {
+        const targetBounds = getCameraRuleBounds(targetRule, cityCameraBounds, battleCameraBounds, towerCameraBounds);
+        const focusZoom = targetRule === "tower"
+            ? maxZoomFactor
+            : clampZoomForRule(Math.max(CAMERA_FOCUS_ZOOM_FACTOR, zoomFactorRef.current), targetRule);
+        const towerFocusViewPoint = targetRule === "tower"
+            ? getTowerOpeningCenterViewPoint(hostRef.current, canvasSize, viewport)
+            : null;
+        const targetCamera = towerFocusViewPoint
+            ? getCameraFocusedOnBoundsAtViewPoint(targetBounds, towerFocusViewPoint, focusZoom)
+            : getCameraCenteredOnBounds(targetBounds, viewport, focusZoom);
+
+        animateCamera(targetCamera, () => {
             applyCamera(clampCamera(
                 cameraOffsetRef.current.x,
                 cameraOffsetRef.current.y,
@@ -667,9 +688,12 @@ export default function CityHex({
         applyCamera,
         battleCameraBounds,
         cameraFocusRequest,
+        canvasSize,
         cityCameraBounds,
         clampCamera,
         clampZoomForRule,
+        maxZoomFactor,
+        towerCameraBounds,
         viewport,
     ]);
 
@@ -1393,6 +1417,26 @@ function getBattleCameraRuleBounds(battleRuntime: CityBattleRuntimeConfig): Boun
     };
 }
 
+function getSingleHexCameraBounds(cell: PreparedHexCell): Bounds {
+    return {
+        minX: cell.centerX - HEX_WIDTH / 2,
+        minY: cell.centerY - HEX_RADIUS_PX,
+        maxX: cell.centerX + HEX_WIDTH / 2,
+        maxY: cell.centerY + HEX_RADIUS_PX,
+    };
+}
+
+function getCameraRuleBounds(
+    rule: CameraRuleId,
+    cityCameraBounds: Bounds,
+    battleCameraBounds: Bounds,
+    towerCameraBounds: Bounds,
+): Bounds {
+    if (rule === "battle") return battleCameraBounds;
+    if (rule === "tower") return towerCameraBounds;
+    return cityCameraBounds;
+}
+
 function mergeVerticalBounds(primary: Bounds, secondary: Bounds | null): Bounds {
     if (!secondary) return primary;
 
@@ -1425,6 +1469,41 @@ function getCameraCenteredOnBounds(bounds: Bounds, viewport: Viewport, zoom: num
         offsetX: viewportCenterX - targetCenterX * zoom,
         offsetY: viewportCenterY - targetCenterY * zoom,
     };
+}
+
+function getCameraFocusedOnBoundsAtViewPoint(
+    bounds: Bounds,
+    viewPoint: {x: number; y: number},
+    zoom: number,
+): CameraState {
+    const targetCenterX = (bounds.minX + bounds.maxX) / 2;
+    const targetCenterY = (bounds.minY + bounds.maxY) / 2;
+
+    return {
+        zoom,
+        offsetX: viewPoint.x - targetCenterX * zoom,
+        offsetY: viewPoint.y - targetCenterY * zoom,
+    };
+}
+
+function getTowerOpeningCenterViewPoint(
+    hostElement: HTMLElement | null,
+    canvasSize: {width: number; height: number},
+    viewport: Viewport,
+) {
+    const openingElement = document.querySelector('[data-tower-viewport-opening="true"]');
+    if (!hostElement || !(openingElement instanceof HTMLElement)) return null;
+
+    const hostRect = hostElement.getBoundingClientRect();
+    const openingRect = openingElement.getBoundingClientRect();
+    const transform = getStageTransform(canvasSize.width, canvasSize.height, viewport);
+
+    return screenToViewPoint(
+        openingRect.left + openingRect.width / 2 - hostRect.left,
+        openingRect.top + openingRect.height / 2 - hostRect.top,
+        transform,
+        viewport,
+    );
 }
 
 function lerp(start: number, end: number, progress: number) {

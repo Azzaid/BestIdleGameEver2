@@ -11,111 +11,36 @@ export const buildPage = style({
   gap: '10px',
   maxWidth: '1280px',
   margin: '0 auto',
-  padding: '10px max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px))',
+  padding: '0 max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px))',
   '@media': {
     '(max-width: 700px)': {
       gap: '8px',
-      padding: '6px max(6px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px))',
+      padding: '0 max(6px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px))',
     },
   },
 });
 
-export const assemblyPanel = style([
-  hud.compactPanel,
-  {
-  overflow: 'hidden',
-  },
-]);
-
-export const towerSelector = style({
-  display: 'flex',
-  gap: '2px',
-  overflowX: 'auto',
-  padding: '4px 6px 0',
-  WebkitOverflowScrolling: 'touch',
-  scrollbarWidth: 'none',
-  selectors: {
-    '&::-webkit-scrollbar': {
-      display: 'none',
-    },
-  },
-});
-
-export const towerSelectorButton = style({
-  display: 'inline-flex',
-  alignItems: 'center',
-  maxWidth: '180px',
-  minHeight: '28px',
-  padding: '4px 9px',
-  border: `1px solid ${hud.hudBorder}`,
-  borderBottom: 0,
-  borderRadius: '4px 4px 0 0',
-  backgroundColor: hud.hudAccentSoft,
-  color: hud.hudText,
-  cursor: 'pointer',
-  whiteSpace: 'nowrap',
-  selectors: {
-    '&:hover': {
-      borderColor: hud.hudAccent,
-    },
-  },
-});
-
-export const towerSelectorButtonActive = style({
-  borderColor: hud.hudAccent,
-  backgroundColor: hud.hudAccentSoft,
-  color: hud.hudText,
-});
-
-export const towerSelectorName = style({
-  minWidth: 0,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-  fontSize: '13px',
-  fontWeight: 700,
+export const assemblyPanel = style({
+  display: 'grid',
+  gap: '10px',
+  overflow: 'visible',
 });
 
 export const assemblyGrid = style({
   display: 'grid',
-  gridTemplateColumns: 'minmax(260px, 1fr) minmax(0, 2fr)',
-    backgroundColor: 'transparent',
-    border: `1px solid ${hud.hudBorder}`,
-    borderRadius: '4px',
-  gap: 0,
+  gridTemplateColumns: '1fr',
+  backgroundColor: 'transparent',
+  gap: '10px',
   alignItems: 'stretch',
-  '@media': {
-    '(max-width: 900px)': {
-      gridTemplateColumns: '1fr',
-    },
-  },
 });
 
-export const towerPreview = style({
-  display: 'flex',
-  minHeight: '300px',
-  borderRight: `1px solid ${hud.hudBorder}`,
-  '@media': {
-    '(max-width: 900px)': {
-      borderRight: 0,
-      borderBottom: `1px solid ${hud.hudBorder}`,
-    },
-    '(max-width: 700px)': {
-      minHeight: '220px',
-    },
-  },
-});
-
-export const towerImage = style({
-  flex: 1,
-  position: 'relative',
-  minHeight: '300px',
-  overflow: 'hidden',
-  borderRadius: '4px',
-  background: `linear-gradient(180deg, ${vars.color.background.surface}, ${vars.color.background.surfaceHover})`,
+export const towerViewportOpening = style({
+  width: 'min(100%, 760px)',
+  margin: '0 auto',
+  pointerEvents: 'none',
   '@media': {
     '(max-width: 700px)': {
-      minHeight: '220px',
+      minHeight: 'min(512px, 58dvh)',
     },
   },
 });
@@ -151,18 +76,20 @@ export const slotLabel = style({
   textTransform: 'uppercase',
 });
 
-export const towerStats = style({
+export const towerStats = style([
+  hud.compactPanel,
+  {
   display: 'flex',
   flexDirection: 'column',
   padding: '10px',
-    borderRadius: '4px',
-  backgroundColor: 'transparent',
+  borderRadius: '4px',
   '@media': {
     '(max-width: 700px)': {
       padding: '8px',
     },
   },
-});
+  },
+]);
 
 export const slotStrip = style({
   display: 'flex',
@@ -183,6 +110,28 @@ export const panelTitle = style({
   margin: 0,
   fontSize: '16px',
 });
+
+export const panelHeader = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '8px',
+});
+
+export const panelCloseButton = style([
+  hud.secondaryButton,
+  {
+  flex: '0 0 auto',
+  display: 'grid',
+  placeItems: 'center',
+  width: '26px',
+  height: '26px',
+  minHeight: '26px',
+  padding: 0,
+  fontSize: '14px',
+  lineHeight: 1,
+  },
+]);
 
 export const weightCapacityPanel = style([
   hud.compactPanel,

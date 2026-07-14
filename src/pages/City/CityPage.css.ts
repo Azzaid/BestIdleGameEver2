@@ -167,6 +167,16 @@ export const overlayControl = style({
     pointerEvents: 'auto',
 });
 
+export const towerEditorLayer = style({
+    position: 'absolute',
+    inset: 0,
+    zIndex: 7,
+    overflowY: 'auto',
+    pointerEvents: 'auto',
+    scrollbarGutter: 'stable',
+    WebkitOverflowScrolling: 'touch',
+});
+
 export const selectionPanel = style({
     display: 'grid',
     gap: '8px',

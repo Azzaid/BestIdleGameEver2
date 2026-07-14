@@ -67,6 +67,11 @@ import {getAxialDistance} from "../../models/city/expansion.ts";
 import type {CityExpansionOption} from "../../models/city/expansion.ts";
 import {selectIsDebugModeEnabled} from "../../store/debug/selectors.ts";
 import {useCityCanvasInteraction} from "./cityCanvasInteraction.tsx";
+import BuildPage from "../Build/BuildPage.tsx";
+import {selectAvailableTowerList} from "../../store/towers/selectors.ts";
+import {selectTower} from "../../store/towers/slice.ts";
+import {selectWorldViewMode} from "../../store/worldView/selectors.ts";
+import {setWorldViewMode} from "../../store/worldView/slice.ts";
 
 const EXPAND_WARNING = "City grows bigger, more noticeable and attracts more monsters";
 const LOST_TERRITORY_BLOCK_REASON = "Lost territory must be reclaimed before it can work, transform, or be rebuilt.";
@@ -81,8 +86,10 @@ const CityPage = () => {
     const builtStructureIds = useTypedSelector(selectBuiltStructureIds);
     const structureCandidates = useTypedSelector(selectCityStructureCandidates);
     const wallResolution = useTypedSelector(selectWallResolution);
+    const towers = useTypedSelector(selectAvailableTowerList);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
+    const worldViewMode = useTypedSelector(selectWorldViewMode);
     const {effectiveUpkeep} = cityResolution;
     const unlockedBuildingIds = useTypedSelector(selectUnlockedBuildingIds);
     const visibleBuildingIds = useTypedSelector(selectVisibleBuildingIds);
@@ -254,6 +261,33 @@ const CityPage = () => {
         });
     };
 
+    const wallTowerHexes = useMemo(
+        () => [...hexes]
+            .filter((hex) => {
+                if (hex.kind !== "wall" || !hex.wallTopKey) return false;
+
+                const wallTopBuilding = WALL_SUPERSTRUCTURE_BUILDINGS[hex.wallTopKey];
+
+                return Boolean(wallTopBuilding && isWallTopTower(wallTopBuilding));
+            })
+            .sort((left, right) => left.column - right.column),
+        [hexes],
+    );
+
+    const handleEditSelectedWallTopTower = () => {
+        if (!selectedHex || selectedHex.kind !== "wall" || !selectedHex.wallTopKey) return;
+
+        const selectedWallTop = WALL_SUPERSTRUCTURE_BUILDINGS[selectedHex.wallTopKey];
+        if (!selectedWallTop || !isWallTopTower(selectedWallTop)) return;
+
+        const towerIndex = wallTowerHexes.findIndex(hex => hex.cellKey === selectedHex.cellKey);
+        const tower = towerIndex >= 0 ? towers[towerIndex] : undefined;
+        if (!tower) return;
+
+        dispatch(selectTower({towerId: tower.id}));
+        dispatch(setWorldViewMode("tower"));
+    };
+
     const handleBuildStructure = (structureId: string, coreCellKey: string) => {
         if (!selectedHex || selectedHex.isLost) return;
         if (!unlockedBuildingIdSet.has(structureId)) return;
@@ -298,6 +332,12 @@ const CityPage = () => {
     const selectedHexIsPartOfCompleteStructure = selectedHex
         ? Boolean(selectedHex.partOfStructureId)
         : false;
+    const towerEditorOpen = worldViewMode === "tower"
+        && Boolean(
+            selectedHex?.kind === "wall"
+            && selectedWallTopBuilding
+            && isWallTopTower(selectedWallTopBuilding)
+        );
 
     return (
         <div className={s.cityPage}>
@@ -328,6 +368,7 @@ const CityPage = () => {
                         onBuildStructure={handleBuildStructure}
                         onDemolish={handleDemolishSelectedHex}
                         onDemolishWallTop={handleDemolishSelectedWallTop}
+                        onEditWallTopTower={handleEditSelectedWallTopTower}
                     />
                     {selectedHex.isLost
                         ? <p className={s.buildingLockedNote}>
@@ -362,6 +403,11 @@ const CityPage = () => {
                     }
                 </div>
             }
+            {towerEditorOpen && (
+                <section className={s.towerEditorLayer} role="dialog" aria-modal="true" aria-label="Tower editor">
+                    <BuildPage onCloseTowerEdit={() => dispatch(setWorldViewMode("city"))} />
+                </section>
+            )}
             {selectedExpansionOption && (
                 <div className={s.overlayControl}>
                     <ConfirmationModal
@@ -535,6 +581,7 @@ function SelectedHexPanel({
     onBuildStructure,
     onDemolish,
     onDemolishWallTop,
+    onEditWallTopTower,
 }: SelectedHexPanelProps) {
     const selectionTitle = getSelectionTitle(selectedHex, selectedBuilding, selectedWallBuilding, selectedWallTopBuilding);
     const selectionCoordinates = `${selectedHex.column}:${selectedHex.row}`;
@@ -619,6 +666,17 @@ function SelectedHexPanel({
                     <h3 className={s.statHeading}>On wall: {selectedWallTopBuilding.name}</h3>
                     <WallStats wallBuilding={selectedWallTopBuilding} />
                     <p className={s.panelDescription}>{selectedWallTopBuilding.description}</p>
+                    {isWallTopTower(selectedWallTopBuilding) && (
+                        <button
+                            className={s.wallBuildButton}
+                            type="button"
+                            disabled={actionBlocked}
+                            title={actionBlocked ? actionBlockedReason : undefined}
+                            onClick={onEditWallTopTower}
+                        >
+                            Edit tower
+                        </button>
+                    )}
                     <button
                         className={s.demolishButton}
                         type="button"

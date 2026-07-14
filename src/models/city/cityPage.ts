@@ -26,4 +26,5 @@ export type SelectedHexPanelProps = {
     onBuildStructure: (structureId: string, coreCellKey: string) => void;
     onDemolish: () => void;
     onDemolishWallTop: () => void;
+    onEditWallTopTower: () => void;
 };
