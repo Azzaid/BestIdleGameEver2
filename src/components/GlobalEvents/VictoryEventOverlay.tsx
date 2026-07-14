@@ -1,14 +1,12 @@
 import type {CSSProperties} from "react";
-import {useNavigate} from "react-router-dom";
 import {GLOBAL_EVENTS} from "../../data/globalEvents/index.ts";
 import {clearPendingVictoryEvent} from "../../store/globalEvents/slice.ts";
 import {selectPendingVictoryEvent} from "../../store/globalEvents/selectors.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import * as s from "./VictoryEventOverlay.css.ts";
 
-export function VictoryEventOverlay() {
+export function VictoryEventOverlay({onOpenHistory}: {onOpenHistory: () => void}) {
   const dispatch = useTypedDispatch();
-  const navigate = useNavigate();
   const pendingVictoryEvent = useTypedSelector(selectPendingVictoryEvent);
   if (!pendingVictoryEvent) return null;
 
@@ -22,7 +20,7 @@ export function VictoryEventOverlay() {
 
   const openHistory = () => {
     close();
-    navigate("/history");
+    onOpenHistory();
   };
 
   return (

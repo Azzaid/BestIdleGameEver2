@@ -28,6 +28,63 @@ export const cityPage = style({
     },
 });
 
+export const historyBookButton = style([
+    hud.compactPanel,
+    {
+        position: 'absolute',
+        top: '8px',
+        left: 'max(8px, env(safe-area-inset-left, 0px))',
+        zIndex: 8,
+        width: '42px',
+        height: '42px',
+        minHeight: '42px',
+        display: 'grid',
+        placeItems: 'center',
+        padding: 0,
+        borderColor: hud.hudBorder,
+        background: `linear-gradient(145deg, ${hud.hudAccentSoft}, color-mix(in oklab, ${vars.color.background.surface} 74%, transparent))`,
+        color: vars.color.text.heading,
+        cursor: 'pointer',
+        pointerEvents: 'auto',
+        transition: 'transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease',
+        selectors: {
+            '&:hover': {
+                transform: 'translateY(-1px)',
+                borderColor: hud.hudAccent,
+                boxShadow: `0 0 18px color-mix(in oklab, ${hud.hudAccent} 30%, transparent), 0 8px 22px rgba(0, 0, 0, 0.2)`,
+            },
+            '&:focus-visible': {
+                outline: `2px solid ${hud.hudAccent}`,
+                outlineOffset: 2,
+            },
+        },
+    },
+]);
+
+export const historyBookIcon = style({
+    width: '24px',
+    height: '24px',
+});
+
+export const historyBookBadge = style({
+    position: 'absolute',
+    top: '-5px',
+    right: '-5px',
+    minWidth: '18px',
+    height: '18px',
+    display: 'grid',
+    placeItems: 'center',
+    padding: '0 4px',
+    border: `1px solid ${vars.color.background.surface}`,
+    borderRadius: 999,
+    background: vars.color.state.warning,
+    color: vars.color.text.heading,
+    fontSize: '0.64rem',
+    fontWeight: 900,
+    lineHeight: 1,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.24)',
+});
+
 export const globalEffectsShell = style({
     position: 'absolute',
     top: 0,

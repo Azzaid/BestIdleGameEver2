@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {type CSSProperties, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import CityHex from "./Components/CityHex/CityHex.tsx";
 import * as s from "./CityWorldUnderlay.css.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
@@ -79,8 +79,10 @@ function toPercent(value: number, max: number) {
 
 export function CityWorldUnderlay({
     interactive,
+    topInsetPx = 0,
 }: {
     interactive: boolean;
+    topInsetPx?: number;
 }) {
     const dispatch = useTypedDispatch();
     const allHexes = useTypedSelector(selectAllCityHexes);
@@ -472,17 +474,22 @@ export function CityWorldUnderlay({
 
         return undefined;
     };
+    const worldUnderlayStyle = {
+        pointerEvents: interactive ? "auto" : "none",
+        "--city-world-top-inset": `${topInsetPx}px`,
+    } as CSSProperties;
 
     return (
         <div
             className={s.worldUnderlay}
             aria-hidden={!interactive}
-            style={{pointerEvents: interactive ? "auto" : "none"}}
+            style={worldUnderlayStyle}
         >
             <div className={s.cityCanvas}>
                 <CityHex
                     cells={allHexes}
                     biome={cityBiome}
+                    topInsetPx={topInsetPx}
                     expansionOptions={cityExpansionOptions}
                     getExpansionDisabledReason={getExpansionDisabledReason}
                     showDebugAxes={isDebugModeEnabled}
@@ -518,22 +525,32 @@ export function CityWorldUnderlay({
                     </div>
                 </>
             )}
-            <div className={s.cameraControls} aria-hidden={!interactive}>
-                <button
-                    className={s.cameraButton}
-                    type="button"
-                    onClick={() => requestWorldViewMode("battle")}
-                >
-                    ↑ Battle
-                </button>
-                <button
-                    className={s.cameraButton}
-                    type="button"
-                    onClick={() => requestWorldViewMode("city")}
-                >
-                    ↓ City
-                </button>
-            </div>
+            {interactive && worldViewMode === "city" && (
+                <div className={`${s.cameraControls} ${s.cameraControlsCity}`}>
+                    <button
+                        className={`${s.cameraButton} ${s.cameraButtonUp}`}
+                        type="button"
+                        aria-label="View battle"
+                        title="View battle"
+                        onClick={() => requestWorldViewMode("battle")}
+                    >
+                        {"\u2191"}
+                    </button>
+                </div>
+            )}
+            {interactive && worldViewMode === "battle" && (
+                <div className={`${s.cameraControls} ${s.cameraControlsBattle}`}>
+                    <button
+                        className={`${s.cameraButton} ${s.cameraButtonDown}`}
+                        type="button"
+                        aria-label="View city"
+                        title="View city"
+                        onClick={() => requestWorldViewMode("city")}
+                    >
+                        {"\u2193"}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

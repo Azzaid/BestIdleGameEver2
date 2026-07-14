@@ -37,7 +37,7 @@ The current app is a frontend-only prototype with multiple routed views:
 - City: Pixi/canvas world rendering with clickable city and wall tiles, city-continuation battlefield terrain beyond the wall, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
 - Build: tower assembly from component slots with resolved stats, support costs, warnings, keywords, and synergies.
 - Research: radial research tree with unlockable nodes and vector coloring.
-- History: happened global events with remembered new-event scrolling and foreseen event hints.
+- City-hosted History: happened global events with remembered new-event scrolling and foreseen event hints, opened from the City screen as an overlay chronicle.
 - Debug/content tools: progression graph, ID audit, entity creation, monster editing, gun part editor, global events editor, homogeneous values editor, and hex background editor. These tools are development-only surfaces and are kept behind `import.meta.env.DEV` route and import boundaries.
 
 The prototype has no backend. Core Redux gameplay progress is saved in browser `localStorage` and restored on reload.
@@ -58,7 +58,7 @@ Current stack:
 Entry points and app shell:
 
 - `src/main.tsx` loads global styles and renders the app.
-- `src/App.tsx` wires `Provider`, `ThemeProvider`, the outer app error boundary, `HashRouter`, navigation, game routes, lazy development-tool route gating, content auto-unlock hooks, global event signals/history navigation, notifications, and the shared upkeep bar.
+- `src/App.tsx` wires `Provider`, `ThemeProvider`, the outer app error boundary, `HashRouter`, navigation, game routes, lazy development-tool route gating, content auto-unlock hooks, global event signals/history modal opening, notifications, and the shared upkeep bar.
 - `src/store` contains Redux setup, slices, typed hooks, and selectors. `src/store/worldView` owns the current world screen mode (`city`, `battle`, or `tower`) so UI components and mechanics can show, hide, enable, or pause behavior based on whether the player is focused on city building, the battlefield, or a selected tower edit overlay.
 - `src/devtools` contains development-only route/nav modules and devtools UI state. Devtools UI state is persisted separately from the gameplay save and should not be added to the game Redux persistence payload.
 - `src/theme` contains the vanilla-extract theme contract and runtime theme provider.
@@ -69,7 +69,7 @@ Primary routes:
 - `/build` redirects to `/city`; tower assembly opens as a city-screen tower mode overlay from a selected wall-top tower.
 - `/research` renders research.
 - `/city` renders the city view.
-- `/history` renders happened global events and foreseen event hints.
+- History is opened from `/city` through the book control and force-level event modal path; legacy `/history` URLs redirect back to `/city`.
 - `/progression`, `/ids`, `/entity-create/:entityId`, `/content-plan`, `/monster-edit/:monsterId`, `/gun-part-editor`, `/global-events`, `/homogeneous-values`, and `/hex-background-editor` are debug-mode tools available only in development builds.
 
 Important directories:
@@ -231,7 +231,7 @@ Unlocked technologies may contribute city-wide homogeneous values and effects. T
 
 Global events use `GlobalEventDefinition` data to unify migrations, catastrophes, endings, cutscenes, victories, and later meta-game events. A global event is driven by a trigger, requirements, optional blocking requirements, notification level, optional hint text, optional foreseen event ids, and actions. Events should decide that an action happens, but should not calculate gameplay values or effects directly.
 
-Runtime event triggering flows through the global signal system. Gameplay code emits domain-level messages such as game start, city expansion, migration, building discovery, building construction, technology unlock, siege start, siege success, siege failure, and requirements changed. The global event signal hook is the single processor that compares pending messages against global event definitions, checks requirements against current state or an attached message snapshot, applies actions, updates unique executed event ids, appends every happened event to History, updates foreseen-event ids, emits notifications and a History nav marker for notify-level events, redirects force-level events to the History page, and opens a full-screen VFX overlay for victory-level events. Silent events still enter History, but do not raise player-facing UI by themselves. Direct feature-level execution of global events should be avoided; features should emit signals instead.
+Runtime event triggering flows through the global signal system. Gameplay code emits domain-level messages such as game start, city expansion, migration, building discovery, building construction, technology unlock, siege start, siege success, siege failure, and requirements changed. The global event signal hook is the single processor that compares pending messages against global event definitions, checks requirements against current state or an attached message snapshot, applies actions, updates unique executed event ids, appends every happened event to History, updates foreseen-event ids, emits notifications and a History book marker for notify-level events, opens the City-hosted History modal for force-level events, and opens a full-screen VFX overlay for victory-level events. Silent events still enter History, but do not raise player-facing UI by themselves. Direct feature-level execution of global events should be avoided; features should emit signals instead.
 
 Persistent meta-game bonuses use `GlobalModifierDefinition` data. Applying a global modifier loads the existing modifier instance from Redux save state, creates it if missing, runs the modifier's `applyRules`, updates internal state, and saves the same instance back under its modifier id. Reapplying the same modifier updates accumulated state instead of creating duplicates. Global events can also remove an active global modifier by id, which deletes its saved instance and removes its homogeneous effects from later city resolution. Global modifier effects are generated from the current modifier state and enter effective city resolution as standard homogeneous value effects, alongside technology effects.
 

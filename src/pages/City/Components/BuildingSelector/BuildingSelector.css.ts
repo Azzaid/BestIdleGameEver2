@@ -17,17 +17,21 @@ export const tabs = style({
     flexWrap: "wrap",
 });
 
+export const tabVector = hud.vectorVars;
+
 export const tabButton = styleVariants({
     active: {
         display: "inline-flex",
         alignItems: "center",
         gap: tokens.space.xs,
         padding: `${tokens.space.xs} ${tokens.space.md}`,
-        borderRadius: tokens.radius.pill,
+        borderRadius: tokens.radius.md,
         border: `1px solid ${hud.hudBorder}`,
-        background: hud.hudAccentSoft,
+        background: `linear-gradient(180deg, color-mix(in oklab, ${hud.hudAccent} 34%, ${hud.hudSurface}), color-mix(in oklab, ${hud.hudAccent} 20%, transparent))`,
         color: hud.hudText,
+        boxShadow: `0 0 16px color-mix(in oklab, ${hud.hudAccent} 34%, transparent), inset 0 0 0 1px rgba(255, 255, 255, 0.12)`,
         fontSize: tokens.font.md,
+        fontWeight: 900,
         cursor: "pointer",
         selectors: {
             "&[disabled]": { opacity: 0.4, cursor: "not-allowed" },
@@ -38,14 +42,22 @@ export const tabButton = styleVariants({
         alignItems: "center",
         gap: tokens.space.xs,
         padding: `${tokens.space.xs} ${tokens.space.md}`,
-        borderRadius: tokens.radius.pill,
-        border: `1px solid ${vars.color.border.default}`,
-        background: "color-mix(in oklab, transparent 70%, white 3%)",
-        color: vars.color.text.primary,
+        borderRadius: tokens.radius.md,
+        border: `1px solid color-mix(in oklab, ${hud.hudAccent} 56%, transparent)`,
+        background: `linear-gradient(180deg, ${hud.hudAccentSoft}, color-mix(in oklab, ${hud.hudSurface} 42%, transparent))`,
+        color: hud.hudText,
+        boxShadow: `0 0 10px color-mix(in oklab, ${hud.hudAccent} 20%, transparent)`,
         fontSize: tokens.font.md,
+        fontWeight: 800,
         cursor: "pointer",
+        opacity: 0.82,
         selectors: {
-            "&:hover:not([disabled])": { background: hud.hudAccentSoft, borderColor: hud.hudBorder },
+            "&:hover:not([disabled])": {
+                opacity: 1,
+                background: `linear-gradient(180deg, color-mix(in oklab, ${hud.hudAccent} 26%, ${hud.hudSurface}), ${hud.hudAccentSoft})`,
+                borderColor: hud.hudAccent,
+                boxShadow: `0 0 16px color-mix(in oklab, ${hud.hudAccent} 30%, transparent)`,
+            },
             "&[disabled]": { opacity: 0.4, cursor: "not-allowed" },
         },
     },
@@ -54,9 +66,10 @@ export const tabButton = styleVariants({
 export const tabDot = style({
     width: 10,
     height: 10,
-    borderRadius: "50%",
+    borderRadius: 3,
     background: "currentColor",
-    opacity: 0.7,
+    opacity: 0.92,
+    boxShadow: "0 0 10px currentColor",
 });
 
 export const tabLabel = style({

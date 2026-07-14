@@ -38,6 +38,7 @@ const EXPANSION_ARROW_HALF_HEIGHT = HEX_RADIUS_PX / 2;
 const MIN_EXPANSION_ARROW_SCALE = 0.56;
 const EXPANSION_ARROW_SCALE_PER_RADIUS = 0.14;
 const MAX_EXPANSION_ARROW_SCALE = 1.26;
+const TOP_EXPANSION_ARROW_WALL_PROXIMITY = 0.46;
 const AVAILABLE_EXPANSION_ARROW_OPACITY = 0.42;
 const DISABLED_EXPANSION_ARROW_OPACITY = 0.18;
 const UNCLAIMED_LAND_SHADE_OPACITY = 0.5;
@@ -101,6 +102,7 @@ export default function CityHex({
     getExpansionDisabledReason,
     onExpandSide,
     showDebugAxes = false,
+    topInsetPx = 0,
     battlefieldHexes = [],
     battleRuntime,
     cameraFocusRequest,
@@ -113,6 +115,7 @@ export default function CityHex({
     getExpansionDisabledReason?: (option: CityExpansionOption) => string | undefined;
     onExpandSide?: (sideId: CityExpansionSideId) => void;
     showDebugAxes?: boolean;
+    topInsetPx?: number;
     battlefieldHexes?: readonly BattlefieldTerrainHex[];
     battleRuntime?: CityBattleRuntimeConfig | null;
     cameraFocusRequest?: {target: CameraRuleId; id: number; focusCellKey?: string | null};
@@ -137,6 +140,8 @@ export default function CityHex({
     const cameraStartRef = useRef({x: 0, y: 0});
     const cameraAnimationFrameRef = useRef<number | null>(null);
     const cameraClampRulesDisabledRef = useRef(false);
+    const handledCameraFocusRequestKeyRef = useRef<string | null>(null);
+    const previousCityInteractionsEnabledRef = useRef(true);
     const [canvasSize, setCanvasSize] = useState({width: 0, height: 0});
     const [pixiSceneReadyId, setPixiSceneReadyId] = useState(0);
     const canvasIsReady = canvasSize.width > 0 && canvasSize.height > 0;
@@ -148,6 +153,8 @@ export default function CityHex({
     const [hoveredCellKey, setHoveredCellKey] = useState<string | null>(null);
     const [selectedCellKey, setSelectedCellKey] = useState<string | null>(null);
     const [activeCameraRule, setActiveCameraRule] = useState<CameraRuleId>("city");
+    const requestedCameraRule = cameraFocusRequest?.target ?? activeCameraRule;
+    const cityInteractionsEnabled = requestedCameraRule !== "battle";
 
     const preparedCells = useMemo<PreparedHexCell[]>(() => cells.map(cell => {
         const {x, y} = axialCoordinateToPixelPosition(cell, HEX_RADIUS_PX, HEX_EDGE_GAP_PX);
@@ -225,6 +232,10 @@ export default function CityHex({
         width: viewExtent * 2,
         height: viewExtent * 2,
     }), [viewExtent]);
+    const cameraClampViewport = useMemo(
+        () => getCameraClampViewport(viewport, canvasSize, topInsetPx),
+        [canvasSize, topInsetPx, viewport],
+    );
     const maxZoomFactor = useMemo(
         () => getMaxZoomForNaturalHexSize(canvasSize.width, canvasSize.height, viewport),
         [canvasSize.height, canvasSize.width, viewport],
@@ -317,10 +328,10 @@ export default function CityHex({
         }
 
         const ruleBounds = getCameraRuleBounds(rule, cityCameraBounds, battleCameraBounds, towerCameraBounds);
-        const minZoomThatCoversViewport = minZoomThatCovers(ruleBounds, viewport.width, viewport.height);
+        const minZoomThatCoversViewport = minZoomThatCovers(ruleBounds, cameraClampViewport.width, cameraClampViewport.height);
 
         return Math.max(minZoomThatCoversViewport, Math.min(maxZoomFactor, zoom));
-    }, [activeCameraRule, battleCameraBounds, cityCameraBounds, maxZoomFactor, towerCameraBounds, viewport.height, viewport.width]);
+    }, [activeCameraRule, battleCameraBounds, cameraClampViewport.height, cameraClampViewport.width, cityCameraBounds, maxZoomFactor, towerCameraBounds]);
 
     const clampCamera = useCallback((
         offsetX: number,
@@ -338,10 +349,10 @@ export default function CityHex({
             offsetY,
             zoom,
             ruleBounds,
-            viewport.x,
-            viewport.y,
-            viewport.width,
-            viewport.height,
+            cameraClampViewport.x,
+            cameraClampViewport.y,
+            cameraClampViewport.width,
+            cameraClampViewport.height,
         );
 
         return {
@@ -349,7 +360,7 @@ export default function CityHex({
             offsetX: clamped.tx,
             offsetY: clamped.ty,
         };
-    }, [activeCameraRule, battleCameraBounds, cityCameraBounds, towerCameraBounds, viewport]);
+    }, [activeCameraRule, battleCameraBounds, cameraClampViewport, cityCameraBounds, towerCameraBounds]);
 
     const zoomAtViewPoint = useCallback((viewPoint: {x: number; y: number}, targetZoom: number) => {
         const zoom = clampZoomForRule(targetZoom);
@@ -385,6 +396,8 @@ export default function CityHex({
     }, [getViewPointFromPointerEvent]);
 
     const selectWorldPoint = useCallback((worldPoint: {x: number; y: number}) => {
+        if (!cityInteractionsEnabled) return;
+
         const {column, row} = pixelPositionToAxialCoordinate(worldPoint.x, worldPoint.y, HEX_RADIUS_PX);
         const cellKey = coordKey({column, row});
         const selectedCell = cellsByKey.get(cellKey);
@@ -402,11 +415,12 @@ export default function CityHex({
 
         onSelect(selectedCoreCell);
         setSelectedCellKey(selectedCoreCell.cellKey);
-    }, [cellsByKey, onSelect, selectedCellKey]);
+    }, [cellsByKey, cityInteractionsEnabled, onSelect, selectedCellKey]);
 
     const inputHandlersRef = useRef({
         applyCamera,
         cancelCameraAnimation,
+        cityInteractionsEnabled,
         clampCamera,
         getViewPointFromPointerEvent,
         getWorldPointFromPointerEvent,
@@ -418,6 +432,7 @@ export default function CityHex({
         inputHandlersRef.current = {
             applyCamera,
             cancelCameraAnimation,
+            cityInteractionsEnabled,
             clampCamera,
             getViewPointFromPointerEvent,
             getWorldPointFromPointerEvent,
@@ -427,6 +442,7 @@ export default function CityHex({
     }, [
         applyCamera,
         cancelCameraAnimation,
+        cityInteractionsEnabled,
         clampCamera,
         getViewPointFromPointerEvent,
         getWorldPointFromPointerEvent,
@@ -437,6 +453,20 @@ export default function CityHex({
     useEffect(() => {
         setSelectedCellKey(null);
     }, [clearSelectionSignal]);
+
+    useEffect(() => {
+        if (cityInteractionsEnabled) {
+            previousCityInteractionsEnabledRef.current = true;
+            return;
+        }
+
+        if (!previousCityInteractionsEnabledRef.current) return;
+
+        previousCityInteractionsEnabledRef.current = false;
+        setHoveredCellKey(null);
+        setSelectedCellKey(null);
+        onSelect(null);
+    }, [cityInteractionsEnabled, onSelect]);
 
     useEffect(() => {
         const host = hostRef.current;
@@ -546,6 +576,10 @@ export default function CityHex({
 
                 const worldPoint = inputHandlersRef.current.getWorldPointFromPointerEvent(event);
                 if (!worldPoint) return;
+                if (!inputHandlersRef.current.cityInteractionsEnabled) {
+                    setHoveredCellKey(null);
+                    return;
+                }
 
                 const {column, row} = pixelPositionToAxialCoordinate(worldPoint.x, worldPoint.y, HEX_RADIUS_PX);
                 setHoveredCellKey(coordKey({column, row}));
@@ -661,6 +695,15 @@ export default function CityHex({
 
     useEffect(() => {
         if (!cameraFocusRequest) return;
+        if (!canvasIsReady) return;
+
+        const requestKey = [
+            cameraFocusRequest.target,
+            cameraFocusRequest.id,
+            cameraFocusRequest.focusCellKey ?? "",
+        ].join(":");
+        if (handledCameraFocusRequestKeyRef.current === requestKey) return;
+        handledCameraFocusRequestKeyRef.current = requestKey;
 
         const targetRule = cameraFocusRequest.target;
         const targetBounds = getCameraRuleBounds(targetRule, cityCameraBounds, battleCameraBounds, towerCameraBounds);
@@ -672,7 +715,7 @@ export default function CityHex({
             : null;
         const targetCamera = towerFocusViewPoint
             ? getCameraFocusedOnBoundsAtViewPoint(targetBounds, towerFocusViewPoint, focusZoom)
-            : getCameraCenteredOnBounds(targetBounds, viewport, focusZoom);
+            : getCameraCenteredOnBounds(targetBounds, cameraClampViewport, focusZoom);
 
         animateCamera(targetCamera, () => {
             applyCamera(clampCamera(
@@ -688,6 +731,8 @@ export default function CityHex({
         applyCamera,
         battleCameraBounds,
         cameraFocusRequest,
+        cameraClampViewport,
+        canvasIsReady,
         canvasSize,
         cityCameraBounds,
         clampCamera,
@@ -721,16 +766,16 @@ export default function CityHex({
                 cellsByKey,
                 battlefieldCellKeys,
                 claimedRadius,
-                hoveredCellKey,
-                selectedCellKey,
-                hoveredOutlineCells,
-                selectedOutlineCells,
-                hoveredOutlineKey,
-                selectedOutlineKey,
+                hoveredCellKey: cityInteractionsEnabled ? hoveredCellKey : null,
+                selectedCellKey: cityInteractionsEnabled ? selectedCellKey : null,
+                hoveredOutlineCells: cityInteractionsEnabled ? hoveredOutlineCells : [],
+                selectedOutlineCells: cityInteractionsEnabled ? selectedOutlineCells : [],
+                hoveredOutlineKey: cityInteractionsEnabled ? hoveredOutlineKey : null,
+                selectedOutlineKey: cityInteractionsEnabled ? selectedOutlineKey : null,
                 topExpansionPreviewCellKeys,
-                expansionControls,
+                expansionControls: cityInteractionsEnabled ? expansionControls : [],
                 getExpansionDisabledReason,
-                onExpandSide,
+                onExpandSide: cityInteractionsEnabled ? onExpandSide : undefined,
                 showDebugAxes,
                 debugAxisLines,
                 hexagonPoints,
@@ -749,6 +794,7 @@ export default function CityHex({
         camera.zoom,
         cellsByKey,
         claimedRadius,
+        cityInteractionsEnabled,
         debugAxisLines,
         expansionControls,
         getExpansionDisabledReason,
@@ -1096,7 +1142,7 @@ function addMaskedSprite({
 
 function createHexShape(points: readonly number[], fill: string | number, alpha = 1) {
     const graphics = new Graphics();
-    graphics.poly(points).fill({color: fill, alpha});
+    graphics.poly([...points]).fill({color: fill, alpha});
 
     return graphics;
 }
@@ -1292,11 +1338,18 @@ function getExpansionControls(
             HEX_RADIUS_PX,
             HEX_EDGE_GAP_PX,
         );
+        const boundaryCenter = getPointCenter(claimCells);
+        const center = option.side.id === "north-west"
+            ? {
+                x: lerp(arrowPosition.x, boundaryCenter.x, TOP_EXPANSION_ARROW_WALL_PROXIMITY),
+                y: lerp(arrowPosition.y, boundaryCenter.y, TOP_EXPANSION_ARROW_WALL_PROXIMITY),
+            }
+            : arrowPosition;
 
         return [{
             option,
-            centerX: arrowPosition.x,
-            centerY: arrowPosition.y,
+            centerX: center.x,
+            centerY: center.y,
             rotationDegrees: option.side.rotationDegrees,
             scale: getExpansionArrowScale(option.arrowRadius),
         }];
@@ -1308,6 +1361,18 @@ function getExpansionArrowScale(radius: number): number {
         MAX_EXPANSION_ARROW_SCALE,
         MIN_EXPANSION_ARROW_SCALE + Math.max(0, radius - 2) * EXPANSION_ARROW_SCALE_PER_RADIUS,
     );
+}
+
+function getPointCenter(points: readonly {centerX: number; centerY: number}[]) {
+    const total = points.reduce((sum, point) => ({
+        x: sum.x + point.centerX,
+        y: sum.y + point.centerY,
+    }), {x: 0, y: 0});
+
+    return {
+        x: total.x / points.length,
+        y: total.y / points.length,
+    };
 }
 
 function getDebugAxisLines(preparedCells: readonly PreparedHexCell[]) {
@@ -1525,6 +1590,28 @@ function getStageTransform(width: number, height: number, viewport: Viewport): S
         scale,
         offsetX: (width - renderedWidth) / 2,
         offsetY: (height - renderedHeight) / 2,
+    };
+}
+
+function getCameraClampViewport(
+    viewport: Viewport,
+    canvasSize: {width: number; height: number},
+    topInsetPx: number,
+): Viewport {
+    if (canvasSize.width <= 0 || canvasSize.height <= 0 || topInsetPx <= 0) {
+        return viewport;
+    }
+
+    const transform = getStageTransform(canvasSize.width, canvasSize.height, viewport);
+    const topInsetViewY = screenToViewPoint(0, topInsetPx, transform, viewport).y;
+    const topY = Math.max(viewport.y, Math.min(topInsetViewY, viewport.y + viewport.height));
+    const bottomY = viewport.y + viewport.height;
+
+    return {
+        x: viewport.x,
+        y: topY,
+        width: viewport.width,
+        height: Math.max(1, bottomY - topY),
     };
 }
 

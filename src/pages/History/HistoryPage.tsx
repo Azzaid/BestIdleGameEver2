@@ -12,7 +12,7 @@ import {markGlobalHistorySeen} from "../../store/globalEvents/slice.ts";
 import type {GlobalEventHistoryEntry} from "../../models/store/globalEvents.ts";
 import * as s from "./HistoryPage.css.ts";
 
-export default function HistoryPage() {
+export default function HistoryModal({onClose}: {onClose: () => void}) {
   const dispatch = useTypedDispatch();
   const eventHistoryEntries = useTypedSelector(selectGlobalEventHistoryEntries);
   const foreseenEventIds = useTypedSelector(selectForeseenGlobalEventIds);
@@ -51,101 +51,144 @@ export default function HistoryPage() {
     if (foreseenEventIds.length > 0) setIsForeseenOpen(true);
   }, [foreseenEventIds.length]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+
+      if (isCleanSlateConfirmationOpen) {
+        setIsCleanSlateConfirmationOpen(false);
+        return;
+      }
+
+      onClose();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isCleanSlateConfirmationOpen, onClose]);
+
   const foreseenItems = foreseenEventIds.map(eventId => ({
     eventId,
     event: GLOBAL_EVENTS[eventId],
   }));
 
   return (
-    <section className={s.page}>
-      <article className={s.book}>
-        <header className={s.header}>
-          <div className={s.headerText}>
-            <p className={s.kicker}>Chronicle</p>
-            <h1 className={s.title}>History</h1>
+    <section className={s.backdrop} role="presentation" onClick={onClose}>
+      <article
+        className={s.book}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="history-modal-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className={s.bookSpine} aria-hidden />
+        <div className={s.bookSurface}>
+          <header className={s.header}>
+            <div className={s.headerText}>
+              <p className={s.kicker}>Chronicle</p>
+              <h1 id="history-modal-title" className={s.title}>History</h1>
+            </div>
+            <div className={s.headerActions}>
+              <button
+                className={s.cleanSlateButton}
+                type="button"
+                onClick={() => setIsCleanSlateConfirmationOpen(true)}
+              >
+                Clean slate
+              </button>
+              <button
+                className={s.closeButton}
+                type="button"
+                aria-label="Close history"
+                title="Close history"
+                onClick={onClose}
+              >
+                x
+              </button>
+            </div>
+          </header>
+
+          <div className={s.body}>
+            <div className={s.timeline}>
+              {eventHistoryEntries.length === 0 ? (
+                <p className={s.emptyState}>No global events have happened yet.</p>
+              ) : (
+                eventHistoryEntries.map((entry, index) => {
+                  const event = entry.eventId ? GLOBAL_EVENTS[entry.eventId] : undefined;
+                  const title = event?.title ?? entry.title ?? entry.eventId ?? "History Entry";
+                  const description = event?.description ?? entry.message;
+                  const imageSrc = event?.imageSrc ?? entry.imageUrl;
+                  const imageAlt = event?.imageAlt ?? title;
+                  const level = event?.notificationLevel ?? (entry.eventId ? "force" : "notify");
+
+                  return (
+                    <article
+                      key={entry.id}
+                      ref={element => {
+                        eventRefs.current[entry.id] = element;
+                      }}
+                      className={highlightedEventId === entry.id ? s.eventCardHighlighted : s.eventCard}
+                    >
+                      {imageSrc && (
+                        <img
+                          className={s.eventImage}
+                          src={imageSrc}
+                          alt={imageAlt}
+                        />
+                      )}
+                      <div className={s.eventContent}>
+                        <div className={s.eventMeta}>
+                          <span>Chapter {String(index + 1).padStart(2, "0")}</span>
+                          <span>{level}</span>
+                        </div>
+                        <h2 className={s.eventTitle}>{title}</h2>
+                        {description && <p className={s.eventDescription}>{description}</p>}
+                        {event?.hint && <p className={s.eventHint}>{event.hint}</p>}
+                      </div>
+                    </article>
+                  );
+                })
+              )}
+            </div>
+
+            <section className={isForeseenOpen ? s.foreseenPanelOpen : s.foreseenPanel}>
+              <button
+                className={s.foreseenToggle}
+                type="button"
+                onClick={() => setIsForeseenOpen(open => !open)}
+              >
+                <span>Foreseen Events</span>
+                <span>{foreseenEventIds.length}</span>
+              </button>
+              <div className={s.foreseenContent}>
+                {foreseenItems.length === 0 ? (
+                  <p className={s.foreseenEmpty}>No active hints.</p>
+                ) : (
+                  foreseenItems.map(({eventId, event}) => (
+                    <article className={s.foreseenItem} key={eventId}>
+                      <h3 className={s.foreseenTitle}>{event?.title ?? eventId}</h3>
+                      <p className={s.foreseenHint}>{event?.hint ?? event?.description ?? eventId}</p>
+                    </article>
+                  ))
+                )}
+              </div>
+            </section>
           </div>
-          <button
-            className={s.cleanSlateButton}
-            type="button"
-            onClick={() => setIsCleanSlateConfirmationOpen(true)}
-          >
-            Clean slate
-          </button>
-        </header>
-
-        <div className={s.timeline}>
-          {eventHistoryEntries.length === 0 ? (
-            <p className={s.emptyState}>No global events have happened yet.</p>
-          ) : (
-            eventHistoryEntries.map((entry, index) => {
-              const event = entry.eventId ? GLOBAL_EVENTS[entry.eventId] : undefined;
-              const title = event?.title ?? entry.title ?? entry.eventId ?? "History Entry";
-              const description = event?.description ?? entry.message;
-              const imageSrc = event?.imageSrc ?? entry.imageUrl;
-              const imageAlt = event?.imageAlt ?? title;
-              const level = event?.notificationLevel ?? (entry.eventId ? "force" : "notify");
-
-              return (
-                <article
-                  key={entry.id}
-                  ref={element => {
-                    eventRefs.current[entry.id] = element;
-                  }}
-                  className={highlightedEventId === entry.id ? s.eventCardHighlighted : s.eventCard}
-                >
-                  {imageSrc && (
-                    <img
-                      className={s.eventImage}
-                      src={imageSrc}
-                      alt={imageAlt}
-                    />
-                  )}
-                  <div className={s.eventContent}>
-                    <div className={s.eventMeta}>
-                      <span>Chapter {String(index + 1).padStart(2, "0")}</span>
-                      <span>{level}</span>
-                    </div>
-                    <h2 className={s.eventTitle}>{title}</h2>
-                    {description && <p className={s.eventDescription}>{description}</p>}
-                    {event?.hint && <p className={s.eventHint}>{event.hint}</p>}
-                  </div>
-                </article>
-              );
-            })
-          )}
         </div>
-
-        <section className={isForeseenOpen ? s.foreseenPanelOpen : s.foreseenPanel}>
-          <button
-            className={s.foreseenToggle}
-            type="button"
-            onClick={() => setIsForeseenOpen(open => !open)}
-          >
-            <span>Foreseen Events</span>
-            <span>{foreseenEventIds.length}</span>
-          </button>
-          <div className={s.foreseenContent}>
-            {foreseenItems.length === 0 ? (
-              <p className={s.foreseenEmpty}>No active hints.</p>
-            ) : (
-              foreseenItems.map(({eventId, event}) => (
-                <article className={s.foreseenItem} key={eventId}>
-                  <h3 className={s.foreseenTitle}>{event?.title ?? eventId}</h3>
-                  <p className={s.foreseenHint}>{event?.hint ?? event?.description ?? eventId}</p>
-                </article>
-              ))
-            )}
-          </div>
-        </section>
       </article>
       {isCleanSlateConfirmationOpen && (
-        <ConfirmationModal
-          title="Clean slate?"
-          message="This will wipe the saved city and start again from an empty settlement. This cannot be undone."
-          confirmLabel="Clean slate"
-          onConfirm={cleanSlateAndReload}
-          onCancel={() => setIsCleanSlateConfirmationOpen(false)}
-        />
+        <div onClick={(event) => event.stopPropagation()}>
+          <ConfirmationModal
+            title="Clean slate?"
+            message="This will wipe the saved city and start again from an empty settlement. This cannot be undone."
+            confirmLabel="Clean slate"
+            onConfirm={cleanSlateAndReload}
+            onCancel={() => setIsCleanSlateConfirmationOpen(false)}
+          />
+        </div>
       )}
     </section>
   );

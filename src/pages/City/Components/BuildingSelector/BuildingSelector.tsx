@@ -61,7 +61,7 @@ export function BuildingSelector({
                             aria-expanded={activeVector === vector}
                             role="tab"
                             aria-selected={activeVector === vector}
-                            className={s.tabButton[activeVector === vector ? 'active' : 'regular']}
+                            className={`${s.tabButton[activeVector === vector ? 'active' : 'regular']} ${s.tabVector[vector]}`}
                             onClick={() => setActiveVector(vector)}
                             data-vector={vector}
                         >

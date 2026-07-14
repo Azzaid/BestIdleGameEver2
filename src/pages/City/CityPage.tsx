@@ -48,7 +48,7 @@ import {
 } from "../../models/homogeneousValueAdapters.ts";
 import {GLOBAL_MODIFIERS} from "../../data/globalModifiers/index.ts";
 import {resolveGlobalModifierEffects} from "../../models/globalEvents.ts";
-import {selectActiveGlobalModifiers} from "../../store/globalEvents/selectors.ts";
+import {selectActiveGlobalModifiers, selectUnseenHistoryEntryIds} from "../../store/globalEvents/selectors.ts";
 import {
     selectRequirementResolutionData,
     selectUnlockedBuildingIds,
@@ -72,12 +72,21 @@ import {selectAvailableTowerList} from "../../store/towers/selectors.ts";
 import {selectTower} from "../../store/towers/slice.ts";
 import {selectWorldViewMode} from "../../store/worldView/selectors.ts";
 import {setWorldViewMode} from "../../store/worldView/slice.ts";
+import HistoryModal from "../History/HistoryPage.tsx";
 
 const EXPAND_WARNING = "City grows bigger, more noticeable and attracts more monsters";
 const LOST_TERRITORY_BLOCK_REASON = "Lost territory must be reclaimed before it can work, transform, or be rebuilt.";
 const BROKEN_STRUCTURE_BLOCK_REASON = "This multistructure is cut off. Reclaim every part before it can work again.";
 
-const CityPage = () => {
+const CityPage = ({
+    isHistoryOpen = false,
+    onHistoryOpen = () => undefined,
+    onHistoryClose = () => undefined,
+}: {
+    isHistoryOpen?: boolean;
+    onHistoryOpen?: () => void;
+    onHistoryClose?: () => void;
+}) => {
     const dispatch = useTypedDispatch();
     const allHexes = useTypedSelector(selectAllCityHexes);
     const cityExpansionOptions = useTypedSelector(selectCityExpansionOptions);
@@ -99,6 +108,7 @@ const CityPage = () => {
     const visibleWallSuperstructureIds = useTypedSelector(selectVisibleWallSuperstructureIds);
     const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
     const activeGlobalModifiers = useTypedSelector(selectActiveGlobalModifiers);
+    const unseenHistoryEntryCount = useTypedSelector(selectUnseenHistoryEntryIds).length;
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const {
         selectedHex,
@@ -341,6 +351,20 @@ const CityPage = () => {
 
     return (
         <div className={s.cityPage}>
+            <button
+                className={s.historyBookButton}
+                type="button"
+                aria-label={unseenHistoryEntryCount > 0 ? `Open history, ${unseenHistoryEntryCount} new entries` : "Open history"}
+                title={unseenHistoryEntryCount > 0 ? `${unseenHistoryEntryCount} new history entries` : "Open history"}
+                onClick={onHistoryOpen}
+            >
+                <BookOpenIcon />
+                {unseenHistoryEntryCount > 0 && (
+                    <span className={s.historyBookBadge} aria-hidden>
+                        {unseenHistoryEntryCount > 9 ? "9+" : unseenHistoryEntryCount}
+                    </span>
+                )}
+            </button>
             <GlobalEffectsDrawer
                 activeGlobalModifiers={activeGlobalModifiers}
                 isOpen={globalEffectsOpen}
@@ -408,6 +432,9 @@ const CityPage = () => {
                     <BuildPage onCloseTowerEdit={() => dispatch(setWorldViewMode("city"))} />
                 </section>
             )}
+            {isHistoryOpen && (
+                <HistoryModal onClose={onHistoryClose} />
+            )}
             {selectedExpansionOption && (
                 <div className={s.overlayControl}>
                     <ConfirmationModal
@@ -422,6 +449,25 @@ const CityPage = () => {
         </div>
     );
 };
+
+function BookOpenIcon() {
+    return (
+        <svg
+            className={s.historyBookIcon}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
+            <path d="M4 5.5C6.6 5.2 8.7 5.7 11 7v12c-2.2-1.2-4.4-1.7-7-1.4V5.5Z" />
+            <path d="M20 5.5c-2.6-.3-4.7.2-7 1.5v12c2.2-1.2 4.4-1.7 7-1.4V5.5Z" />
+            <path d="M12 7v12" />
+        </svg>
+    );
+}
 
 function getExpansionRequiredTerritory(
     cityResolution: ReturnType<typeof selectTowerAwareCityResolution>,

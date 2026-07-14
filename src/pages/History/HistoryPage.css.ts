@@ -2,31 +2,73 @@ import {style} from "@vanilla-extract/css";
 import {vars} from "../../theme/theme.css.ts";
 import * as hud from "../../theme/hud.css.ts";
 
-export const page = style({
-  minHeight: "100%",
-  padding: "18px 14px",
-  background: vars.color.background.app,
+export const backdrop = style({
+  position: "fixed",
+  inset: 0,
+  zIndex: 35,
+  display: "grid",
+  placeItems: "center",
+  padding: "max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px))",
+  background: "color-mix(in oklab, rgba(6, 10, 15, 0.72) 82%, transparent)",
   color: vars.color.text.primary,
+  pointerEvents: "auto",
+  backdropFilter: "blur(4px) saturate(0.92)",
 });
 
 export const book = style([
-  hud.compactPanel,
+  hud.hudVars,
   {
-  display: "grid",
-  maxWidth: "920px",
-  margin: "0 auto",
-  overflow: "hidden",
+    width: "min(960px, 100%)",
+    height: "min(760px, 100%)",
+    minHeight: 0,
+    display: "grid",
+    gridTemplateColumns: "16px minmax(0, 1fr)",
+    overflow: "hidden",
+    border: `1px solid ${hud.hudBorder}`,
+    borderRadius: 6,
+    background: `linear-gradient(90deg, color-mix(in oklab, ${hud.hudAccent} 34%, black 48%), color-mix(in oklab, ${vars.color.background.surface} 84%, black 16%))`,
+    boxShadow: `
+      0 0 0 1px color-mix(in oklab, ${hud.hudAccent} 20%, transparent),
+      0 18px 46px rgba(0, 0, 0, 0.42),
+      0 0 28px color-mix(in oklab, ${hud.hudAccent} 20%, transparent)
+    `,
+    pointerEvents: "auto",
+    '@media': {
+      '(max-width: 620px)': {
+        gridTemplateColumns: "10px minmax(0, 1fr)",
+        height: "100%",
+      },
+    },
   },
 ]);
+
+export const bookSpine = style({
+  background: `
+    linear-gradient(180deg, color-mix(in oklab, ${hud.hudAccent} 46%, black 42%), color-mix(in oklab, ${hud.hudAccent} 18%, black 62%)),
+    repeating-linear-gradient(180deg, transparent 0 28px, rgba(255, 255, 255, 0.14) 28px 29px)
+  `,
+  borderRight: `1px solid ${hud.hudBorder}`,
+});
+
+export const bookSurface = style({
+  minHeight: 0,
+  display: "grid",
+  gridTemplateRows: "auto minmax(0, 1fr)",
+  background: `
+    linear-gradient(120deg, rgba(255, 255, 255, 0.18), transparent 34%),
+    linear-gradient(180deg, color-mix(in oklab, ${vars.color.background.surface} 88%, white 8%), color-mix(in oklab, ${vars.color.background.app} 72%, white 12%))
+  `,
+});
 
 export const header = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   gap: "14px",
-  padding: "18px 22px 16px",
+  minHeight: 68,
+  padding: "12px 14px 12px 18px",
   borderBottom: `1px solid ${vars.color.border.default}`,
-  background: vars.color.background.navbar,
+  background: `linear-gradient(90deg, ${hud.hudAccentSoft}, transparent 54%)`,
 });
 
 export const headerText = style({
@@ -50,6 +92,13 @@ export const title = style({
   fontSize: "1.35rem",
 });
 
+export const headerActions = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  flexShrink: 0,
+});
+
 export const cleanSlateButton = style([
   hud.secondaryButton,
   {
@@ -59,9 +108,29 @@ export const cleanSlateButton = style([
   },
 ]);
 
+export const closeButton = style([
+  hud.secondaryButton,
+  {
+    width: 34,
+    height: 34,
+    minHeight: 34,
+    padding: 0,
+    display: "grid",
+    placeItems: "center",
+    fontSize: "1rem",
+    lineHeight: 1,
+  },
+]);
+
+export const body = style({
+  minHeight: 0,
+  overflowY: "auto",
+  scrollbarGutter: "stable",
+});
+
 export const timeline = style({
   display: "grid",
-  padding: "0 22px",
+  padding: "0 18px",
 });
 
 export const emptyState = style({
@@ -73,7 +142,7 @@ export const emptyState = style({
 export const eventCard = style({
   display: "grid",
   gap: "12px",
-  scrollMarginTop: "56px",
+  scrollMarginTop: "12px",
   padding: "18px 0",
   borderBottom: `1px solid ${vars.color.border.default}`,
   background: "transparent",
@@ -139,7 +208,7 @@ export const eventHint = style({
 
 export const foreseenPanel = style({
   display: "grid",
-  margin: "0 22px",
+  margin: "0 18px",
   maxHeight: "44px",
   overflow: "hidden",
   borderBottom: `1px solid ${vars.color.border.default}`,

@@ -1,6 +1,5 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {useEffect, useMemo, useRef} from "react";
-import {useNavigate} from "react-router-dom";
 import {GLOBAL_EVENT_LIST} from "../../data/globalEvents/index.ts";
 import {sendNotification} from "../../lib/notifications/eventBus.ts";
 import {
@@ -48,10 +47,14 @@ const selectRequirementSignalSignature = createSelector(
   ].join("|"),
 );
 
-export function useGlobalEventSignals(): void {
+export function useGlobalEventSignals({
+  openHistory,
+}: {
+  openHistory: () => void;
+}): void {
   useQueueStartupSignals();
   useQueueDerivedSignals();
-  useProcessPendingSignals();
+  useProcessPendingSignals(openHistory);
 }
 
 function useQueueStartupSignals(): void {
@@ -115,9 +118,8 @@ function useQueueDerivedSignals(): void {
   }, [dispatch, requirementSignalSignature]);
 }
 
-function useProcessPendingSignals(): void {
+function useProcessPendingSignals(openHistory: () => void): void {
   const dispatch = useTypedDispatch();
-  const navigate = useNavigate();
   const pendingSignalMessages = useTypedSelector(selectPendingGlobalSignals);
   const executedEventIds = useTypedSelector(selectExecutedGlobalEventIds);
   const requirementData = useTypedSelector(selectRequirementResolutionData);
@@ -153,12 +155,12 @@ function useProcessPendingSignals(): void {
         });
       }
       if (runnableEventMessages.some(({event}) => (event.notificationLevel ?? "force") === "force")) {
-        navigate("/history");
+        openHistory();
       }
     }
 
     dispatch(clearPendingGlobalSignals());
-  }, [dispatch, navigate, pendingSignalMessages.length, runnableEventMessages]);
+  }, [dispatch, openHistory, pendingSignalMessages.length, runnableEventMessages]);
 }
 
 function getRunnableEventsForSignals(

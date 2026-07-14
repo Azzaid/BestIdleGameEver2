@@ -75,7 +75,7 @@ export function pixelPositionToAxialCoordinate(
     return {column: roundedCubeX, row: roundedCubeZ};
 }
 
-export const computeCityBounds  = (preparedCells: { centerX: number; centerY: number }[], hexRadiusPx: number): Bounds => {
+export const computeCityBounds  = (preparedCells: readonly { centerX: number; centerY: number }[], hexRadiusPx: number): Bounds => {
     // For a pointy-top hex: half width = √3/2 * R, half height = R
     const halfWidth = (Math.sqrt(3) / 2) * hexRadiusPx;
     const halfHeight = hexRadiusPx;

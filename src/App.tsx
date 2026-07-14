@@ -1,5 +1,5 @@
-import { lazy, Suspense, useEffect, useRef, useState, type ReactNode, type TouchEvent, type UIEvent, type WheelEvent } from 'react'
-import { HashRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode, type RefObject, type TouchEvent, type UIEvent, type WheelEvent } from 'react'
+import { HashRouter as Router, Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import {Provider} from "react-redux";
 import {store} from "./store";
 import { ThemeProvider } from './theme/ThemeProvider'
@@ -8,7 +8,6 @@ import {AppErrorBoundary} from "./components/AppErrorBoundary.tsx";
 
 import ResearchPage from './pages/Research/ResearchPage'
 import CityPage from './pages/City/CityPage'
-import HistoryPage from './pages/History/HistoryPage.tsx'
 import HudLabPage from './pages/HudLab/HudLabPage.tsx'
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedDispatch, useTypedSelector} from "./store/hooks.ts";
@@ -20,7 +19,6 @@ import { useResearchAutoUnlock } from "./pages/Research/useResearchAutoUnlock.ts
 import {CityExpansionControl} from "./components/CityExpansionControl.tsx";
 import {useContentAutoUnlock} from "./hooks/useContentAutoUnlock.ts";
 import {useGlobalEventSignals} from "./components/GlobalEvents/useGlobalEventSignals.ts";
-import {selectUnseenHistoryEntryIds} from "./store/globalEvents/selectors.ts";
 import {VictoryEventOverlay} from "./components/GlobalEvents/VictoryEventOverlay.tsx";
 import {CityWorldUnderlay} from "./pages/City/CityWorldUnderlay.tsx";
 import {CityCanvasInteractionProvider} from "./pages/City/cityCanvasInteraction.tsx";
@@ -34,15 +32,18 @@ const DevShell = import.meta.env.DEV
 function GameShell() {
   const dispatch = useTypedDispatch();
   const location = useLocation();
+  const navigate = useNavigate();
+  const appContainerRef = useRef<HTMLDivElement | null>(null);
+  const routeChromeRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLElement | null>(null);
   const lastScrollTopRef = useRef(0);
   const lastTouchYRef = useRef<number | null>(null);
   const [isNavHidden, setIsNavHidden] = useState(false);
   const [selectedCityHex, setSelectedCityHex] = useState<HexCell | null>(null);
   const [confirmingCityExpansionSide, setConfirmingCityExpansionSide] = useState<CityExpansionSideId | null>(null);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
-  const unseenHistoryEntryCount = useTypedSelector(selectUnseenHistoryEntryIds).length;
   const isLocalDebugAvailable = import.meta.env.DEV;
   const isDebugToolsEnabled = isLocalDebugAvailable && isDebugModeEnabled;
   const cityCanvasInteraction = {
@@ -53,10 +54,17 @@ function GameShell() {
   };
   const cityCanvasIsInteractive = location.pathname === "/city" || location.pathname === "/";
   const cityWorldOverlayIsVisible = cityCanvasIsInteractive || location.pathname === "/hud-lab";
+  const cityWorldTopInsetPx = useRouteChromeTopInsetPx(appContainerRef, routeChromeRef, location.pathname);
+  const openHistoryModal = useCallback(() => {
+    setIsHistoryModalOpen(true);
+    if (location.pathname !== "/city" && location.pathname !== "/") {
+      navigate("/city");
+    }
+  }, [location.pathname, navigate]);
 
   useResearchAutoUnlock();
   useContentAutoUnlock();
-  useGlobalEventSignals();
+  useGlobalEventSignals({openHistory: openHistoryModal});
 
   useEffect(() => {
     setIsNavHidden(false);
@@ -154,7 +162,7 @@ function GameShell() {
 
   return (
       <CityCanvasInteractionProvider value={cityCanvasInteraction}>
-              <div className={appTheme.appContainer}>
+              <div ref={appContainerRef} className={appTheme.appContainer}>
                   <nav className={`${appTheme.appNav} ${isNavHidden ? appTheme.appNavHidden : ""}`}>
                       <div className={appTheme.navLeft}>
                           {isLocalDebugAvailable && (
@@ -176,21 +184,6 @@ function GameShell() {
                           <li>
                               <Link className={appTheme.navBarLink} to="/city">City</Link>
                           </li>
-                          <li>
-                              <Link className={appTheme.navBarLink} to="/history">
-                                  <span>History</span>
-                                  {unseenHistoryEntryCount > 0 && (
-                                      <span
-                                          className={appTheme.historyNewMarker}
-                                          aria-label={`${unseenHistoryEntryCount} new history entries`}
-                                          title={`${unseenHistoryEntryCount} new history entries`}
-                                      />
-                                  )}
-                              </Link>
-                          </li>
-                          <li>
-                              <Link className={appTheme.navBarLink} to="/hud-lab">HUD Lab</Link>
-                          </li>
                           {isDebugToolsEnabled && (
                               <li>
                                   <Link className={appTheme.navBarLink} to="/dev">Dev</Link>
@@ -203,9 +196,10 @@ function GameShell() {
                   </nav>
                   <CityWorldUnderlay
                       interactive={cityCanvasIsInteractive}
+                      topInsetPx={cityWorldTopInsetPx}
                   />
                   <NotificationCenter />
-                  <VictoryEventOverlay />
+                  <VictoryEventOverlay onOpenHistory={openHistoryModal} />
                   <div className={`${appTheme.appRouteLayer} ${cityWorldOverlayIsVisible ? appTheme.appRouteLayerWorldOverlay : ""}`}>
                       <Routes>
                           <Route path="/" element={<Navigate to="/city" replace />} />
@@ -213,7 +207,7 @@ function GameShell() {
                           <Route
                               path="/research"
                               element={(
-                                  <UpkeepBarRouteFrame>
+                                  <UpkeepBarRouteFrame chromeRef={routeChromeRef}>
                                       {renderScrollableRoute(signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />)}
                                   </UpkeepBarRouteFrame>
                               )}
@@ -221,13 +215,20 @@ function GameShell() {
                           <Route
                               path="/city"
                               element={(
-                                  <UpkeepBarRouteFrame rightSlot={<CityExpansionControl />}>
-                                      {renderScrollableRoute(<CityPage />, {worldOverlay: true})}
+                                  <UpkeepBarRouteFrame chromeRef={routeChromeRef} rightSlot={<CityExpansionControl />}>
+                                      {renderScrollableRoute(
+                                          <CityPage
+                                              isHistoryOpen={isHistoryModalOpen}
+                                              onHistoryOpen={openHistoryModal}
+                                              onHistoryClose={() => setIsHistoryModalOpen(false)}
+                                          />,
+                                          {worldOverlay: true},
+                                      )}
                                   </UpkeepBarRouteFrame>
                               )}
                           />
-                          <Route path="/history" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<HistoryPage />)}</UpkeepBarRouteFrame>} />
-                          <Route path="/hud-lab" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<HudLabPage />, {worldOverlay: true})}</UpkeepBarRouteFrame>} />
+                          <Route path="/history" element={<Navigate to="/city" replace />} />
+                          <Route path="/hud-lab" element={<UpkeepBarRouteFrame chromeRef={routeChromeRef}>{renderScrollableRoute(<HudLabPage />, {worldOverlay: true})}</UpkeepBarRouteFrame>} />
                           <Route path="*" element={<Navigate to="/city" replace />} />
                       </Routes>
                   </div>
@@ -238,6 +239,62 @@ function GameShell() {
 
 function hasVerticalOverflow(element: HTMLElement) {
   return element.scrollHeight - element.clientHeight > 1;
+}
+
+function useRouteChromeTopInsetPx(
+  containerRef: RefObject<HTMLDivElement | null>,
+  routeChromeRef: RefObject<HTMLDivElement | null>,
+  routeKey: string,
+) {
+  const [topInsetPx, setTopInsetPx] = useState(0);
+
+  useEffect(() => {
+    let animationFrame: number | null = null;
+
+    const updateTopInset = () => {
+      if (animationFrame !== null) {
+        cancelAnimationFrame(animationFrame);
+      }
+
+      animationFrame = requestAnimationFrame(() => {
+        animationFrame = null;
+        const container = containerRef.current;
+        const routeChrome = routeChromeRef.current;
+
+        if (!container || !routeChrome) {
+          setTopInsetPx(0);
+          return;
+        }
+
+        const containerRect = container.getBoundingClientRect();
+        const chromeRect = routeChrome.getBoundingClientRect();
+        const nextTopInsetPx = Math.max(0, chromeRect.bottom - containerRect.top);
+
+        setTopInsetPx(current => (
+          Math.abs(current - nextTopInsetPx) < 0.5 ? current : nextTopInsetPx
+        ));
+      });
+    };
+
+    updateTopInset();
+
+    const resizeObserver = new ResizeObserver(updateTopInset);
+    const container = containerRef.current;
+    const routeChrome = routeChromeRef.current;
+    if (container) resizeObserver.observe(container);
+    if (routeChrome) resizeObserver.observe(routeChrome);
+    window.addEventListener("resize", updateTopInset);
+
+    return () => {
+      if (animationFrame !== null) {
+        cancelAnimationFrame(animationFrame);
+      }
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateTopInset);
+    };
+  }, [containerRef, routeChromeRef, routeKey]);
+
+  return topInsetPx;
 }
 
 function App() {
@@ -291,10 +348,18 @@ function AppWithProviders() {
   )
 }
 
-function UpkeepBarRouteFrame({children, rightSlot}: {children: ReactNode; rightSlot?: ReactNode}) {
+function UpkeepBarRouteFrame({
+  children,
+  chromeRef,
+  rightSlot,
+}: {
+  children: ReactNode;
+  chromeRef?: RefObject<HTMLDivElement | null>;
+  rightSlot?: ReactNode;
+}) {
   return (
       <>
-          <div className={appTheme.routeChrome}>
+          <div ref={chromeRef} className={appTheme.routeChrome}>
               <UpkeepBar rightSlot={rightSlot} />
           </div>
           {children}

@@ -25,7 +25,7 @@ export const battleProgress = style({
 });
 
 export const siegeProgress = style({
-    top: "8px",
+    top: "max(8px, calc(var(--city-world-top-inset, 0px) + 8px))",
 });
 
 export const wallResilienceProgress = style({
@@ -71,35 +71,68 @@ export const wallResilienceProgressFill = style([
 
 export const cameraControls = style({
     position: "absolute",
-    right: "max(12px, env(safe-area-inset-right, 0px))",
-    bottom: "max(14px, env(safe-area-inset-bottom, 0px))",
+    left: "50%",
     zIndex: 2,
-    display: "grid",
-    gap: "8px",
+    transform: "translateX(-50%)",
     pointerEvents: "auto",
 });
 
+export const cameraControlsCity = style({
+    top: "max(12px, calc(var(--city-world-top-inset, 0px) + 12px))",
+});
+
+export const cameraControlsBattle = style({
+    bottom: "max(54px, calc(env(safe-area-inset-bottom, 0px) + 54px))",
+});
+
 export const cameraButton = style({
-    minWidth: "104px",
-    minHeight: "34px",
-    padding: "7px 10px",
-    border: `1px solid ${vars.color.border.strong}`,
-    borderRadius: "4px",
-    background: vars.color.background.surface,
-    color: vars.color.text.primary,
-    fontSize: "0.78rem",
-    fontWeight: 800,
+    width: "44px",
+    height: "44px",
+    display: "grid",
+    placeItems: "center",
+    padding: 0,
+    border: 0,
+    background: "transparent",
+    color: vars.color.text.heading,
+    opacity: 0.82,
+    fontSize: 0,
+    fontWeight: 900,
     lineHeight: 1,
     cursor: "pointer",
-    boxShadow: "0 6px 18px rgba(0, 0, 0, 0.28)",
-    backdropFilter: "blur(6px)",
+    filter: "drop-shadow(0 2px 5px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 1px rgba(0, 0, 0, 0.92))",
     selectors: {
         "&:hover": {
-            background: vars.color.background.surfaceHover,
+            opacity: 0.98,
         },
         "&:focus-visible": {
             outline: `2px solid ${vars.color.border.focus}`,
             outlineOffset: "2px",
+        },
+    },
+});
+
+export const cameraButtonUp = style({
+    selectors: {
+        "&::before": {
+            content: "",
+            width: 0,
+            height: 0,
+            borderLeft: "15px solid transparent",
+            borderRight: "15px solid transparent",
+            borderBottom: `22px solid ${vars.color.state.error}`,
+        },
+    },
+});
+
+export const cameraButtonDown = style({
+    selectors: {
+        "&::before": {
+            content: "",
+            width: 0,
+            height: 0,
+            borderLeft: "15px solid transparent",
+            borderRight: "15px solid transparent",
+            borderTop: `22px solid ${vars.color.brand.primary}`,
         },
     },
 });

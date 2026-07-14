@@ -25,6 +25,59 @@ export const hudVars = style({
   },
 });
 
+export const vectorVars = styleVariants({
+  neutral: {
+    vars: {
+      [hudAccent]: "hsl(186 54% 48%)",
+      [hudAccentSoft]: "hsl(186 54% 48% / 0.13)",
+      [hudSurface]: "hsl(45 38% 86% / 0.62)",
+      [hudText]: "hsl(32 28% 16%)",
+      [hudMuted]: "hsl(32 18% 28% / 0.76)",
+      [hudBorder]: "hsl(32 22% 38% / 0.34)",
+    },
+  },
+  tech: {
+    vars: {
+      [hudAccent]: "hsl(190 96% 62%)",
+      [hudAccentSoft]: "hsl(190 96% 62% / 0.14)",
+      [hudSurface]: "hsl(205 38% 96% / 0.42)",
+      [hudText]: "hsl(210 45% 13%)",
+      [hudMuted]: "hsl(210 26% 28% / 0.78)",
+      [hudBorder]: "hsl(190 96% 62% / 0.42)",
+    },
+  },
+  nature: {
+    vars: {
+      [hudAccent]: "hsl(139 72% 52%)",
+      [hudAccentSoft]: "hsl(139 72% 52% / 0.16)",
+      [hudSurface]: "hsl(132 34% 18% / 0.60)",
+      [hudText]: "hsl(122 82% 94%)",
+      [hudMuted]: "hsl(124 35% 78% / 0.84)",
+      [hudBorder]: "hsl(139 72% 52% / 0.38)",
+    },
+  },
+  medieval: {
+    vars: {
+      [hudAccent]: "hsl(42 92% 58%)",
+      [hudAccentSoft]: "hsl(42 92% 58% / 0.16)",
+      [hudSurface]: "hsl(46 28% 21% / 0.62)",
+      [hudText]: "hsl(47 92% 91%)",
+      [hudMuted]: "hsl(43 35% 76% / 0.82)",
+      [hudBorder]: "hsl(42 92% 58% / 0.42)",
+    },
+  },
+  aether: {
+    vars: {
+      [hudAccent]: "hsl(276 90% 68%)",
+      [hudAccentSoft]: "hsl(276 90% 68% / 0.17)",
+      [hudSurface]: "hsl(235 42% 22% / 0.58)",
+      [hudText]: "hsl(286 100% 95%)",
+      [hudMuted]: "hsl(276 44% 82% / 0.84)",
+      [hudBorder]: "hsl(276 90% 68% / 0.46)",
+    },
+  },
+});
+
 export const panelBase = style([
   hudVars,
   {
