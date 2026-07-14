@@ -61,7 +61,7 @@ export default function ContentPlanPage() {
   const selectedChildren = selectedNode.childIds
     .map(childId => plan.nodes[childId])
     .filter(isContentPlanNode);
-  const entityEditorUrl = `/entity-create/new?name=${encodeURIComponent(draftHeader)}&description=${encodeURIComponent(draftDescription)}`;
+  const entityEditorUrl = `/dev/entity-create/new?name=${encodeURIComponent(draftHeader)}&description=${encodeURIComponent(draftDescription)}`;
 
   const renderedTree = useMemo(() => (
     plan.rootIds.flatMap(rootId => renderNode(rootId, 0))

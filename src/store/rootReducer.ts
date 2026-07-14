@@ -8,6 +8,7 @@ import wallSlice from "./wall/slice.ts";
 import debugSlice from "./debug/slice.ts";
 import unlocksSlice from "./unlocks/slice.ts";
 import globalEventsSlice from "./globalEvents/slice.ts";
+import worldViewSlice from "./worldView/slice.ts";
 
 export const rootReducer = combineSlices(
     cityReducer,
@@ -17,5 +18,6 @@ export const rootReducer = combineSlices(
     wallSlice,
     debugSlice,
     unlocksSlice,
-    globalEventsSlice
+    globalEventsSlice,
+    worldViewSlice
 );

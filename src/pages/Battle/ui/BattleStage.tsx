@@ -51,6 +51,10 @@ export function BattleStage(props: {
     wallZoneEffects: WallZoneEffects;
     showDebugOutlines: boolean;
     showSiegeOutline: boolean;
+    transparentBackground?: boolean;
+    renderTerrain?: boolean;
+    renderWall?: boolean;
+    interactive?: boolean;
     onBattleMetrics?: (metrics: BattleMetrics) => void;
     onBattleEnded?: (result: BattleResult) => void;
     onSiegeOverwhelmed?: () => void;
@@ -173,6 +177,7 @@ export function BattleStage(props: {
                 await nextApp.init({
                     resizeTo: hostRef.current,
                     backgroundColor: 0x0b0e13,
+                    backgroundAlpha: props.transparentBackground ? 0 : 1,
                     antialias: true,
                     preference: 'webgl',
                     failIfMajorPerformanceCaveat: false,
@@ -257,9 +262,11 @@ export function BattleStage(props: {
             worldRef.current = world;
             camera.container.addChild(world.worldLayer);
 
-            const battlefieldBackground = createBattlefieldTerrainLayer(props.terrainHexes);
-            battlefieldBackground.zIndex = -100;
-            world.worldLayer.addChild(battlefieldBackground);
+            if (props.renderTerrain ?? true) {
+                const battlefieldBackground = createBattlefieldTerrainLayer(props.terrainHexes);
+                battlefieldBackground.zIndex = -100;
+                world.worldLayer.addChild(battlefieldBackground);
+            }
 
             if (props.showDebugOutlines) {
                 const fullBoundsPlaceholder = new Graphics();
@@ -279,14 +286,16 @@ export function BattleStage(props: {
                 siegeOutlineRef.current = activeBattlefieldPlaceholder;
             }
 
-            const wallLayer = createBattleWallLayer({
-                wallSegments: props.wallSegments,
-                wallY,
-                segmentSize: CITY_HEX_WIDTH,
-                battlefieldWidth: props.battlefieldWidth,
-            });
-            wallLayer.zIndex = 15;
-            world.worldLayer.addChild(wallLayer);
+            if (props.renderWall ?? true) {
+                const wallLayer = createBattleWallLayer({
+                    wallSegments: props.wallSegments,
+                    wallY,
+                    segmentSize: CITY_HEX_WIDTH,
+                    battlefieldWidth: props.battlefieldWidth,
+                });
+                wallLayer.zIndex = 15;
+                world.worldLayer.addChild(wallLayer);
+            }
 
             const standaloneTowerWallCellKeys = new Set(
                 props.standaloneTowerDefenses.flatMap((defense) => defense.wallCellKey ? [defense.wallCellKey] : []),
@@ -404,16 +413,18 @@ export function BattleStage(props: {
 
             const onPointerUp = () => { isDragging = false; };
 
-            canvas.addEventListener('wheel', onWheel, { passive: false });
-            canvas.addEventListener('pointerdown', onPointerDown);
-            window.addEventListener('pointermove', onPointerMove);
-            window.addEventListener('pointerup', onPointerUp);
-            cleanupInput = () => {
-                canvas.removeEventListener('wheel', onWheel);
-                canvas.removeEventListener('pointerdown', onPointerDown);
-                window.removeEventListener('pointermove', onPointerMove);
-                window.removeEventListener('pointerup', onPointerUp);
-            };
+            if (props.interactive ?? true) {
+                canvas.addEventListener('wheel', onWheel, { passive: false });
+                canvas.addEventListener('pointerdown', onPointerDown);
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+                cleanupInput = () => {
+                    canvas.removeEventListener('wheel', onWheel);
+                    canvas.removeEventListener('pointerdown', onPointerDown);
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                };
+            }
 
             // v8 renderer still emits 'resize'
             const onResize = () => {
@@ -549,6 +560,10 @@ export function BattleStage(props: {
         props.monsterMovementModifiers,
         props.wallZoneEffects,
         props.showSiegeOutline,
+        props.transparentBackground,
+        props.renderTerrain,
+        props.renderWall,
+        props.interactive,
         props.onBattleMetrics,
         props.onBattleEnded,
         props.onSiegeOverwhelmed,
@@ -558,7 +573,13 @@ export function BattleStage(props: {
         <div
             ref={wrapperRef}
             data-nav-scroll-ignore="true"
-            style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}
+            style={{
+                width: '100%',
+                height: '100%',
+                display: 'grid',
+                placeItems: 'center',
+                pointerEvents: props.interactive === false ? 'none' : 'auto',
+            }}
         >
             <div ref={hostRef} style={hostStyle} />
             {stageError && (
@@ -681,7 +702,7 @@ function createBattleLoadingOverlay(app: Application) {
     };
 }
 
-function sendEnemiesToSideBorders(world: ReturnType<typeof createWorld>) {
+export function sendEnemiesToSideBorders(world: ReturnType<typeof createWorld>) {
     const retreatSpeed = Math.max(160, world.config.battlefieldWidth * 0.28);
     const removalPadding = 96;
 
@@ -958,7 +979,7 @@ function getTowerAnchorWallSegment({
     return wallTopSegments[towerIndex % Math.max(1, wallTopSegments.length)];
 }
 
-function getStandaloneTowerDefensePosition({
+export function getStandaloneTowerDefensePosition({
     defense,
     wallSegments,
     segmentSize,
@@ -1000,7 +1021,7 @@ function getStandaloneTowerDefensePosition({
     };
 }
 
-function createTowerData({
+export function createTowerData({
     stats,
     damageProfiles,
     projectileSprite,
@@ -1076,7 +1097,7 @@ function createTowerData({
     };
 }
 
-function getTowerZeroRotationRadians({
+export function getTowerZeroRotationRadians({
     towerPosition,
     battlefieldWidth,
     battlefieldHeight,

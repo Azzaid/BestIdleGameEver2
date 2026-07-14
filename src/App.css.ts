@@ -6,7 +6,21 @@ export const appContainer = style({
   flexDirection: 'column',
   height: '100%',
   minHeight: 0,
+  position: 'relative',
   backgroundColor: vars.color.background.app,
+});
+
+export const appRouteLayer = style({
+  position: 'relative',
+  zIndex: 1,
+  flex: 1,
+  minHeight: 0,
+  display: 'flex',
+  flexDirection: 'column',
+});
+
+export const appRouteLayerWorldOverlay = style({
+  pointerEvents: 'none',
 });
 
 export const appNav = style({
@@ -152,7 +166,16 @@ export const appContent = style({
   WebkitOverflowScrolling: 'touch',
   overscrollBehavior: 'contain',
   paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-  backgroundColor: vars.color.background.app,
+  backgroundColor: 'transparent',
+});
+
+export const appContentWorldOverlay = style({
+  pointerEvents: 'none',
+  overflow: 'hidden',
+});
+
+export const routeChrome = style({
+  pointerEvents: 'auto',
 });
 
 export const themeSwitcher = style({

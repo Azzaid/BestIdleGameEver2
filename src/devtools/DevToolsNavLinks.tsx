@@ -5,37 +5,37 @@ export default function DevToolsNavLinks() {
   return (
     <>
       <li>
-        <Link className={appTheme.navBarLink} to="/progression">Progression</Link>
+        <Link className={appTheme.navBarLink} to="/dev/progression">Progression</Link>
       </li>
       <li>
-        <Link className={appTheme.navBarLink} to="/ids">IDs</Link>
+        <Link className={appTheme.navBarLink} to="/dev/ids">IDs</Link>
       </li>
       <li>
-        <Link className={appTheme.navBarLink} to="/entity-create/new">Entity Create</Link>
+        <Link className={appTheme.navBarLink} to="/dev/entity-create/new">Entity Create</Link>
       </li>
       <li>
-        <Link className={appTheme.navBarLink} to="/content-plan">Content Plan</Link>
+        <Link className={appTheme.navBarLink} to="/dev/content-plan">Content Plan</Link>
       </li>
       <li>
-        <Link className={appTheme.navBarLink} to="/monster-edit/new">Monster Edit</Link>
+        <Link className={appTheme.navBarLink} to="/dev/monster-edit/new">Monster Edit</Link>
       </li>
       <li>
-        <Link className={appTheme.navBarLink} to="/enemy-animation-sprites">Enemy Animations</Link>
+        <Link className={appTheme.navBarLink} to="/dev/enemy-animation-sprites">Enemy Animations</Link>
       </li>
       <li>
-        <Link className={appTheme.navBarLink} to="/gun-part-editor">Part Editor</Link>
+        <Link className={appTheme.navBarLink} to="/dev/gun-part-editor">Part Editor</Link>
       </li>
       <li>
-        <Link className={appTheme.navBarLink} to="/global-events">Global Events</Link>
+        <Link className={appTheme.navBarLink} to="/dev/global-events">Global Events</Link>
       </li>
       <li>
-        <Link className={appTheme.navBarLink} to="/homogeneous-values">Values</Link>
+        <Link className={appTheme.navBarLink} to="/dev/homogeneous-values">Values</Link>
       </li>
       <li>
-        <Link className={appTheme.navBarLink} to="/hex-background-editor">Hex Backgrounds</Link>
+        <Link className={appTheme.navBarLink} to="/dev/hex-background-editor">Hex Backgrounds</Link>
       </li>
       <li>
-        <Link className={appTheme.navBarLink} to="/damage-area-vfx">Area VFX</Link>
+        <Link className={appTheme.navBarLink} to="/dev/damage-area-vfx">Area VFX</Link>
       </li>
     </>
   );

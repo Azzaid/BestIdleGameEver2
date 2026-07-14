@@ -7,13 +7,14 @@ export const cityPage = style({
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     gap: '6px',
     height: '100%',
     minHeight: 0,
     overflow: 'hidden',
-    padding: '0 max(0px, env(safe-area-inset-right, 0px)) max(0px, env(safe-area-inset-bottom, 0px)) max(0px, env(safe-area-inset-left, 0px))',
-    backgroundColor: vars.color.background.app,
+    padding: '8px max(8px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px))',
+    backgroundColor: 'transparent',
+    pointerEvents: 'none',
     '@media': {
         '(max-width: 760px)': {
             display: 'block',
@@ -29,6 +30,7 @@ export const globalEffectsShell = style({
     top: 0,
     right: 0,
     zIndex: 5,
+    pointerEvents: 'auto',
     width: 'min(420px, calc(100% - 36px))',
     height: '100%',
     display: 'grid',
@@ -142,19 +144,26 @@ export const cityContainer = style({
 export const buildingSelectorContainer = style({
     flex: '1 1 220px',
     minWidth: '220px',
+    maxWidth: '360px',
     maxHeight: '100%',
     minHeight: 0,
     display: 'grid',
     gap: '8px',
     overflowY: 'auto',
     scrollbarGutter: 'stable',
+    pointerEvents: 'auto',
     '@media': {
         '(max-width: 760px)': {
             minWidth: 0,
+            maxWidth: 'none',
             maxHeight: 'none',
             overflowY: 'visible',
         },
     },
+});
+
+export const overlayControl = style({
+    pointerEvents: 'auto',
 });
 
 export const selectionPanel = style({

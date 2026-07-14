@@ -436,7 +436,7 @@ export default function ProgressionPage() {
                 <div className={s.emptyPreview}>No sprite</div>
               )}
             </div>
-            <Link className={s.editButton} to={selectedDetails?.editPath ?? `/entity-create/${encodeURIComponent(selectedNode.id)}`}>
+            <Link className={s.editButton} to={selectedDetails?.editPath ?? `/dev/entity-create/${encodeURIComponent(selectedNode.id)}`}>
               Edit Entity
             </Link>
             {selectedDetails?.description ? (
@@ -641,7 +641,7 @@ function getSelectedItemDetails(node: ProgressionGraphNode): SelectedItemDetails
         ...getValueRows(research?.values),
         ...getEffectRows(research?.effects),
       ],
-      editPath: `/entity-create/${encodeURIComponent(node.id)}`,
+      editPath: `/dev/entity-create/${encodeURIComponent(node.id)}`,
     };
   }
 
@@ -662,7 +662,7 @@ function getSelectedItemDetails(node: ProgressionGraphNode): SelectedItemDetails
       ],
       spriteSrc: asset?.src,
       spriteLabel: asset?.label,
-      editPath: `/entity-create/${encodeURIComponent(node.id)}`,
+      editPath: `/dev/entity-create/${encodeURIComponent(node.id)}`,
     };
   }
 
@@ -681,7 +681,7 @@ function getSelectedItemDetails(node: ProgressionGraphNode): SelectedItemDetails
     ],
     spriteSrc: asset?.src,
     spriteLabel: asset?.label,
-    editPath: `/entity-create/${encodeURIComponent(node.id)}`,
+    editPath: `/dev/entity-create/${encodeURIComponent(node.id)}`,
   };
 }
 

@@ -12,7 +12,7 @@ export const maxCitySize = 8;
 
 export const DEFAULT_INITIAL_CITY_BIOME: CityBiome = CITY_BIOMES.steppe;
 
-export const CITY_HEX_RADIUS = 64;
+export const CITY_HEX_RADIUS = 256;
 
 export const CITY_HEX_WIDTH = Math.sqrt(3) * CITY_HEX_RADIUS;
 

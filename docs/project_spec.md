@@ -1,6 +1,6 @@
 # Project Specification: Best Idle Game Ever 2
 
-Last updated: 2026-07-11 (local)
+Last updated: 2026-07-14 (local)
 
 This document is the repository's single project specification. It summarizes the implemented prototype and the current design direction from the rest of the `docs` folder. The focused design documents remain the deeper references for individual systems.
 
@@ -34,10 +34,9 @@ For portable technical decisions, data schema principles, value resolution rules
 
 The current app is a frontend-only prototype with multiple routed views:
 
-- Battle: Pixi/canvas battlefield rendering with city-continuation hex terrain, enemy spawning, tower fire, projectiles, health bars, wall pressure, and battle state.
+- City: Pixi/canvas world rendering with clickable city and wall tiles, city-continuation battlefield terrain beyond the wall, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
 - Build: tower assembly from component slots with resolved stats, support costs, warnings, keywords, and synergies.
 - Research: radial research tree with unlockable nodes and vector coloring.
-- City: SVG hex city visualization with clickable city and wall tiles, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
 - History: happened global events with remembered new-event scrolling and foreseen event hints.
 - Debug/content tools: progression graph, ID audit, entity creation, monster editing, gun part editor, global events editor, homogeneous values editor, and hex background editor. These tools are development-only surfaces and are kept behind `import.meta.env.DEV` route and import boundaries.
 
@@ -52,7 +51,7 @@ Current stack:
 - Redux Toolkit.
 - React Router with hash routing.
 - vanilla-extract for typed CSS.
-- Pixi.js for battle rendering.
+- Pixi.js for world and battle rendering.
 - TanStack Table and React Virtual for the Build page parts table.
 - react-d3-tree for the Research page tree visualization.
 
@@ -60,13 +59,13 @@ Entry points and app shell:
 
 - `src/main.tsx` loads global styles and renders the app.
 - `src/App.tsx` wires `Provider`, `ThemeProvider`, the outer app error boundary, `HashRouter`, navigation, game routes, lazy development-tool route gating, content auto-unlock hooks, global event signals/history navigation, notifications, and the shared upkeep bar.
-- `src/store` contains Redux setup, slices, typed hooks, and selectors.
+- `src/store` contains Redux setup, slices, typed hooks, and selectors. `src/store/worldView` owns the current world screen mode (`city` or `battle`) so UI components and mechanics can show, hide, enable, or pause behavior based on whether the player is focused on city building or the battlefield.
 - `src/devtools` contains development-only route/nav modules and devtools UI state. Devtools UI state is persisted separately from the gameplay save and should not be added to the game Redux persistence payload.
 - `src/theme` contains the vanilla-extract theme contract and runtime theme provider.
 
 Primary routes:
 
-- `/` and `/battle` render Battle.
+- `/` redirects to `/city`.
 - `/build` renders tower assembly.
 - `/research` renders research.
 - `/city` renders the city view.
@@ -337,10 +336,11 @@ Building data convention:
 
 City view implementation:
 
-- The City page renders an SVG hex map.
+- The City page renders a Pixi hex world. The city and battlefield terrain share one canvas and one camera, with separate city and battle pan/zoom clamp rules that switch when `worldView.mode` changes between `city` and `battle`. Battle runtime entities such as monsters, tower visuals, projectiles, health bars, and effects are mounted into a separate combat layer under that same city camera.
+- `worldView.mode` is the Redux source of truth for whether the shared world is in City mode or Battle mode. This is distinct from siege runtime state such as pressure versus siege waves, and is intended for hiding or showing UI components and for enabling or disabling screen-specific mechanics.
 - City state stores the full generated map through the site's maximum cell radius plus reveal padding. Unclaimed cells are identified with `isUnclaimed`; lost-but-remembered cells use `isLost`. Gameplay selectors expose only active claimed hexes for upkeep, wall, battle, research, progression, and signature calculations.
 - Each city has a maximum cell radius determined when it is created. The current implementation sets it from the `maxCitySize` constant and precomputes a coherent terrain vector map through `maxCitySize + 2`.
-- City expansion is side-based: city state stores the last claimed radius for each big-hex side (`east`, `southEast`, `southWest`, `west`, `northWest`, `northEast`), and the SVG map renders one semi-transparent arrow over each claimable unclaimed or lost side strip. Confirming an arrow increments that side's stored radius and claims that side's sector of the next big-hex ring, so radius 2 claims 3 cells, radius 3 claims 4 cells, and so on. Neighboring side radii do not move until their own side is expanded. Only the top wall side can move the top frontier upward; other side expansions skip candidate cells above the current wall frontier. A side arrow is disabled when no claimable strip remains. Controlled territory gates only newly claimed cells outside the wall-protected regular hex; cells inside that protected hex can be claimed during siege. Reclaiming lost hexes restores their stored terrain, buildings, and structure markers instead of generating empty land.
+- City expansion is side-based: city state stores the last claimed radius for each big-hex side (`east`, `southEast`, `southWest`, `west`, `northWest`, `northEast`), and the Pixi world renders one semi-transparent arrow over each claimable unclaimed or lost side strip. Confirming an arrow increments that side's stored radius and claims that side's sector of the next big-hex ring, so radius 2 claims 3 cells, radius 3 claims 4 cells, and so on. Neighboring side radii do not move until their own side is expanded. Only the top wall side can move the top frontier upward; other side expansions skip candidate cells above the current wall frontier. A side arrow is disabled when no claimable strip remains. Controlled territory gates only newly claimed cells outside the wall-protected regular hex; cells inside that protected hex can be claimed during siege. Reclaiming lost hexes restores their stored terrain, buildings, and structure markers instead of generating empty land.
 - Normal city hexes use city building data.
 - The top hex row is reserved for wall hexes and uses the wall build catalog.
 - Wall hexes have separate wall-segment and wall-top slots. Wall segments are replaced in place: the current segment is hidden from the wall list, choosing a different segment increases city footprint as if the previous segment were demolished. Wall-top occupants follow the city-building rebuild rule: a tower mount or wall superstructure must be demolished before another wall-top detail can be built.

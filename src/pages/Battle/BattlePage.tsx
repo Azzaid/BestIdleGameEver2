@@ -585,6 +585,7 @@ const BattlePage = () => {
                         wallZoneEffects={wallZoneEffects}
                         showDebugOutlines={isDebugModeEnabled}
                         showSiegeOutline={isSiege}
+                        transparentBackground
                         onBattleMetrics={handleBattleMetrics}
                         onBattleEnded={handleBattleEnded}
                         onSiegeOverwhelmed={handleSiegeOverwhelmed}

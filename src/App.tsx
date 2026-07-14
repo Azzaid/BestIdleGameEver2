@@ -1,13 +1,11 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode, type TouchEvent, type UIEvent, type WheelEvent } from 'react'
-import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import {Provider} from "react-redux";
 import {store} from "./store";
 import { ThemeProvider } from './theme/ThemeProvider'
 import * as appTheme from './App.css.ts'
 import {AppErrorBoundary} from "./components/AppErrorBoundary.tsx";
 
-// Import page components
-import BattlePage from './pages/Battle/BattlePage'
 import BuildPage from './pages/Build/BuildPage'
 import ResearchPage from './pages/Research/ResearchPage'
 import CityPage from './pages/City/CityPage'
@@ -24,27 +22,36 @@ import {useContentAutoUnlock} from "./hooks/useContentAutoUnlock.ts";
 import {useGlobalEventSignals} from "./components/GlobalEvents/useGlobalEventSignals.ts";
 import {selectUnseenHistoryEntryIds} from "./store/globalEvents/selectors.ts";
 import {VictoryEventOverlay} from "./components/GlobalEvents/VictoryEventOverlay.tsx";
+import {CityWorldUnderlay} from "./pages/City/CityWorldUnderlay.tsx";
+import {CityCanvasInteractionProvider} from "./pages/City/cityCanvasInteraction.tsx";
+import type {HexCell} from "./models/city/HexGrid.ts";
+import type {CityExpansionSideId} from "./models/city/expansion.ts";
 
-const DevToolsNavLinks = import.meta.env.DEV
-    ? lazy(() => import("./devtools/DevToolsNavLinks.tsx"))
+const DevShell = import.meta.env.DEV
+    ? lazy(() => import("./devtools/DevShell.tsx"))
     : null;
 
-const DevToolsRouteGate = import.meta.env.DEV
-    ? lazy(() => import("./devtools/DevToolsRouteGate.tsx"))
-    : null;
-
-function AppFrame() {
+function GameShell() {
   const dispatch = useTypedDispatch();
   const location = useLocation();
   const contentRef = useRef<HTMLElement | null>(null);
   const lastScrollTopRef = useRef(0);
   const lastTouchYRef = useRef<number | null>(null);
   const [isNavHidden, setIsNavHidden] = useState(false);
+  const [selectedCityHex, setSelectedCityHex] = useState<HexCell | null>(null);
+  const [confirmingCityExpansionSide, setConfirmingCityExpansionSide] = useState<CityExpansionSideId | null>(null);
   const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
   const unseenHistoryEntryCount = useTypedSelector(selectUnseenHistoryEntryIds).length;
   const isLocalDebugAvailable = import.meta.env.DEV;
   const isDebugToolsEnabled = isLocalDebugAvailable && isDebugModeEnabled;
+  const cityCanvasInteraction = {
+    selectedHex: selectedCityHex,
+    setSelectedHex: setSelectedCityHex,
+    confirmingExpansionSide: confirmingCityExpansionSide,
+    setConfirmingExpansionSide: setConfirmingCityExpansionSide,
+  };
+  const cityCanvasIsInteractive = location.pathname === "/city" || location.pathname === "/";
 
   useResearchAutoUnlock();
   useContentAutoUnlock();
@@ -131,10 +138,10 @@ function AppFrame() {
     lastTouchYRef.current = currentTouchY;
   };
 
-  const renderScrollableRoute = (children: ReactNode) => (
+  const renderScrollableRoute = (children: ReactNode, options?: {worldOverlay?: boolean}) => (
       <main
           ref={contentRef}
-          className={appTheme.appContent}
+          className={`${appTheme.appContent} ${options?.worldOverlay ? appTheme.appContentWorldOverlay : ""}`}
           onScroll={handleContentScroll}
           onWheel={handleContentWheel}
           onTouchStart={handleContentTouchStart}
@@ -145,6 +152,7 @@ function AppFrame() {
   );
 
   return (
+      <CityCanvasInteractionProvider value={cityCanvasInteraction}>
               <div className={appTheme.appContainer}>
                   <nav className={`${appTheme.appNav} ${isNavHidden ? appTheme.appNavHidden : ""}`}>
                       <div className={appTheme.navLeft}>
@@ -161,9 +169,6 @@ function AppFrame() {
                           <div className={appTheme.appTitle}>Tower Defense Idle</div>
                       </div>
                       <ul className={appTheme.navLinks}>
-                          <li className={appTheme.navBarItem}>
-                              <Link className={appTheme.navBarLink} to="/battle">Battle</Link>
-                          </li>
                           <li>
                               <Link className={appTheme.navBarLink} to="/build">Tower</Link>
                           </li>
@@ -185,51 +190,47 @@ function AppFrame() {
                                   )}
                               </Link>
                           </li>
-                          {isDebugToolsEnabled && DevToolsNavLinks && (
-                              <Suspense fallback={null}>
-                                  <DevToolsNavLinks />
-                              </Suspense>
+                          {isDebugToolsEnabled && (
+                              <li>
+                                  <Link className={appTheme.navBarLink} to="/dev">Dev</Link>
+                              </li>
                           )}
                       </ul>
                       <div className={appTheme.themeSwitcher}>
                         {/*<ThemeSwitcher />*/}
                       </div>
                   </nav>
+                  <CityWorldUnderlay
+                      interactive={cityCanvasIsInteractive}
+                  />
                   <NotificationCenter />
                   <VictoryEventOverlay />
-                  <Routes>
-                      <Route path="/" element={renderScrollableRoute(<BattlePage />)} />
-                      <Route path="/battle" element={renderScrollableRoute(<BattlePage />)} />
-                      <Route path="/build" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<BuildPage />)}</UpkeepBarRouteFrame>} />
-                      <Route
-                          path="/research"
-                          element={(
-                              <UpkeepBarRouteFrame>
-                                  {renderScrollableRoute(signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />)}
-                              </UpkeepBarRouteFrame>
-                          )}
-                      />
-                      <Route
-                          path="/city"
-                          element={(
-                              <UpkeepBarRouteFrame rightSlot={<CityExpansionControl />}>
-                                  {renderScrollableRoute(<CityPage />)}
-                              </UpkeepBarRouteFrame>
-                          )}
-                      />
-                      <Route path="/history" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<HistoryPage />)}</UpkeepBarRouteFrame>} />
-                      {DevToolsRouteGate && (
+                  <div className={`${appTheme.appRouteLayer} ${cityCanvasIsInteractive ? appTheme.appRouteLayerWorldOverlay : ""}`}>
+                      <Routes>
+                          <Route path="/" element={<Navigate to="/city" replace />} />
+                          <Route path="/build" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<BuildPage />)}</UpkeepBarRouteFrame>} />
                           <Route
-                              path="/*"
-                              element={renderScrollableRoute(
-                                  <Suspense fallback={null}>
-                                      <DevToolsRouteGate enabled={isDebugToolsEnabled} />
-                                  </Suspense>
+                              path="/research"
+                              element={(
+                                  <UpkeepBarRouteFrame>
+                                      {renderScrollableRoute(signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />)}
+                                  </UpkeepBarRouteFrame>
                               )}
                           />
-                      )}
-                  </Routes>
+                          <Route
+                              path="/city"
+                              element={(
+                                  <UpkeepBarRouteFrame rightSlot={<CityExpansionControl />}>
+                                      {renderScrollableRoute(<CityPage />, {worldOverlay: true})}
+                                  </UpkeepBarRouteFrame>
+                              )}
+                          />
+                          <Route path="/history" element={<UpkeepBarRouteFrame>{renderScrollableRoute(<HistoryPage />)}</UpkeepBarRouteFrame>} />
+                          <Route path="*" element={<Navigate to="/city" replace />} />
+                      </Routes>
+                  </div>
               </div>
+      </CityCanvasInteractionProvider>
   )
 }
 
@@ -242,11 +243,42 @@ function App() {
       <ThemeProvider initialTheme={'tech'}>
           <AppErrorBoundary>
               <Router>
-                  <AppFrame />
+                  <AppRoutes />
               </Router>
           </AppErrorBoundary>
       </ThemeProvider>
   )
+}
+
+function AppRoutes() {
+  const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
+  const devToolsEnabled = import.meta.env.DEV && isDebugModeEnabled;
+  const devFallbackPath = DevShell ? "/dev/progression" : "/city";
+
+  return (
+      <Routes>
+          <Route
+              path="/dev/*"
+              element={DevShell ? (
+                      <Suspense fallback={null}>
+                          <DevShell enabled={devToolsEnabled} />
+                      </Suspense>
+                  ) : <Navigate to="/city" replace />}
+          />
+          <Route path="/progression" element={<Navigate to={devFallbackPath} replace />} />
+          <Route path="/ids" element={<Navigate to={DevShell ? "/dev/ids" : "/city"} replace />} />
+          <Route path="/entity-create/*" element={<Navigate to={DevShell ? "/dev/entity-create/new" : "/city"} replace />} />
+          <Route path="/content-plan" element={<Navigate to={DevShell ? "/dev/content-plan" : "/city"} replace />} />
+          <Route path="/monster-edit/*" element={<Navigate to={DevShell ? "/dev/monster-edit/new" : "/city"} replace />} />
+          <Route path="/enemy-animation-sprites" element={<Navigate to={DevShell ? "/dev/enemy-animation-sprites" : "/city"} replace />} />
+          <Route path="/gun-part-editor" element={<Navigate to={DevShell ? "/dev/gun-part-editor" : "/city"} replace />} />
+          <Route path="/global-events" element={<Navigate to={DevShell ? "/dev/global-events" : "/city"} replace />} />
+          <Route path="/homogeneous-values" element={<Navigate to={DevShell ? "/dev/homogeneous-values" : "/city"} replace />} />
+          <Route path="/hex-background-editor" element={<Navigate to={DevShell ? "/dev/hex-background-editor" : "/city"} replace />} />
+          <Route path="/damage-area-vfx" element={<Navigate to={DevShell ? "/dev/damage-area-vfx" : "/city"} replace />} />
+          <Route path="/*" element={<GameShell />} />
+      </Routes>
+  );
 }
 
 function AppWithProviders() {
@@ -260,7 +292,9 @@ function AppWithProviders() {
 function UpkeepBarRouteFrame({children, rightSlot}: {children: ReactNode; rightSlot?: ReactNode}) {
   return (
       <>
-          <UpkeepBar rightSlot={rightSlot} />
+          <div className={appTheme.routeChrome}>
+              <UpkeepBar rightSlot={rightSlot} />
+          </div>
           {children}
       </>
   );
@@ -273,7 +307,7 @@ function BlockedPage({title}: {title: string}) {
           <p className={appTheme.blockedText}>
               The city is besieged. Repel the attack before starting research.
           </p>
-          <Link className={appTheme.blockedLink} to="/battle">To battle!</Link>
+          <Link className={appTheme.blockedLink} to="/city">To city</Link>
       </section>
   )
 }

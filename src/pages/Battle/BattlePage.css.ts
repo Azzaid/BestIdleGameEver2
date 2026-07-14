@@ -7,7 +7,7 @@ export const battlePage = style({
   display: 'grid',
   placeItems: 'center',
   overflow: 'hidden',
-  backgroundColor: vars.color.background.app,
+  backgroundColor: 'transparent',
   '@media': {
     '(min-width: 760px) and (min-height: 680px)': {
       minHeight: '560px',
@@ -157,6 +157,7 @@ export const battleLocked = style({
   padding: 'clamp(12px, 5vw, 22px)',
   textAlign: 'center',
   color: vars.color.text.primary,
+  pointerEvents: 'auto',
 });
 
 export const battleLockedTitle = style({

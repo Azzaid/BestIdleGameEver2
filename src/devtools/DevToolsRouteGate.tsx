@@ -14,6 +14,10 @@ import DamageAreaVfxEditorPage from "../pages/DamageAreaVfxEditor/DamageAreaVfxE
 export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
   const routeElement = useRoutes([
     {
+      index: true,
+      element: <Navigate to="/dev/progression" replace />,
+    },
+    {
       path: "progression",
       element: enabled ? <ProgressionPage /> : <Navigate to="/battle" replace />,
     },
@@ -27,7 +31,7 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     },
     {
       path: "entity-create",
-      element: <Navigate to="/entity-create/new" replace />,
+      element: <Navigate to="/dev/entity-create/new" replace />,
     },
     {
       path: "entity-create/:entityId",
@@ -39,7 +43,7 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     },
     {
       path: "monster-edit",
-      element: <Navigate to="/monster-edit/new" replace />,
+      element: <Navigate to="/dev/monster-edit/new" replace />,
     },
     {
       path: "monster-edit/:monsterId",

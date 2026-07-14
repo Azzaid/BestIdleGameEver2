@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as s from './CityPage.css.ts';
-import CityHex from "./Components/CityHex/CityHex.tsx";
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {BuildingSelector} from "./Components/BuildingSelector/BuildingSelector.tsx";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
@@ -9,7 +8,6 @@ import {
     selectCityExpansionOptions,
     selectBuiltStructureIds,
     selectAllCityHexes,
-    selectCityBiome,
     selectCityBuildings,
     selectCityHexes,
     selectCityStructureCandidates,
@@ -66,8 +64,9 @@ import {sendNotification} from "../../lib/notifications/eventBus.ts";
 import {enqueueGlobalSignal} from "../../store/globalEvents/slice.ts";
 import {SIGNATURE_PER_HEX} from "../../data/constants.ts";
 import {getAxialDistance} from "../../models/city/expansion.ts";
-import type {CityExpansionOption, CityExpansionSideId} from "../../models/city/expansion.ts";
+import type {CityExpansionOption} from "../../models/city/expansion.ts";
 import {selectIsDebugModeEnabled} from "../../store/debug/selectors.ts";
+import {useCityCanvasInteraction} from "./cityCanvasInteraction.tsx";
 
 const EXPAND_WARNING = "City grows bigger, more noticeable and attracts more monsters";
 const LOST_TERRITORY_BLOCK_REASON = "Lost territory must be reclaimed before it can work, transform, or be rebuilt.";
@@ -78,7 +77,6 @@ const CityPage = () => {
     const allHexes = useTypedSelector(selectAllCityHexes);
     const cityExpansionOptions = useTypedSelector(selectCityExpansionOptions);
     const hexes = useTypedSelector(selectCityHexes);
-    const cityBiome = useTypedSelector(selectCityBiome);
     const cityBuildings = useTypedSelector(selectCityBuildings);
     const builtStructureIds = useTypedSelector(selectBuiltStructureIds);
     const structureCandidates = useTypedSelector(selectCityStructureCandidates);
@@ -95,16 +93,13 @@ const CityPage = () => {
     const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
     const activeGlobalModifiers = useTypedSelector(selectActiveGlobalModifiers);
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
-    const [selectedHex, setSelectedHex] = useState<HexCell | null>(null);
-    const [confirmingExpansionSide, setConfirmingExpansionSide] = useState<CityExpansionSideId | null>(null);
+    const {
+        selectedHex,
+        setSelectedHex,
+        confirmingExpansionSide,
+        setConfirmingExpansionSide,
+    } = useCityCanvasInteraction();
     const [globalEffectsOpen, setGlobalEffectsOpen] = useState(false);
-    const selectHex = (hex: HexCell) => {
-        const selectedCoreHex = hex.partOfStructureId && !hex.isLost
-            ? hexes.find(candidate => candidate.cellKey === (hex.structureCoreCellKey ?? hex.cellKey)) ?? hex
-            : hex;
-
-        setSelectedHex(selectedCoreHex);
-    };
 
     useEffect(() => {
         if (!selectedHex) return;
@@ -305,19 +300,6 @@ const CityPage = () => {
 
     return (
         <div className={s.cityPage}>
-            <div className={s.cityViewport}>
-                <div className={s.cityContainer}>
-                    <CityHex
-                        cells={allHexes}
-                        biome={cityBiome}
-                        expansionOptions={cityExpansionOptions}
-                        getExpansionDisabledReason={getExpansionDisabledReason}
-                        showDebugAxes={isDebugModeEnabled}
-                        onExpandSide={setConfirmingExpansionSide}
-                        onSelect={selectHex}
-                    />
-                </div>
-            </div>
             <GlobalEffectsDrawer
                 activeGlobalModifiers={activeGlobalModifiers}
                 isOpen={globalEffectsOpen}
@@ -379,13 +361,15 @@ const CityPage = () => {
                 </div>
             }
             {selectedExpansionOption && (
-                <ConfirmationModal
-                    title="Expand City?"
-                    message={`${EXPAND_WARNING}. ${selectedExpansionOption.side.label} by ${selectedExpansionOption.addedHexCount} hexes.`}
-                    confirmLabel="Expand"
-                    onCancel={() => setConfirmingExpansionSide(null)}
-                    onConfirm={handleExpandConfirm}
-                />
+                <div className={s.overlayControl}>
+                    <ConfirmationModal
+                        title="Expand City?"
+                        message={`${EXPAND_WARNING}. ${selectedExpansionOption.side.label} by ${selectedExpansionOption.addedHexCount} hexes.`}
+                        confirmLabel="Expand"
+                        onCancel={() => setConfirmingExpansionSide(null)}
+                        onConfirm={handleExpandConfirm}
+                    />
+                </div>
             )}
         </div>
     );

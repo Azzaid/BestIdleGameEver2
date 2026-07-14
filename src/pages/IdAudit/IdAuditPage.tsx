@@ -640,11 +640,11 @@ export default function IdAuditPage() {
                 ))}
                 {visibleBaseColumns.edit && <td className={s.cell}>
                   {row.category === "Enemy" ? (
-                    <Link className={s.editLink} to={`/monster-edit/${encodeURIComponent(row.id)}`}>Edit</Link>
+                    <Link className={s.editLink} to={`/dev/monster-edit/${encodeURIComponent(row.id)}`}>Edit</Link>
                   ) : isEditableEntityCategory(row.category) ? (
                     <div className={s.actionLinks}>
-                      <Link className={s.editLink} to={`/entity-create/${encodeURIComponent(row.id)}`}>Edit</Link>
-                      <Link className={s.editLink} to={`/entity-create/new?copyFrom=${encodeURIComponent(row.id)}`}>Copy</Link>
+                      <Link className={s.editLink} to={`/dev/entity-create/${encodeURIComponent(row.id)}`}>Edit</Link>
+                      <Link className={s.editLink} to={`/dev/entity-create/new?copyFrom=${encodeURIComponent(row.id)}`}>Copy</Link>
                     </div>
                   ) : (
                     <span className={s.muted}>N/A</span>
