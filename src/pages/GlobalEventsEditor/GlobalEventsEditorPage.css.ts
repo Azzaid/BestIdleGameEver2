@@ -195,6 +195,45 @@ export const input = style({
   color: vars.color.text.primary,
 });
 
+export const searchAddRow = style({
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) auto",
+  gap: "6px",
+});
+
+export const tokenList = style({
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "6px",
+});
+
+export const token = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "7px",
+  minWidth: 0,
+  maxWidth: "100%",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "999px",
+  padding: "4px 8px",
+  background: vars.color.background.app,
+  color: vars.color.text.primary,
+  cursor: "pointer",
+  fontSize: "0.78rem",
+  fontWeight: 800,
+  selectors: {
+    "&:hover": {
+      borderColor: vars.color.border.focus,
+    },
+  },
+});
+
+export const tokenLabel = style({
+  minWidth: 0,
+  overflowWrap: "anywhere",
+  textAlign: "left",
+});
+
 export const textarea = style([
   input,
   {

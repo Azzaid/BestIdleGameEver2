@@ -1,29 +1,25 @@
 [
   {
     "id": "fungal_inheritance_migration",
-    "title": "Fungal Inheritance Migration",
-    "description": "Preserves a portion of this city's fungal production for future cities.",
-    "imageId": "cityTopDownCircularMap",
-    "imageAlt": "A circular city map surrounded by wilderness.",
+    "title": "Fungi genetic legacy",
     "trigger": {
       "type": "migration"
     },
-    "blockRequirements": [
-      {
-        "type": "globalFlagExists",
-        "flagId": "migration.fungal_inheritance_claimed"
-      }
-    ],
-    "once": true,
+    "once": false,
     "priority": 100,
     "actions": [
       {
         "type": "applyGlobalModifier",
         "modifierId": "fungal_inheritance"
-      },
+      }
+    ],
+    "description": "We gathered strongest spores. Next generation of mushrooms on a new place will grow stronger than ever.",
+    "notificationLevel": "notify",
+    "hint": "If we grow mature shrooms we will be able to take the strongest spores to a new place...",
+    "requirements": [
       {
-        "type": "addFlag",
-        "flagId": "migration.fungal_inheritance_claimed"
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.maturePoisonousMushrooms"
       }
     ]
   },
@@ -55,6 +51,11 @@
       }
     ],
     "description": "A small group of survivors struggles to endure in the ruins of the old world.\n\nYou have found a relatively safe place and established a crude settlement. But safety never lasts for long.\n\nThe growing settlement has attracted the attention of nearby monsters.\n\nBuild your first defense tower and hold them back.",
+    "notificationLevel": "force",
+    "eventsToForesee": [
+      "path_of_life",
+      "back_to_medieval"
+    ],
     "imageId": "The_new_begining",
     "imageAlt": "The new begining"
   },
@@ -69,6 +70,11 @@
     "priority": 0,
     "actions": [],
     "description": "Some people rejected the ways of the old world.\n\nThey chose a simpler life, relying on wood, stone, and the strength of human hands.\n\nWhile others searched for forgotten technologies, ancient magic, or new forms of life, these settlers sought to reclaim the world one piece at a time.\n\nClear the wilderness. Expand your settlement. Bring civilization back to the ruins.",
+    "notificationLevel": "force",
+    "hint": "What if we gather some tools and wood...",
+    "eventsToForesee": [
+      "power_of_man"
+    ],
     "imageId": "back_to_medieval",
     "imageAlt": "Back to medieval"
   },
@@ -96,6 +102,8 @@
     "priority": 0,
     "actions": [],
     "description": "Some people chose a different path.\n\nInstead of rebuilding the old world, they learned to become part of the new one.\n\nListen to the whispers of the trees. Feel the endless mycelium spreading beneath your feet. Walk among creatures shaped by centuries of mutation and change.\n\nNature endured when empires fell.\n\nBefriend the wild. Guide its growth. Claim the world as your own.",
+    "notificationLevel": "force",
+    "hint": "What if we try to use mutated flora and fauna...",
     "imageId": "path_of_life",
     "imageAlt": "Path of life"
   },
@@ -117,7 +125,8 @@
         "modifierId": "village"
       }
     ],
-    "description": "Few houses more. You starting to attract attention."
+    "description": "Few houses more. You starting to attract attention.",
+    "notificationLevel": "notify"
   },
   {
     "id": "power_of_man",
@@ -131,6 +140,7 @@
     "actions": [],
     "description": "Your empire has grown vast and strong.\n\nThe wilderness has been reclaimed. Roads are safe once more. Borders are watched day and night.\n\nFar from the frontier, people have begun to forget what it means to carry a sword.\n\nService on the border is no longer a duty. It has become a profession, rewarded with gold instead of necessity.\n\nIn a world where life was cheap and only strength endured, you carved out a place where ordinary people could simply live.\n\nA sanctuary.\n\nWill it endure?\n\nOr will plague, forgotten magic, or the relics of the old world one day bring it to ruin?\n\nOnly time will answer.\n\nFor now, those who dream of another path may leave the safety of the Empire.\n\nBeyond the frontier, the wilderness still awaits.",
     "notificationLevel": "victory",
+    "hint": "What if we build more cities an gather lots of people and gold...",
     "imageId": "power_of_man",
     "imageAlt": "Power of man",
     "requirements": [

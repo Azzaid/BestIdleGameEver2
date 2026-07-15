@@ -192,6 +192,13 @@ export default function GlobalEventsEditorPage() {
   const modifierPreview = useMemo(() => createModifierDefinition(modifierDraft), [modifierDraft]);
   const eventPreviewJson = useMemo(() => JSON.stringify(eventPreview, null, 2), [eventPreview]);
   const modifierPreviewJson = useMemo(() => JSON.stringify(modifierPreview.definition, null, 2), [modifierPreview.definition]);
+  const eventIdOptions = useMemo(
+    () => events.map(event => ({
+      value: event.id,
+      label: `${event.title} (${event.id})`,
+    })),
+    [events],
+  );
 
   useEffect(() => {
     setEventImageDraft(currentDraft => {
@@ -259,6 +266,7 @@ export default function GlobalEventsEditorPage() {
         {activeTab === "events" ? (
           <EventEditor
             draft={eventDraft}
+            eventOptions={eventIdOptions}
             modifierIds={modifiers.map(modifier => modifier.id)}
             imageDraft={eventImageDraft}
             previewJson={eventPreviewJson}
@@ -419,6 +427,7 @@ function DefinitionList<T extends {id: string; title?: string}>({
 
 function EventEditor({
   draft,
+  eventOptions,
   modifierIds,
   imageDraft,
   previewJson,
@@ -430,6 +439,7 @@ function EventEditor({
   onSave,
 }: {
   draft: EventDraft;
+  eventOptions: readonly {value: string; label: string}[];
   modifierIds: readonly string[];
   imageDraft: EventImageDraft | null;
   previewJson: string;
@@ -466,11 +476,12 @@ function EventEditor({
               {notificationLevels.map(level => <option key={level} value={level}>{formatLabel(level)}</option>)}
             </select>
           </label>
-          <TextField
+          <EventsToForeseeField
+            id={`events-to-foresee-${draft.id}`}
             label="Events to foresee"
             value={draft.eventsToForesee}
+            options={eventOptions}
             onChange={eventsToForesee => onChange({eventsToForesee})}
-            placeholder="event_id, other_event_id"
           />
           <label className={`${s.field} ${s.fullWidth}`}>
             <span className={s.label}>Description</span>
@@ -960,6 +971,97 @@ function TextField({
       <input className={s.input} type={type} value={value} placeholder={placeholder} onChange={event => onChange(event.target.value)} />
     </label>
   );
+}
+
+function EventsToForeseeField({
+  id,
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  options: readonly {value: string; label: string}[];
+  onChange: (value: string) => void;
+}) {
+  const [searchValue, setSearchValue] = useState("");
+  const selectedValues = useMemo(() => parseKeywordList(value), [value]);
+  const selectedValueSet = useMemo(() => new Set(selectedValues), [selectedValues]);
+  const availableOptions = useMemo(
+    () => options.filter(option => !selectedValueSet.has(option.value)),
+    [options, selectedValueSet],
+  );
+  const listId = `${id}-options`;
+
+  return (
+    <div className={s.field}>
+      <span className={s.label}>{label}</span>
+      <div className={s.searchAddRow}>
+        <input
+          className={s.input}
+          list={listId}
+          value={searchValue}
+          placeholder="Search event id or title"
+          onChange={event => setSearchValue(event.target.value)}
+          onKeyDown={event => {
+            if (event.key !== "Enter") return;
+
+            event.preventDefault();
+            addSelectedEvent(searchValue);
+          }}
+        />
+        <button className={s.button} type="button" onClick={() => addSelectedEvent(searchValue)}>Add</button>
+      </div>
+      <datalist id={listId}>
+        {availableOptions.map(option => (
+          <option key={option.value} value={option.value}>{option.label}</option>
+        ))}
+      </datalist>
+      {selectedValues.length > 0 ? (
+        <div className={s.tokenList}>
+          {selectedValues.map(selectedValue => {
+            const selectedOption = options.find(option => option.value === selectedValue);
+
+            return (
+              <button
+                className={s.token}
+                type="button"
+                key={selectedValue}
+                title="Remove event"
+                onClick={() => removeSelectedEvent(selectedValue)}
+              >
+                <span className={s.tokenLabel}>{selectedOption?.label ?? selectedValue}</span>
+                <span aria-hidden="true">x</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <span className={s.hint}>No foreseen events selected.</span>
+      )}
+    </div>
+  );
+
+  function addSelectedEvent(rawValue: string) {
+    const trimmedValue = rawValue.trim();
+    if (!trimmedValue) return;
+
+    const matchedOption = options.find(option => (
+      option.value === trimmedValue || option.label.toLocaleLowerCase() === trimmedValue.toLocaleLowerCase()
+    ));
+    const nextValue = matchedOption?.value ?? trimmedValue;
+
+    if (!selectedValueSet.has(nextValue)) {
+      onChange([...selectedValues, nextValue].join(", "));
+    }
+    setSearchValue("");
+  }
+
+  function removeSelectedEvent(removedValue: string) {
+    onChange(selectedValues.filter(selectedValue => selectedValue !== removedValue).join(", "));
+  }
 }
 
 function SearchableIdField({
