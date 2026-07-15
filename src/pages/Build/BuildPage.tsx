@@ -14,6 +14,7 @@ import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
 import { selectActiveTower, selectActiveTowerDraftAssembly } from '../../store/towers/selectors.ts';
 import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTowerDraftPart } from '../../store/towers/slice.ts';
 import {
+  selectActiveDraftTowerAwareCityResolution,
   selectCityResolution,
   selectResolvedEffectiveActiveTowerDraft,
   selectResolvedEffectiveAvailableTowers,
@@ -168,6 +169,11 @@ function hasEnoughUpkeep(required: UpkeepAmount, available: UpkeepAmount) {
   return getSupportStatus(required, available).every((item) => item.missingAmount === 0);
 }
 
+function hasNoUpkeepShortfall(available: UpkeepAmount) {
+  return (Object.values(UPKEEP_TYPES) as UpkeepTypesValue[])
+    .every((resource) => (available[resource] ?? 0) >= 0);
+}
+
 function formatUnmetBuildRequirements(
   requirements: readonly Requirement[],
   requirementResolutionData: ReturnType<typeof selectRequirementResolutionData>,
@@ -243,12 +249,22 @@ const BuildPage = ({
   const visibleTowerPartIds = useTypedSelector(selectVisibleTowerPartIds);
   const unlockedTowerPartIds = useTypedSelector(selectUnlockedTowerPartIds);
   const cityResolution = useTypedSelector(selectCityResolution);
+  const draftCityResolution = useTypedSelector(selectActiveDraftTowerAwareCityResolution);
   const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
   const [activeTab, setActiveTab] = useState<TowerPartSlot>(TOWER_PART_SLOT_ORDER[0].key);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 8 });
   const [detailsPart, setDetailsPart] = useState<GunPart | null>(null);
   const isNarrowScreen = useMediaQuery('(max-width: 700px)');
+  const cancelDraft = () => {
+    dispatch(cancelTowerDraft(undefined));
+  };
+  const cancelDraftAndClose = () => {
+    cancelDraft();
+    window.requestAnimationFrame(() => {
+      onCloseTowerEdit?.();
+    });
+  };
   const hasAnyTowerBuild = useMemo(
     () => resolvedAvailableTowers.some(({resolved}) => resolved.warnings.length === 0),
     [resolvedAvailableTowers],
@@ -459,7 +475,9 @@ const BuildPage = ({
   const selectedPartBuildRequirementFailures = Object.values(resolvedTower.selectedParts)
     .flatMap((part) => part ? getUnmetRequirements(part.buildRequirements, requirementResolutionData) : []);
   const selectedPartBuildRequirementsMet = selectedPartBuildRequirementFailures.length === 0;
+  const draftCityUpkeepSupported = hasNoUpkeepShortfall(draftCityResolution.effectiveUpkeep);
   const canRebuild = hasEnoughUpkeep(resolvedTower.supportCost, cityResolution.effectiveUpkeep)
+    && draftCityUpkeepSupported
     && selectedPartBuildRequirementsMet
     && hasCompleteDraft;
   const actionLabel = hasAnyTowerBuild ? 'Rebuild' : 'Build';
@@ -549,7 +567,7 @@ const BuildPage = ({
                   type="button"
                   aria-label="Close tower editor"
                   title="Close tower editor"
-                  onClick={onCloseTowerEdit}
+                  onClick={cancelDraftAndClose}
                 >
                   x
                 </button>
@@ -634,6 +652,7 @@ const BuildPage = ({
                   disabled={!canRebuild}
                   title={!hasCompleteDraft ? warningTitle
                     : !selectedPartBuildRequirementsMet ? formatUnmetBuildRequirements(selectedPartBuildRequirementFailures, requirementResolutionData)
+                    : !draftCityUpkeepSupported ? 'City support is too low for this tower lineup'
                     : !canRebuild ? 'City support is too low for this draft tower' : undefined}
                   onClick={() => {
                     if (!canRebuild) return;
@@ -645,7 +664,7 @@ const BuildPage = ({
                 {hasAnyTowerBuild && (
                   <button
                     className={s.cancelButton}
-                    onClick={() => dispatch(cancelTowerDraft(undefined))}
+                    onClick={cancelDraft}
                   >
                     Cancel
                   </button>

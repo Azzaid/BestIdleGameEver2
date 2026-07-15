@@ -37,6 +37,7 @@ import {
     selectControlledTerritory,
     selectEffectiveWallResolution,
     selectResolvedEffectiveAvailableTowers,
+    selectResolvedEffectiveActiveTowerDraft,
 } from "../../store/upkeep/selectors.ts";
 import {
     selectControlledTerritoryGrowthStep,
@@ -60,10 +61,12 @@ import {recordControlledTerritoryReached, recordLastSiegeSignature} from "../../
 import {loseUnprotectedCityTerritory, recordSurvivedSiege} from "../../store/city/slice.ts";
 import {addNotificationHistoryEntry, enqueueGlobalSignal} from "../../store/globalEvents/slice.ts";
 import {sendNotification} from "../../lib/notifications/eventBus.ts";
-import type {CityBattleRuntimeConfig} from "../Battle/battleRuntime.ts";
+import type {CityBattleRuntimeConfig, TowerPreviewRuntimeConfig} from "../Battle/battleRuntime.ts";
 import type {WorldViewMode} from "../../models/store/worldView.ts";
 import {selectWorldViewMode} from "../../store/worldView/selectors.ts";
 import {setWorldViewMode} from "../../store/worldView/slice.ts";
+import {selectActiveTower, selectAvailableTowerList} from "../../store/towers/selectors.ts";
+import {getTowerAnchorPosition} from "../Battle/ui/BattleStage.tsx";
 
 type BattleMode = "siege" | "pressure";
 
@@ -94,6 +97,9 @@ export function CityWorldUnderlay({
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
     const controlledTerritory = useTypedSelector(selectControlledTerritory);
     const resolvedAvailableTowers = useTypedSelector(selectResolvedEffectiveAvailableTowers);
+    const resolvedActiveTowerDraft = useTypedSelector(selectResolvedEffectiveActiveTowerDraft);
+    const activeTower = useTypedSelector(selectActiveTower);
+    const availableTowers = useTypedSelector(selectAvailableTowerList);
     const wallResolution = useTypedSelector(selectEffectiveWallResolution);
     const controlledTerritoryGrowthStep = useTypedSelector(selectControlledTerritoryGrowthStep);
     const monsterModifierValues = useTypedSelector(selectMonsterModifierValues);
@@ -114,6 +120,7 @@ export function CityWorldUnderlay({
     const hasAnnouncedSiegeStartedRef = useRef(false);
     const previousWorldViewModeRef = useRef<WorldViewMode>(worldViewMode);
     const battleRuntimeIsActive = interactive && worldViewMode === "battle";
+    const towerPreviewRuntimeIsActive = interactive && worldViewMode === "tower";
     const previousBattleRuntimeIsActiveRef = useRef(battleRuntimeIsActive);
     const protectedCityRadius = getProtectedCityRadius(allHexes);
     const occupiedCellKeys = useMemo(
@@ -219,6 +226,46 @@ export function CityWorldUnderlay({
     );
     const battlefieldDepth = longestTowerRange * BATTLEFIELD_RANGE_MULTIPLIER + toPixels(BATTLEFIELD_UNTARGETABLE_ENTRY_HEXES);
     const battlefieldHeight = battlefieldDepth + BATTLE_WALL_APRON_HEIGHT;
+    const activeTowerIndex = activeTower
+        ? availableTowers.findIndex((tower) => tower.id === activeTower.id)
+        : -1;
+    const towerPreview = useMemo<TowerPreviewRuntimeConfig | undefined>(() => {
+        if (worldViewMode !== "tower" || activeTowerIndex < 0) return undefined;
+
+        const towerPosition = getTowerAnchorPosition({
+            towerIndex: activeTowerIndex,
+            towerCount: availableTowers.length,
+            wallSegments: battleWallSegments,
+            excludedWallCellKeys: new Set(standaloneTowerDefenses.flatMap((defense) => (
+                defense.wallCellKey ? [defense.wallCellKey] : []
+            ))),
+            segmentSize: CITY_HEX_WIDTH,
+            battlefieldWidth,
+            wallY: battlefieldDepth,
+        });
+        const tower = {
+            ...resolvedActiveTowerDraft,
+            stats: towerStatsToPixels(resolvedActiveTowerDraft.stats),
+        };
+        const targetRange = getEffectiveTowerTargetingRange(tower.stats) * 0.8;
+        const targetHitPoints = Math.max(1, tower.stats.projectileDamage * 2);
+
+        return {
+            tower,
+            towerPosition,
+            targetRange,
+            targetHitPoints,
+        };
+    }, [
+        activeTowerIndex,
+        availableTowers.length,
+        battleWallSegments,
+        battlefieldDepth,
+        battlefieldWidth,
+        resolvedActiveTowerDraft,
+        standaloneTowerDefenses,
+        worldViewMode,
+    ]);
     const baseTerrainBackgroundsByKey = useMemo(() => Object.fromEntries(
         allHexes.flatMap(hex => (
             hex.baseTerrainSpriteId
@@ -379,6 +426,54 @@ export function CityWorldUnderlay({
         setMetrics(nextMetrics);
     }, []);
     const battleRuntime = useMemo<CityBattleRuntimeConfig | null>(() => {
+        if (towerPreview) {
+            return {
+                battleKey: [
+                    "tower-preview",
+                    battlefieldWidth,
+                    battlefieldHeight,
+                    getResolvedTowerBattleKey(towerPreview.tower),
+                    towerPreview.towerPosition.x,
+                    towerPreview.towerPosition.y,
+                    towerPreview.targetRange,
+                    towerPreview.targetHitPoints,
+                    battleWallSegments.map(segment => [
+                        segment.cellKey,
+                        segment.wallKey ?? "",
+                        segment.wallDevelopmentVector ?? "",
+                        segment.wallTopKey ?? "",
+                        segment.wallTopDevelopmentVector ?? "",
+                    ].join(":")).join("|"),
+                ].join(":"),
+                isActive: towerPreviewRuntimeIsActive,
+                wallSegments: battleWallSegments,
+                terrainHexes: battlefieldHexes,
+                standaloneTowerDefenses: [],
+                battlefieldWidth,
+                battlefieldHeight,
+                wallY: battlefieldDepth,
+                runtimeResetKey: `tower-preview:${battleRunId}`,
+                retreatEnemiesSignal,
+                resolvedTowers: [],
+                initialThreat,
+                targetThreat,
+                threatGrowthPerSecond: 0,
+                waveThreatToCityThreatRatio: BATTLE_WAVE_THREAT_TO_CITY_THREAT_RATIO,
+                simultaneousMonstersLimit: 1,
+                timeBetweenWavesSeconds,
+                fastForwardWavesWhenCleared: false,
+                completesWhenThreatTargetReached: false,
+                wallResilience: wallResolution.resilience,
+                wallIgnoredThreat: wallResolution.ignoredThreat,
+                monsterMovementModifiers,
+                wallZoneEffects,
+                showDebugOutlines: isDebugModeEnabled,
+                showSiegeOutline: false,
+                towerPreview,
+                origin: translatedBattlefield.origin,
+            };
+        }
+
         if (resolvedBattleTowers.length === 0 && standaloneTowerDefenses.length === 0) return null;
 
         return {
@@ -432,6 +527,7 @@ export function CityWorldUnderlay({
     }, [
         battleRunId,
         battleRuntimeIsActive,
+        towerPreviewRuntimeIsActive,
         battleWallSegments,
         battlefieldDepth,
         battlefieldHeight,
@@ -451,6 +547,7 @@ export function CityWorldUnderlay({
         targetThreat,
         threatGrowthPerSecond,
         timeBetweenWavesSeconds,
+        towerPreview,
         translatedBattlefield.origin,
         wallResolution.ignoredThreat,
         wallResolution.resilience,

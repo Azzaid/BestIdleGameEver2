@@ -38,7 +38,11 @@ export function runSystems(world: World, dt: number) {
   HealthBarSystem(world);
   DebugTowerTargetingRadiusSystem(world);
 
-  // Cleanup
+  cleanupRemovedEntities(world);
+  PixiSyncSystem(world);
+}
+
+export function cleanupRemovedEntities(world: World) {
   if (world.toRemove.size) {
     for (const id of world.toRemove) {
       world.transforms.delete(id);
@@ -68,8 +72,6 @@ export function runSystems(world: World, dt: number) {
     }
     world.toRemove.clear();
   }
-
-  PixiSyncSystem(world);
 }
 
 function deleteTowerZoneEffectKeysForEntity(map: Pick<Map<string, unknown>, 'keys' | 'delete'>, entityId: number) {

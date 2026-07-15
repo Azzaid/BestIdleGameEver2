@@ -63,3 +63,16 @@ export const selectResolvedAvailableTowers = createSelector(
       resolved: resolveTowerAssembly({ selectedPartIds: tower.selectedPartIds }, unlockedTowerPartIds),
     }))
 );
+
+export const selectResolvedAvailableTowersWithActiveDraft = createSelector(
+  [selectAvailableTowerList, selectActiveTower, selectActiveTowerDraftAssembly, selectUnlockedTowerPartIds],
+  (towers, activeTower, activeTowerDraftAssembly, unlockedTowerPartIds) => towers
+    .map((tower) => ({
+      tower,
+      resolved: resolveTowerAssembly({
+        selectedPartIds: tower.id === activeTower?.id
+          ? activeTowerDraftAssembly.selectedPartIds
+          : tower.selectedPartIds,
+      }, unlockedTowerPartIds),
+    }))
+);

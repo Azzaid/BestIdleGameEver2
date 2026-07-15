@@ -1,12 +1,12 @@
 import {Application, Container, Graphics} from "pixi.js";
 import {createEntityId, createWorld} from "./core/world.ts";
-import {runSystems} from "./systems/runSystems.ts";
+import {cleanupRemovedEntities, runSystems} from "./systems/runSystems.ts";
 import {loadBattleAssets} from "./assets/assetLoader.ts";
 import {getWallContactY} from "./core/wallGeometry.ts";
 import {buildTowerVisualContainer} from "./factories/towerVisualRenderer.ts";
 import {createTowerVisualDefinitionFromAssembly, findTowerVisualSocketOffset} from "../../data/gunParts/visuals.ts";
 import {CITY_HEX_WIDTH} from "../../data/constants.ts";
-import type {BattleMetrics, BattleResult, MonsterMovementModifiers, WallZoneEffects} from "../../models/battle/world.ts";
+import type {BattleMetrics, BattleResult, MonsterMovementModifiers, WallZoneEffects, World} from "../../models/battle/world.ts";
 import type {BattleWallSegment} from "../../models/battle/wallSegment.ts";
 import type {StandaloneTowerDefense} from "../../models/battle/tower.ts";
 import type {TowerAssemblyResolved} from "../../models/battle/towerParts.ts";
@@ -18,6 +18,24 @@ import {
     getTowerZeroRotationRadians,
     sendEnemiesToSideBorders,
 } from "./ui/BattleStage.tsx";
+import {TargetingSystem} from "./systems/targeting.ts";
+import {AimingSystem} from "./systems/aiming.ts";
+import {FiringSystem} from "./systems/firing.ts";
+import {TowerZoneEffectsSystem} from "./systems/towerZoneEffectsSystem.ts";
+import {ProjectileMovementSystem} from "./systems/projectileMovementSystem.ts";
+import {LifespanSystem} from "./systems/lifespan.ts";
+import {ProjectilesSystem} from "./systems/projectiles.ts";
+import {HealthSystem} from "./systems/healthSystem.ts";
+import {DamageAreaVfxSystem} from "./systems/damageAreaVfxSystem.ts";
+import {DebugTowerTargetingRadiusSystem} from "./systems/debugTowerTargetingRadiusSystem.ts";
+import {PixiSyncSystem} from "./systems/pixiSync.ts";
+
+export type TowerPreviewRuntimeConfig = {
+    tower: TowerAssemblyResolved;
+    towerPosition: {x: number; y: number};
+    targetRange: number;
+    targetHitPoints: number;
+};
 
 export type CityBattleRuntimeConfig = {
     battleKey: string;
@@ -45,6 +63,7 @@ export type CityBattleRuntimeConfig = {
     wallZoneEffects: WallZoneEffects;
     showDebugOutlines: boolean;
     showSiegeOutline: boolean;
+    towerPreview?: TowerPreviewRuntimeConfig;
     origin: {
         x: number;
         y: number;
@@ -126,51 +145,36 @@ export async function mountCityBattleRuntime({
         config.standaloneTowerDefenses.flatMap((defense) => defense.wallCellKey ? [defense.wallCellKey] : []),
     );
 
-    config.resolvedTowers.forEach((resolvedTower, index) => {
-        const baseId = createEntityId(world);
-        const gunId = createEntityId(world);
-        const towerPosition = getTowerAnchorPosition({
-            towerIndex: index,
-            towerCount: config.resolvedTowers.length,
-            wallSegments: config.wallSegments,
-            excludedWallCellKeys: standaloneTowerWallCellKeys,
-            segmentSize: CITY_HEX_WIDTH,
-            battlefieldWidth: config.battlefieldWidth,
-            wallY: config.wallY,
-        });
-        const zeroRotationRadians = getTowerZeroRotationRadians({
-            towerPosition,
+    if (config.towerPreview) {
+        world.waveScheduler.state.enabled = false;
+        addResolvedTowerToWorld({
+            world,
+            resolvedTower: config.towerPreview.tower,
+            towerPosition: config.towerPreview.towerPosition,
             battlefieldWidth: config.battlefieldWidth,
             battlefieldHeight: config.battlefieldHeight,
         });
-        world.transforms.set(baseId, {position: towerPosition, rotationRadians: zeroRotationRadians});
-        world.transforms.set(gunId, {position: towerPosition, rotationRadians: zeroRotationRadians});
+    } else {
+        config.resolvedTowers.forEach((resolvedTower, index) => {
+            const towerPosition = getTowerAnchorPosition({
+                towerIndex: index,
+                towerCount: config.resolvedTowers.length,
+                wallSegments: config.wallSegments,
+                excludedWallCellKeys: standaloneTowerWallCellKeys,
+                segmentSize: CITY_HEX_WIDTH,
+                battlefieldWidth: config.battlefieldWidth,
+                wallY: config.wallY,
+            });
 
-        const towerVisualDefinition = createTowerVisualDefinitionFromAssembly(resolvedTower);
-        const towerVisual = buildTowerVisualContainer(towerVisualDefinition, {warn: () => {}});
-        towerVisual.container.zIndex = 30;
-        world.worldLayer.addChild(towerVisual.container);
-        world.sprites.set(baseId, towerVisual.container);
-
-        const gunAimPivot = new Container();
-        world.worldLayer.addChild(gunAimPivot);
-        world.sprites.set(gunId, gunAimPivot);
-
-        const launchSystemId = resolvedTower.selectedParts.launchSystem?.id;
-        const projectileSpawnOffset = launchSystemId
-            ? findTowerVisualSocketOffset(towerVisualDefinition, launchSystemId, "muzzle") ?? {x: 0, y: 0}
-            : {x: 0, y: 0};
-        world.towersData.set(baseId, createTowerData({
-            stats: resolvedTower.stats,
-            damageProfiles: resolvedTower.damageProfiles,
-            projectileSprite: resolvedTower.selectedParts.ammo?.projectileSprite,
-            keywords: new Set(resolvedTower.keywords),
-            zeroRotationRadians,
-            gunEntity: gunId,
-            projectileSpawnOffset,
-            aimKeywords: resolvedTower.aimKeywords,
-        }));
-    });
+            addResolvedTowerToWorld({
+                world,
+                resolvedTower,
+                towerPosition,
+                battlefieldWidth: config.battlefieldWidth,
+                battlefieldHeight: config.battlefieldHeight,
+            });
+        });
+    }
 
     config.standaloneTowerDefenses.forEach((defense) => {
         const baseId = createEntityId(world);
@@ -244,6 +248,9 @@ export async function mountCityBattleRuntime({
         world.config.onBattleEnded = nextConfig.onBattleEnded;
         world.config.onSiegeOverwhelmed = nextConfig.onSiegeOverwhelmed;
         world.waveScheduler.config.timeBetweenWavesSeconds = nextConfig.timeBetweenWavesSeconds;
+        if (nextConfig.towerPreview) {
+            world.waveScheduler.state.enabled = false;
+        }
 
         if (lastRetreatEnemiesSignal !== nextConfig.retreatEnemiesSignal) {
             lastRetreatEnemiesSignal = nextConfig.retreatEnemiesSignal;
@@ -272,6 +279,11 @@ export async function mountCityBattleRuntime({
         previousTimeMs = nowMs;
         if (!currentConfig.isActive) return;
 
+        if (currentConfig.towerPreview) {
+            runTowerPreviewSystems(world, currentConfig.towerPreview, dt);
+            return;
+        }
+
         runSystems(world, dt);
     };
     app.ticker.add(tick);
@@ -288,4 +300,122 @@ export async function mountCityBattleRuntime({
         },
         updateConfig: updateWorldConfig,
     };
+}
+
+function addResolvedTowerToWorld({
+    world,
+    resolvedTower,
+    towerPosition,
+    battlefieldWidth,
+    battlefieldHeight,
+}: {
+    world: World;
+    resolvedTower: TowerAssemblyResolved;
+    towerPosition: {x: number; y: number};
+    battlefieldWidth: number;
+    battlefieldHeight: number;
+}) {
+    const baseId = createEntityId(world);
+    const gunId = createEntityId(world);
+    const zeroRotationRadians = getTowerZeroRotationRadians({
+        towerPosition,
+        battlefieldWidth,
+        battlefieldHeight,
+    });
+
+    world.transforms.set(baseId, {position: towerPosition, rotationRadians: zeroRotationRadians});
+    world.transforms.set(gunId, {position: towerPosition, rotationRadians: zeroRotationRadians});
+
+    const towerVisualDefinition = createTowerVisualDefinitionFromAssembly(resolvedTower);
+    const towerVisual = buildTowerVisualContainer(towerVisualDefinition, {warn: () => {}});
+    towerVisual.container.zIndex = 30;
+    world.worldLayer.addChild(towerVisual.container);
+    world.sprites.set(baseId, towerVisual.container);
+
+    const gunAimPivot = new Container();
+    world.worldLayer.addChild(gunAimPivot);
+    world.sprites.set(gunId, gunAimPivot);
+
+    const launchSystemId = resolvedTower.selectedParts.launchSystem?.id;
+    const projectileSpawnOffset = launchSystemId
+        ? findTowerVisualSocketOffset(towerVisualDefinition, launchSystemId, "muzzle") ?? {x: 0, y: 0}
+        : {x: 0, y: 0};
+    world.towersData.set(baseId, createTowerData({
+        stats: resolvedTower.stats,
+        damageProfiles: resolvedTower.damageProfiles,
+        projectileSprite: resolvedTower.selectedParts.ammo?.projectileSprite,
+        keywords: new Set(resolvedTower.keywords),
+        zeroRotationRadians,
+        gunEntity: gunId,
+        projectileSpawnOffset,
+        aimKeywords: resolvedTower.aimKeywords,
+    }));
+}
+
+const previewTargetAnglesDegrees = [45, 0, -45] as const;
+
+function runTowerPreviewSystems(
+    world: World,
+    preview: TowerPreviewRuntimeConfig,
+    dt: number,
+) {
+    spawnTowerPreviewTargetIfNeeded(world, preview);
+
+    TargetingSystem(world, dt);
+    AimingSystem(world, dt);
+    FiringSystem(world, dt);
+    TowerZoneEffectsSystem(world, dt);
+    ProjectileMovementSystem(world, dt);
+    LifespanSystem(world, dt);
+    ProjectilesSystem(world);
+    HealthSystem(world);
+    DamageAreaVfxSystem(world, dt);
+    DebugTowerTargetingRadiusSystem(world);
+    cleanupRemovedEntities(world);
+    spawnTowerPreviewTargetIfNeeded(world, preview);
+    PixiSyncSystem(world);
+}
+
+function spawnTowerPreviewTargetIfNeeded(
+    world: World,
+    preview: TowerPreviewRuntimeConfig,
+) {
+    if (world.enemiesData.size > 0) return;
+
+    const targetIndex = world.defeatedEnemies % previewTargetAnglesDegrees.length;
+    const angleDegrees = previewTargetAnglesDegrees[targetIndex] ?? 0;
+    const towerData = [...world.towersData.values()][0];
+    const towerFacingRadians = towerData?.zeroRotationRadians ?? -Math.PI / 2;
+    const angleRadians = towerFacingRadians + degreesToRadians(angleDegrees);
+    const targetRange = Math.max(24, preview.targetRange);
+    const targetPosition = {
+        x: preview.towerPosition.x + Math.cos(angleRadians) * targetRange,
+        y: preview.towerPosition.y + Math.sin(angleRadians) * targetRange,
+    };
+    const id = createEntityId(world);
+    const standingMovement = {kind: "standing" as const};
+    const hitPoints = Math.max(1, preview.targetHitPoints);
+
+    world.transforms.set(id, {position: targetPosition, rotationRadians: 0});
+    world.movements.set(id, standingMovement);
+    world.healths.set(id, {maxHitPoints: hitPoints, hitPoints, armor: 0});
+    world.enemiesData.set(id, {
+        name: "Tower Preview Target",
+        kind: "melee",
+        mode: "walk",
+        hitRadius: 14,
+        pressure: 0,
+        keywords: new Set(),
+        walkMovement: standingMovement,
+        attackMovement: standingMovement,
+    });
+
+    const invisibleTarget = new Container();
+    invisibleTarget.visible = false;
+    world.worldLayer.addChild(invisibleTarget);
+    world.sprites.set(id, invisibleTarget);
+}
+
+function degreesToRadians(value: number): number {
+    return value * Math.PI / 180;
 }

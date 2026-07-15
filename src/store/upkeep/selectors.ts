@@ -8,6 +8,7 @@ import {
     selectAvailableTowerList,
     selectResolvedActiveTowerDraft,
     selectResolvedAvailableTowers,
+    selectResolvedAvailableTowersWithActiveDraft,
 } from "../towers/selectors.ts";
 import {deductUpkeep} from "../../pages/City/Components/CityHex/upkeepUtils.ts";
 import type {CitySignatureStatus} from "../../models/store/upkeep.ts";
@@ -49,8 +50,39 @@ export const selectTowerAwareCityResolution = createSelector(
     }
 );
 
+export const selectActiveDraftTowerAwareCityResolution = createSelector(
+    [
+        selectCityResolution,
+        selectResolvedAvailableTowersWithActiveDraft,
+        selectTechnologyHomogeneousEntities,
+        selectGlobalModifierHomogeneousEntities,
+    ],
+    (cityResolution, resolvedTowers, technologyEntities, globalModifierEntities): CityResolution => {
+        return resolveEffectiveCityResolution(cityResolution, resolvedTowers, [
+            ...technologyEntities,
+            ...globalModifierEntities,
+        ]);
+    }
+);
+
 export const selectResolvedEffectiveAvailableTowers = createSelector(
     [selectResolvedAvailableTowers, selectTowerAwareCityResolution, (state: RootState) => state.upkeep.controlledTerritory],
+    (resolvedTowers, cityResolution, controlledTerritory): ResolvedAvailableTower[] => resolvedTowers.map((resolvedTower) => ({
+        ...resolvedTower,
+        resolved: applyEffectiveTowerEntity(
+            resolvedTower.resolved,
+            cityResolution.resolvedTowers.find((entity) => entity.id === getTowerEntityId(resolvedTower.tower.id)),
+            getDerivedSourceValues(cityResolution, controlledTerritory),
+        ),
+    })),
+);
+
+export const selectResolvedEffectiveAvailableTowersWithActiveDraft = createSelector(
+    [
+        selectResolvedAvailableTowersWithActiveDraft,
+        selectActiveDraftTowerAwareCityResolution,
+        (state: RootState) => state.upkeep.controlledTerritory,
+    ],
     (resolvedTowers, cityResolution, controlledTerritory): ResolvedAvailableTower[] => resolvedTowers.map((resolvedTower) => ({
         ...resolvedTower,
         resolved: applyEffectiveTowerEntity(

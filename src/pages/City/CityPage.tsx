@@ -75,7 +75,7 @@ import {selectIsDebugModeEnabled} from "../../store/debug/selectors.ts";
 import {useCityCanvasInteraction} from "./cityCanvasInteraction.tsx";
 import BuildPage from "../Build/BuildPage.tsx";
 import {selectAvailableTowerList} from "../../store/towers/selectors.ts";
-import {selectTower} from "../../store/towers/slice.ts";
+import {cancelTowerDraft, selectTower} from "../../store/towers/slice.ts";
 import {selectWorldViewMode} from "../../store/worldView/selectors.ts";
 import {setWorldViewMode} from "../../store/worldView/slice.ts";
 import HistoryModal from "../History/HistoryPage.tsx";
@@ -126,10 +126,20 @@ const CityPage = ({
     } = useCityCanvasInteraction();
     const [globalEffectsOpen, setGlobalEffectsOpen] = useState(false);
     const hasAutoSelectedStarterTowerRef = useRef(false);
+    const previousWorldViewModeRef = useRef(worldViewMode);
     const hasBuiltEffectiveTower = useMemo(
         () => resolvedAvailableTowers.some(({resolved}) => resolved.warnings.length === 0),
         [resolvedAvailableTowers],
     );
+
+    useEffect(() => {
+        const previousWorldViewMode = previousWorldViewModeRef.current;
+        previousWorldViewModeRef.current = worldViewMode;
+
+        if (previousWorldViewMode === "tower" && worldViewMode !== "tower") {
+            dispatch(cancelTowerDraft(undefined));
+        }
+    }, [dispatch, worldViewMode]);
 
     useEffect(() => {
         if (!selectedHex) return;
@@ -321,7 +331,12 @@ const CityPage = ({
         if (!tower) return;
 
         dispatch(selectTower({towerId: tower.id}));
+        dispatch(cancelTowerDraft(undefined));
         dispatch(setWorldViewMode("tower"));
+    };
+
+    const handleCloseTowerEditor = () => {
+        dispatch(setWorldViewMode("city"));
     };
 
     const handleBuildStructure = (structureId: string, coreCellKey: string) => {
@@ -395,7 +410,7 @@ const CityPage = ({
                 isOpen={globalEffectsOpen}
                 onToggle={() => setGlobalEffectsOpen(isOpen => !isOpen)}
             />
-            {selectedHex &&
+            {selectedHex && !towerEditorOpen &&
                 <div className={s.buildingSelectorContainer}>
                     <SelectedHexPanel
                         selectedHex={selectedHex}
@@ -455,7 +470,7 @@ const CityPage = ({
             }
             {towerEditorOpen && (
                 <section className={s.towerEditorLayer} role="dialog" aria-modal="true" aria-label="Tower editor">
-                    <BuildPage onCloseTowerEdit={() => dispatch(setWorldViewMode("city"))} />
+                    <BuildPage onCloseTowerEdit={handleCloseTowerEditor} />
                 </section>
             )}
             {isHistoryOpen && (
