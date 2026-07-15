@@ -12,10 +12,10 @@ The player should spend more time preparing for combat than actively fighting.
 
 Current implementation note, 2026-06-24:
 
-- Battle is implemented as a Pixi-backed route at `/` and `/battle`.
+- Battle is implemented as a Pixi-backed mode inside the shared City canvas.
 - Runtime code is split across world state, asset loading, spawning, aiming, firing, projectile movement, monster movement, lifespan, health, wall load, siege, wall zone effects, UI health bars, and Pixi synchronization under `src/pages/Battle`.
 - Battle consumes resolved tower, wall, enemy, and siege state from the shared data/value architecture rather than owning the whole progression model.
-- The current trigger model uses city signature versus controlled territory: when effective signature exceeds controlled territory, the city becomes besieged. Siege pauses research and escalates battle pressure, but city building, demolition, tower rebuilding, migration, and wall-protected territory claims remain available.
+- The current trigger model uses city signature versus controlled territory: when effective signature exceeds controlled territory, the city becomes besieged. Siege escalates battle pressure, but research, city building, demolition, tower rebuilding, and migration remain available. Wall-protected territory claims remain available only when there is no active siege.
 
 ---
 

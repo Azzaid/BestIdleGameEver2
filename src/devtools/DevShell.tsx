@@ -5,7 +5,7 @@ import DevToolsRouteGate from "./DevToolsRouteGate.tsx";
 
 export default function DevShell({enabled}: {enabled: boolean}) {
   if (!enabled) {
-    return <Navigate to="/battle" replace />;
+    return <Navigate to="/city" replace />;
   }
 
   return (
@@ -13,7 +13,7 @@ export default function DevShell({enabled}: {enabled: boolean}) {
       <nav className={appTheme.appNav}>
         <div className={appTheme.navLeft}>
           <div className={appTheme.appTitle}>Developer Tools</div>
-          <Link className={appTheme.navBarLink} to="/battle">Back to Game</Link>
+          <Link className={appTheme.navBarLink} to="/city">Back to Game</Link>
         </div>
         <ul className={appTheme.navLinks}>
           <DevToolsNavLinks />

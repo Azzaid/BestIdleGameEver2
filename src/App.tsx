@@ -11,7 +11,6 @@ import CityPage from './pages/City/CityPage'
 import HudLabPage from './pages/HudLab/HudLabPage.tsx'
 import {UpkeepBar} from "./components/UpkeepBar.tsx";
 import {useTypedDispatch, useTypedSelector} from "./store/hooks.ts";
-import {selectCitySignatureStatus} from "./store/upkeep/selectors.ts";
 import {selectIsDebugModeEnabled} from "./store/debug/selectors.ts";
 import {toggleDebugMode} from "./store/debug/slice.ts";
 import { NotificationCenter } from "./components/Notifications/NotificationCenter.tsx";
@@ -42,7 +41,6 @@ function GameShell() {
   const [selectedCityHex, setSelectedCityHex] = useState<HexCell | null>(null);
   const [confirmingCityExpansionSide, setConfirmingCityExpansionSide] = useState<CityExpansionSideId | null>(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const signatureStatus = useTypedSelector(selectCitySignatureStatus);
   const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
   const isLocalDebugAvailable = import.meta.env.DEV;
   const isDebugToolsEnabled = isLocalDebugAvailable && isDebugModeEnabled;
@@ -179,7 +177,7 @@ function GameShell() {
                       </div>
                       <ul className={appTheme.navLinks}>
                           <li>
-                              <Link className={signatureStatus.isBesieged ? appTheme.navBarLinkBlocked : appTheme.navBarLink} to="/research">Research</Link>
+                              <Link className={appTheme.navBarLink} to="/research">Research</Link>
                           </li>
                           <li>
                               <Link className={appTheme.navBarLink} to="/city">City</Link>
@@ -208,7 +206,7 @@ function GameShell() {
                               path="/research"
                               element={(
                                   <UpkeepBarRouteFrame chromeRef={routeChromeRef}>
-                                      {renderScrollableRoute(signatureStatus.isBesieged ? <BlockedPage title="Research Blocked" /> : <ResearchPage />)}
+                                      {renderScrollableRoute(<ResearchPage />)}
                                   </UpkeepBarRouteFrame>
                               )}
                           />
@@ -365,18 +363,6 @@ function UpkeepBarRouteFrame({
           {children}
       </>
   );
-}
-
-function BlockedPage({title}: {title: string}) {
-  return (
-      <section className={appTheme.blockedPage}>
-          <h1 className={appTheme.blockedTitle}>{title}</h1>
-          <p className={appTheme.blockedText}>
-              The city is besieged. Repel the attack before starting research.
-          </p>
-          <Link className={appTheme.blockedLink} to="/city">To city</Link>
-      </section>
-  )
 }
 
 export default AppWithProviders

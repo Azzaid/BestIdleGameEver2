@@ -11,9 +11,13 @@ import { TOWER_PARTS, TOWER_PART_SLOT_ORDER } from '../../data/gunParts/index.ts
 import { TOWER_PART_VISUAL_ASSETS } from '../../data/gunParts/partVisualMetadata.ts';
 import type { GunPart, TowerPartSlot } from '../../models/battle/towerParts.ts';
 import { useTypedDispatch, useTypedSelector } from '../../store/hooks.ts';
-import { selectActiveTower, selectActiveTowerDraftAssembly, selectHasAnyTowerBuild } from '../../store/towers/selectors.ts';
+import { selectActiveTower, selectActiveTowerDraftAssembly } from '../../store/towers/selectors.ts';
 import { cancelTowerDraft, clearTowerDraftPart, commitTowerDraft, selectTowerDraftPart } from '../../store/towers/slice.ts';
-import { selectCityResolution, selectResolvedEffectiveActiveTowerDraft } from '../../store/upkeep/selectors.ts';
+import {
+  selectCityResolution,
+  selectResolvedEffectiveActiveTowerDraft,
+  selectResolvedEffectiveAvailableTowers,
+} from '../../store/upkeep/selectors.ts';
 import {selectRequirementResolutionData, selectUnlockedTowerPartIds, selectVisibleTowerPartIds} from "../../store/unlocks/selectors.ts";
 import { UPKEEP_TYPES, UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue } from '../../models/Upkeep.ts';
 import { addUpkeep, deductUpkeep } from '../City/Components/CityHex/upkeepUtils.ts';
@@ -233,7 +237,7 @@ const BuildPage = ({
 }) => {
   const dispatch = useTypedDispatch();
   const activeTower = useTypedSelector(selectActiveTower);
-  const hasAnyTowerBuild = useTypedSelector(selectHasAnyTowerBuild);
+  const resolvedAvailableTowers = useTypedSelector(selectResolvedEffectiveAvailableTowers);
   const towerDraftAssembly = useTypedSelector(selectActiveTowerDraftAssembly);
   const resolvedTower = useTypedSelector(selectResolvedEffectiveActiveTowerDraft);
   const visibleTowerPartIds = useTypedSelector(selectVisibleTowerPartIds);
@@ -245,6 +249,10 @@ const BuildPage = ({
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 8 });
   const [detailsPart, setDetailsPart] = useState<GunPart | null>(null);
   const isNarrowScreen = useMediaQuery('(max-width: 700px)');
+  const hasAnyTowerBuild = useMemo(
+    () => resolvedAvailableTowers.some(({resolved}) => resolved.warnings.length === 0),
+    [resolvedAvailableTowers],
+  );
   const selectSlot = (slot: TowerPartSlot) => {
     setActiveTab(slot);
     setPagination((current) => ({ ...current, pageIndex: 0 }));

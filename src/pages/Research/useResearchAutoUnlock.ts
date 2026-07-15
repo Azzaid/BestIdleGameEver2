@@ -4,7 +4,6 @@ import {sendNotification} from "../../lib/notifications/eventBus.ts";
 import {getResearchNodeThemeName} from "../../models/research/ResearchNode.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {addNotificationHistoryEntry} from "../../store/globalEvents/slice.ts";
-import {selectCitySignatureStatus} from "../../store/upkeep/selectors.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {purchaseTech} from "../../store/research/slice.ts";
 import {selectUnlockableTechnologyIds} from "../../store/unlocks/selectors.ts";
@@ -13,12 +12,9 @@ export function useResearchAutoUnlock(): void {
     const dispatch = useTypedDispatch();
     const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
     const unlockableTechIds = useTypedSelector(selectUnlockableTechnologyIds);
-    const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const notifiedTechIdsRef = useRef(new Set<string>());
 
     useEffect(() => {
-        if (signatureStatus.isBesieged) return;
-
         const purchased = new Set(purchasedTechsIds);
         const toUnlock = unlockableTechIds.filter(techId => !purchased.has(techId));
 
@@ -44,7 +40,6 @@ export function useResearchAutoUnlock(): void {
     }, [
         dispatch,
         purchasedTechsIds,
-        signatureStatus.isBesieged,
         unlockableTechIds,
     ]);
 }

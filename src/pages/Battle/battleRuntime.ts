@@ -21,6 +21,7 @@ import {
 
 export type CityBattleRuntimeConfig = {
     battleKey: string;
+    isActive: boolean;
     wallSegments: BattleWallSegment[];
     terrainHexes: readonly BattlefieldTerrainHex[];
     standaloneTowerDefenses: StandaloneTowerDefense[];
@@ -55,7 +56,7 @@ export type CityBattleRuntimeConfig = {
 
 export type MountedCityBattleRuntime = {
     destroy: () => void;
-    sendEnemiesToSideBorders: () => void;
+    updateConfig: (nextConfig: CityBattleRuntimeConfig) => void;
 };
 
 export async function mountCityBattleRuntime({
@@ -67,6 +68,8 @@ export async function mountCityBattleRuntime({
     parent: Container;
     config: CityBattleRuntimeConfig;
 }): Promise<MountedCityBattleRuntime> {
+    let currentConfig = config;
+
     await loadBattleAssets({
         wallSegments: config.wallSegments,
         terrainHexes: config.terrainHexes,
@@ -196,11 +199,79 @@ export async function mountCityBattleRuntime({
         }));
     });
 
+    let lastRuntimeResetKey = config.runtimeResetKey;
+    let lastRetreatEnemiesSignal = config.retreatEnemiesSignal;
+    let lastCompletesWhenThreatTargetReached = config.completesWhenThreatTargetReached;
+    const updateWorldConfig = (nextConfig: CityBattleRuntimeConfig) => {
+        currentConfig = nextConfig;
+
+        if (lastRuntimeResetKey !== nextConfig.runtimeResetKey) {
+            lastRuntimeResetKey = nextConfig.runtimeResetKey;
+            world.currentThreat = nextConfig.initialThreat;
+            world.siegeElapsedSeconds = 0;
+            world.siegePressure = 0;
+            world.battleEnded = false;
+            world.lastBattleEndWasHandled = false;
+            world.pendingBattleOutcome = undefined;
+            world.siegeOverwhelmedWasHandled = false;
+            world.siegeMeterFrozen = false;
+            for (const spawner of world.spawners) {
+                spawner.destroy(world);
+            }
+            world.spawners = [];
+            world.waveScheduler.state.enabled = true;
+            world.waveScheduler.state.timeUntilNextWaveSeconds = 0;
+            world.waveScheduler.state.currentWaveIndex = 0;
+            world.waveScheduler.state.totalWavesSpawned = 0;
+        }
+
+        const wasCompletingAtThreatTarget = lastCompletesWhenThreatTargetReached;
+        lastCompletesWhenThreatTargetReached = nextConfig.completesWhenThreatTargetReached;
+
+        world.config.initialThreat = nextConfig.initialThreat;
+        world.config.targetThreat = nextConfig.targetThreat;
+        world.config.threatGrowthPerSecond = nextConfig.threatGrowthPerSecond;
+        world.config.waveThreatToCityThreatRatio = nextConfig.waveThreatToCityThreatRatio;
+        world.config.simultaneousMonstersLimit = nextConfig.simultaneousMonstersLimit;
+        world.config.timeBetweenWavesSeconds = nextConfig.timeBetweenWavesSeconds;
+        world.config.fastForwardWavesWhenCleared = nextConfig.fastForwardWavesWhenCleared;
+        world.config.completesWhenThreatTargetReached = nextConfig.completesWhenThreatTargetReached;
+        world.config.wallResilience = nextConfig.wallResilience;
+        world.config.wallIgnoredThreat = nextConfig.wallIgnoredThreat;
+        world.config.monsterMovementModifiers = nextConfig.monsterMovementModifiers;
+        world.config.wallZoneEffects = nextConfig.wallZoneEffects;
+        world.config.onBattleMetrics = nextConfig.onBattleMetrics;
+        world.config.onBattleEnded = nextConfig.onBattleEnded;
+        world.config.onSiegeOverwhelmed = nextConfig.onSiegeOverwhelmed;
+        world.waveScheduler.config.timeBetweenWavesSeconds = nextConfig.timeBetweenWavesSeconds;
+
+        if (lastRetreatEnemiesSignal !== nextConfig.retreatEnemiesSignal) {
+            lastRetreatEnemiesSignal = nextConfig.retreatEnemiesSignal;
+            sendEnemiesToSideBorders(world);
+        }
+
+        if (world.currentThreat > nextConfig.targetThreat) {
+            world.currentThreat = nextConfig.targetThreat;
+        }
+
+        if (wasCompletingAtThreatTarget && !nextConfig.completesWhenThreatTargetReached) {
+            world.battleEnded = false;
+            world.lastBattleEndWasHandled = false;
+            world.waveScheduler.state.enabled = true;
+            world.waveScheduler.state.timeUntilNextWaveSeconds = Math.min(
+                world.waveScheduler.state.timeUntilNextWaveSeconds,
+                nextConfig.timeBetweenWavesSeconds,
+            );
+        }
+    };
+
     let previousTimeMs = performance.now();
     const tick = () => {
         const nowMs = performance.now();
         const dt = Math.min(0.25, (nowMs - previousTimeMs) / 1000);
         previousTimeMs = nowMs;
+        if (!currentConfig.isActive) return;
+
         runSystems(world, dt);
     };
     app.ticker.add(tick);
@@ -208,9 +279,13 @@ export async function mountCityBattleRuntime({
     return {
         destroy: () => {
             app.ticker.remove(tick);
+            for (const spawner of world.spawners) {
+                spawner.destroy(world);
+            }
+            world.spawners = [];
             world.worldLayer.parent?.removeChild(world.worldLayer);
             world.worldLayer.destroy({children: true});
         },
-        sendEnemiesToSideBorders: () => sendEnemiesToSideBorders(world),
+        updateConfig: updateWorldConfig,
     };
 }

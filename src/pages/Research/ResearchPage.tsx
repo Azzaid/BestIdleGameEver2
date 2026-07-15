@@ -9,7 +9,7 @@ import {useTypedSelector} from "../../store/hooks.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {selectCityHexes, selectCompleteCityStructureIds} from "../../store/city/selectors.ts";
 import {selectAetherAtmosphereLevels} from "../../store/homogeneousValues/selectors.ts";
-import {selectCityResolution, selectCitySignatureStatus} from "../../store/upkeep/selectors.ts";
+import {selectCityResolution} from "../../store/upkeep/selectors.ts";
 import {BUILDINGS_ATLAS, STRUCTURES_BY_ID} from "../../data/buildings";
 import {DEVELOPMENT_VECTORS} from "../../models/DevlopmentVector.ts";
 import {UPKEEP_SPRITES, type UpkeepAmount, type UpkeepTypesValue} from "../../models/Upkeep.ts";
@@ -139,7 +139,6 @@ export default function ResearchPage() {
     const resolvedCityData = useTypedSelector(selectCityResolution);
     const {effectiveUpkeep} = resolvedCityData;
     const aetherAtmosphereLevels = useTypedSelector(selectAetherAtmosphereLevels);
-    const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const viewportRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<CanvasRef>(null);
     const [layout, setLayout] = useState<ElkRoot | null>(null);
@@ -166,7 +165,6 @@ export default function ResearchPage() {
                         completeStructureIds,
                         effectiveUpkeep,
                         aetherAtmosphereLevels,
-                        isBesieged: signatureStatus.isBesieged,
                         resolvedCityData,
                     });
 
@@ -176,7 +174,7 @@ export default function ResearchPage() {
                 },
             },
         ),
-        [aetherAtmosphereLevels, builtBuildingIds, completeStructureIds, effectiveUpkeep, purchased, resolvedCityData, signatureStatus.isBesieged],
+        [aetherAtmosphereLevels, builtBuildingIds, completeStructureIds, effectiveUpkeep, purchased, resolvedCityData],
     );
 
     const layoutOptions = useMemo(() => ({
@@ -305,7 +303,6 @@ export default function ResearchPage() {
                         completeStructureIds,
                         effectiveUpkeep,
                         aetherAtmosphereLevels,
-                        isBesieged: signatureStatus.isBesieged,
                         resolvedCityData,
                     });
 

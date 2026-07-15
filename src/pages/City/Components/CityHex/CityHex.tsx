@@ -43,6 +43,7 @@ const AVAILABLE_EXPANSION_ARROW_OPACITY = 0.42;
 const DISABLED_EXPANSION_ARROW_OPACITY = 0.18;
 const UNCLAIMED_LAND_SHADE_OPACITY = 0.5;
 const OUTER_UNCLAIMED_LAND_SHADE_OPACITY = 0.75;
+const BATTLEFIELD_COVER_OPACITY = 0.72;
 const INITIAL_ZOOM_FACTOR = 1.35;
 const CAMERA_FOCUS_ZOOM_FACTOR = 2.1;
 const CAMERA_FOCUS_ANIMATION_MS = 520;
@@ -95,6 +96,12 @@ type StageTransform = {
     offsetY: number;
 };
 
+type WebKitGestureEvent = Event & {
+    clientX: number;
+    clientY: number;
+    scale: number;
+};
+
 export default function CityHex({
     cells,
     biome,
@@ -104,9 +111,11 @@ export default function CityHex({
     showDebugAxes = false,
     topInsetPx = 0,
     battlefieldHexes = [],
+    battlefieldCovered = false,
     battleRuntime,
     cameraFocusRequest,
     clearSelectionSignal = 0,
+    selectedCellKey: controlledSelectedCellKey,
     onSelect = () => {},
 }: {
     cells: HexCell[];
@@ -117,9 +126,11 @@ export default function CityHex({
     showDebugAxes?: boolean;
     topInsetPx?: number;
     battlefieldHexes?: readonly BattlefieldTerrainHex[];
+    battlefieldCovered?: boolean;
     battleRuntime?: CityBattleRuntimeConfig | null;
     cameraFocusRequest?: {target: CameraRuleId; id: number; focusCellKey?: string | null};
     clearSelectionSignal?: number;
+    selectedCellKey?: string | null;
     onSelect?: (cell: HexCell | null) => void;
 }) {
     const hostRef = useRef<HTMLDivElement | null>(null);
@@ -155,6 +166,8 @@ export default function CityHex({
     const [activeCameraRule, setActiveCameraRule] = useState<CameraRuleId>("city");
     const requestedCameraRule = cameraFocusRequest?.target ?? activeCameraRule;
     const cityInteractionsEnabled = requestedCameraRule !== "battle";
+    const battleRuntimeKey = battleRuntime?.battleKey ?? null;
+    const latestBattleRuntimeRef = useRef<CityBattleRuntimeConfig | null>(battleRuntime ?? null);
 
     const preparedCells = useMemo<PreparedHexCell[]>(() => cells.map(cell => {
         const {x, y} = axialCoordinateToPixelPosition(cell, HEX_RADIUS_PX, HEX_EDGE_GAP_PX);
@@ -375,18 +388,22 @@ export default function CityHex({
         applyCamera(clampedCamera);
     }, [applyCamera, clampCamera, clampZoomForRule]);
 
-    const getViewPointFromPointerEvent = useCallback((event: PointerEvent | WheelEvent | FederatedPointerEvent) => {
+    const getViewPointFromClientPoint = useCallback((clientX: number, clientY: number) => {
         const app = appRef.current;
         if (!app) return null;
 
         const rect = app.canvas.getBoundingClientRect();
         return screenToViewPoint(
-            event.clientX - rect.left,
-            event.clientY - rect.top,
+            clientX - rect.left,
+            clientY - rect.top,
             stageTransformRef.current,
             viewport,
         );
     }, [viewport]);
+
+    const getViewPointFromPointerEvent = useCallback((event: PointerEvent | WheelEvent | FederatedPointerEvent) => {
+        return getViewPointFromClientPoint(event.clientX, event.clientY);
+    }, [getViewPointFromClientPoint]);
 
     const getWorldPointFromPointerEvent = useCallback((event: PointerEvent | FederatedPointerEvent) => {
         const viewPoint = getViewPointFromPointerEvent(event);
@@ -422,6 +439,7 @@ export default function CityHex({
         cancelCameraAnimation,
         cityInteractionsEnabled,
         clampCamera,
+        getViewPointFromClientPoint,
         getViewPointFromPointerEvent,
         getWorldPointFromPointerEvent,
         selectWorldPoint,
@@ -434,6 +452,7 @@ export default function CityHex({
             cancelCameraAnimation,
             cityInteractionsEnabled,
             clampCamera,
+            getViewPointFromClientPoint,
             getViewPointFromPointerEvent,
             getWorldPointFromPointerEvent,
             selectWorldPoint,
@@ -444,6 +463,7 @@ export default function CityHex({
         cancelCameraAnimation,
         cityInteractionsEnabled,
         clampCamera,
+        getViewPointFromClientPoint,
         getViewPointFromPointerEvent,
         getWorldPointFromPointerEvent,
         selectWorldPoint,
@@ -453,6 +473,17 @@ export default function CityHex({
     useEffect(() => {
         setSelectedCellKey(null);
     }, [clearSelectionSignal]);
+
+    useEffect(() => {
+        setSelectedCellKey(controlledSelectedCellKey ?? null);
+    }, [controlledSelectedCellKey]);
+
+    useEffect(() => {
+        latestBattleRuntimeRef.current = battleRuntime ?? null;
+        if (battleRuntime) {
+            battleRuntimeRef.current?.updateConfig(battleRuntime);
+        }
+    }, [battleRuntime]);
 
     useEffect(() => {
         if (cityInteractionsEnabled) {
@@ -546,8 +577,74 @@ export default function CityHex({
                 inputHandlersRef.current.zoomAtViewPoint(viewPoint, zoomFactorRef.current * zoomStep);
             };
 
+            const activePointers = new Map<number, {x: number; y: number}>();
+            let pinchStartDistance = 0;
+            let pinchStartZoom = zoomFactorRef.current;
+            let isPinching = false;
+            let safariGestureStartZoom = zoomFactorRef.current;
+
+            const capturePointer = (pointerId: number) => {
+                if (nextApp.canvas.hasPointerCapture?.(pointerId)) return;
+
+                nextApp.canvas.setPointerCapture?.(pointerId);
+            };
+
+            const releasePointer = (pointerId: number) => {
+                if (!nextApp.canvas.hasPointerCapture?.(pointerId)) return;
+
+                nextApp.canvas.releasePointerCapture?.(pointerId);
+            };
+
+            const getPinchGesture = () => {
+                const pointers = [...activePointers.values()];
+                if (pointers.length < 2) return null;
+
+                const first = pointers[0];
+                const second = pointers[1];
+                if (!first || !second) return null;
+
+                const centerX = (first.x + second.x) / 2;
+                const centerY = (first.y + second.y) / 2;
+                const viewPoint = inputHandlersRef.current.getViewPointFromClientPoint(centerX, centerY);
+                if (!viewPoint) return null;
+
+                return {
+                    distance: Math.hypot(second.x - first.x, second.y - first.y),
+                    viewPoint,
+                };
+            };
+
+            const startPinchGesture = () => {
+                const pinchGesture = getPinchGesture();
+                if (!pinchGesture) return;
+
+                inputHandlersRef.current.cancelCameraAnimation();
+                pinchStartDistance = pinchGesture.distance;
+                pinchStartZoom = zoomFactorRef.current;
+                isPinching = true;
+                isDraggingRef.current = false;
+                didDragRef.current = true;
+                suppressNextClickRef.current = true;
+                nextApp.canvas.style.cursor = "grab";
+            };
+
+            const updatePinchGesture = () => {
+                const pinchGesture = getPinchGesture();
+                if (!pinchGesture || pinchStartDistance <= 0) return;
+
+                const nextZoom = pinchStartZoom * (pinchGesture.distance / pinchStartDistance);
+                inputHandlersRef.current.zoomAtViewPoint(pinchGesture.viewPoint, nextZoom);
+            };
+
             const onPointerDown = (event: PointerEvent) => {
                 if (event.button !== 0) return;
+
+                activePointers.set(event.pointerId, {x: event.clientX, y: event.clientY});
+                capturePointer(event.pointerId);
+                if (activePointers.size >= 2) {
+                    startPinchGesture();
+                    return;
+                }
 
                 inputHandlersRef.current.cancelCameraAnimation();
                 isDraggingRef.current = true;
@@ -558,6 +655,18 @@ export default function CityHex({
             };
 
             const onPointerMove = (event: PointerEvent) => {
+                if (activePointers.has(event.pointerId)) {
+                    activePointers.set(event.pointerId, {x: event.clientX, y: event.clientY});
+                }
+
+                if (activePointers.size >= 2) {
+                    event.preventDefault();
+                    updatePinchGesture();
+                    return;
+                }
+
+                if (isPinching) return;
+
                 if (isDraggingRef.current) {
                     const dx = event.clientX - pointerStartRef.current.x;
                     const dy = event.clientY - pointerStartRef.current.y;
@@ -586,6 +695,22 @@ export default function CityHex({
             };
 
             const onPointerUp = (event: PointerEvent) => {
+                const wasPinching = isPinching;
+                activePointers.delete(event.pointerId);
+                releasePointer(event.pointerId);
+
+                if (wasPinching) {
+                    isDraggingRef.current = false;
+                    pinchStartDistance = 0;
+                    suppressNextClickRef.current = true;
+                    if (activePointers.size === 0) {
+                        isPinching = false;
+                        didDragRef.current = false;
+                        suppressNextClickRef.current = false;
+                    }
+                    return;
+                }
+
                 if (!isDraggingRef.current) return;
 
                 isDraggingRef.current = false;
@@ -605,15 +730,75 @@ export default function CityHex({
                 inputHandlersRef.current.selectWorldPoint(worldPoint);
             };
 
+            const onPointerCancel = (event: PointerEvent) => {
+                activePointers.delete(event.pointerId);
+                releasePointer(event.pointerId);
+                isDraggingRef.current = false;
+                pinchStartDistance = 0;
+                if (activePointers.size === 0) {
+                    isPinching = false;
+                    didDragRef.current = false;
+                    suppressNextClickRef.current = false;
+                }
+                nextApp.canvas.style.cursor = "grab";
+            };
+
+            const onGestureStart = (event: Event) => {
+                if (activePointers.size >= 2) return;
+
+                const gestureEvent = event as WebKitGestureEvent;
+                event.preventDefault();
+                inputHandlersRef.current.cancelCameraAnimation();
+                safariGestureStartZoom = zoomFactorRef.current;
+                isDraggingRef.current = false;
+                suppressNextClickRef.current = true;
+                const viewPoint = inputHandlersRef.current.getViewPointFromClientPoint(
+                    gestureEvent.clientX,
+                    gestureEvent.clientY,
+                );
+                if (viewPoint) {
+                    inputHandlersRef.current.zoomAtViewPoint(viewPoint, safariGestureStartZoom);
+                }
+            };
+
+            const onGestureChange = (event: Event) => {
+                if (activePointers.size >= 2) return;
+
+                const gestureEvent = event as WebKitGestureEvent;
+                event.preventDefault();
+                const viewPoint = inputHandlersRef.current.getViewPointFromClientPoint(
+                    gestureEvent.clientX,
+                    gestureEvent.clientY,
+                );
+                if (!viewPoint) return;
+
+                inputHandlersRef.current.zoomAtViewPoint(viewPoint, safariGestureStartZoom * gestureEvent.scale);
+            };
+
+            const onGestureEnd = (event: Event) => {
+                if (activePointers.size >= 2) return;
+
+                event.preventDefault();
+                suppressNextClickRef.current = false;
+            };
+
             nextApp.canvas.addEventListener("wheel", onWheel, {passive: false});
             nextApp.canvas.addEventListener("pointerdown", onPointerDown);
             window.addEventListener("pointermove", onPointerMove);
             window.addEventListener("pointerup", onPointerUp);
+            window.addEventListener("pointercancel", onPointerCancel);
+            nextApp.canvas.addEventListener("gesturestart", onGestureStart, {passive: false});
+            nextApp.canvas.addEventListener("gesturechange", onGestureChange, {passive: false});
+            nextApp.canvas.addEventListener("gestureend", onGestureEnd, {passive: false});
             cleanupInput = () => {
                 nextApp.canvas.removeEventListener("wheel", onWheel);
                 nextApp.canvas.removeEventListener("pointerdown", onPointerDown);
                 window.removeEventListener("pointermove", onPointerMove);
                 window.removeEventListener("pointerup", onPointerUp);
+                window.removeEventListener("pointercancel", onPointerCancel);
+                nextApp.canvas.removeEventListener("gesturestart", onGestureStart);
+                nextApp.canvas.removeEventListener("gesturechange", onGestureChange);
+                nextApp.canvas.removeEventListener("gestureend", onGestureEnd);
             };
 
             latestRenderRef.current?.();
@@ -639,7 +824,8 @@ export default function CityHex({
     useEffect(() => {
         const app = appRef.current;
         const battleLayer = battleLayerRef.current;
-        if (!pixiSceneReadyId || !app || !battleLayer || !battleRuntime) {
+        const runtimeConfig = latestBattleRuntimeRef.current;
+        if (!pixiSceneReadyId || !app || !battleLayer || !runtimeConfig) {
             battleRuntimeRef.current?.destroy();
             battleRuntimeRef.current = null;
             return;
@@ -653,7 +839,7 @@ export default function CityHex({
         void mountCityBattleRuntime({
             app,
             parent: battleLayer,
-            config: battleRuntime,
+            config: runtimeConfig,
         }).then((runtime) => {
             if (disposed) {
                 runtime.destroy();
@@ -661,9 +847,7 @@ export default function CityHex({
             }
 
             battleRuntimeRef.current = runtime;
-            if (battleRuntime.retreatEnemiesSignal > 0) {
-                runtime.sendEnemiesToSideBorders();
-            }
+            runtime.updateConfig(latestBattleRuntimeRef.current ?? runtimeConfig);
         });
 
         return () => {
@@ -671,7 +855,7 @@ export default function CityHex({
             battleRuntimeRef.current?.destroy();
             battleRuntimeRef.current = null;
         };
-    }, [battleRuntime, pixiSceneReadyId]);
+    }, [battleRuntimeKey, pixiSceneReadyId]);
 
     useEffect(() => {
         const assetUrls = getCityAssetUrls(preparedCells, biome, topExpansionPreviewCellKeys, battlefieldHexes);
@@ -761,6 +945,7 @@ export default function CityHex({
             drawCityScene({
                 sceneLayer,
                 battlefieldHexes,
+                battlefieldCovered,
                 cells: preparedCells,
                 biome,
                 cellsByKey,
@@ -787,6 +972,7 @@ export default function CityHex({
         renderScene();
     }, [
         biome,
+        battlefieldCovered,
         battlefieldHexes,
         battlefieldCellKeys,
         camera.offsetX,
@@ -832,6 +1018,7 @@ export default function CityHex({
 function drawCityScene({
     sceneLayer,
     battlefieldHexes,
+    battlefieldCovered,
     cells,
     biome,
     cellsByKey,
@@ -854,6 +1041,7 @@ function drawCityScene({
 }: {
     sceneLayer: Container;
     battlefieldHexes: readonly BattlefieldTerrainHex[];
+    battlefieldCovered: boolean;
     cells: readonly PreparedHexCell[];
     biome: CityBiome;
     cellsByKey: ReadonlyMap<string, HexCell>;
@@ -876,6 +1064,10 @@ function drawCityScene({
 }) {
     for (const terrainHex of battlefieldHexes) {
         drawBattlefieldTerrainHex(sceneLayer, terrainHex, hexagonPoints);
+    }
+
+    if (battlefieldCovered) {
+        drawBattlefieldCover(sceneLayer, battlefieldHexes, hexagonPoints);
     }
 
     for (const cell of cells) {
@@ -910,6 +1102,21 @@ function drawCityScene({
 
     if (onExpandSide) {
         drawExpansionControls(sceneLayer, expansionControls, getExpansionDisabledReason, onExpandSide);
+    }
+}
+
+function drawBattlefieldCover(
+    parent: Container,
+    battlefieldHexes: readonly BattlefieldTerrainHex[],
+    hexagonPoints: readonly number[],
+) {
+    for (const terrainHex of battlefieldHexes) {
+        const cellLayer = new Container();
+        cellLayer.x = terrainHex.centerX;
+        cellLayer.y = terrainHex.centerY;
+        parent.addChild(cellLayer);
+
+        cellLayer.addChild(createHexShape(hexagonPoints, 0x050508, BATTLEFIELD_COVER_OPACITY));
     }
 }
 

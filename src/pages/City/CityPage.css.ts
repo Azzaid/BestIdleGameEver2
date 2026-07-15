@@ -1,4 +1,4 @@
-import { style, styleVariants } from '@vanilla-extract/css';
+import { keyframes, style, styleVariants } from '@vanilla-extract/css';
 import {vars} from "../../theme/theme.css.ts";
 import * as hud from "../../theme/hud.css.ts";
 
@@ -448,6 +448,37 @@ export const wallBuildButton = style([
     },
     },
 ]);
+
+const towerEditPulse = keyframes({
+    '0%, 100%': {
+        outlineOffset: '0px',
+        transform: 'scale(1)',
+        boxShadow: `0 0 0 0 color-mix(in oklab, ${vars.color.state.warning} 42%, transparent), 0 0 14px color-mix(in oklab, ${vars.color.state.warning} 20%, transparent)`,
+        filter: 'brightness(1)',
+    },
+    '50%': {
+        outlineOffset: '4px',
+        transform: 'scale(1.035)',
+        boxShadow: `0 0 0 5px color-mix(in oklab, ${vars.color.state.warning} 12%, transparent), 0 0 26px color-mix(in oklab, ${vars.color.state.warning} 52%, transparent)`,
+        filter: 'brightness(1.12)',
+    },
+});
+
+export const highlightedTowerEditButton = style({
+    borderColor: vars.color.state.warning,
+    background: `linear-gradient(145deg, color-mix(in oklab, ${vars.color.state.warning} 30%, ${vars.color.background.surface}), ${vars.color.background.surface})`,
+    color: vars.color.text.heading,
+    outline: `2px solid color-mix(in oklab, ${vars.color.state.warning} 74%, transparent)`,
+    outlineOffset: 0,
+    animation: `${towerEditPulse} 1.45s ease-in-out infinite`,
+    transformOrigin: 'center',
+    selectors: {
+        '&:hover': {
+            borderColor: vars.color.text.heading,
+            boxShadow: `0 0 24px color-mix(in oklab, ${vars.color.state.warning} 48%, transparent)`,
+        },
+    },
+});
 
 export const demolishButton = style([
     hud.secondaryButton,

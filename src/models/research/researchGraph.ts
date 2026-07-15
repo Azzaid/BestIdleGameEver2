@@ -13,12 +13,11 @@ export type ResearchPurchaseContext = {
     effectiveUpkeep: UpkeepAmount;
     aetherAtmosphereLevels: AetherAtmosphereLevels;
     biodiversity?: number;
-    isBesieged: boolean;
     resolvedCityData?: CityResolution;
 };
 
 export function canPurchaseResearch(node: ResearchNodeData, context: ResearchPurchaseContext): boolean {
-    if (context.isBesieged || context.purchased.has(node.id)) return false;
+    if (context.purchased.has(node.id)) return false;
     if (!isResearchUnlocked(node, context.purchased)) return false;
 
     if (context.resolvedCityData) {

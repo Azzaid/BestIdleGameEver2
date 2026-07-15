@@ -496,6 +496,10 @@ export function BattleStage(props: {
             world.siegeOverwhelmedWasHandled = false;
             world.siegeMeterFrozen = false;
             world.retreatingEnemyIds.clear();
+            for (const spawner of world.spawners) {
+                spawner.destroy(world);
+            }
+            world.spawners = [];
             world.waveScheduler.state.enabled = true;
             world.waveScheduler.state.timeUntilNextWaveSeconds = 0;
             world.waveScheduler.state.currentWaveIndex = 0;

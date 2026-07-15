@@ -24,6 +24,7 @@ export class WaveSpawner {
     private options: Required<WaveSpawnerOptions>;
     private timeUntilNextSpawn = 0;
     private pendingDelayedSpawns = 0;
+    private delayedSpawnSteps: ((ticker: { deltaMS: number }) => void)[] = [];
 
     constructor(
         blueprints: Record<string, EnemyBlueprint>,
@@ -114,10 +115,12 @@ export class WaveSpawner {
             remaining -= dt;
             if (remaining <= 0) {
                 world.config.app.ticker.remove(step);
+                this.delayedSpawnSteps = this.delayedSpawnSteps.filter(candidate => candidate !== step);
                 this.instantEnemySpawn(world, bp, x, y, movementModifiers);
                 this.pendingDelayedSpawns--;
             }
         };
+        this.delayedSpawnSteps.push(step);
         world.config.app.ticker.add(step);
     }
 
@@ -187,5 +190,15 @@ export class WaveSpawner {
 
     public getQueueLength(): number {
         return this.queue.length;
+    }
+
+    public destroy(world: World) {
+        for (const step of this.delayedSpawnSteps) {
+            world.config.app.ticker.remove(step);
+        }
+
+        this.delayedSpawnSteps = [];
+        this.queue = [];
+        this.pendingDelayedSpawns = 0;
     }
 }

@@ -19,15 +19,15 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     },
     {
       path: "progression",
-      element: enabled ? <ProgressionPage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <ProgressionPage /> : <Navigate to="/city" replace />,
     },
     {
       path: "gun-part-editor",
-      element: enabled ? <GunPartEditorPage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <GunPartEditorPage /> : <Navigate to="/city" replace />,
     },
     {
       path: "ids",
-      element: enabled ? <IdAuditPage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <IdAuditPage /> : <Navigate to="/city" replace />,
     },
     {
       path: "entity-create",
@@ -35,11 +35,11 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     },
     {
       path: "entity-create/:entityId",
-      element: enabled ? <EntityCreatePage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <EntityCreatePage /> : <Navigate to="/city" replace />,
     },
     {
       path: "content-plan",
-      element: enabled ? <ContentPlanPage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <ContentPlanPage /> : <Navigate to="/city" replace />,
     },
     {
       path: "monster-edit",
@@ -47,27 +47,27 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     },
     {
       path: "monster-edit/:monsterId",
-      element: enabled ? <MonsterEditPage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <MonsterEditPage /> : <Navigate to="/city" replace />,
     },
     {
       path: "global-events",
-      element: enabled ? <GlobalEventsEditorPage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <GlobalEventsEditorPage /> : <Navigate to="/city" replace />,
     },
     {
       path: "homogeneous-values",
-      element: enabled ? <HomogeneousValuesEditorPage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <HomogeneousValuesEditorPage /> : <Navigate to="/city" replace />,
     },
     {
       path: "hex-background-editor",
-      element: enabled ? <HexBackgroundEditorPage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <HexBackgroundEditorPage /> : <Navigate to="/city" replace />,
     },
     {
       path: "enemy-animation-sprites",
-      element: enabled ? <EnemyAnimationSpriteSheetPage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <EnemyAnimationSpriteSheetPage /> : <Navigate to="/city" replace />,
     },
     {
       path: "damage-area-vfx",
-      element: enabled ? <DamageAreaVfxEditorPage /> : <Navigate to="/battle" replace />,
+      element: enabled ? <DamageAreaVfxEditorPage /> : <Navigate to="/city" replace />,
     },
   ]);
 

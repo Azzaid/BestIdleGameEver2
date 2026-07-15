@@ -375,7 +375,7 @@ Current battle/wall behavior:
 
 - Wall buildings do not define controlled territory, but their combined resilience defines how much active siege pressure the wall can endure during battle.
 - Battle uses a growing threat counter instead of a player-facing wave counter.
-- Threat starts at 80% of current city signature and grows until it reaches city signature or the siege breaks the wall line. When siege time is over, no new waves are generated; the siege can still be won once existing enemies are cleared, or failed later if remaining enemies overwhelm wall pressure.
+- Threat starts at 80% of current city signature when the player switches into Battle mode and grows only while Battle mode is active, until it reaches city signature or the siege breaks the wall line. Leaving Battle mode resets the siege meter for the next Battle entry. When siege time is over, no new waves are generated; the siege can still be won once existing enemies are cleared, or failed later if remaining enemies overwhelm wall pressure.
 - The active battlefield depth is based on the longest effective tower range, with only a small wall apron below the wall line.
 - If the city is not besieged, battle still runs as constant wall pressure with threat locked to current city signature. Pressure watch does not end the battle or reinitialize the battlefield when active pressure exceeds wall resilience.
 - Melee enemies switch from walk mode to attack mode once their hit radius reaches the wall. Ranged enemies switch to attack mode once their hit radius reaches their `shotDistance` from the wall.

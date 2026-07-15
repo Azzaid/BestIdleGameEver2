@@ -113,6 +113,8 @@ export function CityWorldUnderlay({
     const lastRenderedMetricsSecondRef = useRef(-1);
     const hasAnnouncedSiegeStartedRef = useRef(false);
     const previousWorldViewModeRef = useRef<WorldViewMode>(worldViewMode);
+    const battleRuntimeIsActive = interactive && worldViewMode === "battle";
+    const previousBattleRuntimeIsActiveRef = useRef(battleRuntimeIsActive);
     const protectedCityRadius = getProtectedCityRadius(allHexes);
     const occupiedCellKeys = useMemo(
         () => new Set(allHexes.filter(hex => !hex.isUnclaimed).map(hex => hex.cellKey)),
@@ -127,6 +129,7 @@ export function CityWorldUnderlay({
             .filter((resolved) => resolved.warnings.length === 0),
         [resolvedAvailableTowers],
     );
+    const hasBuiltEffectiveTower = resolvedBattleTowers.length > 0;
     const derivedSourceValues = useMemo(
         () => getDerivedSourceValues(cityResolution, controlledTerritory),
         [cityResolution, controlledTerritory],
@@ -281,21 +284,38 @@ export function CityWorldUnderlay({
         });
     }, [battleRunId, initialThreat, targetThreat, wallResolution.resilience]);
     useEffect(() => {
+        const wasActive = previousBattleRuntimeIsActiveRef.current;
+        previousBattleRuntimeIsActiveRef.current = battleRuntimeIsActive;
+        if (wasActive === battleRuntimeIsActive) return;
+
+        lastRenderedMetricsSecondRef.current = -1;
+        setBattleRunId(runId => runId + 1);
+        setMetrics({
+            threat: initialThreat,
+            targetThreat,
+            siegeElapsedSeconds: 0,
+            siegePressure: 0,
+            wallResilience: wallResolution.resilience,
+        });
+    }, [battleRuntimeIsActive, initialThreat, targetThreat, wallResolution.resilience]);
+    useEffect(() => {
         if (!isSiege) {
             hasAnnouncedSiegeStartedRef.current = false;
             return;
         }
 
+        if (!battleRuntimeIsActive) return;
         if (hasAnnouncedSiegeStartedRef.current) return;
 
         hasAnnouncedSiegeStartedRef.current = true;
         dispatch(enqueueGlobalSignal({type: "siegeStarted"}));
-    }, [dispatch, isSiege]);
+    }, [battleRuntimeIsActive, dispatch, isSiege]);
     useEffect(() => {
+        if (!battleRuntimeIsActive) return;
         if (!signatureStatus.isBesieged || battleMode === "siege") return;
 
         startBattleMode("siege");
-    }, [battleMode, signatureStatus.isBesieged, startBattleMode]);
+    }, [battleMode, battleRuntimeIsActive, signatureStatus.isBesieged, startBattleMode]);
     useEffect(() => {
         const previousWorldViewMode = previousWorldViewModeRef.current;
         previousWorldViewModeRef.current = worldViewMode;
@@ -313,6 +333,11 @@ export function CityWorldUnderlay({
 
         dispatch(setWorldViewMode("city"));
     }, [dispatch, selectedHex, worldViewMode]);
+    useEffect(() => {
+        if (worldViewMode !== "battle" || hasBuiltEffectiveTower) return;
+
+        dispatch(setWorldViewMode("city"));
+    }, [dispatch, hasBuiltEffectiveTower, worldViewMode]);
     useEffect(() => {
         if (pendingTerritoryLossFailureId === 0 || signatureStatus.isBesieged) return;
 
@@ -358,9 +383,13 @@ export function CityWorldUnderlay({
 
         return {
             battleKey: [
-                battleRunId,
                 battlefieldWidth,
                 battlefieldHeight,
+                battlefieldHexes.map(hex => [
+                    hex.cellKey,
+                    hex.backgroundSpriteId,
+                    hex.backgroundDevelopmentVector,
+                ].join(":")).join("|"),
                 resolvedBattleTowers.map(getResolvedTowerBattleKey).join("::"),
                 standaloneTowerDefenses.map(getStandaloneTowerDefenseBattleKey).join("::"),
                 battleWallSegments.map(segment => [
@@ -371,6 +400,7 @@ export function CityWorldUnderlay({
                     segment.wallTopDevelopmentVector ?? "",
                 ].join(":")).join("|"),
             ].join(":"),
+            isActive: battleRuntimeIsActive,
             wallSegments: battleWallSegments,
             terrainHexes: battlefieldHexes,
             standaloneTowerDefenses,
@@ -401,6 +431,7 @@ export function CityWorldUnderlay({
         };
     }, [
         battleRunId,
+        battleRuntimeIsActive,
         battleWallSegments,
         battlefieldDepth,
         battlefieldHeight,
@@ -465,7 +496,11 @@ export function CityWorldUnderlay({
         if (option.addedHexCount === 0) return "No claimable land remains on this side.";
 
         const outsideProtectedHexCount = getOutsideProtectedExpansionHexCount(option, protectedCityRadius);
-        if (outsideProtectedHexCount === 0) return undefined;
+        if (outsideProtectedHexCount === 0) {
+            return signatureStatus.isBesieged
+                ? "City cannot expand while under siege."
+                : undefined;
+        }
 
         const requiredTerritory = getExpansionRequiredTerritory(cityResolution, outsideProtectedHexCount);
         if (signatureStatus.controlledTerritory < requiredTerritory) {
@@ -494,14 +529,16 @@ export function CityWorldUnderlay({
                     getExpansionDisabledReason={getExpansionDisabledReason}
                     showDebugAxes={isDebugModeEnabled}
                     battlefieldHexes={battlefieldHexes}
+                    battlefieldCovered={!hasBuiltEffectiveTower}
                     battleRuntime={battleRuntime}
                     cameraFocusRequest={cameraFocusRequest}
                     clearSelectionSignal={clearSelectionSignal}
+                    selectedCellKey={selectedHex?.cellKey ?? null}
                     onExpandSide={setConfirmingExpansionSide}
                     onSelect={selectHex}
                 />
             </div>
-            {worldViewMode === "battle" && battleRuntime && (
+            {battleRuntimeIsActive && battleRuntime && (
                 <>
                     {isSiege && (
                         <div className={`${s.battleProgress} ${s.siegeProgress}`} aria-label="Siege duration">
@@ -525,7 +562,7 @@ export function CityWorldUnderlay({
                     </div>
                 </>
             )}
-            {interactive && worldViewMode === "city" && (
+            {interactive && worldViewMode === "city" && hasBuiltEffectiveTower && battleRuntime && (
                 <div className={`${s.cameraControls} ${s.cameraControlsCity}`}>
                     <button
                         className={`${s.cameraButton} ${s.cameraButtonUp}`}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as s from './CityPage.css.ts';
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {BuildingSelector} from "./Components/BuildingSelector/BuildingSelector.tsx";
@@ -27,7 +27,11 @@ import {WALL_SUPERSTRUCTURE_BUILDINGS, isWallTopTower} from "../../data/wallSupe
 import type {WallBuilding} from "../../models/city/Wall.ts";
 import {selectWallResolution} from "../../store/wall/selectors.ts";
 import type {SelectedHexPanelProps} from "../../models/city/cityPage.ts";
-import {selectCitySignatureStatus, selectTowerAwareCityResolution} from "../../store/upkeep/selectors.ts";
+import {
+    selectCitySignatureStatus,
+    selectResolvedEffectiveAvailableTowers,
+    selectTowerAwareCityResolution,
+} from "../../store/upkeep/selectors.ts";
 import type {PlacedBuilding} from "../../models/city/Building.ts";
 import type {StructureDetectionResult} from "../../models/city/multistructureDetection.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings";
@@ -96,6 +100,7 @@ const CityPage = ({
     const structureCandidates = useTypedSelector(selectCityStructureCandidates);
     const wallResolution = useTypedSelector(selectWallResolution);
     const towers = useTypedSelector(selectAvailableTowerList);
+    const resolvedAvailableTowers = useTypedSelector(selectResolvedEffectiveAvailableTowers);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
     const cityResolution = useTypedSelector(selectTowerAwareCityResolution);
     const worldViewMode = useTypedSelector(selectWorldViewMode);
@@ -117,6 +122,11 @@ const CityPage = ({
         setConfirmingExpansionSide,
     } = useCityCanvasInteraction();
     const [globalEffectsOpen, setGlobalEffectsOpen] = useState(false);
+    const hasAutoSelectedStarterTowerRef = useRef(false);
+    const hasBuiltEffectiveTower = useMemo(
+        () => resolvedAvailableTowers.some(({resolved}) => resolved.warnings.length === 0),
+        [resolvedAvailableTowers],
+    );
 
     useEffect(() => {
         if (!selectedHex) return;
@@ -191,7 +201,11 @@ const CityPage = ({
         if (option.addedHexCount === 0) return "No claimable land remains on this side.";
 
         const outsideProtectedHexCount = getOutsideProtectedExpansionHexCount(option, protectedCityRadius);
-        if (outsideProtectedHexCount === 0) return undefined;
+        if (outsideProtectedHexCount === 0) {
+            return signatureStatus.isBesieged
+                ? "City cannot expand while under siege."
+                : undefined;
+        }
 
         const requiredTerritory = getExpansionRequiredTerritory(cityResolution, outsideProtectedHexCount);
         if (signatureStatus.controlledTerritory < requiredTerritory) {
@@ -283,6 +297,15 @@ const CityPage = ({
             .sort((left, right) => left.column - right.column),
         [hexes],
     );
+    const starterTowerBaseHex = wallTowerHexes[0];
+
+    useEffect(() => {
+        if (hasAutoSelectedStarterTowerRef.current) return;
+        if (hasBuiltEffectiveTower || selectedHex || !starterTowerBaseHex) return;
+
+        hasAutoSelectedStarterTowerRef.current = true;
+        setSelectedHex(starterTowerBaseHex);
+    }, [hasBuiltEffectiveTower, selectedHex, setSelectedHex, starterTowerBaseHex]);
 
     const handleEditSelectedWallTopTower = () => {
         if (!selectedHex || selectedHex.kind !== "wall" || !selectedHex.wallTopKey) return;
@@ -389,6 +412,7 @@ const CityPage = ({
                         blockedReason=""
                         isLost={Boolean(selectedHex.isLost || selectedStructureIsBroken)}
                         lostReason={selectedHex.isLost ? LOST_TERRITORY_BLOCK_REASON : BROKEN_STRUCTURE_BLOCK_REASON}
+                        emphasizeEditWallTopTower={!hasBuiltEffectiveTower && selectedHex.cellKey === starterTowerBaseHex?.cellKey}
                         onBuildStructure={handleBuildStructure}
                         onDemolish={handleDemolishSelectedHex}
                         onDemolishWallTop={handleDemolishSelectedWallTop}
@@ -624,6 +648,7 @@ function SelectedHexPanel({
     blockedReason,
     isLost,
     lostReason,
+    emphasizeEditWallTopTower = false,
     onBuildStructure,
     onDemolish,
     onDemolishWallTop,
@@ -714,7 +739,7 @@ function SelectedHexPanel({
                     <p className={s.panelDescription}>{selectedWallTopBuilding.description}</p>
                     {isWallTopTower(selectedWallTopBuilding) && (
                         <button
-                            className={s.wallBuildButton}
+                            className={`${s.wallBuildButton} ${emphasizeEditWallTopTower ? s.highlightedTowerEditButton : ""}`}
                             type="button"
                             disabled={actionBlocked}
                             title={actionBlocked ? actionBlockedReason : undefined}

@@ -23,6 +23,7 @@ export type SelectedHexPanelProps = {
     blockedReason: string;
     isLost: boolean;
     lostReason: string;
+    emphasizeEditWallTopTower?: boolean;
     onBuildStructure: (structureId: string, coreCellKey: string) => void;
     onDemolish: () => void;
     onDemolishWallTop: () => void;
