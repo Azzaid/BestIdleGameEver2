@@ -369,11 +369,14 @@ export const panelDescription = style({
 
 export const multistructureStatus = style({
     display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))',
+    alignContent: 'start',
     gap: '8px',
     minHeight: 0,
     maxHeight: '100%',
-    overflowY: 'auto',
+    overflow: 'auto',
     paddingRight: '2px',
+    paddingBottom: '2px',
     scrollbarGutter: 'stable',
     WebkitOverflowScrolling: 'touch',
 });

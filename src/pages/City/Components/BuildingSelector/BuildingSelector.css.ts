@@ -87,12 +87,13 @@ export const tabCount = style({
 // List grid
 export const list = style({
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 420px), 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))",
     alignContent: "start",
     gap: tokens.space.lg,
     minHeight: 0,
-    overflowY: "auto",
+    overflow: "auto",
     paddingRight: "2px",
+    paddingBottom: "2px",
     scrollbarGutter: "stable",
     WebkitOverflowScrolling: "touch",
     '@media': {
@@ -160,11 +161,6 @@ export const effectsRow = style({
     gap: tokens.space.lg,
     padding: `${tokens.space.md} ${tokens.space.lg}`,
     borderBottom: `1px solid ${hud.hudBorder}`,
-    '@media': {
-        '(max-width: 520px)': {
-            gridTemplateColumns: '112px minmax(0, 1fr)',
-        },
-    },
 });
 
 export const zoneRow = style({
@@ -173,21 +169,11 @@ export const zoneRow = style({
     gap: tokens.space.lg,
     padding: `${tokens.space.md} ${tokens.space.lg}`,
     borderBottom: `1px solid ${hud.hudBorder}`,
-    '@media': {
-        '(max-width: 520px)': {
-            gridTemplateColumns: '112px 1fr',
-        },
-    },
 });
 
 export const previewCol = style({
     display: "grid",
     placeItems: "center",
-    '@media': {
-        '(max-width: 520px)': {
-            gridRow: 'span 2',
-        },
-    },
 });
 export const previewColPlaceholder = style({
     visibility: "hidden",
@@ -240,10 +226,4 @@ export const previewSvg = style({
     height: 126,
     "--tile-fill": hud.hudAccentSoft,
     "--tile-stroke": hud.hudBorder,
-    '@media': {
-        '(max-width: 520px)': {
-            width: 96,
-            height: 96,
-        },
-    },
 } as React.CSSProperties);
