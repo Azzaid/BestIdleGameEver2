@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as s from './CityPage.css.ts';
+import * as buildSelectorStyles from "./Components/BuildingSelector/BuildingSelector.css.ts";
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import {BuildingSelector} from "./Components/BuildingSelector/BuildingSelector.tsx";
+import {HexTilePreview} from "./Components/BuildingSelector/HexTilePreview.tsx";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorValue} from "../../models/DevlopmentVector.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {
@@ -77,6 +79,7 @@ import {selectTower} from "../../store/towers/slice.ts";
 import {selectWorldViewMode} from "../../store/worldView/selectors.ts";
 import {setWorldViewMode} from "../../store/worldView/slice.ts";
 import HistoryModal from "../History/HistoryPage.tsx";
+import {buildingsSpriteAtlas} from "../../models/sprites/buildings/buildingsSpriteAtlas.ts";
 
 const EXPAND_WARNING = "City grows bigger, more noticeable and attracts more monsters";
 const LOST_TERRITORY_BLOCK_REASON = "Lost territory must be reclaimed before it can work, transform, or be rebuilt.";
@@ -355,7 +358,6 @@ const CityPage = ({
     const selectedWallTopBuilding = selectedHex?.wallTopKey ? WALL_SUPERSTRUCTURE_BUILDINGS[selectedHex.wallTopKey] : undefined;
     const selectedBuildingVector = selectedBuilding?.vector;
     const selectedPanelVector = selectedBuildingVector ?? selectedWallTopBuilding?.vector ?? selectedWallBuilding?.vector ?? DEVELOPMENT_VECTORS.neutral;
-    const selectedBuildingIsNature = selectedBuildingVector === DEVELOPMENT_VECTORS.nature;
     const selectedStructureCandidates = selectedHex
         ? structureCandidates.filter(candidate => (
             isHexPartOfStructureCandidate(selectedHex.cellKey, candidate)
@@ -402,10 +404,6 @@ const CityPage = ({
                         selectedWallBuilding={selectedWallBuilding}
                         selectedWallTopBuilding={selectedWallTopBuilding}
                         panelVector={selectedPanelVector}
-                        structureCandidates={selectedStructureCandidates}
-                        builtStructureIds={builtStructureIdSet}
-                        unlockedBuildingIds={unlockedBuildingIdSet}
-                        requirementResolutionData={requirementResolutionData}
                         isPartOfCompleteStructure={selectedHexIsPartOfCompleteStructure}
                         wallResolution={wallResolution}
                         blocked={false}
@@ -413,7 +411,7 @@ const CityPage = ({
                         isLost={Boolean(selectedHex.isLost || selectedStructureIsBroken)}
                         lostReason={selectedHex.isLost ? LOST_TERRITORY_BLOCK_REASON : BROKEN_STRUCTURE_BLOCK_REASON}
                         emphasizeEditWallTopTower={!hasBuiltEffectiveTower && selectedHex.cellKey === starterTowerBaseHex?.cellKey}
-                        onBuildStructure={handleBuildStructure}
+                        onClose={() => setSelectedHex(null)}
                         onDemolish={handleDemolishSelectedHex}
                         onDemolishWallTop={handleDemolishSelectedWallTop}
                         onEditWallTopTower={handleEditSelectedWallTopTower}
@@ -436,11 +434,15 @@ const CityPage = ({
                             blockedReason=""
                         />
                         : selectedHex.buildingKey || selectedHex.partOfStructureId
-                            ? <p className={s.buildingLockedNote}>
-                                {selectedBuildingIsNature
-                                    ? "Nature buildings remain rooted here and cannot be demolished."
-                                    : "Demolish the existing building before using this hex again."}
-                            </p>
+                            ? <MultistructureStatus
+                                structureCandidates={selectedStructureCandidates}
+                                builtStructureIds={builtStructureIdSet}
+                                unlockedBuildingIds={unlockedBuildingIdSet}
+                                requirementResolutionData={requirementResolutionData}
+                                onBuildStructure={handleBuildStructure}
+                                blocked={Boolean(selectedStructureIsBroken)}
+                                blockedReason={selectedStructureIsBroken ? BROKEN_STRUCTURE_BLOCK_REASON : ""}
+                            />
                             : <BuildingSelector
                             onBuild={handleBuildingSelect}
                             unlockedBuildingIds={visibleBuildingIdSet}
@@ -638,10 +640,6 @@ function SelectedHexPanel({
     selectedWallBuilding,
     selectedWallTopBuilding,
     panelVector,
-    structureCandidates,
-    builtStructureIds,
-    unlockedBuildingIds,
-    requirementResolutionData,
     isPartOfCompleteStructure,
     wallResolution,
     blocked,
@@ -649,7 +647,7 @@ function SelectedHexPanel({
     isLost,
     lostReason,
     emphasizeEditWallTopTower = false,
-    onBuildStructure,
+    onClose,
     onDemolish,
     onDemolishWallTop,
     onEditWallTopTower,
@@ -665,9 +663,18 @@ function SelectedHexPanel({
 
     return (
         <aside className={`${s.selectionPanel} ${s.panelFrame[panelVector ?? DEVELOPMENT_VECTORS.neutral]}`}>
-            <div className={s.selectionHeader}>
+            <div className={s.selectedHexHeader}>
                 <h2 className={s.selectionTitle}>{selectionTitle}</h2>
-                <span className={s.selectionCoordinates}>{selectionCoordinates}</span>
+                <span className={s.selectedHexCoordinates}>{selectionCoordinates}</span>
+                <button
+                    className={s.selectionCloseButton}
+                    type="button"
+                    aria-label="Deselect hex"
+                    title="Deselect hex"
+                    onClick={onClose}
+                >
+                    {"\u00d7"}
+                </button>
             </div>
 
             {isLost && (
@@ -698,17 +705,6 @@ function SelectedHexPanel({
                     )}
                     {selectedResolvedEntity && (
                         <ActiveModifierList modifiers={selectedResolvedEntity.activeModifiers} />
-                    )}
-                    {!isLost && (
-                        <MultistructureStatus
-                            structureCandidates={structureCandidates}
-                            builtStructureIds={builtStructureIds}
-                            unlockedBuildingIds={unlockedBuildingIds}
-                            requirementResolutionData={requirementResolutionData}
-                            onBuildStructure={onBuildStructure}
-                            blocked={actionBlocked}
-                            blockedReason={actionBlockedReason}
-                        />
                     )}
                     <p className={s.panelDescription}>{selectedBuilding.adjacencyDescription}</p>
                     {canDemolishSelectedBuilding && (
@@ -824,7 +820,7 @@ function MultistructureStatus({
 
     return (
         <div className={s.multistructureStatus}>
-            <h4 className={s.metricTitle}>Multistructure</h4>
+            <h4 className={s.metricTitle}>Multistructures</h4>
             {structureCandidates.map(candidate => {
                 const isAlreadyTransformed =
                     candidate.coreHex.kind === "city" &&
@@ -838,62 +834,132 @@ function MultistructureStatus({
                     requirementResolutionData,
                 );
                 const transformBlockedReason = blocked ? blockedReason : buildBlockedReason;
+                const missingReason = getMissingStructureReason(candidate.missingBuildingIds);
+                const structureVector = structureBuilding?.vector ?? DEVELOPMENT_VECTORS[candidate.structure.vector];
+                const spriteUrl = structureBuilding
+                    ? buildingsSpriteAtlas[structureBuilding.vector][structureBuilding.id]?.src
+                    : undefined;
+                const statusLabel = !hasBeenBuiltBefore
+                    ? null
+                    : isAlreadyTransformed
+                    ? "Built"
+                    : candidate.isComplete
+                    ? "Ready"
+                    : "Missing pieces";
+                const actionDisabledReason = isAlreadyTransformed
+                    ? "Already transformed"
+                    : !candidate.isComplete
+                    ? missingReason
+                    : transformBlockedReason;
+                const actionDisabled = Boolean(actionDisabledReason);
+                const description = candidate.structure.description ?? structureBuilding?.description ?? candidate.structure.hint;
 
                 return (
-                    <div key={`${candidate.structure.id}-${candidate.coreHex.cellKey}`} className={s.multistructureCandidate}>
-                        <div className={s.metricRow}>
-                            <span>{candidate.structure.name}</span>
-                            {hasBeenBuiltBefore && (
-                                <strong>{candidate.isComplete ? (isAlreadyTransformed ? "Built" : "Ready") : "Missing satellites"}</strong>
-                            )}
-                            {candidate.isComplete && !isAlreadyTransformed && (
-                                <button
-                                    className={s.demolishButton}
-                                    type="button"
-                                    disabled={Boolean(transformBlockedReason)}
-                                    title={transformBlockedReason}
-                                    onClick={() => onBuildStructure(candidate.structure.id, candidate.coreHex.cellKey)}
+                    <article
+                        key={`${candidate.structure.id}-${candidate.coreHex.cellKey}`}
+                        className={`${buildSelectorStyles.card} ${buildSelectorStyles.cardFrame[structureVector]}`}
+                        aria-labelledby={`${candidate.structure.id}-${candidate.coreHex.cellKey}-name`}
+                    >
+                        <header className={buildSelectorStyles.zoneHeader}>
+                            <div className={buildSelectorStyles.titleLine}>
+                                <h3
+                                    id={`${candidate.structure.id}-${candidate.coreHex.cellKey}-name`}
+                                    className={buildSelectorStyles.name}
                                 >
-                                    Transform
-                                </button>
-                            )}
-                        </div>
-                        {hasBeenBuiltBefore ? (
-                            <>
-                                {candidate.structure.description && (
-                                    <p className={s.panelDescription}>{candidate.structure.description}</p>
+                                    {candidate.structure.name}
+                                </h3>
+                                {statusLabel && (
+                                    <span className={s.multistructureStatusLabel}>{statusLabel}</span>
                                 )}
-                                {structureBuilding && (
-                                    <div className={s.sideBySideStats}>
-                                        <HomogeneousContributionGroup
-                                            title="Provides"
-                                            effects={getHomogeneousProductionContributions(structureBuilding)}
-                                        />
-                                        <HomogeneousContributionGroup
-                                            title="Requires"
-                                            effects={getHomogeneousRequirementContributions(structureBuilding)}
+                            </div>
+                            <button
+                                className={buildSelectorStyles.buildBtn}
+                                type="button"
+                                disabled={actionDisabled}
+                                title={actionDisabledReason}
+                                onClick={() => onBuildStructure(candidate.structure.id, candidate.coreHex.cellKey)}
+                            >
+                                {isAlreadyTransformed ? "Built" : "Transform"}
+                            </button>
+                        </header>
+
+                        {hasBeenBuiltBefore && (
+                            <>
+                                <section className={buildSelectorStyles.effectsRow}>
+                                    <div className={buildSelectorStyles.previewCol}>
+                                        <HexTilePreview
+                                            imageUrl={spriteUrl}
+                                            padding={spriteUrl ? 1 : 0.96}
+                                            strokeWidth={spriteUrl ? 0 : 3}
+                                            ariaLabel={candidate.structure.name}
                                         />
                                     </div>
-                                )}
-                                <StructureBuildingList
-                                    title="Combined from"
-                                    buildingIds={candidate.structure.requiredBuildingIds}
-                                />
+                                    <div className={buildSelectorStyles.contentCol}>
+                                        <h4 className={buildSelectorStyles.sectionTitle}>Gives</h4>
+                                        <StructureEffectList effects={structureBuilding ? getHomogeneousProductionContributions(structureBuilding) : []} />
+                                    </div>
+                                    <div className={buildSelectorStyles.contentCol}>
+                                        <h4 className={buildSelectorStyles.sectionTitle}>Requires</h4>
+                                        <StructureEffectList effects={structureBuilding ? getHomogeneousRequirementContributions(structureBuilding) : []} />
+                                    </div>
+                                </section>
+
+                                <section className={buildSelectorStyles.zoneRow}>
+                                    <div className={buildSelectorStyles.previewColPlaceholder} aria-hidden />
+                                    <div className={buildSelectorStyles.contentCol}>
+                                        <StructureBuildingList
+                                            title={candidate.isComplete ? "Combined from" : "Needed adjacent"}
+                                            buildingIds={candidate.isComplete ? candidate.structure.requiredBuildingIds : candidate.missingBuildingIds}
+                                        />
+                                    </div>
+                                </section>
                             </>
-                        ) : (
-                            <p className={s.panelDescription}>{candidate.structure.hint}</p>
                         )}
-                        {hasBeenBuiltBefore && candidate.missingBuildingIds.length > 0 && (
-                            <StructureBuildingList
-                                title="Needed adjacent"
-                                buildingIds={candidate.missingBuildingIds}
-                            />
-                        )}
-                    </div>
+
+                        <section className={buildSelectorStyles.zoneDesc}>
+                            <p className={buildSelectorStyles.description}>
+                                {hasBeenBuiltBefore && candidate.isComplete ? description : candidate.structure.hint}
+                            </p>
+                        </section>
+                    </article>
                 );
             })}
         </div>
     );
+}
+
+function StructureEffectList({effects}: {effects: HomogeneousValueEffect[]}) {
+    const visibleEffects = effects.filter(effect => resolveStructureEffectValue(effect) !== 0);
+
+    if (!visibleEffects.length) return null;
+
+    return (
+        <ul className={buildSelectorStyles.bullets}>
+            {visibleEffects.map((effect, index) => {
+                const value = resolveStructureEffectValue(effect);
+                const definition = getHomogeneousValueDefinition(effect.valueId);
+
+                return (
+                    <li key={`${effect.valueId}-${index}`} className={buildSelectorStyles.bulletItem}>
+                        <span className={buildSelectorStyles.costValue}>
+                            {formatHomogeneousValue(effect.valueId, value, effect.additionalKeywords)}
+                        </span>
+                        <span className={buildSelectorStyles.costLabel}>{definition.label}</span>
+                    </li>
+                );
+            })}
+        </ul>
+    );
+}
+
+function resolveStructureEffectValue(effect: HomogeneousValueEffect): number {
+    return (effect.additive ?? 0) * normalizeMultiplier(effect.multiplier);
+}
+
+function getMissingStructureReason(buildingIds: readonly string[]): string | undefined {
+    if (!buildingIds.length) return undefined;
+
+    return `Needs ${buildingIds.map(getBuildingName).join(", ")} adjacent`;
 }
 
 function StructureBuildingList({title, buildingIds}: {title: string; buildingIds: string[]}) {

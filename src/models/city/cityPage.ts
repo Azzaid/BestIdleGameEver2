@@ -1,9 +1,7 @@
 import type { HexCell } from './HexGrid.ts';
 import type { WallBuilding, WallResolution } from './Wall.ts';
 import type { PlacedBuilding } from './Building.ts';
-import type { StructureDetectionResult } from './multistructureDetection.ts';
 import type { HomogeneousResolvedEntity } from '../homogeneousValueResolution.ts';
-import type { RequirementResolutionData } from '../progression/requirements.ts';
 import type { DevelopmentVectorValue } from '../DevlopmentVector.ts';
 
 export type SelectedHexPanelProps = {
@@ -13,10 +11,6 @@ export type SelectedHexPanelProps = {
     selectedWallBuilding?: WallBuilding;
     selectedWallTopBuilding?: WallBuilding;
     panelVector?: DevelopmentVectorValue;
-    structureCandidates: StructureDetectionResult[];
-    builtStructureIds: ReadonlySet<string>;
-    unlockedBuildingIds: ReadonlySet<string>;
-    requirementResolutionData: RequirementResolutionData;
     isPartOfCompleteStructure: boolean;
     wallResolution: WallResolution;
     blocked: boolean;
@@ -24,7 +18,7 @@ export type SelectedHexPanelProps = {
     isLost: boolean;
     lostReason: string;
     emphasizeEditWallTopTower?: boolean;
-    onBuildStructure: (structureId: string, coreCellKey: string) => void;
+    onClose: () => void;
     onDemolish: () => void;
     onDemolishWallTop: () => void;
     onEditWallTopTower: () => void;

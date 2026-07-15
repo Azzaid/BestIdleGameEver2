@@ -6,7 +6,10 @@ import * as hud from "../../../../theme/hud.css.ts";
 // Component wrapper (can inherit data-theme from parent)
 export const wrapper = style({
     display: "grid",
+    gridTemplateRows: "auto minmax(0, 1fr)",
     gap: tokens.space.lg,
+    minHeight: 0,
+    maxHeight: "100%",
     color: vars.color.text.primary,
 });
 
@@ -85,7 +88,18 @@ export const tabCount = style({
 export const list = style({
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 420px), 1fr))",
+    alignContent: "start",
     gap: tokens.space.lg,
+    minHeight: 0,
+    overflowY: "auto",
+    paddingRight: "2px",
+    scrollbarGutter: "stable",
+    WebkitOverflowScrolling: "touch",
+    '@media': {
+        '(max-width: 760px)': {
+            maxHeight: 'min(54dvh, 520px)',
+        },
+    },
 });
 
 export const cardFrame = hud.panelFrame;

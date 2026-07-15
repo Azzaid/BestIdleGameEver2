@@ -34,7 +34,7 @@ export const historyBookButton = style([
         position: 'absolute',
         top: '8px',
         left: 'max(8px, env(safe-area-inset-left, 0px))',
-        zIndex: 8,
+        zIndex: 2,
         width: '42px',
         height: '42px',
         minHeight: '42px',
@@ -89,7 +89,7 @@ export const globalEffectsShell = style({
     position: 'absolute',
     top: 0,
     right: 0,
-    zIndex: 5,
+    zIndex: 2,
     pointerEvents: 'auto',
     width: 'min(420px, calc(100% - 36px))',
     height: '100%',
@@ -200,22 +200,24 @@ export const cityContainer = style({
 });
 
 export const buildingSelectorContainer = style({
+    position: 'relative',
+    zIndex: 6,
     flex: '1 1 220px',
     minWidth: '220px',
     maxWidth: '360px',
     maxHeight: '100%',
     minHeight: 0,
     display: 'grid',
+    gridTemplateRows: 'auto minmax(0, 1fr)',
     gap: '8px',
-    overflowY: 'auto',
+    overflow: 'hidden',
     scrollbarGutter: 'stable',
     pointerEvents: 'auto',
     '@media': {
         '(max-width: 760px)': {
             minWidth: 0,
             maxWidth: 'none',
-            maxHeight: 'none',
-            overflowY: 'visible',
+            maxHeight: 'calc(100dvh - 96px)',
         },
     },
 });
@@ -253,16 +255,63 @@ export const selectionHeader = style({
     flexWrap: 'wrap',
 });
 
+export const selectedHexHeader = style({
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr) auto minmax(30px, 1fr)',
+    alignItems: 'center',
+    gap: '8px',
+});
+
 export const selectionTitle = style({
     margin: 0,
+    minWidth: 0,
     fontSize: '1rem',
     color: vars.color.text.heading,
+    overflowWrap: 'anywhere',
 });
 
 export const selectionCoordinates = style({
     flexShrink: 0,
     color: vars.color.text.muted,
     fontSize: '0.86rem',
+});
+
+export const selectedHexCoordinates = style({
+    justifySelf: 'center',
+    color: vars.color.text.muted,
+    fontSize: '0.86rem',
+    fontWeight: 700,
+    lineHeight: 1,
+});
+
+export const selectionCloseButton = style({
+    justifySelf: 'end',
+    width: '28px',
+    height: '28px',
+    minHeight: '28px',
+    display: 'grid',
+    placeItems: 'center',
+    padding: 0,
+    border: `1px solid ${vars.color.border.default}`,
+    borderRadius: '3px',
+    background: 'transparent',
+    color: vars.color.text.muted,
+    fontSize: '1.05rem',
+    fontWeight: 800,
+    lineHeight: 1,
+    cursor: 'pointer',
+    boxShadow: 'none',
+    selectors: {
+        '&:hover': {
+            borderColor: vars.color.border.selected,
+            background: vars.color.background.surfaceHover,
+            color: vars.color.text.heading,
+        },
+        '&:focus-visible': {
+            outline: `2px solid ${vars.color.border.focus}`,
+            outlineOffset: '2px',
+        },
+    },
 });
 
 export const statSection = style({
@@ -321,16 +370,21 @@ export const panelDescription = style({
 export const multistructureStatus = style({
     display: 'grid',
     gap: '8px',
+    minHeight: 0,
+    maxHeight: '100%',
+    overflowY: 'auto',
+    paddingRight: '2px',
+    scrollbarGutter: 'stable',
+    WebkitOverflowScrolling: 'touch',
 });
 
-export const multistructureCandidate = style([
-    hud.compactPanel,
-    {
-    display: 'grid',
-    gap: '6px',
-    padding: '7px',
-    },
-]);
+export const multistructureStatusLabel = style({
+    color: vars.color.text.muted,
+    fontSize: '0.78rem',
+    fontWeight: 800,
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+});
 
 export const structureListTitle = style({
     margin: '0 0 4px',
@@ -351,6 +405,12 @@ export const structureList = style({
 export const wallSelector = style({
     display: 'grid',
     gap: '8px',
+    minHeight: 0,
+    maxHeight: '100%',
+    overflowY: 'auto',
+    paddingRight: '2px',
+    scrollbarGutter: 'stable',
+    WebkitOverflowScrolling: 'touch',
 });
 
 export const wallCategory = style({
