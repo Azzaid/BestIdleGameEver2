@@ -66,7 +66,7 @@
     ],
     "requiredBuildingIds": [
       "buildings.aether.dolmen",
-      "buildings.medieval.stalkerHut"
+      "buildings.neutral.stalkerHut"
     ],
     "requirements": [
       {
@@ -75,7 +75,7 @@
       },
       {
         "type": "buildingExists",
-        "buildingId": "buildings.medieval.stalkerHut"
+        "buildingId": "buildings.neutral.stalkerHut"
       },
       {
         "type": "homogeneousValueAtLeast",
@@ -109,7 +109,7 @@
     "visualAssetId": "building_aether_shaman-hut",
     "requiredBuildingSprites": {
       "buildings.aether.dolmen": "building_aether_shaman-hut-from-dolmen",
-      "buildings.medieval.shelter": "building_aether_shaman-hut-from-shelter",
+      "buildings.neutral.shelter": "building_aether_shaman-hut-from-shelter",
       "buildings.medieval.scrapCollectionPoint": "building_aether_shaman-hut-from-scrap-collection-point"
     }
   },

@@ -258,22 +258,25 @@ function ProgressionBranch({
 
   return (
     <section className={s.branch}>
-      <div className={s.gateColumn}>
-        {branch.gate ? (
-          <ProgressionCard
-            item={{...branch.gate, layoutDepth: branch.depth, ownerBuildingIds: []}}
-            color={VECTOR_COLORS[branch.gate.vector ?? vector]}
-            selectedNodeKey={selectedNodeKey}
-            onSelect={onSelect}
-            prominent
-          />
-        ) : (
-          <div className={s.hiddenGate}>
+      {branch.gate ? (
+        <TechnologyGate
+          gate={{...branch.gate, layoutDepth: branch.depth, ownerBuildingIds: []}}
+          color={VECTOR_COLORS[branch.gate.vector ?? vector]}
+          selectedNodeKey={selectedNodeKey}
+          onSelect={onSelect}
+        />
+      ) : (
+        <div className={[s.gateColumn, s.gateColumnHidden].join(" ")}>
+          <div className={s.cardMeta}>
+            <span className={s.kindIcon}>{KIND_ICONS.research}</span>
+            <span>{NODE_KIND_LABELS.research}</span>
+          </div>
+          <div className={s.hiddenGateText}>
             <strong>{branch.title}</strong>
             <span>{branch.branch}</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
       <div className={s.unlockColumn}>
         <div className={s.branchHeader}>
           <span>{branch.title}</span>
@@ -359,14 +362,12 @@ function ProgressionCard({
   color,
   selectedNodeKey,
   onSelect,
-  prominent = false,
   children,
 }: {
   item: ProgressionMapItem;
   color: string;
   selectedNodeKey: string;
   onSelect: (key: string) => void;
-  prominent?: boolean;
   children?: ReactNode;
 }) {
   const key = getProgressionMapNodeKey(item);
@@ -374,7 +375,7 @@ function ProgressionCard({
 
   return (
     <article
-      className={getCardClass(item, selectedNodeKey, prominent ? s.gateCard : s.contentCard)}
+      className={getCardClass(item, selectedNodeKey, s.contentCard)}
       style={style}
       onClick={() => onSelect(key)}
     >
@@ -387,6 +388,39 @@ function ProgressionCard({
         {item.kind === "towerPart" ? getTowerPartSlot(item.id) : item.ownerResearchName ?? `Depth ${item.layoutDepth + 1}`}
       </div>
       {children}
+    </article>
+  );
+}
+
+function TechnologyGate({
+  gate,
+  color,
+  selectedNodeKey,
+  onSelect,
+}: {
+  gate: ProgressionMapItem;
+  color: string;
+  selectedNodeKey: string;
+  onSelect: (key: string) => void;
+}) {
+  const key = getProgressionMapNodeKey(gate);
+  const style = {"--card-color": color} as CSSProperties;
+
+  return (
+    <article
+      className={[
+        s.gateColumn,
+        getProgressionMapNodeKey(gate) === selectedNodeKey ? s.cardSelected : "",
+      ].filter(Boolean).join(" ")}
+      style={style}
+      onClick={() => onSelect(key)}
+    >
+      <div className={s.cardMeta}>
+        <span className={s.kindIcon}>{KIND_ICONS.research}</span>
+        <span>{NODE_KIND_LABELS.research}</span>
+      </div>
+      <strong className={s.gateTitle}>{gate.name}</strong>
+      <div className={s.cardSubline}>Depth {gate.layoutDepth + 1}</div>
     </article>
   );
 }

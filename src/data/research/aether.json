@@ -1,17 +1,17 @@
 [
   {
     "id": "research.aether.wickedItems",
-    "parentId": "research.medieval.foraging",
+    "parentId": "research.neutral.scavenging",
     "name": "Wicked Items",
     "summary": "Strange scavenged objects make early ritual stonework possible.",
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.medieval.foraging"
+        "technologyId": "research.neutral.scavenging"
       },
       {
         "type": "buildingExists",
-        "buildingId": "buildings.medieval.stalkerHut"
+        "buildingId": "buildings.neutral.stalkerHut"
       }
     ]
   },

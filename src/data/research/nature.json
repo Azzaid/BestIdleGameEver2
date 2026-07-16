@@ -11,7 +11,7 @@
       },
       {
         "type": "buildingExists",
-        "buildingId": "buildings.medieval.stalkerHut"
+        "buildingId": "buildings.neutral.stalkerHut"
       }
     ],
     "keywords": [

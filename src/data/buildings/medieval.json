@@ -13,18 +13,18 @@
       "timberwork"
     ],
     "requiredBuildingIds": [
-      "buildings.medieval.toolShed",
-      "buildings.medieval.stalkerHut"
+      "buildings.neutral.toolShed",
+      "buildings.neutral.stalkerHut"
     ],
     "hint": "Stalker could gather some quality wood with good tools.",
     "requirements": [
       {
         "type": "buildingExists",
-        "buildingId": "buildings.medieval.toolShed"
+        "buildingId": "buildings.neutral.toolShed"
       },
       {
         "type": "buildingExists",
-        "buildingId": "buildings.medieval.stalkerHut"
+        "buildingId": "buildings.neutral.stalkerHut"
       }
     ],
     "values": [
@@ -51,8 +51,8 @@
       }
     ],
     "requiredBuildingSprites": {
-      "buildings.medieval.toolShed": "building_medieval_lumberjack-house-from-tool-shed",
-      "buildings.medieval.shelter": "building_medieval_lumberjack-house-from-shelter",
+      "buildings.neutral.toolShed": "building_medieval_lumberjack-house-from-tool-shed",
+      "buildings.neutral.shelter": "building_medieval_lumberjack-house-from-shelter",
       "buildings.medieval.scrapCollectionPoint": "building_medieval_lumberjack-house-from-scrap-collection-point"
     }
   },
@@ -165,7 +165,7 @@
     ],
     "requiredBuildingIds": [
       "buildings.medieval.woodenHouse",
-      "buildings.medieval.toolShed"
+      "buildings.neutral.toolShed"
     ],
     "hint": "What if we add some tools to work with?",
     "requirements": [
@@ -200,7 +200,7 @@
     "visualAssetId": "building_medieval_craftsmans-house",
     "requiredBuildingSprites": {
       "buildings.medieval.woodenHouse": "building_medieval_craftsmans-house-from-wooden-house",
-      "buildings.medieval.toolShed": "building_medieval_craftsmans-house-from-tool-shed"
+      "buildings.neutral.toolShed": "building_medieval_craftsmans-house-from-tool-shed"
     }
   },
   {

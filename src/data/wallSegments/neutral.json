@@ -16,6 +16,12 @@
       "neutral",
       "wallSegment"
     ],
-    "visualAssetId": "wallSegments.neutral.scrapBarricade"
+    "visualAssetId": "wallSegments.neutral.scrapBarricade",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.neutral.root"
+      }
+    ]
   }
 ]

@@ -24,6 +24,12 @@
         ],
         "additive": 13
       }
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.neutral.root"
+      }
     ]
   }
 ]

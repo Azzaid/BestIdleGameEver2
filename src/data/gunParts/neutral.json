@@ -48,7 +48,13 @@
       }
     ],
     "projectileSpriteTextureKey": "projectiles.neutral.stoneBasket",
-    "spriteTextureKey": "gunParts.neutral.ammo.stoneBasket"
+    "spriteTextureKey": "gunParts.neutral.ammo.stoneBasket",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.neutral.root"
+      }
+    ]
   },
   {
     "id": "gunParts.neutral.launchSystem.crudeSling",
@@ -127,7 +133,13 @@
         "additive": 2
       }
     ],
-    "spriteTextureKey": "gunParts.medieval.launchSystem.crudeSling"
+    "spriteTextureKey": "gunParts.medieval.launchSystem.crudeSling",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.neutral.root"
+      }
+    ]
   },
   {
     "id": "gunParts.neutral.barrel.hollowedTrunk",
@@ -144,7 +156,7 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.medieval.foraging"
+        "technologyId": "research.neutral.scavenging"
       },
       {
         "type": "buildingKeywordExists",
@@ -160,18 +172,18 @@
         "additive": 2
       },
       {
-        "valueId": "resource.people",
-        "additionalKeywords": [
-          "upkeep"
-        ],
-        "additive": 1
-      },
-      {
         "valueId": "tower.projectileSpread",
         "additionalKeywords": [
           "production"
         ],
         "additive": -5
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
       }
     ],
     "spriteTextureKey": "gunParts.medieval.barrel.hollowedTrunk"

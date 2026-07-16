@@ -39,16 +39,12 @@
     ],
     "requiredBuildingIds": [
       "buildings.nature.wildGarden",
-      "buildings.medieval.stalkerHut"
+      "buildings.neutral.stalkerHut"
     ],
     "requirements": [
       {
-        "type": "buildingExists",
-        "buildingId": "buildings.nature.wildGarden"
-      },
-      {
-        "type": "buildingExists",
-        "buildingId": "buildings.medieval.stalkerHut"
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.seedGathering"
       }
     ],
     "values": [
@@ -68,9 +64,7 @@
       }
     ],
     "requiredBuildingSprites": {
-      "buildings.nature.wildGarden": "building_nature_herbalist-hut-from-wild-garden",
-      "buildings.medieval.shelter": "building_nature_herbalist-hut-from-shelter",
-      "buildings.medieval.scrapCollectionPoint": "building_nature_herbalist-hut-from-scrap-collection-point"
+      "buildings.nature.wildGarden": "building_nature_herbalist-hut-from-wild-garden"
     },
     "visualAssetId": "building_nature_herbalist-hut"
   },

@@ -1,10 +1,11 @@
 [
   {
-    "id": "buildings.medieval.shelter",
+    "id": "buildings.neutral.shelter",
     "name": "Shelter",
     "kind": "building",
     "description": "A rough first home that makes organized foraging possible.",
     "keywords": [
+      "neutral",
       "building",
       "production",
       "people",
@@ -26,14 +27,21 @@
         "additive": 4
       }
     ],
-    "visualAssetId": "building_medieval_shelter"
+    "visualAssetId": "building_medieval_shelter",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.neutral.root"
+      }
+    ]
   },
   {
-    "id": "buildings.medieval.scrapCollectionPoint",
+    "id": "buildings.neutral.scrapCollectionPoint",
     "name": "Scrap Collection Point",
     "kind": "building",
     "description": "A sorting yard for salvaged tools, hollow trunks, fittings, and other early supplies.",
     "keywords": [
+      "neutral",
       "building",
       "production",
       "gold",
@@ -42,7 +50,7 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.medieval.foraging"
+        "technologyId": "research.neutral.scavenging"
       }
     ],
     "values": [
@@ -84,8 +92,8 @@
       "scavenger"
     ],
     "requiredBuildingIds": [
-      "buildings.medieval.shelter",
-      "buildings.medieval.scrapCollectionPoint"
+      "buildings.neutral.shelter",
+      "buildings.neutral.scrapCollectionPoint"
     ],
     "hint": "Basically a shelter and some place to drop scavenged supplies.",
     "requirements": [
@@ -119,16 +127,17 @@
     ],
     "visualAssetId": "building_medieval_stalker-hut",
     "requiredBuildingSprites": {
-      "buildings.medieval.shelter": "building_medieval_stalker-hut",
+      "buildings.neutral.shelter": "building_medieval_stalker-hut",
       "buildings.medieval.scrapCollectionPoint": "building_medieval_stalker-hut-from-scrap-collection-point"
     }
   },
   {
-    "id": "buildings.medieval.toolShed",
+    "id": "buildings.neutral.toolShed",
     "name": "Tool Shed",
     "kind": "building",
     "description": "A cramped rack of repaired scrap tools sturdy enough for repeat work.",
     "keywords": [
+      "neutral",
       "building",
       "production",
       "gold",
@@ -137,7 +146,7 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.medieval.scrapTools"
+        "technologyId": "research.neutral.scrapTools"
       }
     ],
     "values": [
@@ -149,18 +158,18 @@
         "additive": 3
       },
       {
+        "valueId": "resource.gold",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      },
+      {
         "valueId": "resource.people",
         "additionalKeywords": [
           "upkeep"
         ],
         "additive": 2
-      },
-      {
-        "valueId": "resource.gold",
-        "additionalKeywords": [
-          "upkeep"
-        ],
-        "additive": 1
       }
     ],
     "visualAssetId": "building_medieval_tool-shed"

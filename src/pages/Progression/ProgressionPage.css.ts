@@ -130,7 +130,21 @@ export const branch = style({
 export const gateColumn = style({
   display: "grid",
   alignContent: "start",
+  gap: "8px",
   minWidth: 0,
+  minHeight: "100%",
+  padding: "9px",
+  border: "2px solid var(--card-color)",
+  borderRadius: "6px",
+  background: `linear-gradient(180deg, color-mix(in srgb, var(--card-color) 18%, transparent), ${vars.color.background.surface} 58%)`,
+  color: vars.color.text.primary,
+  cursor: "pointer",
+  boxShadow: "inset 0 4px 0 var(--card-color), 0 1px 0 rgba(0, 0, 0, 0.12)",
+  selectors: {
+    "&:hover": {
+      borderColor: vars.color.brand.primary,
+    },
+  },
 });
 
 export const unlockColumn = style({
@@ -163,15 +177,23 @@ export const branchHeader = style({
   fontWeight: 900,
 });
 
-export const hiddenGate = style({
-  display: "grid",
-  gap: "4px",
-  minHeight: "68px",
-  padding: "8px",
-  border: `1px dashed ${vars.color.border.default}`,
-  borderRadius: "5px",
+export const gateColumnHidden = style({
+  borderColor: vars.color.border.default,
+  borderStyle: "dashed",
   background: vars.color.background.surface,
   color: vars.color.text.muted,
+  cursor: "default",
+  boxShadow: "none",
+  selectors: {
+    "&:hover": {
+      borderColor: vars.color.border.default,
+    },
+  },
+});
+
+export const hiddenGateText = style({
+  display: "grid",
+  gap: "4px",
   fontSize: "0.78rem",
   fontWeight: 800,
 });
@@ -215,16 +237,6 @@ export const contentCard = style({
     },
   },
 });
-
-export const gateCard = style([
-  contentCard,
-  {
-    minHeight: "74px",
-    borderWidth: "2px",
-    borderRadius: "3px",
-    background: `linear-gradient(90deg, color-mix(in srgb, var(--card-color) 14%, transparent), ${vars.color.background.surface} 48%)`,
-  },
-]);
 
 export const cardSelected = style({
   outline: `3px solid ${vars.color.border.selected}`,
@@ -276,6 +288,14 @@ export const cardTitle = style({
   lineHeight: 1.18,
   overflowWrap: "anywhere",
 });
+
+export const gateTitle = style([
+  cardTitle,
+  {
+    fontSize: "0.95rem",
+    lineHeight: 1.16,
+  },
+]);
 
 export const cardSubline = style({
   minWidth: 0,

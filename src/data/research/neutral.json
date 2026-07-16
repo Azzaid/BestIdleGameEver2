@@ -18,7 +18,7 @@
       },
       {
         "type": "buildingExists",
-        "buildingId": "buildings.medieval.shelter"
+        "buildingId": "buildings.neutral.shelter"
       }
     ],
     "keywords": [
@@ -28,17 +28,17 @@
   },
   {
     "id": "research.neutral.scrapTools",
-    "parentId": "research.medieval.foraging",
+    "parentId": "research.neutral.scavenging",
     "name": "Scrap Tools",
     "summary": "Turn scavenged metal, lashings, wedges, and handles into repeatable tools.",
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.medieval.foraging"
+        "technologyId": "research.neutral.scavenging"
       },
       {
         "type": "buildingExists",
-        "buildingId": "buildings.medieval.stalkerHut"
+        "buildingId": "buildings.neutral.stalkerHut"
       }
     ],
     "keywords": [
