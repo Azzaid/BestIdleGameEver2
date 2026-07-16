@@ -5,10 +5,11 @@ import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousDerivedValueEffect, HomogeneousValueEffect} from "../homogeneousValues.ts";
 import type {HomogeneousResolvedValueMap} from "../homogeneousValues.ts";
 import type {RequirementGate} from "../progression/requirements.ts";
+import type {ProgressionMetadata} from "../progression/metadata.ts";
 
 export type WallTopCategory = "tower" | "wallSuperstructure";
 
-export interface WallBuilding extends RequirementGate {
+export interface WallBuilding extends RequirementGate, ProgressionMetadata {
     id: string;
     name: string;
     type: BuildingTypesValue;

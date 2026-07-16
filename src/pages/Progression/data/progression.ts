@@ -153,6 +153,8 @@ export function buildProgressionGraph(
         ...node,
         name: entry?.name ?? node.id,
         vector: entry?.vector,
+        level: entry?.level,
+        branch: entry?.branch,
         requirements: rule?.requires,
       };
     }),

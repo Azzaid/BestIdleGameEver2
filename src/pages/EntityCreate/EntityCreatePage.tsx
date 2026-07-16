@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent} from "react";
-import {useParams, useSearchParams} from "react-router-dom";
+import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import type {TowerPartSlot} from "../../models/battle/towerParts.ts";
 import type {TowerPartVisualMetadata} from "../../models/battle/towerPartVisualMetadata.ts";
@@ -34,6 +34,7 @@ import techBuildingDefinitions from "../../data/buildings/tech.json";
 import aetherResearchDefinitions from "../../data/research/aether.json";
 import medievalResearchDefinitions from "../../data/research/medieval.json";
 import natureResearchDefinitions from "../../data/research/nature.json";
+import neutralResearchDefinitions from "../../data/research/neutral.json";
 import techResearchDefinitions from "../../data/research/tech.json";
 import aetherWallSegmentDefinitions from "../../data/wallSegments/aether.json";
 import medievalWallSegmentDefinitions from "../../data/wallSegments/medieval.json";
@@ -208,7 +209,7 @@ let nextRowId = 1;
 
 const rawDefinitionsByType: Record<EntityType, Record<DevelopmentVectorKey, readonly StoredEntityDefinition[]>> = {
   research: {
-    neutral: [],
+    neutral: neutralResearchDefinitions as readonly StoredEntityDefinition[],
     tech: techResearchDefinitions as readonly StoredEntityDefinition[],
     nature: natureResearchDefinitions as readonly StoredEntityDefinition[],
     medieval: medievalResearchDefinitions as readonly StoredEntityDefinition[],
@@ -246,6 +247,7 @@ const rawDefinitionsByType: Record<EntityType, Record<DevelopmentVectorKey, read
 
 export default function EntityCreatePage() {
   const {entityId = "new"} = useParams<{entityId: string}>();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const draftName = searchParams.get("name") ?? undefined;
   const draftDescription = searchParams.get("description") ?? undefined;
@@ -256,6 +258,7 @@ export default function EntityCreatePage() {
   const [isSuperstructure, setIsSuperstructure] = useState(false);
   const [itemName, setItemName] = useState("newEntity");
   const [displayName, setDisplayName] = useState("New Entity");
+  const [parentId, setParentId] = useState("");
   const [description, setDescription] = useState("");
   const [hint, setHint] = useState("");
   const [requiredBuildingRows, setRequiredBuildingRows] = useState<BuildingIdRow[]>([]);
@@ -410,6 +413,7 @@ export default function EntityCreatePage() {
       partType,
       isSuperstructure,
       displayName,
+      parentId,
       description,
       hint,
       requiredBuildingRows,
@@ -429,6 +433,7 @@ export default function EntityCreatePage() {
     buildRequirementRows,
     description,
     displayName,
+    parentId,
     derivedValueRows,
     effectRows,
     entityType,
@@ -621,6 +626,22 @@ export default function EntityCreatePage() {
               <span className={s.label}>Name</span>
               <input className={s.input} value={displayName} onChange={event => setDisplayName(event.target.value)} />
             </label>
+            {entityType === "research" && (
+              <label className={s.field}>
+                <span className={s.label}>Parent technology</span>
+                <SearchableSelect
+                  value={parentId}
+                  options={[
+                    {value: "", label: "No parent"},
+                    ...technologyIds
+                      .filter(technologyId => technologyId !== generatedId)
+                      .map(technologyId => ({value: technologyId, label: technologyId})),
+                  ]}
+                  placeholder="Search technologies"
+                  onChange={updateParentId}
+                />
+              </label>
+            )}
             <SearchableMultiSelect
               label="Keywords"
               options={entityKeywordOptions}
@@ -828,6 +849,15 @@ export default function EntityCreatePage() {
     setBuildRequirementRows(remove);
   }
 
+  function updateParentId(nextParentId: string) {
+    const previousParentId = parentId;
+    setParentId(nextParentId);
+    setRequirementRows(rows => rows.filter(row => !(
+      row.type === "technologyUnlocked"
+      && (row.target === previousParentId || row.target === nextParentId)
+    )));
+  }
+
   function updateRequiredBuildingRow(rowId: number, patch: Partial<BuildingIdRow>) {
     setRequiredBuildingRows(rows => rows.map(row => row.id === rowId ? {...row, ...patch} : row));
   }
@@ -970,6 +1000,15 @@ export default function EntityCreatePage() {
     setSaveStatus({kind: "saving", message: "Saving to local data server..."});
 
     try {
+      const existingGeneratedEntity = findStoredEntity(generatedId);
+      if (existingGeneratedEntity && existingGeneratedEntity.definition.id !== loadedEntity?.definition.id) {
+        setSaveStatus({
+          kind: "error",
+          message: `Entity "${generatedId}" already exists. Choose a different id before saving.`,
+        });
+        return;
+      }
+
       const spriteAction = visualAssetKind
         ? createSpriteSaveAction({
           kind: visualAssetKind,
@@ -1028,6 +1067,7 @@ export default function EntityCreatePage() {
         partType,
         isSuperstructure,
         displayName,
+        parentId,
         description,
         hint,
         requiredBuildingRows,
@@ -1048,7 +1088,10 @@ export default function EntityCreatePage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(previewToSave),
+        body: JSON.stringify({
+          entity: previewToSave,
+          previousEntityId: loadedEntity?.definition.id,
+        }),
       });
       const responseBody = await response.json().catch(() => null) as {action?: string; file?: string; error?: string} | null;
 
@@ -1078,6 +1121,9 @@ export default function EntityCreatePage() {
       setRemovedProjectileVisualAssetId("");
       setProjectileVisualAssetId(effectiveProjectileVisualAssetId);
       setRequiredSourceSpriteRows(savedRequiredSourceSpriteRows);
+      if (entityId !== generatedId) {
+        navigate(`/dev/entity-create/${encodeURIComponent(generatedId)}`, {replace: true});
+      }
     } catch (error) {
       setSaveStatus({
         kind: "error",
@@ -1095,6 +1141,7 @@ export default function EntityCreatePage() {
     setIsSuperstructure(false);
     setItemName(draft?.name ? normalizeIdPart(draft.name) : "newEntity");
     setDisplayName(draft?.name?.trim() || "New Entity");
+    setParentId("");
     setDescription(draft?.description?.trim() || "");
     setHint("");
     setRequiredBuildingRows([]);
@@ -1123,6 +1170,7 @@ export default function EntityCreatePage() {
     setIsSuperstructure(false);
     setItemName(inferred.itemName);
     setDisplayName(titleFromIdPart(id));
+    setParentId("");
     setDescription("");
     setHint("");
     setRequiredBuildingRows([]);
@@ -1153,6 +1201,7 @@ export default function EntityCreatePage() {
     setIsSuperstructure(definition.kind === "superstructure");
     setItemName(options?.asCopy ? `${itemName}Copy` : itemName);
     setDisplayName(options?.asCopy ? `${displayName} Copy` : displayName);
+    setParentId(definition.parentId ?? "");
     setDescription(definition.summary ?? definition.description ?? "");
     setHint(definition.hint ?? "");
     setRequiredBuildingRows(createBuildingIdRows(
@@ -1177,7 +1226,10 @@ export default function EntityCreatePage() {
     setUpkeepValueRows(createValueRows(definition.values ?? [], "upkeep"));
     setDerivedValueRows(createDerivedValueRows(definition.derivedValues ?? []));
     setEffectRows(createEffectRows(definition.effects ?? []));
-    setRequirementRows(createRequirementRows(definition.requirements ?? []));
+    setRequirementRows(createRequirementRows(removeParentTechnologyRequirement(
+      definition.requirements ?? [],
+      definition.parentId ?? "",
+    )));
     setBuildRequirementRows(createRequirementRows(definition.buildRequirements ?? []));
   }
 }
@@ -2310,6 +2362,7 @@ function createPreview(args: {
   partType: TowerPartSlot;
   isSuperstructure: boolean;
   displayName: string;
+  parentId: string;
   description: string;
   hint: string;
   requiredBuildingRows: BuildingIdRow[];
@@ -2326,6 +2379,9 @@ function createPreview(args: {
   baseDefinition: StoredEntityDefinition | null;
 }): Record<string, unknown> {
   const keywords = args.keywords;
+  const parentTechnologyId = args.entityType === "research" && args.parentId.trim() !== args.generatedId
+    ? args.parentId.trim()
+    : "";
   const values = [
     ...args.providedValueRows.map(row => createValueEffect(row, "production")),
     ...args.upkeepValueRows.map(row => createValueEffect(row, "upkeep")),
@@ -2339,9 +2395,17 @@ function createPreview(args: {
   const effects = args.effectRows
     .map(createAdjacencyRule)
     .filter((effect): effect is HomogeneousAdjacencyRule => Boolean(effect));
-  const requirements = args.requirementRows
+  const manualRequirements = args.requirementRows
     .map(createRequirement)
     .filter((requirement): requirement is Requirement => Boolean(requirement));
+  const requirements = [
+    ...(parentTechnologyId && !manualRequirements.some(requirement => (
+      requirement.type === "technologyUnlocked" && requirement.technologyId === parentTechnologyId
+    ))
+      ? [{type: "technologyUnlocked", technologyId: parentTechnologyId} satisfies Requirement]
+      : []),
+    ...manualRequirements,
+  ];
   const buildRequirements = args.buildRequirementRows
     .map(createRequirement)
     .filter((requirement): requirement is Requirement => Boolean(requirement));
@@ -2351,7 +2415,7 @@ function createPreview(args: {
   preview.id = args.generatedId;
 
   if (args.entityType === "research") {
-    preview.parentId = null;
+    preview.parentId = parentTechnologyId || null;
   }
 
   if (args.entityType === "gunPart") {
@@ -2680,6 +2744,14 @@ function createRequirementRows(requirements: readonly Requirement[]): Requiremen
       amount: String(requirement.amount),
     };
   });
+}
+
+function removeParentTechnologyRequirement(requirements: readonly Requirement[], parentId: string): Requirement[] {
+  if (!parentId) return [...requirements];
+
+  return requirements.filter(requirement => !(
+    requirement.type === "technologyUnlocked" && requirement.technologyId === parentId
+  ));
 }
 
 function createValueRows(values: readonly HomogeneousValueEffect[], role: ValueRole): ValueRow[] {

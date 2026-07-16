@@ -6,6 +6,8 @@ import type {Requirement} from "../../models/progression/requirements.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 
 type BuildingOptions = {
+    level?: number;
+    branch?: string;
     requirements?: Requirement[];
     buildRequirements?: Requirement[];
     values?: HomogeneousValueEffect[];
@@ -36,7 +38,8 @@ export function createBuildingFactory({vector, defaultKeywords}: BuildingFactory
       id,
       name,
       type: BUILDING_TYPES.produce,
-      level: 1,
+      level: options.level ?? 1,
+      branch: options.branch,
       isMultiHex: false,
       isMultistructure: false,
       vector,

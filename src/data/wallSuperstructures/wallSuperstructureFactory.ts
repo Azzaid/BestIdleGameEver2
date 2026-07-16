@@ -11,6 +11,8 @@ type WallSuperstructureFactoryOptions = {
 };
 
 type WallSuperstructureOptions = {
+    level?: number;
+    branch?: string;
     wallTopCategory?: WallTopCategory;
     keywords?: BuildingKeyword[];
     requirements?: Requirement[];
@@ -33,6 +35,8 @@ export function createWallSuperstructureFactory({vector, defaultKeywords = []}: 
             name,
             type: BUILDING_TYPES.tower,
             vector,
+            level: options.level,
+            branch: options.branch,
             wallTopCategory: options.wallTopCategory ?? "wallSuperstructure",
             keywords: [...defaultKeywords, ...(options.keywords ?? [])],
             requirements: options.requirements,

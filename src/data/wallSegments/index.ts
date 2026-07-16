@@ -14,6 +14,8 @@ type WallSegmentDefinition = {
     id: string;
     name: string;
     description: string;
+    level?: number;
+    branch?: string;
     keywords?: BuildingKeyword[];
     requirements?: Requirement[];
     buildRequirements?: Requirement[];
@@ -61,6 +63,8 @@ function buildWallSegments(vector: DevelopmentVectorKey): Record<string, WallBui
                 definition.description,
                 {
                     keywords: definition.keywords,
+                    level: definition.level,
+                    branch: definition.branch,
                     requirements: definition.requirements,
                     buildRequirements: definition.buildRequirements,
                     values: definition.values,

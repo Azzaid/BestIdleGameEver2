@@ -19,6 +19,8 @@ type GunPartDefinition = {
   slot: TowerPartSlot;
   name: string;
   description?: string;
+  level?: number;
+  branch?: string;
   keywords?: string[];
   requirements?: Requirement[];
   buildRequirements?: Requirement[];
@@ -100,6 +102,8 @@ function buildTowerParts(vector: DevelopmentVectorKey): GunPart[] {
     definition.description ?? "",
     {
       keywords: definition.keywords,
+      level: definition.level,
+      branch: definition.branch,
       requirements: definition.requirements,
       buildRequirements: definition.buildRequirements,
       spriteTextureKey: definition.spriteTextureKey,

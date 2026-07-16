@@ -71,11 +71,12 @@
     "visualAssetId": "building_medieval_scrap-collection-point"
   },
   {
-    "id": "buildings.medieval.stalkerHut",
+    "id": "buildings.neutral.stalkerHut",
     "name": "Stalker Hut",
-    "kind": "superstructure",
+    "kind": "building",
     "description": "Hut of an experienced stalker that can go further and bring more than just scraps.",
     "keywords": [
+      "neutral",
       "building",
       "production",
       "people",
@@ -89,12 +90,8 @@
     "hint": "Basically a shelter and some place to drop scavenged supplies.",
     "requirements": [
       {
-        "type": "buildingExists",
-        "buildingId": "buildings.medieval.shelter"
-      },
-      {
-        "type": "buildingExists",
-        "buildingId": "buildings.medieval.scrapCollectionPoint"
+        "type": "technologyUnlocked",
+        "technologyId": "research.neutral.scavenging"
       }
     ],
     "values": [

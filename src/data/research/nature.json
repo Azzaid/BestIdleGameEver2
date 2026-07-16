@@ -1,18 +1,21 @@
 [
   {
     "id": "research.nature.seedGathering",
-    "parentId": "research.medieval.foraging",
+    "parentId": "research.neutral.scavenging",
     "name": "Seed Gathering",
     "summary": "Stalker hut routes begin preserving useful wild seeds for the future bio branch.",
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.medieval.foraging"
+        "technologyId": "research.neutral.scavenging"
       },
       {
         "type": "buildingExists",
         "buildingId": "buildings.medieval.stalkerHut"
       }
+    ],
+    "keywords": [
+      "nature"
     ]
   },
   {

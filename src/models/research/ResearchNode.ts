@@ -4,8 +4,9 @@ import type {UpkeepAmount} from "../Upkeep.ts";
 import type {AetherAtmosphere, AetherAtmosphereLevel} from "../city/AetherAtmosphere.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../homogeneousValues.ts";
 import type {Requirement} from "../progression/requirements.ts";
+import type {ProgressionMetadata} from "../progression/metadata.ts";
 
-export type ResearchNodeData = {
+export type ResearchNodeData = ProgressionMetadata & {
     id: string;
     parentId: string | null;             // canonical parent for collapse/navigation
     name: string;

@@ -15,6 +15,8 @@ type BuildingDefinition = {
   name: string;
   kind: "building" | "superstructure";
   description: string;
+  level?: number;
+  branch?: string;
   keywords?: BuildingKeyword[];
   requiredBuildingIds?: string[];
   requiredBuildingSprites?: Record<string, string>;
@@ -93,8 +95,10 @@ function buildBuildings(vector: DevelopmentVectorKey): Record<string, Building> 
           requiredBuildingIds: definition.requiredBuildingIds,
           requiredBuildingSprites: definition.requiredBuildingSprites,
           hint: definition.hint,
-          requirements: definition.requirements,
-          buildRequirements: definition.buildRequirements,
+          level: definition.level,
+          branch: definition.branch,
+          requirements: getUnlockRequirements(definition),
+          buildRequirements: getBuildRequirements(definition),
           values: definition.values,
           effects: definition.effects,
           visualAssetId: definition.visualAssetId,
@@ -110,6 +114,43 @@ function buildBuildings(vector: DevelopmentVectorKey): Record<string, Building> 
       ];
     }),
   );
+}
+
+function getUnlockRequirements(definition: BuildingDefinition): Requirement[] | undefined {
+  if (definition.kind !== "superstructure" || !definition.requiredBuildingIds?.length) {
+    return definition.requirements;
+  }
+
+  const requiredBuildingIds = new Set(definition.requiredBuildingIds);
+  const requirements = definition.requirements?.filter(requirement => (
+    requirement.type !== "buildingExists" || !requiredBuildingIds.has(requirement.buildingId)
+  ));
+
+  return requirements?.length ? requirements : undefined;
+}
+
+function getBuildRequirements(definition: BuildingDefinition): Requirement[] | undefined {
+  if (definition.kind !== "superstructure" || !definition.requiredBuildingIds?.length) {
+    return definition.buildRequirements;
+  }
+
+  const requiredBuildingRequirements = getRequiredBuildingRequirements(definition.requiredBuildingIds);
+  const buildRequirements = [
+    ...requiredBuildingRequirements,
+    ...(definition.buildRequirements ?? []).filter(requirement => (
+      requirement.type !== "buildingExists"
+      || !requiredBuildingRequirements.some(required => required.buildingId === requirement.buildingId)
+    )),
+  ];
+
+  return buildRequirements.length ? buildRequirements : undefined;
+}
+
+function getRequiredBuildingRequirements(requiredBuildingIds: readonly string[]): Requirement[] {
+  return [...new Set(requiredBuildingIds)].map((buildingId): Requirement => ({
+    type: "buildingExists",
+    buildingId,
+  }));
 }
 
 function getDevelopmentVectorKey(vector: DevelopmentVectorValue): DevelopmentVectorKey {

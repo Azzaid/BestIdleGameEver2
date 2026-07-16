@@ -1,0 +1,48 @@
+[
+  {
+    "id": "research.neutral.root",
+    "name": "Shelter",
+    "summary": "A first foothold inside the walls.",
+    "keywords": [
+      "neutral"
+    ]
+  },
+  {
+    "id": "research.neutral.scavenging",
+    "name": "Scavenging",
+    "summary": "Organize safe trips outside the shelter to find food, salvage, and useful hollow wood.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.neutral.root"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.shelter"
+      }
+    ],
+    "keywords": [
+      "neutral"
+    ],
+    "parentId": "research.neutral.root"
+  },
+  {
+    "id": "research.neutral.scrapTools",
+    "parentId": "research.medieval.foraging",
+    "name": "Scrap Tools",
+    "summary": "Turn scavenged metal, lashings, wedges, and handles into repeatable tools.",
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.medieval.foraging"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.medieval.stalkerHut"
+      }
+    ],
+    "keywords": [
+      "neutral"
+    ]
+  }
+]

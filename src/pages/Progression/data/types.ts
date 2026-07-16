@@ -36,6 +36,8 @@ export type ProgressionEdge = {
 export type ProgressionGraphNode = ProgressionNodeRef & {
   name: string;
   vector?: DevelopmentVectorKey;
+  level?: number;
+  branch?: string;
   requirements?: ProgressionRequirements;
 };
 
@@ -54,4 +56,6 @@ export type ProgressionRegistry = {
 export type ProgressionRegistryEntry = {
   name: string;
   vector?: DevelopmentVectorKey;
+  level?: number;
+  branch?: string;
 };

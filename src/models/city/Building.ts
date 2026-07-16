@@ -6,9 +6,10 @@ import type {AxialCoordinate} from "./HexGrid.ts";
 import type {MultiHexStructureRule} from "./MultiHexStructure.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../homogeneousValues.ts";
 import type {RequirementGate} from "../progression/requirements.ts";
+import type {ProgressionMetadata} from "../progression/metadata.ts";
 
 /** Building data model (extend later with structured effects if needed) */
-export interface Building extends RequirementGate {
+export interface Building extends RequirementGate, ProgressionMetadata {
     id: string;
     name: string;
     type: BuildingTypesValue;

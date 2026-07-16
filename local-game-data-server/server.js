@@ -1,5 +1,5 @@
 import { createServer } from 'node:http'
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -140,47 +140,38 @@ const server = createServer(async (request, response) => {
 
   if (request.method === 'POST' && url.pathname === '/entities') {
     let entity
+    let previousEntityId
 
     try {
       const body = await readRequestBody(request)
       const payload = JSON.parse(body)
       entity = payload?.entity ?? payload
+      previousEntityId = payload?.previousEntityId
     } catch (error) {
       sendJson(response, 400, { error: 'Request body must be valid JSON' })
       return
     }
 
-    const target = resolveEntityFile(entity)
-
-    if (!target.ok) {
-      sendJson(response, target.statusCode, { error: target.error })
-      return
-    }
-
     try {
-      const fileContents = await readFile(target.filePath, 'utf8')
-      const entities = JSON.parse(fileContents)
-
-      if (!Array.isArray(entities)) {
-        sendJson(response, 500, { error: 'Target data file must contain a JSON array' })
+      const resolvedTarget = resolveEntityFile(entity)
+      if (!resolvedTarget.ok) {
+        sendJson(response, resolvedTarget.statusCode, { error: resolvedTarget.error })
         return
       }
 
-      const existingIndex = entities.findIndex(item => item?.id === entity.id)
-      const action = existingIndex === -1 ? 'created' : 'updated'
+      const resolvedPreviousTarget = typeof previousEntityId === 'string' && previousEntityId.trim()
+        ? await resolveExistingEntityFile(previousEntityId) ?? resolveEntityFile({ id: previousEntityId })
+        : resolvedTarget
 
-      if (existingIndex === -1) {
-        entities.push(entity)
-      } else {
-        entities[existingIndex] = entity
+      if (!resolvedPreviousTarget.ok) {
+        sendJson(response, resolvedPreviousTarget.statusCode, { error: resolvedPreviousTarget.error })
+        return
       }
 
-      await writeFile(target.filePath, `${JSON.stringify(entities, null, 2)}\n`, 'utf8')
-      sendJson(response, existingIndex === -1 ? 201 : 200, {
-        action,
-        entity,
-        file: target.relativePath,
-      })
+      const target = previousEntityId === entity.id ? resolvedPreviousTarget : resolvedTarget
+      const previousTarget = resolvedPreviousTarget
+      const result = await saveEntityDefinition(entity, target, previousEntityId, previousTarget)
+      sendJson(response, result.statusCode, result.body)
     } catch (error) {
       if (error.code === 'ENOENT') {
         sendJson(response, 404, { error: `Target data file not found for "${entity.id}"` })
@@ -591,6 +582,127 @@ server.listen(port, '127.0.0.1', () => {
   console.log(`Local game data server listening on http://127.0.0.1:${port}`)
 })
 
+async function saveEntityDefinition(entity, target, previousEntityId, previousTarget) {
+  const sourceId = typeof previousEntityId === 'string' && previousEntityId.trim()
+    ? previousEntityId
+    : entity.id
+  const isRename = sourceId !== entity.id
+  const isMove = previousTarget.filePath !== target.filePath
+
+  if (!isMove) {
+    const entities = await readEntityArray(target.filePath, { allowMissing: !previousEntityId })
+    const sourceIndex = entities.findIndex(item => item?.id === sourceId)
+    const targetIndex = entities.findIndex(item => item?.id === entity.id)
+
+    if (isRename) {
+      if (sourceIndex === -1) {
+        const error = new Error(`Entity "${sourceId}" was not found in ${previousTarget.relativePath}`)
+        error.statusCode = 404
+        throw error
+      }
+
+      if (targetIndex !== -1 && targetIndex !== sourceIndex) {
+        const error = new Error(`Entity "${entity.id}" already exists in ${target.relativePath}`)
+        error.statusCode = 409
+        throw error
+      }
+
+      entities[sourceIndex] = entity
+      await writeEntityArray(target.filePath, entities)
+      return {
+        statusCode: 200,
+        body: {
+          action: 'renamed',
+          previousEntityId: sourceId,
+          entity,
+          file: target.relativePath,
+        },
+      }
+    }
+
+    const existingIndex = targetIndex
+    const action = existingIndex === -1 ? 'created' : 'updated'
+
+    if (existingIndex === -1) {
+      entities.push(entity)
+    } else {
+      entities[existingIndex] = entity
+    }
+
+    await writeEntityArray(target.filePath, entities)
+    return {
+      statusCode: existingIndex === -1 ? 201 : 200,
+      body: {
+        action,
+        entity,
+        file: target.relativePath,
+      },
+    }
+  }
+
+  const previousEntities = await readEntityArray(previousTarget.filePath)
+  const targetEntities = await readEntityArray(target.filePath, { allowMissing: true })
+  const sourceIndex = previousEntities.findIndex(item => item?.id === sourceId)
+
+  if (sourceIndex === -1) {
+    const error = new Error(`Entity "${sourceId}" was not found in ${previousTarget.relativePath}`)
+    error.statusCode = 404
+    throw error
+  }
+
+  if (targetEntities.some(item => item?.id === entity.id)) {
+    const error = new Error(`Entity "${entity.id}" already exists in ${target.relativePath}`)
+    error.statusCode = 409
+    throw error
+  }
+
+  previousEntities.splice(sourceIndex, 1)
+  targetEntities.push(entity)
+
+  await writeEntityArray(previousTarget.filePath, previousEntities)
+  await writeEntityArray(target.filePath, targetEntities)
+
+  return {
+    statusCode: 200,
+    body: {
+      action: 'moved',
+      previousEntityId: sourceId,
+      entity,
+      file: target.relativePath,
+      previousFile: previousTarget.relativePath,
+    },
+  }
+}
+
+async function readEntityArray(filePath, options = {}) {
+  let fileContents
+
+  try {
+    fileContents = await readFile(filePath, 'utf8')
+  } catch (error) {
+    if (options.allowMissing && error.code === 'ENOENT') {
+      return []
+    }
+
+    throw error
+  }
+
+  const entities = JSON.parse(fileContents)
+
+  if (!Array.isArray(entities)) {
+    const error = new Error('Target data file must contain a JSON array')
+    error.statusCode = 500
+    throw error
+  }
+
+  return entities
+}
+
+async function writeEntityArray(filePath, entities) {
+  await mkdir(path.dirname(filePath), { recursive: true })
+  await writeFile(filePath, `${JSON.stringify(entities, null, 2)}\n`, 'utf8')
+}
+
 function resolveEntityFile(entity) {
   if (!entity || Array.isArray(entity) || typeof entity !== 'object') {
     return { ok: false, statusCode: 400, error: 'Entity must be a JSON object' }
@@ -630,6 +742,43 @@ function resolveEntityFile(entity) {
     filePath,
     relativePath: path.relative(path.join(__dirname, '..'), filePath).replaceAll(path.sep, '/'),
   }
+}
+
+async function resolveExistingEntityFile(entityId) {
+  const parsedTarget = resolveEntityFile({ id: entityId })
+  if (!parsedTarget.ok) return parsedTarget
+
+  const [collection] = entityId.split('.')
+  const collectionDir = path.resolve(gameDataDir, collection)
+  if (!collectionDir.startsWith(`${gameDataDir}${path.sep}`)) {
+    return { ok: false, statusCode: 400, error: 'Resolved entity collection is outside the data directory' }
+  }
+
+  let fileNames
+  try {
+    fileNames = await readdir(collectionDir)
+  } catch (error) {
+    if (error.code === 'ENOENT') return null
+    throw error
+  }
+
+  for (const fileName of fileNames.filter(name => name.endsWith('.json'))) {
+    if (!isSafePathPart(fileName.slice(0, -'.json'.length))) continue
+
+    const filePath = path.resolve(collectionDir, fileName)
+    if (!filePath.startsWith(`${collectionDir}${path.sep}`)) continue
+
+    const entities = await readEntityArray(filePath)
+    if (entities.some(item => item?.id === entityId)) {
+      return {
+        ok: true,
+        filePath,
+        relativePath: path.relative(path.join(__dirname, '..'), filePath).replaceAll(path.sep, '/'),
+      }
+    }
+  }
+
+  return null
 }
 
 async function saveEntityValueUpdates(updates) {

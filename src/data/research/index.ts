@@ -8,12 +8,15 @@ import {createTechnologyFactory} from "./technologyFactory.ts";
 import aetherResearchDefinitions from "./aether.json";
 import medievalResearchDefinitions from "./medieval.json";
 import natureResearchDefinitions from "./nature.json";
+import neutralResearchDefinitions from "./neutral.json";
 import techResearchDefinitions from "./tech.json";
 
 type ResearchDefinition = {
   id: string;
   parentId: string | null;
   name: string;
+  level?: number;
+  branch?: string;
   summary?: string;
   keywords?: string[];
   alsoRequires?: string[];
@@ -30,7 +33,7 @@ type ResearchDefinition = {
 };
 
 const definitionsByVector: Record<DevelopmentVectorKey, readonly ResearchDefinition[]> = {
-  neutral: [],
+  neutral: neutralResearchDefinitions as readonly ResearchDefinition[],
   tech: techResearchDefinitions as readonly ResearchDefinition[],
   nature: natureResearchDefinitions as readonly ResearchDefinition[],
   medieval: medievalResearchDefinitions as readonly ResearchDefinition[],

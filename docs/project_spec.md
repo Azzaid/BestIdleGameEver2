@@ -330,7 +330,7 @@ Building categories:
 
 Building data convention:
 
-- Building and superstructure unlock requirements live inline on the building definition as `requirements`, matching tower part data.
+- Building and superstructure unlock requirements live inline on the building definition as `requirements`, matching tower part data. For superstructures, `buildingExists` requirements that match `requiredBuildingIds` are treated as transform-time build requirements so the superstructure can be visible before every ingredient building exists.
 - Buildings, wall segments, wall towers, and tower parts may also define `buildRequirements`. These use the same requirement rule shapes, but only disable the build/install action while keeping already-visible content visible.
 - Superstructure transform recipes live inline on the superstructure definition as `requiredBuildingIds` and can include a player-facing `hint`.
 
@@ -474,7 +474,7 @@ Current implementation:
 - Research nodes show whether they are locked, currently unlocking, or researched; the page no longer exposes a manual research purchase button.
 - Newly unlocked technologies emit app notifications through the shared notification center and append notification-style entries to History.
 - Node internals render through custom SVG/HTML foreignObject content.
-- The Progression page renders a content dependency graph. Every node is colored by development vector. Shape communicates content type: buildings are square, superstructures are rectangular, technologies are heavily rounded rectangles, and tower parts are circular.
+- The Progression page renders a lane-based content progression map. Development vectors are horizontal colored lanes, and technologies act as gates that create horizontal branch space for the buildings, superstructures, and tower parts unlocked behind them. Child technologies split that space into nested branch rows to the right. Content may define `level` and optional `branch` metadata for sorting/grouping, but the dev map does not expose level columns.
 - Aether progression requirements use atmospheric states instead of raw numbers: Veil, Mana Flows, and Death. Each level is derived from the unified resource output total divided by city hex count, rounded down and clamped to levels 1 through 5. Biology progression requirements expose Biodiversity as a decimal value with two digits.
 - The resource bar hides ordinary resources with zero production. It still shows a resource at net zero when production and consumption cancel out.
 - The resource bar represents current Aether atmosphere as a smooth gradient orb instead of numeric rows: Mana Flows tint the left side red, Veil tints the right side blue, and Death darkens the bottom. Hovering the orb reveals the named level for each direction.

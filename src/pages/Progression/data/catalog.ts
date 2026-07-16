@@ -15,6 +15,8 @@ const buildingEntries = Object.values(DEVELOPMENT_VECTORS).reduce<Record<string,
       entries[building.id] = {
         name: building.name,
         vector: getDevelopmentVectorKey(building.vector),
+        level: building.level > 1 ? building.level : undefined,
+        branch: building.branch,
       };
     }
     return entries;
@@ -26,18 +28,30 @@ for (const wallBuilding of Object.values(WALL_SEGMENT_BUILDINGS)) {
   buildingEntries[wallBuilding.id] = {
     name: wallBuilding.name,
     vector: wallBuilding.vector ? getDevelopmentVectorKey(wallBuilding.vector) : getProgressionNodeVectorFromId(wallBuilding.id),
+    level: wallBuilding.level,
+    branch: wallBuilding.branch,
   };
 }
 
 export const PROGRESSION_REGISTRY: ProgressionRegistry = {
   research: Object.fromEntries(Object.values(researchTree).map(research => [
     research.id,
-    {name: research.name, vector: getProgressionNodeVectorFromId(research.id)},
+    {
+      name: research.name,
+      vector: getProgressionNodeVectorFromId(research.id),
+      level: research.level,
+      branch: research.branch,
+    },
   ])),
   buildings: buildingEntries,
   towerParts: Object.fromEntries(TOWER_PARTS.map(part => [
     part.id,
-    {name: part.name, vector: part.vector ?? getProgressionNodeVectorFromId(part.id)},
+    {
+      name: part.name,
+      vector: part.vector ?? getProgressionNodeVectorFromId(part.id),
+      level: part.level,
+      branch: part.branch,
+    },
   ])),
   structures: Object.fromEntries(Object.values(WALL_SUPERSTRUCTURE_BUILDINGS).map(wallSuperstructure => [
     wallSuperstructure.id,
@@ -46,6 +60,8 @@ export const PROGRESSION_REGISTRY: ProgressionRegistry = {
       vector: wallSuperstructure.vector
         ? getDevelopmentVectorKey(wallSuperstructure.vector)
         : getProgressionNodeVectorFromId(wallSuperstructure.id),
+      level: wallSuperstructure.level,
+      branch: wallSuperstructure.branch,
     },
   ])),
 };

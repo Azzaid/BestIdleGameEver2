@@ -27,16 +27,6 @@ export const detailsPanel = style([
   },
 ]);
 
-export const canvas = style({
-  minHeight: 0,
-  width: "100%",
-  height: "100%",
-  overflow: "hidden",
-  overscrollBehavior: "contain",
-  touchAction: "none",
-  background: vars.color.background.app,
-});
-
 export const heading = style({
   margin: "0 0 8px",
   fontSize: "0.95rem",
@@ -52,6 +42,301 @@ export const previewArea = style({
   borderRadius: "6px",
   background: vars.color.background.app,
 });
+
+export const mapScroll = style({
+  minHeight: 0,
+  width: "100%",
+  height: "100%",
+  overflow: "auto",
+  overscrollBehavior: "contain",
+  background: vars.color.background.app,
+});
+
+export const mapBoard = style({
+  display: "grid",
+  alignItems: "start",
+  gap: "14px",
+  width: "max-content",
+  minWidth: "100%",
+  padding: "12px",
+});
+
+export const emptyMap = style({
+  display: "grid",
+  placeItems: "center",
+  height: "100%",
+  color: vars.color.text.muted,
+  fontWeight: 800,
+});
+
+export const lane = style({
+  display: "grid",
+  gridTemplateColumns: "112px max-content",
+  width: "max-content",
+  minWidth: "100%",
+  minHeight: "148px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderLeft: "5px solid var(--vector-color)",
+  borderRadius: "6px",
+  background: vars.color.background.surface,
+  boxShadow: "0 1px 0 rgba(0, 0, 0, 0.14)",
+});
+
+export const laneHeader = style({
+  position: "sticky",
+  left: 0,
+  zIndex: 2,
+  display: "flex",
+  alignItems: "center",
+  gap: "7px",
+  padding: "10px",
+  borderRight: `1px solid ${vars.color.border.default}`,
+  background: vars.color.background.surface,
+  color: vars.color.text.heading,
+  fontSize: "0.85rem",
+  fontWeight: 900,
+});
+
+export const laneSwatch = style({
+  width: "10px",
+  height: "28px",
+  borderRadius: "999px",
+  background: "var(--vector-color)",
+  boxShadow: "0 0 0 2px rgba(255, 255, 255, 0.38)",
+});
+
+export const branchStack = style({
+  display: "grid",
+  alignContent: "start",
+  gap: "10px",
+  width: "max-content",
+  minWidth: 0,
+  padding: "10px",
+});
+
+export const branch = style({
+  display: "grid",
+  gridTemplateColumns: "174px 270px max-content",
+  width: "max-content",
+  gap: "9px",
+  alignItems: "stretch",
+  minWidth: 0,
+  padding: "8px",
+  border: `1px solid color-mix(in srgb, var(--vector-color) 38%, ${vars.color.border.default})`,
+  borderRadius: "6px",
+  background: `linear-gradient(90deg, color-mix(in srgb, var(--vector-color) 8%, transparent), ${vars.color.background.app} 24%)`,
+});
+
+export const gateColumn = style({
+  display: "grid",
+  alignContent: "start",
+  minWidth: 0,
+});
+
+export const unlockColumn = style({
+  display: "grid",
+  alignContent: "start",
+  gap: "7px",
+  width: "270px",
+  minWidth: 0,
+  padding: "7px",
+  borderLeft: `3px solid color-mix(in srgb, var(--vector-color) 42%, ${vars.color.border.default})`,
+  background: vars.color.background.app,
+});
+
+export const childBranchStack = style({
+  display: "grid",
+  alignContent: "start",
+  gap: "8px",
+  width: "max-content",
+  minWidth: 0,
+});
+
+export const branchHeader = style({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "8px",
+  minWidth: 0,
+  color: vars.color.text.heading,
+  fontSize: "0.78rem",
+  fontWeight: 900,
+});
+
+export const hiddenGate = style({
+  display: "grid",
+  gap: "4px",
+  minHeight: "68px",
+  padding: "8px",
+  border: `1px dashed ${vars.color.border.default}`,
+  borderRadius: "5px",
+  background: vars.color.background.surface,
+  color: vars.color.text.muted,
+  fontSize: "0.78rem",
+  fontWeight: 800,
+});
+
+export const branchBadge = style({
+  maxWidth: "48%",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  padding: "2px 6px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "999px",
+  color: vars.color.text.muted,
+  background: vars.color.background.surface,
+  fontSize: "0.68rem",
+});
+
+export const contentGrid = style({
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: "7px",
+  alignItems: "start",
+});
+
+export const contentCard = style({
+  display: "grid",
+  gap: "5px",
+  minWidth: 0,
+  minHeight: "92px",
+  padding: "7px",
+  border: "1px solid var(--card-color)",
+  borderRadius: "5px",
+  background: vars.color.background.surface,
+  color: vars.color.text.primary,
+  cursor: "pointer",
+  textAlign: "left",
+  boxShadow: "inset 3px 0 0 var(--card-color)",
+  selectors: {
+    "&:hover": {
+      borderColor: vars.color.brand.primary,
+    },
+  },
+});
+
+export const gateCard = style([
+  contentCard,
+  {
+    minHeight: "74px",
+    borderWidth: "2px",
+    borderRadius: "3px",
+    background: `linear-gradient(90deg, color-mix(in srgb, var(--card-color) 14%, transparent), ${vars.color.background.surface} 48%)`,
+  },
+]);
+
+export const cardSelected = style({
+  outline: `3px solid ${vars.color.border.selected}`,
+  outlineOffset: "1px",
+});
+
+export const cardKind_research = style({
+  borderRadius: "999px",
+});
+
+export const cardKind_building = style({});
+
+export const cardKind_towerPart = style({
+  borderRadius: "999px",
+});
+
+export const cardKind_structure = style({
+  borderStyle: "dashed",
+});
+
+export const cardMeta = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "5px",
+  minWidth: 0,
+  color: vars.color.text.muted,
+  fontSize: "0.68rem",
+  fontWeight: 900,
+  textTransform: "uppercase",
+});
+
+export const kindIcon = style({
+  display: "inline-grid",
+  placeItems: "center",
+  flex: "0 0 auto",
+  width: "18px",
+  height: "18px",
+  borderRadius: "999px",
+  background: "var(--card-color, var(--vector-color))",
+  color: "white",
+  fontSize: "0.65rem",
+  fontWeight: 900,
+});
+
+export const cardTitle = style({
+  minWidth: 0,
+  color: vars.color.text.heading,
+  fontSize: "0.82rem",
+  lineHeight: 1.18,
+  overflowWrap: "anywhere",
+});
+
+export const cardSubline = style({
+  minWidth: 0,
+  color: vars.color.text.muted,
+  fontSize: "0.72rem",
+  fontWeight: 700,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+export const towerPartShelf = style({
+  display: "grid",
+  gap: "5px",
+  paddingTop: "2px",
+});
+
+export const shelfLabel = style({
+  color: vars.color.text.muted,
+  fontSize: "0.68rem",
+  fontWeight: 900,
+  textTransform: "uppercase",
+});
+
+export const partChipGrid = style({
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "5px",
+});
+
+export const childPartRow = style({
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "4px",
+  marginTop: "2px",
+});
+
+export const partChip = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "5px",
+  maxWidth: "100%",
+  minHeight: "28px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "999px",
+  padding: "3px 8px",
+  background: vars.color.background.surface,
+  color: vars.color.text.primary,
+  fontSize: "0.72rem",
+  fontWeight: 800,
+  cursor: "pointer",
+});
+
+export const childPartChip = style([
+  partChip,
+  {
+    minHeight: "24px",
+    padding: "2px 6px",
+    fontSize: "0.68rem",
+  },
+]);
 
 export const spritePreview = style({
   display: "block",

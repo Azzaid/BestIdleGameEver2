@@ -1,56 +1,22 @@
 [
   {
-    "id": "research.medieval.root",
-    "parentId": null,
-    "name": "Shelter",
-    "summary": "A first foothold inside the walls."
-  },
-  {
-    "id": "research.medieval.foraging",
-    "parentId": "research.medieval.root",
-    "name": "Foraging",
-    "summary": "Organize safe trips outside the shelter to find food, salvage, and useful hollow wood.",
-    "requirements": [
-      {
-        "type": "technologyUnlocked",
-        "technologyId": "research.medieval.root"
-      },
-      {
-        "type": "buildingExists",
-        "buildingId": "buildings.medieval.shelter"
-      }
-    ]
-  },
-  {
-    "id": "research.medieval.scrapTools",
-    "parentId": "research.medieval.foraging",
-    "name": "Scrap Tools",
-    "summary": "Turn scavenged metal, lashings, wedges, and handles into repeatable tools.",
-    "requirements": [
-      {
-        "type": "technologyUnlocked",
-        "technologyId": "research.medieval.foraging"
-      },
-      {
-        "type": "buildingExists",
-        "buildingId": "buildings.medieval.stalkerHut"
-      }
-    ]
-  },
-  {
     "id": "research.medieval.timberProcessing",
-    "parentId": "research.medieval.scrapTools",
+    "parentId": "research.neutral.scrapTools",
     "name": "Timber Processing",
     "summary": "Shape reliable wood for houses and early wooden launchers.",
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.medieval.scrapTools"
+        "technologyId": "research.neutral.scrapTools"
       },
       {
         "type": "buildingExists",
         "buildingId": "buildings.medieval.lumberjackHouse"
       }
+    ],
+    "keywords": [
+      "medieval",
+      "technology"
     ]
   },
   {
@@ -78,18 +44,22 @@
   },
   {
     "id": "research.medieval.craftsmanship",
-    "parentId": "research.medieval.scrapTools",
+    "parentId": "research.medieval.timberProcessing",
     "name": "Craftsmanship",
-    "summary": "We ara no longer need to stare in ave at things from the old world. We can now craft.",
+    "summary": "We are no longer need to stare in ave at things from the old world. We can now craft.",
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.medieval.scrapTools"
+        "technologyId": "research.medieval.timberProcessing"
       },
       {
         "type": "buildingExists",
         "buildingId": "buildings.medieval.craftsmansHouse"
       }
+    ],
+    "keywords": [
+      "medieval",
+      "technology"
     ]
   },
   {

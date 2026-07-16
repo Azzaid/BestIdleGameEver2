@@ -11,6 +11,8 @@ type WallSegmentFactoryOptions = {
 };
 
 type WallSegmentOptions = {
+    level?: number;
+    branch?: string;
     keywords?: BuildingKeyword[];
     requirements?: Requirement[];
     buildRequirements?: Requirement[];
@@ -32,6 +34,8 @@ export function createWallSegmentFactory({vector, defaultKeywords = []}: WallSeg
             name,
             type: BUILDING_TYPES.wallSegment,
             vector,
+            level: options.level,
+            branch: options.branch,
             keywords: [...defaultKeywords, ...(options.keywords ?? [])],
             requirements: options.requirements,
             buildRequirements: options.buildRequirements,

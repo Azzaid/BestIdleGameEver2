@@ -9,6 +9,7 @@ import type {
   HomogeneousValueEffect,
 } from '../homogeneousValues.ts';
 import type {RequirementGate} from '../progression/requirements.ts';
+import type {ProgressionMetadata} from '../progression/metadata.ts';
 
 export interface TowerModifiers {
   rotationSpeed: number;
@@ -68,7 +69,7 @@ export type TowerPartSlot =
   | 'loadingSystem'
   | 'launchSystem';
 
-export interface GunPart extends RequirementGate {
+export interface GunPart extends RequirementGate, ProgressionMetadata {
   id: string;
   name: string;
   slot?: TowerPartSlot;

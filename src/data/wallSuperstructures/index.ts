@@ -15,6 +15,8 @@ type WallSuperstructureDefinition = {
   id: string;
   name: string;
   description: string;
+  level?: number;
+  branch?: string;
   wallTopCategory?: WallTopCategory;
   keywords?: BuildingKeyword[];
   requirements?: Requirement[];
@@ -63,6 +65,8 @@ function buildWallSuperstructures(vector: DevelopmentVectorKey): Record<string, 
         definition.description,
         {
           keywords: definition.keywords,
+          level: definition.level,
+          branch: definition.branch,
           wallTopCategory: definition.wallTopCategory,
           requirements: definition.requirements,
           buildRequirements: definition.buildRequirements,

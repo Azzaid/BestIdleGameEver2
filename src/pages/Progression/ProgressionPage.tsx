@@ -1,16 +1,22 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {Canvas, CanvasPosition, Edge, type CanvasDirection, type CanvasRef, type EdgeProps, type ElkRoot, type NodeProps} from "reaflow";
+import {type CSSProperties, type ReactNode, useMemo, useState} from "react";
 import {Link} from "react-router-dom";
 import {
   PROGRESSION_GRAPH,
   PROGRESSION_VALIDATION_ERRORS,
 } from "./data/catalog.ts";
+import {
+  buildProgressionMap,
+  getProgressionMapNodeKey,
+  type ProgressionMapBranch,
+  type ProgressionMapItem,
+  type ProgressionMapLane,
+} from "./data/mapLayout.ts";
 import type {
   ProgressionEdge,
   ProgressionGraphNode,
   ProgressionNodeKind,
 } from "./data/types.ts";
-import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
+import {DEVELOPMENT_VECTOR_LABELS, DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
 import {researchTree} from "../../data/research/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/gunParts/index.ts";
@@ -26,18 +32,6 @@ import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../model
 import type {Requirement} from "../../models/progression/requirements.ts";
 import * as s from "./ProgressionPage.css.ts";
 
-const NODE_DIMENSIONS: Record<ProgressionNodeKind, {width: number; height: number}> = {
-  research: {width: 190, height: 104},
-  building: {width: 118, height: 118},
-  towerPart: {width: 118, height: 118},
-  structure: {width: 206, height: 82},
-};
-const MIN_ZOOM_FALLBACK = -0.9;
-const MAX_ZOOM_FACTOR = 10;
-const WHEEL_ZOOM_SENSITIVITY = 0.00056;
-const MIN_CANVAS_SIZE = 8000;
-const CANVAS_VIEWPORT_PADDING = 2;
-const GRAPH_PADDING = 96;
 const NODE_KIND_LABELS: Record<ProgressionNodeKind, string> = {
   research: "Technology",
   building: "Building",
@@ -60,18 +54,11 @@ const KIND_ICONS: Record<ProgressionNodeKind, string> = {
   structure: "S",
 };
 
-type ProgressionCanvasNode = {
-  id: string;
-  width: number;
-  height: number;
-  data: ProgressionGraphNode;
-};
-
-type ProgressionCanvasEdge = {
-  id: string;
-  from: string;
-  to: string;
-  data: ProgressionEdge;
+const CARD_KIND_CLASSES: Record<ProgressionNodeKind, string> = {
+  research: s.cardKind_research,
+  building: s.cardKind_building,
+  towerPart: s.cardKind_towerPart,
+  structure: s.cardKind_structure,
 };
 
 type DetailRow = {
@@ -88,55 +75,17 @@ type SelectedItemDetails = {
   editPath: string;
 };
 
-function getFitMinZoom(layout: ElkRoot | null, viewport: { width: number; height: number }): number {
-  if (!layout?.width || !layout.height || !viewport.width || !viewport.height) return MIN_ZOOM_FALLBACK;
-
-  const fitScale = Math.min(viewport.width / layout.width, viewport.height / layout.height, 1);
-  return fitScale - 1;
-}
-
-function clampZoom(zoom: number, minZoomFactor: number): number {
-  return Math.min(MAX_ZOOM_FACTOR + 1, Math.max(minZoomFactor + 1, zoom));
-}
-
-function getGraphElement(svgElement: SVGSVGElement): SVGGElement | null {
-  return Array.from(svgElement.children).find((element): element is SVGGElement => (
-    element instanceof SVGGElement
-  )) ?? null;
-}
-
-function getLocalSvgPoint(
-  svgElement: SVGSVGElement,
-  graphMatrix: DOMMatrix,
-  clientX: number,
-  clientY: number,
-): DOMPoint | null {
-  try {
-    const point = svgElement.createSVGPoint();
-    point.x = clientX;
-    point.y = clientY;
-
-    return point.matrixTransform(graphMatrix.inverse());
-  } catch {
-    return null;
-  }
-}
-
 export default function ProgressionPage() {
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<CanvasRef>(null);
-  const zoomAnchorSequenceRef = useRef(0);
   const [search, setSearch] = useState("");
-  const [layout, setLayout] = useState<ElkRoot | null>(null);
-  const [viewport, setViewport] = useState({width: 0, height: 0});
-  const [zoom, setZoom] = useState(1);
   const [enabledKinds, setEnabledKinds] = useState<Record<ProgressionNodeKind, boolean>>({
     research: true,
     building: true,
     towerPart: true,
     structure: true,
   });
-  const [selectedNodeId, setSelectedNodeId] = useState(PROGRESSION_GRAPH.nodes[0]?.id ?? "");
+  const [selectedNodeKey, setSelectedNodeKey] = useState(
+    PROGRESSION_GRAPH.nodes[0] ? getProgressionMapNodeKey(PROGRESSION_GRAPH.nodes[0]) : "",
+  );
 
   const filteredNodeKeys = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -147,162 +96,25 @@ export default function ProgressionPage() {
         if (!query) return true;
         return node.id.toLowerCase().includes(query) || node.name.toLowerCase().includes(query);
       })
-      .map(getGraphNodeKey));
+      .map(getProgressionMapNodeKey));
   }, [enabledKinds, search]);
 
-  const nodes: ProgressionCanvasNode[] = useMemo(() => (
-    PROGRESSION_GRAPH.nodes
-      .filter(node => filteredNodeKeys.has(getGraphNodeKey(node)))
-      .map(node => ({
-        id: getGraphNodeKey(node),
-        ...NODE_DIMENSIONS[node.kind],
-        data: node,
-      }))
-  ), [filteredNodeKeys]);
+  const lanes = useMemo(
+    () => buildProgressionMap(PROGRESSION_GRAPH, filteredNodeKeys),
+    [filteredNodeKeys],
+  );
 
-  const edges: ProgressionCanvasEdge[] = useMemo(() => (
-    PROGRESSION_GRAPH.edges
-      .filter(edge => filteredNodeKeys.has(getGraphNodeKey(edge.from)))
-      .filter(edge => filteredNodeKeys.has(getGraphNodeKey(edge.to)))
-      .map(edge => ({
-        id: edge.id,
-        from: getGraphNodeKey(edge.from),
-        to: getGraphNodeKey(edge.to),
-        data: edge,
-      }))
-  ), [filteredNodeKeys]);
-
-  const selectedNode = PROGRESSION_GRAPH.nodes.find(node => node.id === selectedNodeId)
+  const selectedNode = PROGRESSION_GRAPH.nodes.find(node => getProgressionMapNodeKey(node) === selectedNodeKey)
     ?? PROGRESSION_GRAPH.nodes[0];
-  const selectedKey = selectedNode ? getGraphNodeKey(selectedNode) : "";
-  const incoming = PROGRESSION_GRAPH.edges.filter(edge => getGraphNodeKey(edge.to) === selectedKey);
-  const outgoing = PROGRESSION_GRAPH.edges.filter(edge => getGraphNodeKey(edge.from) === selectedKey);
+  const selectedKey = selectedNode ? getProgressionMapNodeKey(selectedNode) : "";
+  const incoming = PROGRESSION_GRAPH.edges.filter(edge => getProgressionMapNodeKey(edge.to) === selectedKey);
+  const outgoing = PROGRESSION_GRAPH.edges.filter(edge => getProgressionMapNodeKey(edge.from) === selectedKey);
   const selectedDetails = selectedNode ? getSelectedItemDetails(selectedNode) : undefined;
-
-  const layoutOptions = useMemo(() => ({
-    "elk.algorithm": "layered",
-    "elk.direction": "RIGHT" as CanvasDirection,
-    "elk.spacing.nodeNode": "42",
-    "elk.layered.spacing.nodeNodeBetweenLayers": "96",
-    "elk.edgeRouting": "ORTHOGONAL",
-  }), []);
-
-  const minZoom = getFitMinZoom(layout, viewport);
-  const canvasWidth = Math.max(
-    MIN_CANVAS_SIZE,
-    Math.ceil((layout?.width ?? 0) * (MAX_ZOOM_FACTOR + 1) + viewport.width * CANVAS_VIEWPORT_PADDING),
-  );
-  const canvasHeight = Math.max(
-    MIN_CANVAS_SIZE,
-    Math.ceil((layout?.height ?? 0) * (MAX_ZOOM_FACTOR + 1) + viewport.height * CANVAS_VIEWPORT_PADDING),
-  );
-
-  const zoomAtPoint = useCallback((event: globalThis.WheelEvent) => {
-    if (!layout) return;
-
-    const viewportElement = viewportRef.current;
-    const canvas = canvasRef.current;
-    const scrollElement = canvas?.containerRef?.current;
-    const svgElement = canvas?.svgRef?.current;
-    const graphElement = svgElement ? getGraphElement(svgElement) : null;
-    const graphMatrix = graphElement?.getScreenCTM();
-    if (!viewportElement || !canvas || !scrollElement || !svgElement || !graphElement || !graphMatrix) return;
-
-    const deltaUnit = event.deltaMode === 1
-      ? 16
-      : event.deltaMode === 2
-        ? viewport.height
-        : 1;
-    const wheelDelta = event.deltaY * deltaUnit;
-    const currentZoom = canvas.zoom ?? zoom;
-    const nextZoom = clampZoom(
-      currentZoom * Math.exp(-wheelDelta * WHEEL_ZOOM_SENSITIVITY),
-      minZoom,
-    );
-
-    if (nextZoom === currentZoom) return;
-
-    const graphPoint = getLocalSvgPoint(svgElement, graphMatrix, event.clientX, event.clientY);
-    if (!graphPoint) return;
-
-    const anchorSequence = zoomAnchorSequenceRef.current + 1;
-    zoomAnchorSequenceRef.current = anchorSequence;
-
-    setZoom(nextZoom);
-    canvas.setZoom?.(nextZoom - 1);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (zoomAnchorSequenceRef.current !== anchorSequence) return;
-
-        const latestCanvas = canvasRef.current;
-        const latestScrollElement = latestCanvas?.containerRef?.current;
-        const latestSvgElement = latestCanvas?.svgRef?.current;
-        const latestGraphElement = latestSvgElement ? getGraphElement(latestSvgElement) : null;
-        const latestMatrix = latestGraphElement?.getScreenCTM();
-        if (!latestCanvas || !latestScrollElement || !latestMatrix) return;
-
-        const movedPoint = graphPoint.matrixTransform(latestMatrix);
-        const nextScrollLeft = latestScrollElement.scrollLeft + movedPoint.x - event.clientX;
-        const nextScrollTop = latestScrollElement.scrollTop + movedPoint.y - event.clientY;
-        const maxScrollLeft = Math.max(0, canvasWidth - latestScrollElement.clientWidth);
-        const maxScrollTop = Math.max(0, canvasHeight - latestScrollElement.clientHeight);
-        const nextScroll: [number, number] = [
-          Math.min(maxScrollLeft, Math.max(0, nextScrollLeft)),
-          Math.min(maxScrollTop, Math.max(0, nextScrollTop)),
-        ];
-
-        latestCanvas.setScrollXY?.(nextScroll, false);
-      });
-    });
-  }, [canvasHeight, canvasWidth, layout, minZoom, viewport.height, zoom]);
-
-  const handleZoomChange = useCallback((nextZoom: number) => {
-    setZoom(clampZoom(nextZoom, minZoom));
-  }, [minZoom]);
-
-  useEffect(() => {
-    const viewportElement = viewportRef.current;
-    if (!viewportElement) return;
-
-    const updateViewport = () => {
-      setViewport({
-        width: viewportElement.clientWidth,
-        height: viewportElement.clientHeight,
-      });
-    };
-
-    updateViewport();
-    const resizeObserver = new ResizeObserver(updateViewport);
-    resizeObserver.observe(viewportElement);
-
-    return () => resizeObserver.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const nextZoom = clampZoom(canvasRef.current?.zoom ?? zoom, minZoom);
-    setZoom(nextZoom);
-    canvasRef.current?.setZoom?.(nextZoom - 1);
-  }, [minZoom, zoom]);
-
-  useEffect(() => {
-    const viewportElement = viewportRef.current;
-    if (!viewportElement) return;
-
-    const handleNativeWheel = (event: globalThis.WheelEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      zoomAtPoint(event);
-    };
-
-    viewportElement.addEventListener("wheel", handleNativeWheel, {passive: false, capture: true});
-
-    return () => viewportElement.removeEventListener("wheel", handleNativeWheel, {capture: true});
-  }, [zoomAtPoint]);
 
   return (
     <section className={s.page}>
       <aside className={s.panel}>
-        <h1 className={s.heading}>Progression Graph</h1>
+        <h1 className={s.heading}>Progression Map</h1>
         <label className={s.field}>
           <span className={s.label}>Search</span>
           <input
@@ -343,83 +155,22 @@ export default function ProgressionPage() {
           <p className={s.muted}>No progression validation errors.</p>
         )}
       </aside>
-      <div ref={viewportRef} className={s.canvas}>
-        <Canvas
-          ref={canvasRef}
-          nodes={nodes}
-          edges={edges}
-          panType="drag"
-          fit
-          animated={false}
-          layoutOptions={{
-            ...layoutOptions,
-            "elk.padding": `[top=${GRAPH_PADDING},left=${GRAPH_PADDING},bottom=${GRAPH_PADDING},right=${GRAPH_PADDING}]`,
-          }}
-          maxZoom={MAX_ZOOM_FACTOR}
-          maxWidth={canvasWidth}
-          maxHeight={canvasHeight}
-          minZoom={minZoom}
-          zoom={zoom}
-          zoomable={false}
-          defaultPosition={CanvasPosition.CENTER}
-          onLayoutChange={setLayout}
-          onZoomChange={handleZoomChange}
-          node={(props: NodeProps<ProgressionCanvasNode["data"]>) => {
-            const node = props.properties?.data;
-            if (!node) return <g />;
-
-            const isSelected = node.id === selectedNode?.id && node.kind === selectedNode.kind;
-            const color = getNodeColor(node);
-            const requirements = getRequirementLines(node);
-            const {width, height} = NODE_DIMENSIONS[node.kind];
-
-            return (
-              <g
-                transform={`translate(${props.x}, ${props.y})`}
-                onClick={() => setSelectedNodeId(node.id)}
-                style={{cursor: "pointer"}}
-              >
-                <NodeShape kind={node.kind} width={width} height={height} color={color} isSelected={isSelected} />
-                <circle cx={18} cy={18} r={11} fill={color} />
-                <text x={18} y={22} fontSize={10} fontWeight={800} fill="white" textAnchor="middle">
-                  {KIND_ICONS[node.kind]}
-                </text>
-                <text x={34} y={19} fontSize={11} fontWeight={700} fill="#4b5563">
-                  {NODE_KIND_LABELS[node.kind]}
-                </text>
-                <text
-                  x={width / 2}
-                  y={node.kind === "structure" ? 48 : 51}
-                  fontSize={13}
-                  fontWeight={800}
-                  fill="#111827"
-                  textAnchor="middle"
-                >
-                  {truncateLabel(node.name, node.kind === "structure" ? 23 : 16)}
-                </text>
-                {requirements.slice(0, 2).map((requirement, index) => (
-                  <text
-                    key={requirement}
-                    x={width / 2}
-                    y={(node.kind === "structure" ? 67 : 72) + index * 15}
-                    fontSize={10}
-                    fontWeight={700}
-                    fill="#374151"
-                    textAnchor="middle"
-                  >
-                    {truncateLabel(requirement, node.kind === "structure" ? 29 : 18)}
-                  </text>
-                ))}
-              </g>
-            );
-          }}
-          edge={(props: EdgeProps) => {
-            const edge = props.properties?.data as ProgressionEdge | undefined;
-            const strokeWidth = edge?.kind === "structure" ? 3 : 2;
-            return <Edge {...props} style={{strokeWidth}} />;
-          }}
-        />
-      </div>
+      <main className={s.mapScroll}>
+        {lanes.length ? (
+          <div className={s.mapBoard}>
+            {lanes.map(lane => (
+              <ProgressionLane
+                key={lane.vector}
+                lane={lane}
+                selectedNodeKey={selectedKey}
+                onSelect={setSelectedNodeKey}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className={s.emptyMap}>No matching progression nodes.</div>
+        )}
+      </main>
       <aside className={s.detailsPanel}>
         <h2 className={s.heading}>{selectedNode?.name ?? "No node"}</h2>
         {selectedNode ? (
@@ -452,6 +203,208 @@ export default function ProgressionPage() {
       </aside>
     </section>
   );
+}
+
+function ProgressionLane({
+  lane,
+  selectedNodeKey,
+  onSelect,
+}: {
+  lane: ProgressionMapLane;
+  selectedNodeKey: string;
+  onSelect: (key: string) => void;
+}) {
+  const color = VECTOR_COLORS[lane.vector];
+  const style = {
+    "--vector-color": color,
+  } as CSSProperties;
+
+  return (
+    <section className={s.lane} style={style}>
+      <div className={s.laneHeader}>
+        <span className={s.laneSwatch} />
+        <span>{DEVELOPMENT_VECTOR_LABELS[DEVELOPMENT_VECTORS[lane.vector]]}</span>
+      </div>
+      <div className={s.branchStack}>
+        {lane.branches.map(branch => (
+          <ProgressionBranch
+            key={branch.id}
+            branch={branch}
+            vector={lane.vector}
+            selectedNodeKey={selectedNodeKey}
+            onSelect={onSelect}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProgressionBranch({
+  branch,
+  vector,
+  selectedNodeKey,
+  onSelect,
+}: {
+  branch: ProgressionMapBranch;
+  vector: DevelopmentVectorKey;
+  selectedNodeKey: string;
+  onSelect: (key: string) => void;
+}) {
+  const buildings = branch.items.filter(item => item.kind === "building");
+  const structures = branch.items.filter(item => item.kind === "structure");
+  const towerParts = branch.items.filter(item => item.kind === "towerPart");
+  const towerPartAssignments = new Set<string>();
+
+  return (
+    <section className={s.branch}>
+      <div className={s.gateColumn}>
+        {branch.gate ? (
+          <ProgressionCard
+            item={{...branch.gate, layoutDepth: branch.depth, ownerBuildingIds: []}}
+            color={VECTOR_COLORS[branch.gate.vector ?? vector]}
+            selectedNodeKey={selectedNodeKey}
+            onSelect={onSelect}
+            prominent
+          />
+        ) : (
+          <div className={s.hiddenGate}>
+            <strong>{branch.title}</strong>
+            <span>{branch.branch}</span>
+          </div>
+        )}
+      </div>
+      <div className={s.unlockColumn}>
+        <div className={s.branchHeader}>
+          <span>{branch.title}</span>
+          <span className={s.branchBadge}>{branch.branch}</span>
+        </div>
+        <div className={s.contentGrid}>
+          {[...buildings, ...structures].map(item => {
+            const childTowerParts = towerParts.filter(part => part.ownerBuildingIds.includes(item.id));
+            for (const part of childTowerParts) {
+              towerPartAssignments.add(getProgressionMapNodeKey(part));
+            }
+
+            return (
+              <ProgressionCard
+                key={getProgressionMapNodeKey(item)}
+                item={item}
+                color={VECTOR_COLORS[item.vector ?? vector]}
+                selectedNodeKey={selectedNodeKey}
+                onSelect={onSelect}
+              >
+                {childTowerParts.length ? (
+                  <div className={s.childPartRow}>
+                    {childTowerParts.map(part => (
+                      <button
+                        key={getProgressionMapNodeKey(part)}
+                        type="button"
+                        className={getCardClass(part, selectedNodeKey, s.childPartChip)}
+                        onClick={event => {
+                          event.stopPropagation();
+                          onSelect(getProgressionMapNodeKey(part));
+                        }}
+                      >
+                        <span className={s.kindIcon}>{KIND_ICONS.towerPart}</span>
+                        {part.name}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </ProgressionCard>
+            );
+          })}
+        </div>
+        {towerParts.some(part => !towerPartAssignments.has(getProgressionMapNodeKey(part))) ? (
+          <div className={s.towerPartShelf}>
+            <span className={s.shelfLabel}>Tower Parts</span>
+            <div className={s.partChipGrid}>
+              {towerParts
+                .filter(part => !towerPartAssignments.has(getProgressionMapNodeKey(part)))
+                .map(part => (
+                  <button
+                    key={getProgressionMapNodeKey(part)}
+                    type="button"
+                    className={getCardClass(part, selectedNodeKey, s.partChip)}
+                    onClick={() => onSelect(getProgressionMapNodeKey(part))}
+                  >
+                    <span className={s.kindIcon}>{KIND_ICONS.towerPart}</span>
+                    {part.name}
+                  </button>
+                ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+      {branch.children.length ? (
+        <div className={s.childBranchStack}>
+          {branch.children.map(child => (
+            <ProgressionBranch
+              key={child.id}
+              branch={child}
+              vector={vector}
+              selectedNodeKey={selectedNodeKey}
+              onSelect={onSelect}
+            />
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function ProgressionCard({
+  item,
+  color,
+  selectedNodeKey,
+  onSelect,
+  prominent = false,
+  children,
+}: {
+  item: ProgressionMapItem;
+  color: string;
+  selectedNodeKey: string;
+  onSelect: (key: string) => void;
+  prominent?: boolean;
+  children?: ReactNode;
+}) {
+  const key = getProgressionMapNodeKey(item);
+  const style = {"--card-color": color} as CSSProperties;
+
+  return (
+    <article
+      className={getCardClass(item, selectedNodeKey, prominent ? s.gateCard : s.contentCard)}
+      style={style}
+      onClick={() => onSelect(key)}
+    >
+      <div className={s.cardMeta}>
+        <span className={s.kindIcon}>{KIND_ICONS[item.kind]}</span>
+        <span>{NODE_KIND_LABELS[item.kind]}</span>
+      </div>
+      <strong className={s.cardTitle}>{item.name}</strong>
+      <div className={s.cardSubline}>
+        {item.kind === "towerPart" ? getTowerPartSlot(item.id) : item.ownerResearchName ?? `Depth ${item.layoutDepth + 1}`}
+      </div>
+      {children}
+    </article>
+  );
+}
+
+function getCardClass(
+  item: Pick<ProgressionGraphNode, "kind" | "id">,
+  selectedNodeKey: string,
+  baseClass: string,
+): string {
+  return [
+    baseClass,
+    CARD_KIND_CLASSES[item.kind],
+    getProgressionMapNodeKey(item) === selectedNodeKey ? s.cardSelected : "",
+  ].filter(Boolean).join(" ");
+}
+
+function getTowerPartSlot(id: string): string {
+  return TOWER_PARTS_BY_ID[id]?.slot ?? "tower part";
 }
 
 function StatsList({rows}: {rows: readonly DetailRow[]}) {
@@ -523,62 +476,6 @@ function DetailList({
   );
 }
 
-function NodeShape({
-  kind,
-  width,
-  height,
-  color,
-  isSelected,
-}: {
-  kind: ProgressionNodeKind;
-  width: number;
-  height: number;
-  color: string;
-  isSelected: boolean;
-}) {
-  const stroke = isSelected ? "#111827" : color;
-  const strokeWidth = isSelected ? 3 : 2;
-
-  if (kind === "research") {
-    return (
-      <rect
-        width={width}
-        height={height}
-        rx={28}
-        ry={28}
-        fill="white"
-        stroke={stroke}
-        strokeWidth={strokeWidth}
-      />
-    );
-  }
-
-  if (kind === "towerPart") {
-    return (
-      <circle
-        cx={width / 2}
-        cy={height / 2}
-        r={Math.min(width, height) / 2 - 5}
-        fill="white"
-        stroke={stroke}
-        strokeWidth={strokeWidth}
-      />
-    );
-  }
-
-  return (
-    <rect
-      width={width}
-      height={height}
-      rx={kind === "building" ? 0 : 6}
-      ry={kind === "building" ? 0 : 6}
-      fill="white"
-      stroke={stroke}
-      strokeWidth={strokeWidth}
-    />
-  );
-}
-
 function RequirementList({node}: {node: ProgressionGraphNode}) {
   const requirements = getRequirementLines(node);
 
@@ -592,14 +489,6 @@ function RequirementList({node}: {node: ProgressionGraphNode}) {
       </ul>
     </div>
   );
-}
-
-function getGraphNodeKey(node: {kind: ProgressionNodeKind; id: string}) {
-  return `${node.kind}:${node.id}`;
-}
-
-function getNodeColor(node: ProgressionGraphNode) {
-  return node.vector ? VECTOR_COLORS[node.vector] : "#6b7280";
 }
 
 function getRequirementLines(node: ProgressionGraphNode): string[] {
@@ -628,6 +517,8 @@ function getSelectedItemDetails(node: ProgressionGraphNode): SelectedItemDetails
   const baseStats: DetailRow[] = [
     {label: "Type", value: NODE_KIND_LABELS[node.kind]},
     {label: "Vector", value: node.vector ?? "unknown"},
+    {label: "Level", value: typeof node.level === "number" ? String(node.level) : "derived"},
+    {label: "Branch", value: node.branch ?? "derived"},
   ];
 
   if (node.kind === "research") {
@@ -733,6 +624,7 @@ function getBuildingStats(building: Building | WallBuilding | undefined): Detail
   if (!building) return [];
 
   const rows: DetailRow[] = [];
+  if ("level" in building) rows.push({label: "Content Level", value: String(building.level)});
   if ("isMultiHex" in building) rows.push({label: "Multi-Hex", value: building.isMultiHex ? "yes" : "no"});
   if ("isMultistructure" in building) rows.push({label: "Multi-Structure", value: building.isMultistructure ? "yes" : "no"});
   if ("adjacencyDescription" in building) rows.push({label: "Adjacency", value: building.adjacencyDescription});
@@ -811,9 +703,3 @@ function formatRequirement(requirement: Requirement): string {
   const definition = getHomogeneousValueDefinition(requirement.valueId);
   return `${definition.label} less than ${requirement.amount}`;
 }
-
-function truncateLabel(label: string, maxLength: number) {
-  if (label.length <= maxLength) return label;
-  return `${label.slice(0, Math.max(0, maxLength - 3))}...`;
-}
-

@@ -10,6 +10,8 @@ type TowerPartFactoryOptions = {
 };
 
 type TowerPartOptions = {
+  level?: number;
+  branch?: string;
   keywords?: string[];
   requirements?: Requirement[];
   buildRequirements?: Requirement[];
@@ -38,6 +40,8 @@ export function createTowerPartFactory({vector, defaultKeywords = []}: TowerPart
       name,
       description,
       vector,
+      level: options.level,
+      branch: options.branch,
       sprite: {textureKey: options.spriteTextureKey ?? id},
       zIndex: options.zIndex ?? DEFAULT_TOWER_PART_Z_INDEX[slot],
       projectileSprite: slot === "ammo"

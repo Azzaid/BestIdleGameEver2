@@ -8,6 +8,8 @@ type TechnologyFactoryOptions = {
 };
 
 type TechnologyOptions = {
+  level?: number;
+  branch?: string;
   alsoRequires?: string[];
   keywords?: string[];
   requirements?: Requirement[];
@@ -45,6 +47,8 @@ export function createTechnologyFactory({defaultKeywords = []}: TechnologyFactor
       id,
       parentId,
       name,
+      level: options.level,
+      branch: options.branch,
       keywords: [...defaultKeywords, ...(options.keywords ?? [])],
       summary,
       unlocks: options.unlocks,
