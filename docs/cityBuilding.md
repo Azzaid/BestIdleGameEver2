@@ -172,7 +172,7 @@ Each arrow claims that side's sector of the next big-hex ring. If a side's next 
 
 Only the top wall side can move the top frontier upward. Other side expansions skip candidate cells above the current wall frontier.
 
-An arrow is disabled when no claimable strip remains. Controlled territory gates only newly claimed cells outside the wall-protected regular hex. Cells inside the protected hex can be claimed even while the city is besieged.
+An arrow is disabled when no claimable strip remains. Expansion outside the wall-protected regular hex is allowed while the city is not besieged and does not require a controlled-territory check. While the city is besieged, only claims fully inside the protected hex remain available.
 
 If a failed siege causes territory loss, the wall stays on its current hexes. The active wall length defines a protected regular hex: a wall of `N` active cells protects radius `N - 1`. Claimed cells outside that protected hex become lost territory instead of reverting to empty unclaimed land.
 

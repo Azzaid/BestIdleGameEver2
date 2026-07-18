@@ -16,3 +16,16 @@ export const DEVELOPMENT_VECTOR_LABELS: Record<DevelopmentVectorValue, string> =
     [DEVELOPMENT_VECTORS.medieval]: "Medieval",
     [DEVELOPMENT_VECTORS.aether]: "Aether",
 };
+
+export function isDevelopmentVectorKey(value: string | undefined): value is DevelopmentVectorKey {
+    return value !== undefined && value in DEVELOPMENT_VECTORS;
+}
+
+export function getDevelopmentVectorKey(value: DevelopmentVectorValue): DevelopmentVectorKey {
+    return value;
+}
+
+export function getDevelopmentVectorFromEntityId(id: string | undefined): DevelopmentVectorKey | undefined {
+    const [, vector] = id?.split(".") ?? [];
+    return isDevelopmentVectorKey(vector) ? vector : undefined;
+}

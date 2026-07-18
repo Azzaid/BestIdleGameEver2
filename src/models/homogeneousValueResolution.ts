@@ -17,6 +17,7 @@ import type {
     HomogeneousValueTotals,
 } from "./homogeneousValues.ts";
 import {HOMOGENEOUS_VALUE_ROLE_KEYWORDS} from "./homogeneousValues.ts";
+import type {DevelopmentVectorKey} from "./DevlopmentVector.ts";
 
 const homogeneousValueDefinitions = HOMOGENEOUS_VALUE_DEFINITIONS as Record<HomogeneousValueId, HomogeneousValueDefinition>;
 
@@ -75,6 +76,7 @@ type EffectSource = {
 
 type EffectAccumulator = {
     valueId: HomogeneousValueId;
+    vector?: DevelopmentVectorKey;
     roleKeyword: HomogeneousValueRoleKeyword;
     keywords: Set<string>;
     additive: number;
@@ -502,6 +504,7 @@ function groupHomogeneousValueEffects(
                 getHomogeneousValueResolveType(effect.valueId),
             );
             existing.multiplier *= normalizeMultiplier(effect.multiplier);
+            existing.vector = getMergedEffectVector(existing.vector, effect.vector);
             for (const keyword of keywords) existing.keywords.add(keyword);
             continue;
         }
@@ -752,6 +755,7 @@ function createEffectAccumulator(
 ): EffectAccumulator {
     return {
         valueId: effect.valueId,
+        vector: effect.vector,
         roleKeyword,
         keywords,
         additive: effect.additive ?? 0,
@@ -797,6 +801,7 @@ function toHomogeneousValueEffect(accumulator: EffectAccumulator): HomogeneousVa
 
     return {
         valueId: accumulator.valueId,
+        vector: accumulator.vector,
         additionalKeywords,
         removedKeywords,
         additive: accumulator.additive,
@@ -888,6 +893,16 @@ function getRuleSourceEntityType(entity: HomogeneousValueEntitySource): Homogene
     if (entity.entityType === "tower") return "tower";
 
     return "hex";
+}
+
+function getMergedEffectVector(
+    left: DevelopmentVectorKey | undefined,
+    right: DevelopmentVectorKey | undefined,
+): DevelopmentVectorKey | undefined {
+    if (!left) return right;
+    if (!right || left === right) return left;
+
+    return "neutral";
 }
 
 function getDefaultContributionRoleKeyword(

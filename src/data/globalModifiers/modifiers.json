@@ -2,6 +2,7 @@
   {
     "id": "fungal_inheritance",
     "title": "Fungal Inheritance",
+    "vector": "nature",
     "description": "Carries a portion of each city's fungal production forward.",
     "applyRules": [
       {
@@ -15,6 +16,7 @@
     "effects": [
       {
         "valueId": "resource.fungi",
+        "vector": "nature",
         "additionalKeywords": [
           "production"
         ],
@@ -28,11 +30,13 @@
   {
     "id": "tiny_settlement",
     "title": "Tiny settlement",
+    "vector": "neutral",
     "description": "Merely an outpost not even a village. Easy to blend with environment. Sieges will be much shorter.",
     "applyRules": [],
     "effects": [
       {
         "valueId": "siege.lengthMultiplier",
+        "vector": "neutral",
         "multiplier": 0.2
       }
     ]
@@ -40,11 +44,13 @@
   {
     "id": "village",
     "title": "Village",
+    "vector": "neutral",
     "description": "Few houses more. You started to attract attention.",
     "applyRules": [],
     "effects": [
       {
         "valueId": "siege.lengthMultiplier",
+        "vector": "neutral",
         "multiplier": 0.5
       }
     ]

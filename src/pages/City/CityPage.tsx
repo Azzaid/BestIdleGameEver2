@@ -44,7 +44,7 @@ import {
     getHomogeneousProductionContributions,
     getHomogeneousRequirementContributions,
 } from "../../models/homogeneousValueHelpers.ts";
-import {getHomogeneousValueDefinition, HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
+import {getHomogeneousValueDefinition} from "../../data/homogeneousValues/index.ts";
 import type {HomogeneousAdjacencyRule, HomogeneousValueEffect} from "../../models/homogeneousValues.ts";
 import type {HomogeneousActiveModifier} from "../../models/homogeneousValueResolution.ts";
 import {getUpkeepValues, normalizeMultiplier, resolveHomogeneousValueContributions} from "../../models/homogeneousValueResolution.ts";
@@ -68,7 +68,6 @@ import {areRequirementsMet, getUnmetRequirements, type Requirement} from "../../
 import {ConfirmationModal} from "../../components/ConfirmationModal.tsx";
 import {sendNotification} from "../../lib/notifications/eventBus.ts";
 import {enqueueGlobalSignal} from "../../store/globalEvents/slice.ts";
-import {SIGNATURE_PER_HEX} from "../../data/constants.ts";
 import {getAxialDistance} from "../../models/city/expansion.ts";
 import type {CityExpansionOption} from "../../models/city/expansion.ts";
 import {selectIsDebugModeEnabled} from "../../store/debug/selectors.ts";
@@ -90,11 +89,13 @@ const CityPage = ({
     isHistoryOpen = false,
     onHistoryOpen = () => undefined,
     onHistoryClose = () => undefined,
+    onResearchOpen = () => undefined,
     routeChromeTopInsetPx = 0,
 }: {
     isHistoryOpen?: boolean;
     onHistoryOpen?: () => void;
     onHistoryClose?: () => void;
+    onResearchOpen?: () => void;
     routeChromeTopInsetPx?: number;
 }) => {
     const dispatch = useTypedDispatch();
@@ -217,15 +218,8 @@ const CityPage = ({
         if (option.addedHexCount === 0) return "No claimable land remains on this side.";
 
         const outsideProtectedHexCount = getOutsideProtectedExpansionHexCount(option, protectedCityRadius);
-        if (outsideProtectedHexCount === 0) {
-            return signatureStatus.isBesieged
-                ? "City cannot expand while under siege."
-                : undefined;
-        }
-
-        const requiredTerritory = getExpansionRequiredTerritory(cityResolution, outsideProtectedHexCount);
-        if (signatureStatus.controlledTerritory < requiredTerritory) {
-            return `Requires controlled territory ${formatHomogeneousValue(HOMOGENEOUS_VALUE_IDS.cityControlledTerritory, requiredTerritory)}.`;
+        if (outsideProtectedHexCount > 0 && signatureStatus.isBesieged) {
+            return "City cannot expand outside the protected hex while under siege.";
         }
 
         return undefined;
@@ -408,6 +402,15 @@ const CityPage = ({
                     </span>
                 )}
             </button>
+            <button
+                className={s.researchButton}
+                type="button"
+                aria-label="Open research"
+                title="Open research"
+                onClick={onResearchOpen}
+            >
+                <BrainIcon />
+            </button>
             <GlobalEffectsDrawer
                 activeGlobalModifiers={activeGlobalModifiers}
                 isOpen={globalEffectsOpen}
@@ -497,7 +500,7 @@ const CityPage = ({
 function BookOpenIcon() {
     return (
         <svg
-            className={s.historyBookIcon}
+            className={s.cityModalButtonIcon}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -513,11 +516,26 @@ function BookOpenIcon() {
     );
 }
 
-function getExpansionRequiredTerritory(
-    cityResolution: ReturnType<typeof selectTowerAwareCityResolution>,
-    outsideProtectedHexCount: number,
-): number {
-    return cityResolution.effectiveSignature + SIGNATURE_PER_HEX * outsideProtectedHexCount;
+function BrainIcon() {
+    return (
+        <svg
+            className={s.cityModalButtonIcon}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
+            <path d="M8.5 6.2A3.2 3.2 0 0 1 14.3 4.6A3.2 3.2 0 0 1 19 7.4A3.4 3.4 0 0 1 18.2 14A3.1 3.1 0 0 1 15 19.2H9A3.1 3.1 0 0 1 5.8 14A3.4 3.4 0 0 1 5 7.4A3.2 3.2 0 0 1 8.5 6.2Z" />
+            <path d="M12 4.1v15.1" />
+            <path d="M8.2 9.1c1.2.1 2.2.7 2.8 1.7" />
+            <path d="M15.8 9.1c-1.2.1-2.2.7-2.8 1.7" />
+            <path d="M8.2 14.2c1.1-.1 2.1-.6 2.8-1.5" />
+            <path d="M15.8 14.2c-1.1-.1-2.1-.6-2.8-1.5" />
+        </svg>
+    );
 }
 
 function getProtectedCityRadius(hexes: readonly HexCell[]): number {

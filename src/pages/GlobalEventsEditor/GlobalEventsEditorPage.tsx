@@ -10,6 +10,7 @@ import type {
   GlobalModifierDefinition,
 } from "../../models/globalEvents.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
+import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
 import {buildingIds, technologyIds} from "../../data/ids.ts";
 import {HOMOGENEOUS_VALUE_DEFINITION_LIST} from "../../data/homogeneousValues/index.ts";
 import {GLOBAL_EVENT_IMAGES, GLOBAL_EVENT_IMAGE_OPTIONS, type GlobalEventImageId} from "../../data/globalEvents/eventImages.ts";
@@ -32,6 +33,7 @@ type GlobalEventJsonDefinition = Omit<GlobalEventDefinition, "imageSrc"> & {
 type EventDraft = {
   id: string;
   title: string;
+  vector: DevelopmentVectorKey;
   description: string;
   notificationLevel: GlobalEventNotificationLevel;
   hint: string;
@@ -70,6 +72,7 @@ type ActionRow = {
 type ModifierDraft = {
   id: string;
   title: string;
+  vector: DevelopmentVectorKey;
   description: string;
   applyRules: ApplyRuleRow[];
   effects: EffectRow[];
@@ -96,6 +99,7 @@ type NumericTemplateDraft = {
 
 type EffectRow = {
   rowId: number;
+  vector: DevelopmentVectorKey;
   valueId: string;
   additionalKeywords: string;
   removedKeywords: string;
@@ -155,6 +159,7 @@ const applyRuleTypes: ApplyRuleType[] = [
 ];
 const modifierValueFields: GlobalModifierValueField[] = ["available", "produced", "upkeep"];
 const notificationLevels: GlobalEventNotificationLevel[] = ["silent", "notify", "force", "victory"];
+const vectorOptions = Object.keys(DEVELOPMENT_VECTORS) as DevelopmentVectorKey[];
 const imageOptions: {value: "" | GlobalEventImageId; label: string}[] = [
   {value: "", label: "No image"},
   ...GLOBAL_EVENT_IMAGE_OPTIONS.map(image => ({value: image.id, label: image.label})),
@@ -466,6 +471,7 @@ function EventEditor({
         <div className={s.grid}>
           <TextField label="ID" value={draft.id} onChange={value => onChange({id: normalizeId(value)})} />
           <TextField label="Title" value={draft.title} onChange={title => onChange({title})} />
+          <VectorField value={draft.vector} onChange={vector => onChange({vector})} />
           <label className={s.field}>
             <span className={s.label}>Notification Level</span>
             <select
@@ -649,6 +655,7 @@ function ModifierEditor({
         <div className={s.grid}>
           <TextField label="ID" value={draft.id} onChange={value => onChange({id: normalizeId(value)})} />
           <TextField label="Title" value={draft.title} onChange={title => onChange({title})} />
+          <VectorField value={draft.vector} onChange={vector => onChange({vector})} />
           <label className={`${s.field} ${s.fullWidth}`}>
             <span className={s.label}>Description</span>
             <textarea className={s.textarea} value={draft.description} onChange={event => onChange({description: event.target.value})} />
@@ -739,6 +746,7 @@ function EffectEditor({
       {rows.map(row => (
         <div key={row.rowId} className={s.effectRow}>
           <div className={s.effectMainRow}>
+            <VectorField value={row.vector} onChange={vector => updateEffect(row.rowId, {vector})} />
             <ValueIdField id={`effect-value-${row.rowId}`} label="Value ID" value={row.valueId} onChange={valueId => updateEffect(row.rowId, {valueId})} />
             <TextField label="Additional Keywords" value={row.additionalKeywords} onChange={additionalKeywords => updateEffect(row.rowId, {additionalKeywords})} />
             <TextField label="Removed Keywords" value={row.removedKeywords} onChange={removedKeywords => updateEffect(row.rowId, {removedKeywords})} />
@@ -1122,10 +1130,28 @@ function PreviewAndSave({
   );
 }
 
+function VectorField({
+  value,
+  onChange,
+}: {
+  value: DevelopmentVectorKey;
+  onChange: (value: DevelopmentVectorKey) => void;
+}) {
+  return (
+    <label className={s.field}>
+      <span className={s.label}>Vector</span>
+      <select className={s.input} value={value} onChange={event => onChange(event.target.value as DevelopmentVectorKey)}>
+        {vectorOptions.map(vector => <option key={vector} value={vector}>{formatLabel(vector)}</option>)}
+      </select>
+    </label>
+  );
+}
+
 function createEventDraft(definition: GlobalEventJsonDefinition): EventDraft {
   return {
     id: definition.id,
     title: definition.title,
+    vector: definition.vector ?? "neutral",
     description: definition.description ?? "",
     notificationLevel: definition.notificationLevel ?? "force",
     hint: definition.hint ?? "",
@@ -1146,6 +1172,7 @@ function createModifierDraft(definition: GlobalModifierDefinition): ModifierDraf
   return {
     id: definition.id,
     title: definition.title,
+    vector: definition.vector ?? "neutral",
     description: definition.description ?? "",
     applyRules: definition.applyRules.map(createApplyRuleRowFromRule),
     effects: definition.effects.map(createEffectRowFromEffect),
@@ -1156,6 +1183,7 @@ function createEventDefinition(draft: EventDraft): GlobalEventJsonDefinition {
   const definition: GlobalEventJsonDefinition = {
     id: draft.id.trim() || "new_global_event",
     title: draft.title.trim() || "New Global Event",
+    vector: draft.vector,
     trigger: createTrigger(draft.triggerType, draft.triggerTarget),
     once: draft.once,
     priority: Number.parseFloat(draft.priority) || 0,
@@ -1183,6 +1211,7 @@ function createModifierDefinition(draft: ModifierDraft): ModifierPreview {
   const definition: GlobalModifierDefinition = {
     id: draft.id.trim() || "new_global_modifier",
     title: draft.title.trim() || "New Global Modifier",
+    vector: draft.vector,
     description: draft.description.trim() || undefined,
     applyRules: draft.applyRules.map(createApplyRule),
     effects: draft.effects.map(createEffect),
@@ -1216,6 +1245,7 @@ function createNewEvent(id = "new_global_event"): GlobalEventJsonDefinition {
   return {
     id,
     title: "New Global Event",
+    vector: "neutral",
     trigger: {type: "manual"},
     once: true,
     priority: 0,
@@ -1227,6 +1257,7 @@ function createNewModifier(id = "new_global_modifier"): GlobalModifierDefinition
   return {
     id,
     title: "New Global Modifier",
+    vector: "neutral",
     applyRules: [],
     effects: [],
   };
@@ -1295,6 +1326,7 @@ function createApplyRuleRow(
 function createEffect(row: EffectRow): EffectTemplate {
   const effect: EffectTemplate = {
     valueId: row.valueId.trim() || defaultValueId,
+    vector: row.vector,
   };
   const additionalKeywords = parseKeywordList(row.additionalKeywords);
   const removedKeywords = parseKeywordList(row.removedKeywords);
@@ -1311,6 +1343,7 @@ function createEffect(row: EffectRow): EffectTemplate {
 
 function createEffectRowFromEffect(effect: EffectTemplate): EffectRow {
   return createEffectRow(
+    effect.vector ?? "neutral",
     effect.valueId,
     effect.additionalKeywords?.join(", ") ?? "",
     effect.removedKeywords?.join(", ") ?? "",
@@ -1320,6 +1353,7 @@ function createEffectRowFromEffect(effect: EffectTemplate): EffectRow {
 }
 
 function createEffectRow(
+  vector: DevelopmentVectorKey = "neutral",
   valueId: string = defaultValueId,
   additionalKeywords = "",
   removedKeywords = "",
@@ -1328,6 +1362,7 @@ function createEffectRow(
 ): EffectRow {
   return {
     rowId: nextRowId++,
+    vector,
     valueId,
     additionalKeywords,
     removedKeywords,

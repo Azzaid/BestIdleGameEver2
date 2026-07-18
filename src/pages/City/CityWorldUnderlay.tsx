@@ -13,7 +13,6 @@ import {selectIsDebugModeEnabled} from "../../store/debug/selectors.ts";
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import type {CityExpansionOption} from "../../models/city/expansion.ts";
 import {getAxialDistance} from "../../models/city/expansion.ts";
-import {formatHomogeneousValue} from "../../models/homogeneousValueHelpers.ts";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
 import {
     BATTLEFIELD_RANGE_MULTIPLIER,
@@ -26,7 +25,6 @@ import {
     SIEGE_DURATION_SECONDS,
     SIEGE_THREAT_START_RATIO,
     SIEGE_WAVE_INTERVAL_SECONDS,
-    SIGNATURE_PER_HEX,
     toPixels,
 } from "../../data/constants.ts";
 import {useCityCanvasInteraction} from "./cityCanvasInteraction.tsx";
@@ -593,15 +591,8 @@ export function CityWorldUnderlay({
         if (option.addedHexCount === 0) return "No claimable land remains on this side.";
 
         const outsideProtectedHexCount = getOutsideProtectedExpansionHexCount(option, protectedCityRadius);
-        if (outsideProtectedHexCount === 0) {
-            return signatureStatus.isBesieged
-                ? "City cannot expand while under siege."
-                : undefined;
-        }
-
-        const requiredTerritory = getExpansionRequiredTerritory(cityResolution, outsideProtectedHexCount);
-        if (signatureStatus.controlledTerritory < requiredTerritory) {
-            return `Requires controlled territory ${formatHomogeneousValue(HOMOGENEOUS_VALUE_IDS.cityControlledTerritory, requiredTerritory)}.`;
+        if (outsideProtectedHexCount > 0 && signatureStatus.isBesieged) {
+            return "City cannot expand outside the protected hex while under siege.";
         }
 
         return undefined;
@@ -868,13 +859,6 @@ function countHexesLostToFailedSiege(hexes: readonly HexCell[]) {
         && hex.kind !== "wall"
         && getAxialDistance(hex, {column: 0, row: 0}) > protectedRadius
     )).length;
-}
-
-export function getExpansionRequiredTerritory(
-    cityResolution: ReturnType<typeof selectTowerAwareCityResolution>,
-    outsideProtectedHexCount: number,
-): number {
-    return cityResolution.effectiveSignature + SIGNATURE_PER_HEX * outsideProtectedHexCount;
 }
 
 export function getProtectedCityRadius(hexes: readonly HexCell[]): number {

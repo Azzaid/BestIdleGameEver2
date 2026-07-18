@@ -515,7 +515,7 @@ Threat:
 Consequences:
 
 - research blocked;
-- expansion beyond the wall-protected hex is blocked until controlled territory catches up;
+- expansion beyond the wall-protected hex is blocked only while the city is besieged;
 - stronger attacks.
 
 The city still functions: buildings, demolition, tower rebuilding, and wall-protected claims remain available.

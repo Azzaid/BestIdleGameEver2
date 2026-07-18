@@ -28,7 +28,7 @@ export const cityPage = style({
     },
 });
 
-export const historyBookButton = style([
+const cityModalButton = style([
     hud.compactPanel,
     {
         position: 'absolute',
@@ -61,7 +61,21 @@ export const historyBookButton = style([
     },
 ]);
 
-export const historyBookIcon = style({
+export const historyBookButton = style([
+    cityModalButton,
+    {
+        top: '8px',
+    },
+]);
+
+export const researchButton = style([
+    cityModalButton,
+    {
+        top: '58px',
+    },
+]);
+
+export const cityModalButtonIcon = style({
     width: '24px',
     height: '24px',
 });
@@ -377,12 +391,15 @@ export const panelDescription = style({
 
 export const multistructureStatus = style({
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))',
+    gridTemplateColumns: 'minmax(0, 1fr)',
+    gridAutoRows: 'max-content',
     alignContent: 'start',
+    alignItems: 'start',
     gap: '8px',
     minHeight: 0,
     maxHeight: '100%',
-    overflow: 'auto',
+    overflowX: 'hidden',
+    overflowY: 'auto',
     paddingRight: '2px',
     paddingBottom: '2px',
     scrollbarGutter: 'stable',

@@ -1,3 +1,5 @@
+import type {ProgressionMetadata} from "./progression/metadata.ts";
+
 export type HomogeneousValueId = string;
 
 export const HOMOGENEOUS_VALUE_ROLE_KEYWORDS = ["production", "upkeep", "unlock"] as const;
@@ -36,7 +38,7 @@ export type HomogeneousValueDisplayMethod = typeof HOMOGENEOUS_VALUE_DISPLAY_MET
 export const HOMOGENEOUS_VALUE_ROUNDING_METHODS = ["roundUp", "roundDown", "twoDigitsAfterZero"] as const;
 export type HomogeneousValueRoundingMethod = typeof HOMOGENEOUS_VALUE_ROUNDING_METHODS[number];
 
-export type HomogeneousValueEffect = {
+export type HomogeneousValueEffect = ProgressionMetadata & {
     valueId: HomogeneousValueId;
     additionalKeywords?: string[];
     removedKeywords?: string[];

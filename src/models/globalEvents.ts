@@ -1,6 +1,8 @@
 import type {HomogeneousValueEffect, HomogeneousValueId, HomogeneousValueTotals} from "./homogeneousValues.ts";
 import type {HomogeneousValueEntitySource} from "./homogeneousValueResolution.ts";
 import {areRequirementsMet, type Requirement, type RequirementResolutionData} from "./progression/requirements.ts";
+import type {ProgressionMetadata} from "./progression/metadata.ts";
+import {getDevelopmentVectorFromEntityId, type DevelopmentVectorKey} from "./DevlopmentVector.ts";
 
 type GlobalModifierValueField = "available" | "produced" | "upkeep";
 
@@ -50,7 +52,7 @@ export type GlobalEventAction =
 
 export type GlobalEventNotificationLevel = "silent" | "notify" | "force" | "victory";
 
-export type GlobalEventDefinition = {
+export type GlobalEventDefinition = ProgressionMetadata & {
   id: string;
   title: string;
   description?: string;
@@ -68,6 +70,12 @@ export type GlobalEventDefinition = {
   priority?: number;
   actions: GlobalEventAction[];
 };
+
+export function getGlobalEventVector(definition: GlobalEventDefinition | undefined): DevelopmentVectorKey {
+  return definition?.vector
+    ?? getFirstGlobalEventVectorMatch(definition)
+    ?? "neutral";
+}
 
 export type GlobalModifierNumericTemplate =
   | number
@@ -107,7 +115,7 @@ export type GlobalModifierApplyRule =
     amount: number;
   };
 
-export type GlobalModifierDefinition = {
+export type GlobalModifierDefinition = ProgressionMetadata & {
   id: string;
   title: string;
   description?: string;
@@ -265,6 +273,48 @@ function applyGlobalModifierRule(
 
 function getGlobalEventRequirements(definition: GlobalEventDefinition): readonly Requirement[] | undefined {
   return definition.requirements ?? definition.requirement;
+}
+
+function getFirstGlobalEventVectorMatch(definition: GlobalEventDefinition | undefined): DevelopmentVectorKey | undefined {
+  if (!definition) return undefined;
+
+  const candidates = [
+    getGlobalEventTriggerVector(definition.trigger),
+    ...definition.actions.map(getGlobalEventActionVector),
+    ...getRequirementVectorMatches(definition.requirements ?? definition.requirement),
+    ...getRequirementVectorMatches(definition.blockRequirements ?? definition.blockRequirement),
+  ];
+
+  return candidates.find((vector): vector is DevelopmentVectorKey => Boolean(vector));
+}
+
+function getGlobalEventTriggerVector(trigger: GlobalEventTrigger): DevelopmentVectorKey | undefined {
+  if (trigger.type === "buildingConstructed" || trigger.type === "buildingDiscovered") {
+    return getDevelopmentVectorFromEntityId(trigger.buildingId);
+  }
+
+  if (trigger.type === "technologyUnlocked") {
+    return getDevelopmentVectorFromEntityId(trigger.technologyId);
+  }
+
+  return undefined;
+}
+
+function getGlobalEventActionVector(action: GlobalEventAction): DevelopmentVectorKey | undefined {
+  if (action.type === "unlockTechnology") return getDevelopmentVectorFromEntityId(action.technologyId);
+
+  return undefined;
+}
+
+function getRequirementVectorMatches(requirements: readonly Requirement[] | undefined): DevelopmentVectorKey[] {
+  return (requirements ?? [])
+    .map(requirement => {
+      if (requirement.type === "buildingExists") return getDevelopmentVectorFromEntityId(requirement.buildingId);
+      if (requirement.type === "technologyUnlocked") return getDevelopmentVectorFromEntityId(requirement.technologyId);
+
+      return undefined;
+    })
+    .filter((vector): vector is DevelopmentVectorKey => Boolean(vector));
 }
 
 function areGlobalEventBlockRequirementsClear(

@@ -20,15 +20,15 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     },
     {
       path: "progression",
-      element: enabled ? <ProgressionPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <ProgressionPage /> : <Navigate to="/" replace />,
     },
     {
       path: "gun-part-editor",
-      element: enabled ? <GunPartEditorPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <GunPartEditorPage /> : <Navigate to="/" replace />,
     },
     {
       path: "ids",
-      element: enabled ? <IdAuditPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <IdAuditPage /> : <Navigate to="/" replace />,
     },
     {
       path: "entity-create",
@@ -36,11 +36,11 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     },
     {
       path: "entity-create/:entityId",
-      element: enabled ? <EntityCreatePage /> : <Navigate to="/city" replace />,
+      element: enabled ? <EntityCreatePage /> : <Navigate to="/" replace />,
     },
     {
       path: "content-plan",
-      element: enabled ? <ContentPlanPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <ContentPlanPage /> : <Navigate to="/" replace />,
     },
     {
       path: "monster-edit",
@@ -48,31 +48,31 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     },
     {
       path: "monster-edit/:monsterId",
-      element: enabled ? <MonsterEditPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <MonsterEditPage /> : <Navigate to="/" replace />,
     },
     {
       path: "global-events",
-      element: enabled ? <GlobalEventsEditorPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <GlobalEventsEditorPage /> : <Navigate to="/" replace />,
     },
     {
       path: "homogeneous-values",
-      element: enabled ? <HomogeneousValuesEditorPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <HomogeneousValuesEditorPage /> : <Navigate to="/" replace />,
     },
     {
       path: "hex-background-editor",
-      element: enabled ? <HexBackgroundEditorPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <HexBackgroundEditorPage /> : <Navigate to="/" replace />,
     },
     {
       path: "hex-background-lab",
-      element: enabled ? <HexBackgroundLabPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <HexBackgroundLabPage /> : <Navigate to="/" replace />,
     },
     {
       path: "enemy-animation-sprites",
-      element: enabled ? <EnemyAnimationSpriteSheetPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <EnemyAnimationSpriteSheetPage /> : <Navigate to="/" replace />,
     },
     {
       path: "damage-area-vfx",
-      element: enabled ? <DamageAreaVfxEditorPage /> : <Navigate to="/city" replace />,
+      element: enabled ? <DamageAreaVfxEditorPage /> : <Navigate to="/" replace />,
     },
   ]);
 

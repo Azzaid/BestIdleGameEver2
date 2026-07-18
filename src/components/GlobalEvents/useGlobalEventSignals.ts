@@ -4,6 +4,7 @@ import {GLOBAL_EVENT_LIST} from "../../data/globalEvents/index.ts";
 import {sendNotification} from "../../lib/notifications/eventBus.ts";
 import {
   getRunnableGlobalEvents,
+  getGlobalEventVector,
   type GlobalEventDefinition,
   type GlobalSignal,
   type GlobalSignalMessage,
@@ -151,7 +152,7 @@ function useProcessPendingSignals(openHistory: () => void): void {
           title: event.title,
           message: event.hint ?? event.description ?? "A global event occurred.",
           imageUrl: event.imageSrc,
-          scheme: "tech",
+          scheme: getGlobalEventVector(event),
         });
       }
       if (runnableEventMessages.some(({event}) => (event.notificationLevel ?? "force") === "force")) {

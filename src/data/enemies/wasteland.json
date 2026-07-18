@@ -65,7 +65,7 @@
     "sprite": {
       "textureKey": "enemy_ridge_spitter"
     },
-    "shotDistance": 3,
+    "shotDistance": 2,
     "movement": {
       "kind": "randomLines",
       "speedHexRadiusPerSecond": 0.7,

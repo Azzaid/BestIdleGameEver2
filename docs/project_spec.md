@@ -32,11 +32,11 @@ For portable technical decisions, data schema principles, value resolution rules
 
 ## 2. Current Prototype Scope
 
-The current app is a frontend-only prototype with multiple routed views:
+The current app is a frontend-only prototype centered on a single city route:
 
 - City: Pixi/canvas world rendering with clickable city and wall tiles, city-continuation battlefield terrain beyond the wall, build panels, resolved stats, signature/controlled-territory state, and wall-specific construction.
-- Build: tower assembly from component slots with resolved stats, support costs, warnings, keywords, and synergies.
-- Research: radial research tree with unlockable nodes and vector coloring.
+- Build: tower assembly from component slots with resolved stats, support costs, warnings, keywords, and synergies, opened as a city-screen tower mode overlay from selected wall-top towers.
+- City-hosted Research: research tree with unlockable nodes and vector coloring, opened from the City screen as an overlay.
 - City-hosted History: happened global events with remembered new-event scrolling and foreseen event hints, opened from the City screen as an overlay chronicle.
 - Debug/content tools: progression graph, ID audit, entity creation, monster editing, gun part editor, global events editor, homogeneous values editor, and hex background editor. These tools are development-only surfaces and are kept behind `import.meta.env.DEV` route and import boundaries.
 
@@ -53,23 +53,23 @@ Current stack:
 - vanilla-extract for typed CSS.
 - Pixi.js for world and battle rendering.
 - TanStack Table and React Virtual for the Build page parts table.
-- react-d3-tree for the Research page tree visualization.
+- react-d3-tree for the Research tree visualization.
 
 Entry points and app shell:
 
 - `src/main.tsx` loads global styles and renders the app.
-- `src/App.tsx` wires `Provider`, `ThemeProvider`, the outer app error boundary, `HashRouter`, navigation, game routes, lazy development-tool route gating, content auto-unlock hooks, global event signals/history modal opening, notifications, and the shared upkeep bar.
+- `src/App.tsx` wires `Provider`, `ThemeProvider`, the outer app error boundary, `HashRouter`, the city-first game route, city-hosted overlay modals, lazy development-tool route gating, the floating debug-mode switch, content auto-unlock hooks, global event signals/history modal opening, notifications, and the shared upkeep bar.
 - `src/store` contains Redux setup, slices, typed hooks, and selectors. `src/store/worldView` owns the current world screen mode (`city`, `battle`, or `tower`) so UI components and mechanics can show, hide, enable, or pause behavior based on whether the player is focused on city building, the battlefield, or a selected tower edit overlay.
 - `src/devtools` contains development-only route/nav modules and devtools UI state. Devtools UI state is persisted separately from the gameplay save and should not be added to the game Redux persistence payload.
 - `src/theme` contains the vanilla-extract theme contract and runtime theme provider.
 
 Primary routes:
 
-- `/` redirects to `/city`.
-- `/build` redirects to `/city`; tower assembly opens as a city-screen tower mode overlay from a selected wall-top tower.
-- `/research` renders research.
-- `/city` renders the city view.
-- History is opened from `/city` through the book control and force-level event modal path; legacy `/history` URLs redirect back to `/city`.
+- `/` renders the city view and is the main player route.
+- `/build` redirects to `/`; tower assembly opens as a city-screen tower mode overlay from a selected wall-top tower.
+- `/research` redirects to `/` and opens the city-hosted research modal.
+- `/city` is a legacy redirect to `/`.
+- History is opened from the city through the book control and force-level event modal path; legacy `/history` URLs redirect back to `/`.
 - `/progression`, `/ids`, `/entity-create/:entityId`, `/content-plan`, `/monster-edit/:monsterId`, `/gun-part-editor`, `/global-events`, `/homogeneous-values`, and `/hex-background-editor` are debug-mode tools available only in development builds.
 
 Important directories:
@@ -168,7 +168,7 @@ Implementation:
 
 - `src/theme/theme.css.ts` defines the theme contract and concrete theme classes.
 - `ThemeProvider.tsx` applies the selected theme class.
-- The app currently applies the `tech` theme at startup. The previous manual theme switcher hook exists in the shell but is not exposed in the navigation.
+- The app currently applies the `tech` theme at startup. The previous manual theme switcher hook exists in the shell but is not exposed in the player UI.
 - `computeThemeFromGameState(...)` is a future integration point for automatic theme selection from research path or build composition.
 
 Use `vars.color.*` in component styles rather than hardcoded page palettes.
@@ -340,7 +340,7 @@ City view implementation:
 - `worldView.mode` is the Redux source of truth for whether the shared world is in City mode or Battle mode. This is distinct from siege runtime state such as pressure versus siege waves, and is intended for hiding or showing UI components and for enabling or disabling screen-specific mechanics.
 - City state stores the full generated map through the site's maximum cell radius plus reveal padding. Unclaimed cells are identified with `isUnclaimed`; lost-but-remembered cells use `isLost`. Gameplay selectors expose only active claimed hexes for upkeep, wall, battle, research, progression, and signature calculations.
 - Each city has a maximum cell radius determined when it is created. The current implementation sets it from the `maxCitySize` constant and precomputes a coherent terrain vector map through `maxCitySize + 2`.
-- City expansion is side-based: city state stores the last claimed radius for each big-hex side (`east`, `southEast`, `southWest`, `west`, `northWest`, `northEast`), and the Pixi world renders one semi-transparent arrow over each claimable unclaimed or lost side strip. Confirming an arrow increments that side's stored radius and claims that side's sector of the next big-hex ring, so radius 2 claims 3 cells, radius 3 claims 4 cells, and so on. Neighboring side radii do not move until their own side is expanded. Only the top wall side can move the top frontier upward; other side expansions skip candidate cells above the current wall frontier. A side arrow is disabled when no claimable strip remains. Controlled territory gates only newly claimed cells outside the wall-protected regular hex; cells inside that protected hex can be claimed during siege. Reclaiming lost hexes restores their stored terrain, buildings, and structure markers instead of generating empty land.
+- City expansion is side-based: city state stores the last claimed radius for each big-hex side (`east`, `southEast`, `southWest`, `west`, `northWest`, `northEast`), and the Pixi world renders one semi-transparent arrow over each claimable unclaimed or lost side strip. Confirming an arrow increments that side's stored radius and claims that side's sector of the next big-hex ring, so radius 2 claims 3 cells, radius 3 claims 4 cells, and so on. Neighboring side radii do not move until their own side is expanded. Only the top wall side can move the top frontier upward; other side expansions skip candidate cells above the current wall frontier. A side arrow is disabled when no claimable strip remains. Expansion outside the wall-protected regular hex is allowed while the city is not besieged and does not require a controlled-territory check; during siege, only claims fully inside the protected hex remain available. Reclaiming lost hexes restores their stored terrain, buildings, and structure markers instead of generating empty land.
 - Normal city hexes use city building data.
 - The top hex row is reserved for wall hexes and uses the wall build catalog.
 - Wall hexes have separate wall-segment and wall-top slots. Wall segments are replaced in place: the current segment is hidden from the wall list, choosing a different segment increases city footprint as if the previous segment were demolished. Wall-top occupants follow the city-building rebuild rule: a tower mount or wall superstructure must be demolished before another wall-top detail can be built.
@@ -467,7 +467,7 @@ Design direction:
 
 Current implementation:
 
-- The Research page renders a radial tree with `react-d3-tree`.
+- The city-hosted Research modal renders a radial tree with `react-d3-tree`.
 - Nodes are collapsible and colored by research vector.
 - Node content is structured with summary, unlocks, costs, and notes.
 - Technologies auto-unlock when their prerequisite technologies, city buildings, built multistructures, upkeep, Aether atmosphere, and siege-state requirements are satisfied.

@@ -1,6 +1,12 @@
 import {useEffect, useMemo, useRef, useState, type CSSProperties} from "react";
 import {ConfirmationModal} from "../../components/ConfirmationModal.tsx";
 import {GLOBAL_EVENTS} from "../../data/globalEvents/index.ts";
+import {
+  DEVELOPMENT_VECTOR_LABELS,
+  isDevelopmentVectorKey,
+  type DevelopmentVectorKey,
+} from "../../models/DevlopmentVector.ts";
+import {getGlobalEventVector} from "../../models/globalEvents.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {cleanSlateAndReload} from "../../store/cleanSlate.ts";
 import {
@@ -8,6 +14,7 @@ import {
   selectGlobalEventHistoryEntries,
   selectLastSeenHistoryEntryId,
 } from "../../store/globalEvents/selectors.ts";
+import {selectIsDebugModeEnabled} from "../../store/debug/selectors.ts";
 import {markGlobalHistorySeen} from "../../store/globalEvents/slice.ts";
 import type {GlobalEventHistoryEntry} from "../../models/store/globalEvents.ts";
 import * as s from "./HistoryPage.css.ts";
@@ -23,6 +30,7 @@ export default function HistoryModal({
   const eventHistoryEntries = useTypedSelector(selectGlobalEventHistoryEntries);
   const foreseenEventIds = useTypedSelector(selectForeseenGlobalEventIds);
   const lastSeenEntryId = useTypedSelector(selectLastSeenHistoryEntryId);
+  const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
   const eventRefs = useRef<Record<string, HTMLElement | null>>({});
   const [isForeseenOpen, setIsForeseenOpen] = useState(true);
   const [isCleanSlateConfirmationOpen, setIsCleanSlateConfirmationOpen] = useState(false);
@@ -134,6 +142,7 @@ export default function HistoryModal({
                   const imageSrc = event?.imageSrc ?? entry.imageUrl;
                   const imageAlt = event?.imageAlt ?? title;
                   const level = event?.notificationLevel ?? (entry.eventId ? "force" : "notify");
+                  const eventVector = getHistoryEntryVector(entry, event);
 
                   return (
                     <article
@@ -141,23 +150,26 @@ export default function HistoryModal({
                       ref={element => {
                         eventRefs.current[entry.id] = element;
                       }}
-                      className={highlightedEventId === entry.id ? s.eventCardHighlighted : s.eventCard}
+                      className={`${highlightedEventId === entry.id ? s.eventCardHighlighted : s.eventCard} ${s.eventTone[eventVector]}`}
                     >
-                      {imageSrc && (
-                        <img
-                          className={s.eventImage}
-                          src={imageSrc}
-                          alt={imageAlt}
-                        />
-                      )}
                       <div className={s.eventContent}>
-                        <div className={s.eventMeta}>
-                          <span>Chapter {String(index + 1).padStart(2, "0")}</span>
-                          <span>{level}</span>
-                        </div>
+                        {isDebugModeEnabled && (
+                          <div className={s.eventMeta}>
+                            <span>Chapter {String(index + 1).padStart(2, "0")}</span>
+                            <span>{DEVELOPMENT_VECTOR_LABELS[eventVector]}</span>
+                            <span>{level}</span>
+                          </div>
+                        )}
                         <h2 className={s.eventTitle}>{title}</h2>
-                        {description && <p className={s.eventDescription}>{description}</p>}
                         {event?.hint && <p className={s.eventHint}>{event.hint}</p>}
+                        {imageSrc && (
+                          <img
+                            className={s.eventImage}
+                            src={imageSrc}
+                            alt={imageAlt}
+                          />
+                        )}
+                        {description && <p className={s.eventDescription}>{description}</p>}
                       </div>
                     </article>
                   );
@@ -179,7 +191,7 @@ export default function HistoryModal({
                   <p className={s.foreseenEmpty}>No active hints.</p>
                 ) : (
                   foreseenItems.map(({eventId, event}) => (
-                    <article className={s.foreseenItem} key={eventId}>
+                    <article className={`${s.foreseenItem} ${s.eventTone[getGlobalEventVector(event)]}`} key={eventId}>
                       <h3 className={s.foreseenTitle}>{event?.title ?? eventId}</h3>
                       <p className={s.foreseenHint}>{event?.hint ?? event?.description ?? eventId}</p>
                     </article>
@@ -203,6 +215,15 @@ export default function HistoryModal({
       )}
     </section>
   );
+}
+
+function getHistoryEntryVector(
+  entry: GlobalEventHistoryEntry,
+  event: (typeof GLOBAL_EVENTS)[string] | undefined,
+): DevelopmentVectorKey {
+  if (event) return getGlobalEventVector(event);
+
+  return isDevelopmentVectorKey(entry.scheme) ? entry.scheme : "neutral";
 }
 
 function getHistoryScrollTarget(

@@ -23,7 +23,7 @@ export const backdrop = style({
 });
 
 export const book = style([
-  hud.hudVars,
+  hud.panelFrame.neutral,
   {
     width: "min(960px, 100%)",
     height: "min(760px, 100%)",
@@ -32,8 +32,7 @@ export const book = style([
     gridTemplateColumns: "16px minmax(0, 1fr)",
     overflow: "hidden",
     border: `1px solid ${hud.hudBorder}`,
-    borderRadius: 6,
-    background: `linear-gradient(90deg, color-mix(in oklab, ${hud.hudAccent} 34%, black 48%), color-mix(in oklab, ${vars.color.background.surface} 84%, black 16%))`,
+    background: `linear-gradient(90deg, color-mix(in oklab, ${hud.hudAccent} 34%, black 48%), color-mix(in oklab, ${hud.hudSurface} 84%, black 16%))`,
     boxShadow: `
       0 0 0 1px color-mix(in oklab, ${hud.hudAccent} 20%, transparent),
       0 18px 46px rgba(0, 0, 0, 0.42),
@@ -52,7 +51,7 @@ export const book = style([
 export const bookSpine = style({
   background: `
     linear-gradient(180deg, color-mix(in oklab, ${hud.hudAccent} 46%, black 42%), color-mix(in oklab, ${hud.hudAccent} 18%, black 62%)),
-    repeating-linear-gradient(180deg, transparent 0 28px, rgba(255, 255, 255, 0.14) 28px 29px)
+    repeating-linear-gradient(180deg, transparent 0 28px, ${hud.hudAccentSoft} 28px 29px)
   `,
   borderRight: `1px solid ${hud.hudBorder}`,
 });
@@ -62,8 +61,8 @@ export const bookSurface = style({
   display: "grid",
   gridTemplateRows: "auto minmax(0, 1fr)",
   background: `
-    linear-gradient(120deg, rgba(255, 255, 255, 0.18), transparent 34%),
-    linear-gradient(180deg, color-mix(in oklab, ${vars.color.background.surface} 88%, white 8%), color-mix(in oklab, ${vars.color.background.app} 72%, white 12%))
+    linear-gradient(120deg, ${hud.hudAccentSoft}, transparent 34%),
+    linear-gradient(180deg, ${hud.hudSurface}, color-mix(in oklab, ${hud.hudSurface} 72%, black 12%))
   `,
 });
 
@@ -74,7 +73,7 @@ export const header = style({
   gap: "14px",
   minHeight: 68,
   padding: "12px 14px 12px 18px",
-  borderBottom: `1px solid ${vars.color.border.default}`,
+  borderBottom: `1px solid ${hud.hudBorder}`,
   background: `linear-gradient(90deg, ${hud.hudAccentSoft}, transparent 54%)`,
 });
 
@@ -86,7 +85,7 @@ export const headerText = style({
 
 export const kicker = style({
   margin: 0,
-  color: vars.color.text.muted,
+  color: hud.hudMuted,
   fontFamily: "ui-monospace, SFMono-Regular, Consolas, Liberation Mono, monospace",
   fontSize: "0.72rem",
   fontWeight: 800,
@@ -95,7 +94,7 @@ export const kicker = style({
 
 export const title = style({
   margin: 0,
-  color: vars.color.text.heading,
+  color: hud.hudText,
   fontSize: "1.35rem",
 });
 
@@ -130,48 +129,61 @@ export const closeButton = style([
 ]);
 
 export const body = style({
+  position: "relative",
   minHeight: 0,
-  overflowY: "auto",
-  scrollbarGutter: "stable",
+  overflow: "hidden",
 });
 
 export const timeline = style({
   display: "grid",
+  height: "100%",
+  overflowY: "auto",
+  scrollbarGutter: "stable",
   padding: "0 18px",
+  paddingBottom: "58px",
 });
 
 export const emptyState = style({
   margin: 0,
   padding: "18px 0",
-  color: vars.color.text.muted,
+  color: hud.hudMuted,
 });
+
+export const eventTone = hud.vectorVars;
 
 export const eventCard = style({
   display: "grid",
   gap: "12px",
   scrollMarginTop: "12px",
-  padding: "18px 0",
-  borderBottom: `1px solid ${vars.color.border.default}`,
-  background: "transparent",
+  margin: "12px 0",
+  padding: "14px",
+  border: `1px solid ${hud.hudBorder}`,
+  borderRadius: 6,
+  background: `
+    linear-gradient(90deg, ${hud.hudAccentSoft}, transparent 42%),
+    color-mix(in oklab, ${hud.hudSurface} 82%, transparent)
+  `,
   transition: "background-color 180ms ease, box-shadow 180ms ease",
 });
 
 export const eventCardHighlighted = style([
   eventCard,
   {
-    background: hud.hudAccentSoft,
+    background: `
+      linear-gradient(90deg, ${hud.hudAccentSoft}, transparent 54%),
+      color-mix(in oklab, ${hud.hudSurface} 86%, ${hud.hudAccentSoft} 14%)
+    `,
     boxShadow: `inset 3px 0 0 ${hud.hudAccent}, 0 0 18px color-mix(in oklab, ${hud.hudAccent} 18%, transparent)`,
   },
 ]);
 
 export const eventImage = style({
   width: "100%",
-  maxHeight: "420px",
-  aspectRatio: "16 / 9",
-  objectFit: "cover",
+  height: "auto",
+  objectFit: "contain",
   borderRadius: 4,
-  border: `1px solid ${vars.color.border.default}`,
-  background: vars.color.background.app,
+  border: `1px solid ${hud.hudBorder}`,
+  background: `color-mix(in oklab, ${hud.hudSurface} 74%, black 12%)`,
 });
 
 export const eventContent = style({
@@ -193,13 +205,13 @@ export const eventMeta = style({
 
 export const eventTitle = style({
   margin: 0,
-  color: vars.color.text.heading,
+  color: hud.hudText,
   fontSize: "1.05rem",
 });
 
 export const eventDescription = style({
   margin: 0,
-  color: vars.color.text.primary,
+  color: hud.hudText,
   lineHeight: 1.55,
   whiteSpace: "pre-line",
 });
@@ -209,23 +221,36 @@ export const eventHint = style({
   padding: "8px 10px",
   borderLeft: `3px solid ${hud.hudAccent}`,
   background: hud.hudAccentSoft,
-  color: vars.color.text.muted,
+  color: hud.hudMuted,
   lineHeight: 1.45,
 });
 
 export const foreseenPanel = style({
-  display: "grid",
-  margin: "0 18px",
+  position: "absolute",
+  left: 18,
+  right: 18,
+  bottom: 0,
+  zIndex: 2,
+  display: "flex",
+  flexDirection: "column-reverse",
   maxHeight: "44px",
   overflow: "hidden",
-  borderBottom: `1px solid ${vars.color.border.default}`,
-  transition: "max-height 180ms ease",
+  border: `1px solid ${hud.hudBorder}`,
+  borderBottom: 0,
+  borderRadius: "6px 6px 0 0",
+  background: `
+    linear-gradient(90deg, ${hud.hudAccentSoft}, transparent 52%),
+    color-mix(in oklab, ${hud.hudSurface} 88%, black 6%)
+  `,
+  boxShadow: `0 -10px 24px rgba(0, 0, 0, 0.18), 0 0 18px color-mix(in oklab, ${hud.hudAccent} 16%, transparent)`,
+  backdropFilter: "blur(8px) saturate(1.08)",
+  transition: "max-height 180ms ease, box-shadow 180ms ease",
 });
 
 export const foreseenPanelOpen = style([
   foreseenPanel,
   {
-    maxHeight: "360px",
+    maxHeight: "33.333%",
   },
 ]);
 
@@ -233,11 +258,13 @@ export const foreseenToggle = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
+  flex: "0 0 44px",
   minHeight: "44px",
   border: 0,
-  padding: 0,
+  borderTop: `1px solid ${hud.hudBorder}`,
+  padding: "0 12px",
   background: "transparent",
-  color: vars.color.text.heading,
+  color: hud.hudText,
   cursor: "pointer",
   fontWeight: 800,
   textAlign: "left",
@@ -245,15 +272,17 @@ export const foreseenToggle = style({
 
 export const foreseenContent = style({
   display: "grid",
+  alignContent: "start",
   gap: "10px",
-  maxHeight: "316px",
+  flex: "1 1 auto",
+  minHeight: 0,
   overflowY: "auto",
-  padding: "0 0 16px",
+  padding: "12px 12px 14px",
 });
 
 export const foreseenEmpty = style({
   margin: 0,
-  color: vars.color.text.muted,
+  color: hud.hudMuted,
 });
 
 export const foreseenItem = style({
@@ -261,17 +290,18 @@ export const foreseenItem = style({
   gap: "4px",
   padding: "0 0 10px 12px",
   borderLeft: `3px solid ${hud.hudAccent}`,
+  background: `linear-gradient(90deg, ${hud.hudAccentSoft}, transparent 62%)`,
 });
 
 export const foreseenTitle = style({
   margin: 0,
-  color: vars.color.text.heading,
+  color: hud.hudText,
   fontSize: "0.94rem",
 });
 
 export const foreseenHint = style({
   margin: 0,
-  color: vars.color.text.muted,
+  color: hud.hudMuted,
   lineHeight: 1.45,
   whiteSpace: "pre-line",
 });

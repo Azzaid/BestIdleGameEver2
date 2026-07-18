@@ -2,6 +2,7 @@
   {
     "id": "fungal_inheritance_migration",
     "title": "Fungi genetic legacy",
+    "vector": "nature",
     "trigger": {
       "type": "migration"
     },
@@ -26,6 +27,7 @@
   {
     "id": "intro_pt1",
     "title": "The end",
+    "vector": "neutral",
     "trigger": {
       "type": "gameStarted"
     },
@@ -39,6 +41,7 @@
   {
     "id": "The_new_begining",
     "title": "The new begining",
+    "vector": "neutral",
     "trigger": {
       "type": "gameStarted"
     },
@@ -62,6 +65,7 @@
   {
     "id": "back_to_medieval",
     "title": "Back to medieval",
+    "vector": "medieval",
     "trigger": {
       "type": "buildingConstructed",
       "buildingId": "buildings.medieval.lumberjackHouse"
@@ -81,6 +85,7 @@
   {
     "id": "first_siege_over",
     "title": "First siege is over",
+    "vector": "neutral",
     "trigger": {
       "type": "siegeSucceeded"
     },
@@ -94,6 +99,7 @@
   {
     "id": "path_of_life",
     "title": "Path of life",
+    "vector": "nature",
     "trigger": {
       "type": "buildingConstructed",
       "buildingId": "buildings.nature.herbalistHut"
@@ -110,6 +116,7 @@
   {
     "id": "village",
     "title": "Village",
+    "vector": "neutral",
     "trigger": {
       "type": "cityExpanded"
     },
@@ -131,6 +138,7 @@
   {
     "id": "power_of_man",
     "title": "Power of man",
+    "vector": "medieval",
     "trigger": {
       "type": "buildingConstructed",
       "buildingId": "buildings.medieval.university"

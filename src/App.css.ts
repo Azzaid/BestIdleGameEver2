@@ -93,6 +93,18 @@ export const debugToggle = style({
   userSelect: 'none',
 });
 
+export const floatingDebugToggle = style([
+  debugToggle,
+  {
+    position: 'fixed',
+    left: 'max(8px, env(safe-area-inset-left, 0px))',
+    bottom: 'max(8px, env(safe-area-inset-bottom, 0px))',
+    zIndex: 30,
+    pointerEvents: 'auto',
+    boxShadow: `0 0 14px color-mix(in oklab, ${hud.hudAccent} 18%, transparent), 0 8px 18px rgba(0, 0, 0, 0.18)`,
+  },
+]);
+
 export const navLinks = style({
   display: 'flex',
   flex: 1,

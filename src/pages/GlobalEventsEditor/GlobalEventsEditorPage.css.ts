@@ -308,7 +308,7 @@ export const effectRow = style({
 
 export const effectMainRow = style({
   display: "grid",
-  gridTemplateColumns: "minmax(190px, 1.2fr) minmax(160px, 1fr) minmax(160px, 1fr) auto",
+  gridTemplateColumns: "minmax(110px, 0.6fr) minmax(190px, 1.2fr) minmax(160px, 1fr) minmax(160px, 1fr) auto",
   gap: "6px",
   alignItems: "end",
   "@media": {
