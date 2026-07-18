@@ -117,11 +117,11 @@ export const globalEffectsShell = style({
     },
     '@media': {
         '(max-width: 760px)': {
-            position: 'fixed',
-            top: 'calc(env(safe-area-inset-top, 0px) + 44px)',
+            position: 'absolute',
+            top: '8px',
             bottom: 'max(8px, env(safe-area-inset-bottom, 0px))',
             height: 'auto',
-            width: 'min(420px, calc(100% - 16px))',
+            width: 'min(430px, calc(100% - 42px))',
         },
     },
 });

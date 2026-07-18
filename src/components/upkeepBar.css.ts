@@ -56,6 +56,7 @@ export const resourceRow = style({
     padding: '4px max(8px, env(safe-area-inset-right, 0px)) 4px max(8px, env(safe-area-inset-left, 0px))',
     gap: '10px',
     alignItems: 'center',
+    justifyContent: 'space-between',
     '@media': {
         '(max-width: 760px)': {
             minHeight: '42px',
@@ -64,40 +65,18 @@ export const resourceRow = style({
             alignItems: 'stretch',
         },
         '(max-width: 520px)': {
-            flexWrap: 'wrap',
-        },
-    },
-});
-
-export const headerSide = style({
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    flex: '1 1 0',
-    minWidth: 0,
-    '@media': {
-        '(max-width: 760px)': {
-            gap: '8px',
-            alignItems: 'stretch',
+            flexWrap: 'nowrap',
         },
     },
 });
 
 export const siegeStatusSlot = style({
-    flex: '0 0 clamp(88px, 12vw, 150px)',
     minWidth: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'stretch',
     pointerEvents: 'none',
-    '@media': {
-        '(max-width: 520px)': {
-            order: 3,
-            flex: '1 1 100%',
-            minHeight: '24px',
-        },
-    },
 });
 
 export const siegeStatusText = style({
@@ -112,12 +91,6 @@ export const siegeStatusText = style({
 export const rightSlot = style({
     marginLeft: 'auto',
     flex: '0 0 auto',
-    '@media': {
-        '(max-width: 520px)': {
-            marginLeft: 0,
-            width: '100%',
-        },
-    },
 });
 
 export const resourceGroup = style({
@@ -142,24 +115,7 @@ export const resourceGroup = style({
 });
 
 export const resourceGroupRight = style({
-    justifyContent: 'flex-end',
-});
-
-export const rightGroup = style({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    flex: '1 1 0',
-    minWidth: 0,
-    '@media': {
-        '(max-width: 760px)': {
-            gap: '8px',
-        },
-        '(max-width: 520px)': {
-            flexBasis: '100%',
-        },
-    },
+    justifyContent: 'flex-start',
 });
 
 export const vectorCard = style({

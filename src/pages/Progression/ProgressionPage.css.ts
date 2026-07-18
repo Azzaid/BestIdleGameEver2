@@ -116,13 +116,13 @@ export const branchStack = style({
 
 export const branch = style({
   display: "grid",
-  gridTemplateColumns: "174px 270px max-content",
+  gridTemplateColumns: "174px 180px max-content",
   width: "max-content",
-  gap: "9px",
   alignItems: "stretch",
   minWidth: 0,
-  padding: "8px",
-  border: `1px solid color-mix(in srgb, var(--vector-color) 38%, ${vars.color.border.default})`,
+  marginTop: "3px",
+  border: `3px solid color-mix(in srgb, var(--vector-color) 38%, ${vars.color.border.default})`,
+  borderBottom: `1px solid color-mix(in srgb, var(--vector-color) 38%, ${vars.color.border.default})`,
   borderRadius: "6px",
   background: `linear-gradient(90deg, color-mix(in srgb, var(--vector-color) 8%, transparent), ${vars.color.background.app} 24%)`,
 });
@@ -134,12 +134,9 @@ export const gateColumn = style({
   minWidth: 0,
   minHeight: "100%",
   padding: "9px",
-  border: "2px solid var(--card-color)",
-  borderRadius: "6px",
   background: `linear-gradient(180deg, color-mix(in srgb, var(--card-color) 18%, transparent), ${vars.color.background.surface} 58%)`,
   color: vars.color.text.primary,
   cursor: "pointer",
-  boxShadow: "inset 0 4px 0 var(--card-color), 0 1px 0 rgba(0, 0, 0, 0.12)",
   selectors: {
     "&:hover": {
       borderColor: vars.color.brand.primary,
@@ -151,7 +148,7 @@ export const unlockColumn = style({
   display: "grid",
   alignContent: "start",
   gap: "7px",
-  width: "270px",
+  width: "180px",
   minWidth: 0,
   padding: "7px",
   borderLeft: `3px solid color-mix(in srgb, var(--vector-color) 42%, ${vars.color.border.default})`,
@@ -222,8 +219,8 @@ export const contentCard = style({
   display: "grid",
   gap: "5px",
   minWidth: 0,
-  minHeight: "92px",
-  padding: "7px",
+  minHeight: "50px",
+  padding: "0 7px",
   border: "1px solid var(--card-color)",
   borderRadius: "5px",
   background: vars.color.background.surface,
@@ -266,6 +263,13 @@ export const cardMeta = style({
   fontSize: "0.68rem",
   fontWeight: 900,
   textTransform: "uppercase",
+});
+
+export const cardHeading = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "6px",
+  minWidth: 0,
 });
 
 export const kindIcon = style({

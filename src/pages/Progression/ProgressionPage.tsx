@@ -267,21 +267,16 @@ function ProgressionBranch({
         />
       ) : (
         <div className={[s.gateColumn, s.gateColumnHidden].join(" ")}>
-          <div className={s.cardMeta}>
+          <div className={s.cardHeading}>
             <span className={s.kindIcon}>{KIND_ICONS.research}</span>
-            <span>{NODE_KIND_LABELS.research}</span>
+            <strong className={s.cardTitle}>{branch.title}</strong>
           </div>
           <div className={s.hiddenGateText}>
-            <strong>{branch.title}</strong>
             <span>{branch.branch}</span>
           </div>
         </div>
       )}
       <div className={s.unlockColumn}>
-        <div className={s.branchHeader}>
-          <span>{branch.title}</span>
-          <span className={s.branchBadge}>{branch.branch}</span>
-        </div>
         <div className={s.contentGrid}>
           {[...buildings, ...structures].map(item => {
             const childTowerParts = towerParts.filter(part => part.ownerBuildingIds.includes(item.id));
@@ -379,13 +374,9 @@ function ProgressionCard({
       style={style}
       onClick={() => onSelect(key)}
     >
-      <div className={s.cardMeta}>
+      <div className={s.cardHeading}>
         <span className={s.kindIcon}>{KIND_ICONS[item.kind]}</span>
-        <span>{NODE_KIND_LABELS[item.kind]}</span>
-      </div>
-      <strong className={s.cardTitle}>{item.name}</strong>
-      <div className={s.cardSubline}>
-        {item.kind === "towerPart" ? getTowerPartSlot(item.id) : item.ownerResearchName ?? `Depth ${item.layoutDepth + 1}`}
+        <strong className={s.cardTitle}>{item.name}</strong>
       </div>
       {children}
     </article>
@@ -415,11 +406,10 @@ function TechnologyGate({
       style={style}
       onClick={() => onSelect(key)}
     >
-      <div className={s.cardMeta}>
+      <div className={s.cardHeading}>
         <span className={s.kindIcon}>{KIND_ICONS.research}</span>
-        <span>{NODE_KIND_LABELS.research}</span>
+        <strong className={s.gateTitle}>{gate.name}</strong>
       </div>
-      <strong className={s.gateTitle}>{gate.name}</strong>
       <div className={s.cardSubline}>Depth {gate.layoutDepth + 1}</div>
     </article>
   );

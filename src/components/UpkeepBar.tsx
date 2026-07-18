@@ -43,33 +43,29 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
     return (
         <div className={s.upkeepBar}>
             <div className={s.resourceRow}>
-                <div className={s.headerSide}>
-                    <div className={s.resourceGroup}>
-                        {renderResourceCards([DEVELOPMENT_VECTORS.medieval], providedUpkeep, effectiveUpkeep)}
-                    </div>
-                    {showNatureBalance && (
-                        <NatureBalanceTriangle
-                            fungi={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0}
-                            plants={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourcePlants] ?? 0}
-                            animals={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceAnimals] ?? 0}
-                            bioComplexity={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.natureBioComplexity] ?? 0}
-                        />
-                    )}
+                <div className={s.resourceGroup}>
+                    {renderResourceCards([DEVELOPMENT_VECTORS.medieval], providedUpkeep, effectiveUpkeep)}
                 </div>
+                {showNatureBalance && (
+                    <NatureBalanceTriangle
+                        fungi={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0}
+                        plants={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourcePlants] ?? 0}
+                        animals={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceAnimals] ?? 0}
+                        bioComplexity={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.natureBioComplexity] ?? 0}
+                    />
+                )}
                 <div className={s.siegeStatusSlot} aria-live="polite">
                     {signatureStatus.isBesieged && <span className={s.siegeStatusText}>SIEGE</span>}
                 </div>
-                <div className={s.rightGroup}>
-                    <div className={`${s.resourceGroup} ${s.resourceGroupRight}`}>
-                        {renderResourceCards([DEVELOPMENT_VECTORS.tech], providedUpkeep, effectiveUpkeep)}
-                    </div>
-                    {showAetherAtmosphere && (
-                        <div className={s.aetherMeterSlot}>
-                            <AetherAtmosphereOrb atmosphere={aetherAtmosphere} />
-                        </div>
-                    )}
-                    {rightSlot && <div className={s.rightSlot}>{rightSlot}</div>}
+                <div className={`${s.resourceGroup} ${s.resourceGroupRight}`}>
+                    {renderResourceCards([DEVELOPMENT_VECTORS.tech], providedUpkeep, effectiveUpkeep)}
                 </div>
+                {showAetherAtmosphere && (
+                    <div className={s.aetherMeterSlot}>
+                        <AetherAtmosphereOrb atmosphere={aetherAtmosphere} />
+                    </div>
+                )}
+                {rightSlot && <div className={s.rightSlot}>{rightSlot}</div>}
             </div>
             <div
                 className={`${s.signatureMeter} ${signatureStatus.isBesieged ? s.signatureMeterSieged : ""}`}
