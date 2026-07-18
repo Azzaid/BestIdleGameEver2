@@ -1,5 +1,5 @@
 import {createSlice, type PayloadAction} from "@reduxjs/toolkit";
-import type {NewNotification, NotificationItem, NotificationScheme} from "../../models/notifications.ts";
+import type {NewNotification, NotificationScheme} from "../../models/notifications.ts";
 import type {NotificationsState} from "../../models/store/notifications.ts";
 
 const DEFAULT_TOAST_MS = 4000;
