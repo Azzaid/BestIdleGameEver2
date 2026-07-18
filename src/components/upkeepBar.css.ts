@@ -53,15 +53,15 @@ export const resourceRow = style({
     width: '100%',
     boxSizing: 'border-box',
     minHeight: '46px',
-    padding: '4px max(8px, env(safe-area-inset-right, 0px)) 4px max(8px, env(safe-area-inset-left, 0px))',
-    gap: '10px',
+    padding: '4px max(4px, env(safe-area-inset-right, 0px)) 4px max(4px, env(safe-area-inset-left, 0px))',
+    gap: '4px',
     alignItems: 'center',
     justifyContent: 'space-between',
     '@media': {
         '(max-width: 760px)': {
             minHeight: '42px',
-            gap: '8px',
-            padding: '4px max(6px, env(safe-area-inset-right, 0px)) 4px max(6px, env(safe-area-inset-left, 0px))',
+            gap: '3px',
+            padding: '3px max(2px, env(safe-area-inset-right, 0px)) 3px max(2px, env(safe-area-inset-left, 0px))',
             alignItems: 'stretch',
         },
         '(max-width: 520px)': {
@@ -89,14 +89,16 @@ export const siegeStatusText = style({
 });
 
 export const rightSlot = style({
-    marginLeft: 'auto',
-    flex: '0 0 auto',
+    flex: '1 1 0',
+    minWidth: 0,
+    display: 'flex',
+    justifyContent: 'center',
 });
 
-export const resourceGroup = style({
+export const resourceSlot = style({
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    justifyContent: 'center',
     flex: '1 1 0',
     minWidth: 0,
     overflowX: 'auto',
@@ -107,27 +109,26 @@ export const resourceGroup = style({
             display: 'none',
         },
     },
-    '@media': {
-        '(max-width: 760px)': {
-            gap: '8px',
-        },
-    },
 });
 
-export const resourceGroupRight = style({
-    justifyContent: 'flex-start',
+export const resourcePlaceholder = style({
+    width: '1px',
+    minHeight: '30px',
 });
 
 export const vectorCard = style({
     display: 'grid',
     gap: '2px',
-    flex: '0 0 auto',
+    flex: '0 1 auto',
     minHeight: '30px',
-    padding: '4px 7px',
+    minWidth: 0,
+    maxWidth: '100%',
+    padding: '4px 5px',
     fontSize: '0.9rem',
     '@media': {
         '(max-width: 520px)': {
-            fontSize: '0.86rem',
+            padding: '3px 4px',
+            fontSize: '0.78rem',
         },
     },
 });

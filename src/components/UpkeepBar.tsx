@@ -43,28 +43,28 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
     return (
         <div className={s.upkeepBar}>
             <div className={s.resourceRow}>
-                <div className={s.resourceGroup}>
-                    {renderResourceCards([DEVELOPMENT_VECTORS.medieval], providedUpkeep, effectiveUpkeep)}
+                {renderResourceCard(DEVELOPMENT_VECTORS.medieval, providedUpkeep, effectiveUpkeep)}
+                <div className={s.resourceSlot}>
+                    {showNatureBalance ? (
+                        <NatureBalanceTriangle
+                            fungi={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0}
+                            plants={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourcePlants] ?? 0}
+                            animals={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceAnimals] ?? 0}
+                            bioComplexity={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.natureBioComplexity] ?? 0}
+                        />
+                    ) : <div className={s.resourcePlaceholder} aria-hidden="true" />}
                 </div>
-                {showNatureBalance && (
-                    <NatureBalanceTriangle
-                        fungi={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0}
-                        plants={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourcePlants] ?? 0}
-                        animals={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceAnimals] ?? 0}
-                        bioComplexity={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.natureBioComplexity] ?? 0}
-                    />
-                )}
-                <div className={s.siegeStatusSlot} aria-live="polite">
+                <div className={`${s.resourceSlot} ${s.siegeStatusSlot}`} aria-live="polite">
                     {signatureStatus.isBesieged && <span className={s.siegeStatusText}>SIEGE</span>}
                 </div>
-                <div className={`${s.resourceGroup} ${s.resourceGroupRight}`}>
-                    {renderResourceCards([DEVELOPMENT_VECTORS.tech], providedUpkeep, effectiveUpkeep)}
+                {renderResourceCard(DEVELOPMENT_VECTORS.tech, providedUpkeep, effectiveUpkeep)}
+                <div className={s.resourceSlot}>
+                    {showAetherAtmosphere ? (
+                        <div className={s.aetherMeterSlot}>
+                            <AetherAtmosphereOrb atmosphere={aetherAtmosphere} />
+                        </div>
+                    ) : <div className={s.resourcePlaceholder} aria-hidden="true" />}
                 </div>
-                {showAetherAtmosphere && (
-                    <div className={s.aetherMeterSlot}>
-                        <AetherAtmosphereOrb atmosphere={aetherAtmosphere} />
-                    </div>
-                )}
                 {rightSlot && <div className={s.rightSlot}>{rightSlot}</div>}
             </div>
             <div
@@ -225,30 +225,30 @@ function AetherAtmosphereOrb({atmosphere}: {atmosphere: AetherAtmosphereResoluti
     );
 }
 
-function renderResourceCards(
-    vectors: readonly DevelopmentVectorValue[],
+function renderResourceCard(
+    vector: DevelopmentVectorValue,
     providedUpkeep: Partial<Record<UpkeepTypesValue, number>>,
     effectiveUpkeep: Partial<Record<UpkeepTypesValue, number>>,
 ) {
-    return vectors.map(vector => {
-        const visibleResources = UPKEEP_TYPES_BY_VECTOR[vector].filter(resource => isResourceProduced(resource, providedUpkeep));
-        if (!visibleResources.length) return null;
+    const visibleResources = UPKEEP_TYPES_BY_VECTOR[vector].filter(resource => isResourceProduced(resource, providedUpkeep));
+    if (!visibleResources.length) {
+        return <div className={s.resourceSlot} aria-hidden="true"><div className={s.resourcePlaceholder} /></div>;
+    }
 
-        return (
-            <div key={vector} className={`${s.vectorCard} ${s.vectorCardFrame[vector]}`}>
-                {visibleResources.map(resource => {
-                    return (
-                        <div key={resource} className={s.resourceEntry}>
-                            <img  className={s.resourceIcon}/>
-                            <div className={s.resourceText}>
-                                {UPKEEP_SPRITES[resource]}: {formatUpkeepResourceAmount(resource, effectiveUpkeep[resource] ?? 0)}
-                            </div>
+    return (
+        <div className={s.resourceSlot}>
+            <div className={`${s.vectorCard} ${s.vectorCardFrame[vector]}`}>
+                {visibleResources.map(resource => (
+                    <div key={resource} className={s.resourceEntry}>
+                        <img  className={s.resourceIcon}/>
+                        <div className={s.resourceText}>
+                            {UPKEEP_SPRITES[resource]}: {formatUpkeepResourceAmount(resource, effectiveUpkeep[resource] ?? 0)}
                         </div>
-                    )
-                })}
+                    </div>
+                ))}
             </div>
-        )
-    });
+        </div>
+    )
 }
 
 function isResourceProduced(resource: UpkeepTypesValue, providedUpkeep: Partial<Record<UpkeepTypesValue, number>>): boolean {
