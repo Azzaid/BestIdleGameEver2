@@ -1,21 +1,55 @@
-import {style} from "@vanilla-extract/css";
+import {keyframes, style} from "@vanilla-extract/css";
 import {vars} from "../theme/theme.css.ts";
 import * as hud from "../theme/hud.css.ts";
+
+const siegeDangerPulse = keyframes({
+    '0%, 100%': {
+        boxShadow: '0 0 5px rgba(255, 42, 42, 0.55), 0 0 12px rgba(255, 42, 42, 0.28)',
+        filter: 'brightness(1)',
+    },
+    '50%': {
+        boxShadow: '0 0 10px rgba(255, 42, 42, 0.9), 0 0 24px rgba(255, 42, 42, 0.5)',
+        filter: 'brightness(1.3)',
+    },
+});
 
 export const upkeepBar = style([
     hud.compactPanel,
     {
     display: 'flex',
+    flexDirection: 'column',
     minHeight: '46px',
-    padding: '4px max(8px, env(safe-area-inset-right, 0px)) 4px max(8px, env(safe-area-inset-left, 0px))',
+    padding: 0,
     width: '100%',
     boxSizing: 'border-box',
     backgroundColor: 'transparent',
     color: vars.color.text.heading,
-    gap: '10px',
-    alignItems: 'center',
+    gap: 0,
+    alignItems: 'stretch',
     borderBottom: `1px solid ${vars.color.border.strong}`,
     overflow: 'visible',
+    '@media': {
+        '(max-width: 760px)': {
+            minHeight: '42px',
+            alignItems: 'stretch',
+        },
+        '(max-width: 520px)': {
+            overflow: 'hidden',
+        },
+    },
+    },
+]);
+
+export const vectorCardFrame = hud.panelFrame;
+
+export const resourceRow = style({
+    display: 'flex',
+    width: '100%',
+    boxSizing: 'border-box',
+    minHeight: '46px',
+    padding: '4px max(8px, env(safe-area-inset-right, 0px)) 4px max(8px, env(safe-area-inset-left, 0px))',
+    gap: '10px',
+    alignItems: 'center',
     '@media': {
         '(max-width: 760px)': {
             minHeight: '42px',
@@ -25,13 +59,9 @@ export const upkeepBar = style([
         },
         '(max-width: 520px)': {
             flexWrap: 'wrap',
-            overflow: 'hidden',
         },
     },
-    },
-]);
-
-export const vectorCardFrame = hud.panelFrame;
+});
 
 export const rightSlot = style({
     marginLeft: 'auto',
@@ -307,29 +337,20 @@ export const aetherTooltipRow = style({
     fontSize: '0.85rem',
 });
 
-export const signatureMeter = style([
-    hud.compactPanel,
-    {
+export const signatureMeter = style({
     position: 'relative',
-    flex: '0 0 clamp(220px, 30vw, 380px)',
-    width: 'clamp(220px, 30vw, 380px)',
-    maxWidth: 'calc(100vw - 24px)',
-    display: 'grid',
-    gap: '4px',
-    padding: '6px 8px',
-    '@media': {
-        '(max-width: 760px)': {
-            flex: '1 1 190px',
-            width: 'auto',
-            minWidth: '180px',
-        },
-        '(max-width: 520px)': {
-            flexBasis: '100%',
-            minWidth: 0,
+    height: '12px',
+    width: '100%',
+    outline: 'none',
+    zIndex: 4,
+    selectors: {
+        '&:focus-visible': {
+            boxShadow: `0 0 0 3px ${vars.color.border.selected}`,
         },
     },
-    },
-]);
+});
+
+export const signatureMeterSieged = style({});
 
 export const signatureMeterTitle = style({
     textAlign: 'center',
@@ -348,18 +369,37 @@ export const signatureMeterTitleSiege = style([
 ]);
 
 export const signatureTrack = style({
-    height: '10px',
-    borderRadius: '3px',
+    position: 'absolute',
+    left: 'max(8px, env(safe-area-inset-left, 0px))',
+    right: 'max(8px, env(safe-area-inset-right, 0px))',
+    top: '1px',
+    height: '8px',
+    borderRadius: '999px',
     overflow: 'hidden',
-    background: 'rgb(43 48 55 / 0.24)',
-    border: `1px solid ${hud.hudBorder}`,
+    background: 'rgb(43 48 55 / 0.32)',
+    border: `1px solid rgb(255 255 255 / 0.13)`,
+    selectors: {
+        [`${signatureMeterSieged} &`]: {
+            background: 'rgb(70 20 20 / 0.48)',
+            borderColor: 'rgb(255 72 72 / 0.38)',
+            boxShadow: '0 0 10px rgba(255, 42, 42, 0.24)',
+        },
+    },
 });
 
 export const signatureFill = style({
+    position: 'absolute',
+    top: 0,
+    left: '50%',
     height: '100%',
     maxWidth: '100%',
-    borderRadius: '3px',
-    transition: 'width 180ms ease, background-color 180ms ease',
+    borderRadius: '999px',
+    transform: 'translateX(-50%)',
+    transition: 'width 180ms ease, background-color 180ms ease, box-shadow 180ms ease',
+});
+
+export const signatureFillSieged = style({
+    animation: `${siegeDangerPulse} 1.15s ease-in-out infinite`,
 });
 
 export const signatureTooltip = style([

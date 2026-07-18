@@ -42,54 +42,62 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
 
     return (
         <div className={s.upkeepBar}>
-            <div className={s.resourceGroup}>
-                {Object.values(DEVELOPMENT_VECTORS).map(vector => {
-                    if (
-                        vector === DEVELOPMENT_VECTORS.neutral
-                        || vector === DEVELOPMENT_VECTORS.nature
-                        || vector === DEVELOPMENT_VECTORS.aether
-                    ) {
-                        return null;
-                    }
+            <div className={s.resourceRow}>
+                <div className={s.resourceGroup}>
+                    {Object.values(DEVELOPMENT_VECTORS).map(vector => {
+                        if (
+                            vector === DEVELOPMENT_VECTORS.neutral
+                            || vector === DEVELOPMENT_VECTORS.nature
+                            || vector === DEVELOPMENT_VECTORS.aether
+                        ) {
+                            return null;
+                        }
 
-                    const visibleResources = UPKEEP_TYPES_BY_VECTOR[vector].filter(resource => isResourceProduced(resource, providedUpkeep));
-                    if (!visibleResources.length) return null;
+                        const visibleResources = UPKEEP_TYPES_BY_VECTOR[vector].filter(resource => isResourceProduced(resource, providedUpkeep));
+                        if (!visibleResources.length) return null;
 
-                    return (
-                        <div key={vector} className={`${s.vectorCard} ${s.vectorCardFrame[vector]}`}>
-                            {visibleResources.map(resource => {
-                                return (
-                                    <div key={resource} className={s.resourceEntry}>
-                                        <img  className={s.resourceIcon}/>
-                                        <div className={s.resourceText}>
-                                            {UPKEEP_SPRITES[resource]}: {formatUpkeepResourceAmount(resource, effectiveUpkeep[resource] ?? 0)}
+                        return (
+                            <div key={vector} className={`${s.vectorCard} ${s.vectorCardFrame[vector]}`}>
+                                {visibleResources.map(resource => {
+                                    return (
+                                        <div key={resource} className={s.resourceEntry}>
+                                            <img  className={s.resourceIcon}/>
+                                            <div className={s.resourceText}>
+                                                {UPKEEP_SPRITES[resource]}: {formatUpkeepResourceAmount(resource, effectiveUpkeep[resource] ?? 0)}
+                                            </div>
                                         </div>
-                                    </div>
-                                )
-                            })}
+                                    )
+                                })}
+                            </div>
+                        )
+                    })}
+                </div>
+                {showNatureBalance && (
+                    <NatureBalanceTriangle
+                        fungi={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0}
+                        plants={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourcePlants] ?? 0}
+                        animals={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceAnimals] ?? 0}
+                        bioComplexity={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.natureBioComplexity] ?? 0}
+                    />
+                )}
+                <div className={s.rightGroup}>
+                    {showAetherAtmosphere && (
+                        <div className={s.aetherMeterSlot}>
+                            <AetherAtmosphereOrb atmosphere={aetherAtmosphere} />
                         </div>
-                    )
-                })}
+                    )}
+                    {rightSlot && <div className={s.rightSlot}>{rightSlot}</div>}
+                </div>
             </div>
-            {showNatureBalance && (
-                <NatureBalanceTriangle
-                    fungi={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0}
-                    plants={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourcePlants] ?? 0}
-                    animals={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceAnimals] ?? 0}
-                    bioComplexity={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.natureBioComplexity] ?? 0}
-                />
-            )}
             <div
-                className={s.signatureMeter}
+                className={`${s.signatureMeter} ${signatureStatus.isBesieged ? s.signatureMeterSieged : ""}`}
                 tabIndex={0}
                 aria-label={`${threatLabel}. City signature ${formatKilometers(effectiveSignature)}, city footprint ${formatKilometers(signatureStatus.cityFootprint)}, controlled territory ${formatKilometers(signatureStatus.controlledTerritory)}`}
+                title={threatLabel}
             >
-                <div className={signatureStatus.isBesieged ? s.signatureMeterTitleSiege : s.signatureMeterTitle}>
-                    {threatLabel}
-                </div>
                 <div className={s.signatureTrack}>
                     <div
-                        className={s.signatureFill}
+                        className={`${s.signatureFill} ${signatureStatus.isBesieged ? s.signatureFillSieged : ""}`}
                         style={{
                             width: `${threatPercent}%`,
                             backgroundColor: signatureFillColor,
@@ -110,14 +118,6 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
                         <strong>{formatKilometers(signatureStatus.controlledTerritory)}</strong>
                     </div>
                 </div>
-            </div>
-            <div className={s.rightGroup}>
-                {showAetherAtmosphere && (
-                    <div className={s.aetherMeterSlot}>
-                        <AetherAtmosphereOrb atmosphere={aetherAtmosphere} />
-                    </div>
-                )}
-                {rightSlot && <div className={s.rightSlot}>{rightSlot}</div>}
             </div>
         </div>
     )

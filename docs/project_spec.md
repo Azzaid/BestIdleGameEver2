@@ -244,7 +244,7 @@ Current resources by vector:
 - Nature/Biology: Fungi, Plants, and Animals.
 - Aether/Magic: Veil, Mana Flows, and Death.
 
-The shared upkeep bar includes a Nature/Biology balance indicator beside the threat meter. It renders Fungi, Plants, and Animals as a three-axis triangular balance shape, while Bio Complexity controls the center-to-edge emerald fill from empty at 0 to fully filled at 1000. Nature also derives Bio Disbalance as the difference between the highest and lowest Fungi, Plants, and Animals values.
+The shared upkeep bar includes a Nature/Biology balance indicator beside the resources and a threat meter rendered as a thin line under the resource bar. It renders Fungi, Plants, and Animals as a three-axis triangular balance shape, while Bio Complexity controls the center-to-edge emerald fill from empty at 0 to fully filled at 1000. Nature also derives Bio Disbalance as the difference between the highest and lowest Fungi, Plants, and Animals values.
 
 Homogeneous value definitions include keywords such as `resource`, `output`, `support`, `atmosphere`, `aether`, and `display_orb`. They also carry first-class `displayMethod`, `resolutionMethod`, `roundingMethod`, and optional diminishing-return metadata. The default rounding method is `twoDigitsAfterZero`; People and Gold currently round up to integers, while Nature/Biology values such as Fungi, Plants, Animals, domination, Bio Complexity, and Bio Disbalance resolve and display with two decimal places. The `diminishingReturn` resolution method requires `diminishingReturnPower` and resolves production with `Math.pow(total, diminishingReturnPower)`, for example `0.8` for softened scaling. Modifiers can target entity keywords, entity types, value keywords, and contribution role keywords, so a production bonus can affect ordinary support, magical outputs, wall stats, siege modifiers, monster modifiers, or later value groups through the same resolver. Display formatting metadata must not be placed in keywords or used for gameplay checks.
 
@@ -297,7 +297,7 @@ Demolishing buildings permanently increases the current city's footprint. The in
 
 Current prototype terminology uses city signature and controlled territory:
 
-- City signature is displayed in the shared upkeep bar as a threat-level meter from the last survived siege signature to current controlled territory.
+- City signature is displayed in the shared upkeep bar as a center-expanding threat-level line from the last survived siege signature to current controlled territory. While the city is besieged, the line gains a pulsing red light effect.
 - The meter label uses the clamped fill percentage: low below 20%, elevated below 40%, medium below 60%, moderate below 80%, and high from 80% to full. The fill shifts smoothly from green to red and reveals signature, footprint, and controlled territory values on hover.
 - A city is besieged when signature is greater than controlled territory.
 - The city starts with base wall segments, no committed tower, and an initial besieged state caused by the noise of setting camp.
