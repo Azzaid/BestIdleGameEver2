@@ -1,4 +1,4 @@
-import {style} from "@vanilla-extract/css";
+import {style, styleVariants} from "@vanilla-extract/css";
 import {vars} from "../../theme/theme.css.ts";
 import * as hud from "../../theme/hud.css.ts";
 
@@ -59,7 +59,7 @@ export const bookSpine = style({
 export const bookSurface = style({
   minHeight: 0,
   display: "grid",
-  gridTemplateRows: "auto minmax(0, 1fr)",
+  gridTemplateRows: "auto auto minmax(0, 1fr)",
   background: `
     linear-gradient(120deg, ${hud.hudAccentSoft}, transparent 34%),
     linear-gradient(180deg, ${hud.hudSurface}, color-mix(in oklab, ${hud.hudSurface} 72%, black 12%))
@@ -128,6 +128,71 @@ export const closeButton = style([
   },
 ]);
 
+export const tabs = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  padding: "8px 18px",
+  borderBottom: `1px solid ${hud.hudBorder}`,
+  background: `color-mix(in oklab, ${hud.hudSurface} 78%, transparent)`,
+  overflowX: "auto",
+});
+
+export const tab = style({
+  minHeight: 34,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+  flexShrink: 0,
+  padding: "6px 11px",
+  border: `1px solid ${hud.hudBorder}`,
+  borderRadius: 4,
+  background: "transparent",
+  color: hud.hudMuted,
+  cursor: "pointer",
+  fontWeight: 900,
+  selectors: {
+    "&:hover": {
+      color: hud.hudText,
+      borderColor: hud.hudAccent,
+      background: hud.hudAccentSoft,
+    },
+    "&:focus-visible": {
+      outline: `2px solid ${hud.hudAccent}`,
+      outlineOffset: 2,
+    },
+  },
+});
+
+export const tabActive = style([
+  tab,
+  {
+    background: hud.hudAccentSoft,
+    color: hud.hudText,
+    borderColor: hud.hudAccent,
+    boxShadow: `inset 0 -2px 0 ${hud.hudAccent}`,
+  },
+]);
+
+export const tabCount = style({
+  minWidth: 18,
+  padding: "1px 6px",
+  borderRadius: 999,
+  background: `color-mix(in oklab, ${hud.hudSurface} 68%, transparent)`,
+  color: hud.hudMuted,
+  fontSize: "0.72rem",
+  lineHeight: 1.4,
+});
+
+export const tabUnread = style([
+  tabCount,
+  {
+    background: vars.color.state.error,
+    color: vars.color.text.inverse,
+  },
+]);
+
 export const body = style({
   position: "relative",
   minHeight: 0,
@@ -150,6 +215,52 @@ export const emptyState = style({
 });
 
 export const eventTone = hud.vectorVars;
+
+export const notificationTone = styleVariants({
+  neutral: {},
+  tech: {
+    vars: {
+      [hud.hudAccent]: "hsl(190 96% 62%)",
+      [hud.hudAccentSoft]: "hsl(190 96% 62% / 0.14)",
+    },
+  },
+  nature: {
+    vars: {
+      [hud.hudAccent]: "hsl(139 72% 52%)",
+      [hud.hudAccentSoft]: "hsl(139 72% 52% / 0.16)",
+    },
+  },
+  medieval: {
+    vars: {
+      [hud.hudAccent]: "hsl(42 92% 58%)",
+      [hud.hudAccentSoft]: "hsl(42 92% 58% / 0.16)",
+    },
+  },
+  aether: {
+    vars: {
+      [hud.hudAccent]: "hsl(276 90% 68%)",
+      [hud.hudAccentSoft]: "hsl(276 90% 68% / 0.17)",
+    },
+  },
+  alert: {
+    vars: {
+      [hud.hudAccent]: "hsl(0 75% 50%)",
+      [hud.hudAccentSoft]: "hsl(0 75% 50% / 0.14)",
+    },
+  },
+  warning: {
+    vars: {
+      [hud.hudAccent]: "hsl(40 90% 50%)",
+      [hud.hudAccentSoft]: "hsl(40 90% 50% / 0.16)",
+    },
+  },
+  congratulation: {
+    vars: {
+      [hud.hudAccent]: "hsl(160 60% 40%)",
+      [hud.hudAccentSoft]: "hsl(160 60% 40% / 0.16)",
+    },
+  },
+});
 
 export const eventCard = style({
   display: "grid",
@@ -223,6 +334,78 @@ export const eventHint = style({
   background: hud.hudAccentSoft,
   color: hud.hudMuted,
   lineHeight: 1.45,
+});
+
+export const notificationsList = style({
+  display: "grid",
+  alignContent: "start",
+  gap: "10px",
+  height: "100%",
+  overflowY: "auto",
+  scrollbarGutter: "stable",
+  padding: "12px 18px 18px",
+});
+
+export const notificationCard = style({
+  display: "grid",
+  gridTemplateColumns: "42px minmax(0, 1fr)",
+  gap: "12px",
+  alignItems: "start",
+  padding: "12px",
+  border: `1px solid ${hud.hudBorder}`,
+  borderTop: `2px solid ${hud.hudAccent}`,
+  borderRadius: 6,
+  background: `
+    linear-gradient(90deg, ${hud.hudAccentSoft}, transparent 44%),
+    color-mix(in oklab, ${hud.hudSurface} 84%, transparent)
+  `,
+  '@media': {
+    '(max-width: 520px)': {
+      gridTemplateColumns: "34px minmax(0, 1fr)",
+      gap: "10px",
+    },
+  },
+});
+
+export const notificationImage = style({
+  width: 42,
+  height: 42,
+  objectFit: "cover",
+  borderRadius: 4,
+  border: `1px solid ${hud.hudBorder}`,
+  background: `color-mix(in oklab, ${hud.hudSurface} 74%, black 12%)`,
+  '@media': {
+    '(max-width: 520px)': {
+      width: 34,
+      height: 34,
+    },
+  },
+});
+
+export const notificationGlyph = style([
+  notificationImage,
+  {
+    display: "grid",
+    placeItems: "center",
+    color: hud.hudAccent,
+    fontWeight: 900,
+  },
+]);
+
+export const notificationContent = style({
+  display: "grid",
+  gap: "6px",
+  minWidth: 0,
+});
+
+export const notificationMeta = style({
+  display: "flex",
+  gap: "8px",
+  flexWrap: "wrap",
+  color: hud.hudMuted,
+  fontFamily: "ui-monospace, SFMono-Regular, Consolas, Liberation Mono, monospace",
+  fontSize: "0.72rem",
+  textTransform: "uppercase",
 });
 
 export const foreseenPanel = style({

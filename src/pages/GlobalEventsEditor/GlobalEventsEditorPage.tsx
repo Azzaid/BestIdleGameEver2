@@ -744,7 +744,7 @@ function EffectEditor({
     <div className={s.rowList}>
       {rows.length === 0 && <span className={s.hint}>No generated effects.</span>}
       {rows.map(row => (
-        <div key={row.rowId} className={s.effectRow}>
+        <div key={row.rowId} className={`${s.effectRow} ${s.vectorTone[row.vector]}`}>
           <div className={s.effectMainRow}>
             <VectorField value={row.vector} onChange={vector => updateEffect(row.rowId, {vector})} />
             <ValueIdField id={`effect-value-${row.rowId}`} label="Value ID" value={row.valueId} onChange={valueId => updateEffect(row.rowId, {valueId})} />

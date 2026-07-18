@@ -21,7 +21,7 @@ Current implementation note, 2026-06-24:
 - The shared upkeep/signature bar appears outside Battle and includes city expansion controls on the City route.
 - Research remains available during siege. Tower rebuilding and city management also remain available so the player can respond to pressure without leaving the city frozen.
 - Debug mode exposes Progression, IDs, Entity Create, Gun Part Editor, and Global Events tools.
-- Notifications are mounted at the app shell level, and force-level global events open the City-hosted History modal.
+- Notification toasts are mounted at the app shell level. The notification log lives as a separate tab inside the City-hosted History modal, and force-level global events open that modal.
 
 ---
 

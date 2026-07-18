@@ -1,5 +1,6 @@
 import {style} from "@vanilla-extract/css";
 import {vars} from "../../theme/theme.css.ts";
+import * as hud from "../../theme/hud.css.ts";
 
 export const page = style({
   display: "grid",
@@ -297,13 +298,20 @@ export const modifierRuleRow = style({
   },
 });
 
+export const vectorTone = hud.vectorVars;
+
 export const effectRow = style({
   display: "grid",
   gap: "8px",
-  border: `1px solid ${vars.color.border.default}`,
+  border: `1px solid ${hud.hudBorder}`,
   borderRadius: "8px",
   padding: "8px",
-  background: vars.color.background.app,
+  background: `
+    linear-gradient(90deg, ${hud.hudAccentSoft}, transparent 42%),
+    color-mix(in oklab, ${hud.hudSurface} 82%, transparent)
+  `,
+  color: hud.hudText,
+  boxShadow: `0 0 14px color-mix(in oklab, ${hud.hudAccent} 12%, transparent)`,
 });
 
 export const effectMainRow = style({

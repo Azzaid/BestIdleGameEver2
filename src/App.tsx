@@ -13,7 +13,6 @@ import {selectIsDebugModeEnabled} from "./store/debug/selectors.ts";
 import {toggleDebugMode} from "./store/debug/slice.ts";
 import { NotificationCenter } from "./components/Notifications/NotificationCenter.tsx";
 import { useResearchAutoUnlock } from "./pages/Research/useResearchAutoUnlock.ts";
-import {CityExpansionControl} from "./components/CityExpansionControl.tsx";
 import {useContentAutoUnlock} from "./hooks/useContentAutoUnlock.ts";
 import {useGlobalEventSignals} from "./components/GlobalEvents/useGlobalEventSignals.ts";
 import {VictoryEventOverlay} from "./components/GlobalEvents/VictoryEventOverlay.tsx";
@@ -89,7 +88,7 @@ function GameShell() {
                           <Route
                               path="/"
                               element={(
-                                  <UpkeepBarRouteFrame chromeRef={routeChromeRef} rightSlot={<CityExpansionControl />}>
+                                  <UpkeepBarRouteFrame chromeRef={routeChromeRef}>
                                       {renderScrollableRoute(
                                           <CityPage
                                               isHistoryOpen={isHistoryModalOpen}

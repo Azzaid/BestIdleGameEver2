@@ -105,14 +105,14 @@ export const globalEffectsShell = style({
     right: 0,
     zIndex: 2,
     pointerEvents: 'auto',
-    width: 'min(420px, calc(100% - 36px))',
+    width: 'min(430px, calc(100% - 42px))',
     height: '100%',
     display: 'grid',
-    gridTemplateColumns: '32px 1fr',
+    gridTemplateColumns: '42px 1fr',
     transition: 'transform 180ms ease',
     selectors: {
         '&[data-open="false"]': {
-            transform: 'translateX(calc(100% - 32px))',
+            transform: 'translateX(calc(100% - 42px))',
         },
     },
     '@media': {
@@ -126,23 +126,18 @@ export const globalEffectsShell = style({
     },
 });
 
-export const globalEffectsToggle = style({
-    width: '32px',
-    height: '44px',
+export const globalEffectsToggle = style([
+    cityModalButton,
+    {
+    position: 'static',
+    top: 'auto',
+    left: 'auto',
+    zIndex: 1,
     alignSelf: 'start',
-    border: `1px solid ${vars.color.border.default}`,
     borderRight: 0,
-    borderRadius: '4px 0 0 4px',
-    background: vars.color.background.surface,
-    color: vars.color.text.heading,
-    cursor: 'pointer',
-    fontWeight: 700,
-    selectors: {
-        '&:hover': {
-            borderColor: vars.color.border.selected,
-        },
+    borderRadius: '6px 0 0 6px',
     },
-});
+]);
 
 export const globalEffectsPanel = style([
     hud.compactPanel,
@@ -164,14 +159,11 @@ export const globalModifierList = style({
     gap: '6px',
 });
 
-export const globalModifierCard = style([
-    hud.compactPanel,
-    {
+export const globalModifierCard = style({
     display: 'grid',
     gap: '6px',
     padding: '7px',
-    },
-]);
+});
 
 export const globalModifierHeader = style({
     display: 'flex',
@@ -182,7 +174,7 @@ export const globalModifierHeader = style({
 
 export const globalModifierTitle = style({
     margin: 0,
-    color: vars.color.text.heading,
+    color: hud.hudText,
     fontSize: '0.86rem',
 });
 
@@ -372,10 +364,15 @@ export const metricList = style({
     margin: 0,
 });
 
+export const metricRowFrame = hud.vectorVars;
+
 export const metricRow = style({
     display: 'flex',
     justifyContent: 'space-between',
     gap: '8px',
+    padding: '4px 6px',
+    borderLeft: `3px solid ${hud.hudAccent}`,
+    background: `linear-gradient(90deg, ${hud.hudAccentSoft}, transparent 72%)`,
 });
 
 export const emptyStats = style({

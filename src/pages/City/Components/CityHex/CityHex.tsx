@@ -24,6 +24,7 @@ import {getBuildingSpriteSize} from "../../../../models/sprites/buildings/buildi
 import type {CityExpansionOption, CityExpansionSideId} from "../../../../models/city/expansion.ts";
 import type {BattlefieldTerrainHex} from "../../../../models/battle/battlefieldTerrain.ts";
 import {mountCityBattleRuntime, type CityBattleRuntimeConfig, type MountedCityBattleRuntime} from "../../../Battle/battleRuntime.ts";
+import type {CityExodusArrowState} from "../../../../models/store/city.ts";
 
 const HEX_RADIUS_PX = CITY_HEX_RADIUS;
 const HEX_STROKE_WIDTH = 3;
@@ -52,6 +53,8 @@ const DRAG_CLICK_TOLERANCE_PX = 4;
 const HEX_ROW_CENTER_SPACING_PX = HEX_RADIUS_PX * 1.5;
 const CITY_CAMERA_SHADED_RING_COUNT = 2;
 const CITY_CAMERA_BATTLEFIELD_SIDE_HEX_COUNT = 2;
+const EXODUS_POINTER_EDGE_INSET_PX = 32;
+const EXODUS_POINTER_TARGET_DISTANCE_MULTIPLIER = 3.4;
 
 const HEX_SIDE_DEFINITIONS = [
     {columnDelta: 1, rowDelta: 0, startVertexIndex: 0, endVertexIndex: 1},
@@ -101,6 +104,14 @@ type WebKitGestureEvent = Event & {
     scale: number;
 };
 
+export type CityExodusPointerView = {
+    id: string;
+    x: number;
+    y: number;
+    rotationDegrees: number;
+    visible: boolean;
+};
+
 export default function CityHex({
     cells,
     biome,
@@ -112,6 +123,8 @@ export default function CityHex({
     battlefieldHexes = [],
     battlefieldCovered = false,
     battleRuntime,
+    exodusArrows = [],
+    onExodusPointerChange,
     cameraFocusRequest,
     clearSelectionSignal = 0,
     selectedCellKey: controlledSelectedCellKey,
@@ -127,6 +140,8 @@ export default function CityHex({
     battlefieldHexes?: readonly BattlefieldTerrainHex[];
     battlefieldCovered?: boolean;
     battleRuntime?: CityBattleRuntimeConfig | null;
+    exodusArrows?: readonly CityExodusArrowState[];
+    onExodusPointerChange?: (pointers: CityExodusPointerView[]) => void;
     cameraFocusRequest?: {target: CameraRuleId; id: number; focusCellKey?: string | null};
     clearSelectionSignal?: number;
     selectedCellKey?: string | null;
@@ -281,6 +296,10 @@ export default function CityHex({
     const debugAxisLines = useMemo(
         () => getDebugAxisLines(preparedCells),
         [preparedCells],
+    );
+    const cityCenter = useMemo(
+        () => getBoundsCenter(cityCameraBounds),
+        [cityCameraBounds],
     );
 
     const applyCamera = useCallback((nextCamera: CameraState) => {
@@ -995,6 +1014,36 @@ export default function CityHex({
         selectedOutlineKey,
         showDebugAxes,
         topExpansionPreviewCellKeys,
+        viewport,
+    ]);
+
+    useEffect(() => {
+        if (!onExodusPointerChange) return;
+
+        const transform = stageTransformRef.current;
+        const pointers = getExodusPointerViews({
+            arrows: exodusArrows,
+            cells: preparedCells,
+            camera,
+            canvasSize,
+            cityCenter,
+            topInsetPx,
+            transform,
+            viewport,
+            viewExtent,
+            worldViewMode: requestedCameraRule,
+        });
+        onExodusPointerChange(pointers);
+    }, [
+        camera,
+        canvasSize,
+        cityCenter,
+        exodusArrows,
+        onExodusPointerChange,
+        preparedCells,
+        requestedCameraRule,
+        topInsetPx,
+        viewExtent,
         viewport,
     ]);
 
@@ -1773,6 +1822,180 @@ function getTowerOpeningCenterViewPoint(
         transform,
         viewport,
     );
+}
+
+function getExodusPointerViews({
+    arrows,
+    cells,
+    camera,
+    canvasSize,
+    cityCenter,
+    topInsetPx,
+    transform,
+    viewport,
+    viewExtent,
+    worldViewMode,
+}: {
+    arrows: readonly CityExodusArrowState[];
+    cells: readonly PreparedHexCell[];
+    camera: CameraState;
+    canvasSize: {width: number; height: number};
+    cityCenter: {x: number; y: number};
+    topInsetPx: number;
+    transform: StageTransform;
+    viewport: Viewport;
+    viewExtent: number;
+    worldViewMode: CameraRuleId;
+}): CityExodusPointerView[] {
+    if (canvasSize.width <= 0 || canvasSize.height <= 0 || worldViewMode !== "city") return [];
+
+    const screenBounds = {
+        left: EXODUS_POINTER_EDGE_INSET_PX,
+        top: Math.max(EXODUS_POINTER_EDGE_INSET_PX, topInsetPx + EXODUS_POINTER_EDGE_INSET_PX),
+        right: canvasSize.width - EXODUS_POINTER_EDGE_INSET_PX,
+        bottom: canvasSize.height - EXODUS_POINTER_EDGE_INSET_PX,
+    };
+    if (screenBounds.right <= screenBounds.left || screenBounds.bottom <= screenBounds.top) return [];
+
+    const lowerUnclaimedCellsAreVisible = hasVisibleLowerUnclaimedCells(
+        cells,
+        camera,
+        transform,
+        viewport,
+        canvasSize,
+        topInsetPx,
+    );
+    if (!lowerUnclaimedCellsAreVisible) return [];
+
+    const screenCenter = {
+        x: (screenBounds.left + screenBounds.right) / 2,
+        y: (screenBounds.top + screenBounds.bottom) / 2,
+    };
+    const targetDistance = Math.max(viewExtent * EXODUS_POINTER_TARGET_DISTANCE_MULTIPLIER, HEX_RADIUS_PX * 12);
+
+    return arrows.flatMap((arrow) => {
+        const targetWorld = {
+            x: cityCenter.x + arrow.direction.x * targetDistance,
+            y: cityCenter.y + arrow.direction.y * targetDistance,
+        };
+        const targetScreen = worldToScreenPoint(targetWorld, camera, transform, viewport);
+        const direction = {
+            x: targetScreen.x - screenCenter.x,
+            y: targetScreen.y - screenCenter.y,
+        };
+        const directionLength = Math.hypot(direction.x, direction.y);
+        if (directionLength <= 0.001) return [];
+
+        const position = getScreenBorderIntersection(screenCenter, direction, screenBounds);
+
+        return [{
+            id: arrow.id,
+            x: position.x,
+            y: position.y,
+            rotationDegrees: Math.atan2(direction.y, direction.x) * 180 / Math.PI + 90,
+            visible: true,
+        }];
+    });
+}
+
+function hasVisibleLowerUnclaimedCells(
+    cells: readonly PreparedHexCell[],
+    camera: CameraState,
+    transform: StageTransform,
+    viewport: Viewport,
+    canvasSize: {width: number; height: number},
+    topInsetPx: number,
+) {
+    const claimedBottomCenterY = cells.reduce<number | null>((currentBottom, cell) => {
+        if (cell.isUnclaimed || cell.isLost) return currentBottom;
+        return currentBottom === null ? cell.centerY : Math.max(currentBottom, cell.centerY);
+    }, null);
+    if (claimedBottomCenterY === null) return false;
+
+    const lowerUnclaimedCells = cells.filter(cell => (
+        cell.isUnclaimed
+        && cell.centerY >= claimedBottomCenterY + HEX_ROW_CENTER_SPACING_PX * 0.5
+    ));
+    if (lowerUnclaimedCells.length === 0) return false;
+
+    const lowerUnclaimedBounds = getWorldBoundsScreenRect(
+        computeCityBounds(lowerUnclaimedCells, HEX_RADIUS_PX),
+        camera,
+        transform,
+        viewport,
+    );
+    const visibleTop = Math.max(0, topInsetPx);
+
+    return (
+        lowerUnclaimedBounds.right >= 0
+        && lowerUnclaimedBounds.left <= canvasSize.width
+        && lowerUnclaimedBounds.bottom >= visibleTop
+        && lowerUnclaimedBounds.top <= canvasSize.height
+    );
+}
+
+function getScreenBorderIntersection(
+    origin: {x: number; y: number},
+    direction: {x: number; y: number},
+    bounds: {left: number; top: number; right: number; bottom: number},
+) {
+    const candidates = [
+        direction.x > 0 ? (bounds.right - origin.x) / direction.x : Infinity,
+        direction.x < 0 ? (bounds.left - origin.x) / direction.x : Infinity,
+        direction.y > 0 ? (bounds.bottom - origin.y) / direction.y : Infinity,
+        direction.y < 0 ? (bounds.top - origin.y) / direction.y : Infinity,
+    ].filter(value => Number.isFinite(value) && value > 0);
+    const distance = Math.min(...candidates);
+
+    return {
+        x: Math.max(bounds.left, Math.min(bounds.right, origin.x + direction.x * distance)),
+        y: Math.max(bounds.top, Math.min(bounds.bottom, origin.y + direction.y * distance)),
+    };
+}
+
+function worldToScreenPoint(
+    worldPoint: {x: number; y: number},
+    camera: CameraState,
+    transform: StageTransform,
+    viewport: Viewport,
+) {
+    const viewPoint = {
+        x: worldPoint.x * camera.zoom + camera.offsetX,
+        y: worldPoint.y * camera.zoom + camera.offsetY,
+    };
+
+    return {
+        x: (viewPoint.x - viewport.x) * transform.scale + transform.offsetX,
+        y: (viewPoint.y - viewport.y) * transform.scale + transform.offsetY,
+    };
+}
+
+function getWorldBoundsScreenRect(
+    bounds: Bounds,
+    camera: CameraState,
+    transform: StageTransform,
+    viewport: Viewport,
+) {
+    const corners = [
+        worldToScreenPoint({x: bounds.minX, y: bounds.minY}, camera, transform, viewport),
+        worldToScreenPoint({x: bounds.maxX, y: bounds.minY}, camera, transform, viewport),
+        worldToScreenPoint({x: bounds.maxX, y: bounds.maxY}, camera, transform, viewport),
+        worldToScreenPoint({x: bounds.minX, y: bounds.maxY}, camera, transform, viewport),
+    ];
+
+    return {
+        left: Math.min(...corners.map(point => point.x)),
+        top: Math.min(...corners.map(point => point.y)),
+        right: Math.max(...corners.map(point => point.x)),
+        bottom: Math.max(...corners.map(point => point.y)),
+    };
+}
+
+function getBoundsCenter(bounds: Bounds) {
+    return {
+        x: (bounds.minX + bounds.maxX) / 2,
+        y: (bounds.minY + bounds.maxY) / 2,
+    };
 }
 
 function lerp(start: number, end: number, progress: number) {

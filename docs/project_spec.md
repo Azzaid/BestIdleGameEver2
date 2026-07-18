@@ -1,6 +1,6 @@
 # Project Specification: Best Idle Game Ever 2
 
-Last updated: 2026-07-14 (local)
+Last updated: 2026-07-18 (local)
 
 This document is the repository's single project specification. It summarizes the implemented prototype and the current design direction from the rest of the `docs` folder. The focused design documents remain the deeper references for individual systems.
 
@@ -58,7 +58,7 @@ Current stack:
 Entry points and app shell:
 
 - `src/main.tsx` loads global styles and renders the app.
-- `src/App.tsx` wires `Provider`, `ThemeProvider`, the outer app error boundary, `HashRouter`, the city-first game route, city-hosted overlay modals, lazy development-tool route gating, the floating debug-mode switch, content auto-unlock hooks, global event signals/history modal opening, notifications, and the shared upkeep bar.
+- `src/App.tsx` wires `Provider`, `ThemeProvider`, the outer app error boundary, `HashRouter`, the city-first game route, city-hosted overlay modals, lazy development-tool route gating, the floating debug-mode switch, content auto-unlock hooks, global event signals/history modal opening, notification toasts, and the shared upkeep bar.
 - `src/store` contains Redux setup, slices, typed hooks, and selectors. `src/store/worldView` owns the current world screen mode (`city`, `battle`, or `tower`) so UI components and mechanics can show, hide, enable, or pause behavior based on whether the player is focused on city building, the battlefield, or a selected tower edit overlay.
 - `src/devtools` contains development-only route/nav modules and devtools UI state. Devtools UI state is persisted separately from the gameplay save and should not be added to the game Redux persistence payload.
 - `src/theme` contains the vanilla-extract theme contract and runtime theme provider.
@@ -69,7 +69,7 @@ Primary routes:
 - `/build` redirects to `/`; tower assembly opens as a city-screen tower mode overlay from a selected wall-top tower.
 - `/research` redirects to `/` and opens the city-hosted research modal.
 - `/city` is a legacy redirect to `/`.
-- History is opened from the city through the book control and force-level event modal path; legacy `/history` URLs redirect back to `/`.
+- History is opened from the city through the book control and force-level event modal path; the same modal also contains the notification log as a separate tab, and legacy `/history` URLs redirect back to `/`.
 - `/progression`, `/ids`, `/entity-create/:entityId`, `/content-plan`, `/monster-edit/:monsterId`, `/gun-part-editor`, `/global-events`, `/homogeneous-values`, and `/hex-background-editor` are debug-mode tools available only in development builds.
 
 Important directories:
@@ -244,7 +244,7 @@ Current resources by vector:
 - Nature/Biology: Fungi, Plants, and Animals.
 - Aether/Magic: Veil, Mana Flows, and Death.
 
-The shared upkeep bar includes a Nature/Biology balance indicator beside the resources and a threat meter rendered as a thin line under the resource bar. It renders Fungi, Plants, and Animals as a three-axis triangular balance shape, while Bio Complexity controls the center-to-edge emerald fill from empty at 0 to fully filled at 1000. Nature also derives Bio Disbalance as the difference between the highest and lowest Fungi, Plants, and Animals values.
+The shared upkeep bar uses a flex header row with People, Gold, and Nature resources to the left of a reserved center siege-status slot, and Tech and Aether resources to the right. The center slot shows `SIEGE` only while the city is besieged. The bar also includes a threat meter rendered as the upkeep bar's bottom border. The Nature/Biology indicator renders Fungi, Plants, and Animals as a three-axis triangular balance shape, while Bio Complexity controls the center-to-edge emerald fill from empty at 0 to fully filled at 1000. Nature also derives Bio Disbalance as the difference between the highest and lowest Fungi, Plants, and Animals values.
 
 Homogeneous value definitions include keywords such as `resource`, `output`, `support`, `atmosphere`, `aether`, and `display_orb`. They also carry first-class `displayMethod`, `resolutionMethod`, `roundingMethod`, and optional diminishing-return metadata. The default rounding method is `twoDigitsAfterZero`; People and Gold currently round up to integers, while Nature/Biology values such as Fungi, Plants, Animals, domination, Bio Complexity, and Bio Disbalance resolve and display with two decimal places. The `diminishingReturn` resolution method requires `diminishingReturnPower` and resolves production with `Math.pow(total, diminishingReturnPower)`, for example `0.8` for softened scaling. Modifiers can target entity keywords, entity types, value keywords, and contribution role keywords, so a production bonus can affect ordinary support, magical outputs, wall stats, siege modifiers, monster modifiers, or later value groups through the same resolver. Display formatting metadata must not be placed in keywords or used for gameplay checks.
 
@@ -297,7 +297,7 @@ Demolishing buildings permanently increases the current city's footprint. The in
 
 Current prototype terminology uses city signature and controlled territory:
 
-- City signature is displayed in the shared upkeep bar as a center-expanding threat-level line from the last survived siege signature to current controlled territory. While the city is besieged, the line gains a pulsing red light effect.
+- City signature is displayed as the shared upkeep bar's center-expanding bottom border from the last survived siege signature to current controlled territory. While the city is besieged, the border gains a pulsing red light effect.
 - The meter label uses the clamped fill percentage: low below 20%, elevated below 40%, medium below 60%, moderate below 80%, and high from 80% to full. The fill shifts smoothly from green to red and reveals signature, footprint, and controlled territory values on hover.
 - A city is besieged when signature is greater than controlled territory.
 - The city starts with base wall segments, no committed tower, and an initial besieged state caused by the noise of setting camp.
@@ -341,6 +341,7 @@ City view implementation:
 - City state stores the full generated map through the site's maximum cell radius plus reveal padding. Unclaimed cells are identified with `isUnclaimed`; lost-but-remembered cells use `isLost`. Gameplay selectors expose only active claimed hexes for upkeep, wall, battle, research, progression, and signature calculations.
 - Each city has a maximum cell radius determined when it is created. The current implementation sets it from the `maxCitySize` constant and precomputes a coherent terrain vector map through `maxCitySize + 2`.
 - City expansion is side-based: city state stores the last claimed radius for each big-hex side (`east`, `southEast`, `southWest`, `west`, `northWest`, `northEast`), and the Pixi world renders one semi-transparent arrow over each claimable unclaimed or lost side strip. Confirming an arrow increments that side's stored radius and claims that side's sector of the next big-hex ring, so radius 2 claims 3 cells, radius 3 claims 4 cells, and so on. Neighboring side radii do not move until their own side is expanded. Only the top wall side can move the top frontier upward; other side expansions skip candidate cells above the current wall frontier. A side arrow is disabled when no claimable strip remains. Expansion outside the wall-protected regular hex is allowed while the city is not besieged and does not require a controlled-territory check; during siege, only claims fully inside the protected hex remain available. Reclaiming lost hexes restores their stored terrain, buildings, and structure markers instead of generating empty land.
+- Exodus uses city-scoped Redux arrow data. Each city currently stores one downward/slightly-sideways destination direction; the city canvas projects that distant world target onto the screen border and shows the Exodus pointer only while the lower shaded unclaimed row is visible.
 - Normal city hexes use city building data.
 - The top hex row is reserved for wall hexes and uses the wall build catalog.
 - Wall hexes have separate wall-segment and wall-top slots. Wall segments are replaced in place: the current segment is hidden from the wall list, choosing a different segment increases city footprint as if the previous segment were demolished. Wall-top occupants follow the city-building rebuild rule: a tower mount or wall superstructure must be demolished before another wall-top detail can be built.

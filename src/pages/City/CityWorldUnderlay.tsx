@@ -1,14 +1,23 @@
 import {type CSSProperties, useCallback, useEffect, useMemo, useRef, useState} from "react";
-import CityHex from "./Components/CityHex/CityHex.tsx";
+import CityHex, {type CityExodusPointerView} from "./Components/CityHex/CityHex.tsx";
 import * as s from "./CityWorldUnderlay.css.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
 import {
     selectAllCityHexes,
     selectCityBiome,
+    selectCityExodusArrows,
     selectCityExpansionOptions,
     selectCityHexes,
 } from "../../store/city/selectors.ts";
-import {selectCitySignatureStatus, selectTowerAwareCityResolution} from "../../store/upkeep/selectors.ts";
+import {
+    selectCitySignatureStatus,
+    selectControlledTerritory,
+    selectEffectiveWallResolution,
+    selectGlobalModifierApplyContext,
+    selectResolvedEffectiveAvailableTowers,
+    selectResolvedEffectiveActiveTowerDraft,
+    selectTowerAwareCityResolution,
+} from "../../store/upkeep/selectors.ts";
 import {selectIsDebugModeEnabled} from "../../store/debug/selectors.ts";
 import type {HexCell} from "../../models/city/HexGrid.ts";
 import type {CityExpansionOption} from "../../models/city/expansion.ts";
@@ -32,12 +41,6 @@ import {createBattlefieldTerrainHexes} from "../Battle/battlefieldTerrain.ts";
 import type {BattleWallSegment} from "../../models/battle/wallSegment.ts";
 import {axialCoordinateToPixelPosition} from "./Components/CityHex/hexUtils.ts";
 import {
-    selectControlledTerritory,
-    selectEffectiveWallResolution,
-    selectResolvedEffectiveAvailableTowers,
-    selectResolvedEffectiveActiveTowerDraft,
-} from "../../store/upkeep/selectors.ts";
-import {
     selectControlledTerritoryGrowthStep,
     selectMonsterModifierValues,
     selectSiegeModifierValues,
@@ -56,7 +59,12 @@ import type {CityResolution} from "../../models/city/Adjancency.ts";
 import {WALL_SUPERSTRUCTURE_BUILDINGS, isWallTopTower} from "../../data/wallSuperstructures/index.ts";
 import type {BattleMetrics, BattleResult} from "../../models/battle/world.ts";
 import {recordControlledTerritoryReached, recordLastSiegeSignature} from "../../store/upkeep/slice.ts";
-import {loseUnprotectedCityTerritory, recordSurvivedSiege} from "../../store/city/slice.ts";
+import {
+    initializeCityExodusArrows,
+    loseUnprotectedCityTerritory,
+    recordSurvivedSiege,
+    resetCityForMigration,
+} from "../../store/city/slice.ts";
 import {addNotificationHistoryEntry, enqueueGlobalSignal} from "../../store/globalEvents/slice.ts";
 import {sendNotification} from "../../lib/notifications/eventBus.ts";
 import type {CityBattleRuntimeConfig, TowerPreviewRuntimeConfig} from "../Battle/battleRuntime.ts";
@@ -65,12 +73,16 @@ import {selectWorldViewMode} from "../../store/worldView/selectors.ts";
 import {setWorldViewMode} from "../../store/worldView/slice.ts";
 import {selectActiveTower, selectAvailableTowerList} from "../../store/towers/selectors.ts";
 import {getTowerAnchorPosition} from "../Battle/ui/BattleStage.tsx";
+import {ConfirmationModal} from "../../components/ConfirmationModal.tsx";
+import {selectGlobalSignalRequirementSnapshot} from "../../store/globalEvents/selectors.ts";
+import {resetWallForMigration} from "../../store/wall/slice.ts";
 
 type BattleMode = "siege" | "pressure";
 
 const SIEGE_REPELLED_MESSAGE = "Siege repelled. City now controls more territory.";
 const SIEGE_TERRITORY_LOST_MESSAGE = "Siege overwhelmed city defense and we had to fall back to protected hexes behind the wall";
 const SIEGE_NOT_LIFTED_MESSAGE = "City where not able to lift the siege. There are still monster waiting behind the wall.";
+const EXODUS_MESSAGE = "Are you ready to abandon city and move on in search for a better place?";
 const BATTLEFIELD_UNTARGETABLE_ENTRY_HEXES = 3;
 
 function toPercent(value: number, max: number) {
@@ -89,6 +101,7 @@ export function CityWorldUnderlay({
     const allHexes = useTypedSelector(selectAllCityHexes);
     const hexes = useTypedSelector(selectCityHexes);
     const cityBiome = useTypedSelector(selectCityBiome);
+    const exodusArrows = useTypedSelector(selectCityExodusArrows);
     const cityTerrainVectorMap = useTypedSelector(state => state.city.terrainVectorMap);
     const cityExpansionOptions = useTypedSelector(selectCityExpansionOptions);
     const signatureStatus = useTypedSelector(selectCitySignatureStatus);
@@ -104,12 +117,16 @@ export function CityWorldUnderlay({
     const siegeModifierValues = useTypedSelector(selectSiegeModifierValues);
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const worldViewMode = useTypedSelector(selectWorldViewMode);
+    const modifierContext = useTypedSelector(selectGlobalModifierApplyContext);
+    const requirementSnapshot = useTypedSelector(selectGlobalSignalRequirementSnapshot);
     const {selectedHex, setConfirmingExpansionSide, setSelectedHex} = useCityCanvasInteraction();
     const [battleMode, setBattleMode] = useState<BattleMode>(() => signatureStatus.isBesieged ? "siege" : "pressure");
     const [battleRunId, setBattleRunId] = useState(0);
     const [retreatEnemiesSignal, setRetreatEnemiesSignal] = useState(0);
     const [pendingTerritoryLossFailureId, setPendingTerritoryLossFailureId] = useState(0);
     const [clearSelectionSignal, setClearSelectionSignal] = useState(0);
+    const [exodusPointers, setExodusPointers] = useState<CityExodusPointerView[]>([]);
+    const [isConfirmingExodus, setIsConfirmingExodus] = useState(false);
     const [cameraFocusRequest, setCameraFocusRequest] = useState<{target: WorldViewMode; id: number; focusCellKey?: string | null}>({
         target: "city",
         id: 0,
@@ -121,6 +138,11 @@ export function CityWorldUnderlay({
     const towerPreviewRuntimeIsActive = interactive && worldViewMode === "tower";
     const previousBattleRuntimeIsActiveRef = useRef(battleRuntimeIsActive);
     const protectedCityRadius = getProtectedCityRadius(allHexes);
+    useEffect(() => {
+        if (exodusArrows.length > 0) return;
+
+        dispatch(initializeCityExodusArrows());
+    }, [dispatch, exodusArrows.length]);
     const occupiedCellKeys = useMemo(
         () => new Set(allHexes.filter(hex => !hex.isUnclaimed).map(hex => hex.cellKey)),
         [allHexes],
@@ -557,6 +579,36 @@ export function CityWorldUnderlay({
         setClearSelectionSignal(signal => signal + 1);
     }, [setConfirmingExpansionSide, setSelectedHex]);
 
+    const handleExodusPointerChange = useCallback((nextPointers: CityExodusPointerView[]) => {
+        setExodusPointers(currentPointers => (
+            areExodusPointersEqual(currentPointers, nextPointers)
+                ? currentPointers
+                : nextPointers
+        ));
+    }, []);
+
+    const handleExodusConfirm = useCallback(() => {
+        dispatch(enqueueGlobalSignal({
+            signal: {type: "migration"},
+            requirementSnapshot,
+            modifierContext,
+        }));
+        dispatch(enqueueGlobalSignal({
+            signal: {type: "cityAbandoned"},
+            requirementSnapshot,
+            modifierContext,
+        }));
+        dispatch(enqueueGlobalSignal({type: "cityMigrated"}));
+        dispatch(resetCityForMigration());
+        dispatch(resetWallForMigration());
+        setIsConfirmingExodus(false);
+        sendNotification({
+            title: "Exodus Complete",
+            message: "The old city has been abandoned. A new settlement begins.",
+            scheme: "warning",
+        });
+    }, [dispatch, modifierContext, requirementSnapshot]);
+
     const requestWorldViewMode = useCallback((mode: WorldViewMode) => {
         if (mode === "battle") {
             clearSelectedHex();
@@ -619,6 +671,8 @@ export function CityWorldUnderlay({
                     battlefieldHexes={battlefieldHexes}
                     battlefieldCovered={!hasBuiltEffectiveTower}
                     battleRuntime={battleRuntime}
+                    exodusArrows={exodusArrows}
+                    onExodusPointerChange={handleExodusPointerChange}
                     cameraFocusRequest={cameraFocusRequest}
                     clearSelectionSignal={clearSelectionSignal}
                     selectedCellKey={selectedHex?.cellKey ?? null}
@@ -626,6 +680,33 @@ export function CityWorldUnderlay({
                     onSelect={selectHex}
                 />
             </div>
+            {interactive && exodusPointers.map(pointer => (
+                <button
+                    key={pointer.id}
+                    className={s.exodusPointer}
+                    type="button"
+                    aria-label="Exodus"
+                    title="Exodus"
+                    style={{
+                        left: pointer.x,
+                        top: pointer.y,
+                        transform: `translate(-50%, -50%) rotate(${pointer.rotationDegrees}deg)`,
+                        opacity: pointer.visible ? 1 : 0,
+                    }}
+                    onClick={() => setIsConfirmingExodus(true)}
+                >
+                    <span className={s.exodusPointerGlyph} aria-hidden />
+                </button>
+            ))}
+            {isConfirmingExodus && (
+                <ConfirmationModal
+                    title="Exodus?"
+                    message={EXODUS_MESSAGE}
+                    confirmLabel="Exodus"
+                    onCancel={() => setIsConfirmingExodus(false)}
+                    onConfirm={handleExodusConfirm}
+                />
+            )}
             {battleRuntimeIsActive && battleRuntime && (
                 <>
                     {isSiege && (
@@ -843,6 +924,25 @@ function getTowerBattlefieldRange(stats: TowerStatsResolved) {
         stats.singleTargetDotRange,
         stats.singleTargetStunRange,
     );
+}
+
+function areExodusPointersEqual(
+    left: readonly CityExodusPointerView[],
+    right: readonly CityExodusPointerView[],
+) {
+    if (left.length !== right.length) return false;
+
+    return left.every((leftPointer, index) => {
+        const rightPointer = right[index];
+        return Boolean(
+            rightPointer
+            && leftPointer.id === rightPointer.id
+            && leftPointer.visible === rightPointer.visible
+            && Math.abs(leftPointer.x - rightPointer.x) < 0.5
+            && Math.abs(leftPointer.y - rightPointer.y) < 0.5
+            && Math.abs(leftPointer.rotationDegrees - rightPointer.rotationDegrees) < 0.5
+        );
+    });
 }
 
 function countHexesLostToFailedSiege(hexes: readonly HexCell[]) {

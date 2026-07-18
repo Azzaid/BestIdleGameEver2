@@ -78,6 +78,7 @@ Current implementation note, 2026-06-24:
 
 - The City route renders an SVG hex city with clickable city and wall tiles.
 - Each city stores a random biome. Exodus/migration creates a new city and rerolls that biome.
+- Each city stores its Exodus pointer directions. The current city view renders one screen-border pointer toward a distant lower/sidelong destination, and only while the lower shaded unclaimed row is visible.
 - Each city stores its maximum size and a generated terrain vector map out to that maximum plus two surrounding reveal rings. New cities currently use the `maxCitySize` constant for that maximum.
 - Each hex stores its own terrain background sprite id and background vector from the city terrain vector map. The City route draws that per-hex background clipped to the hex instead of relying on one global city image.
 - City state stores both claimed cells and two surrounding unclaimed rings. Unclaimed cells are regular hex records with `isUnclaimed: true`; gameplay selectors filter them out until expansion claims them.

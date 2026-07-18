@@ -55,6 +55,7 @@ import {
 import {GLOBAL_MODIFIERS} from "../../data/globalModifiers/index.ts";
 import {resolveGlobalModifierEffects} from "../../models/globalEvents.ts";
 import {selectActiveGlobalModifiers, selectUnseenHistoryEntryIds} from "../../store/globalEvents/selectors.ts";
+import {selectUnreadNotificationCount} from "../../store/notifications/selectors.ts";
 import {
     selectRequirementResolutionData,
     selectUnlockedBuildingIds,
@@ -121,6 +122,8 @@ const CityPage = ({
     const requirementResolutionData = useTypedSelector(selectRequirementResolutionData);
     const activeGlobalModifiers = useTypedSelector(selectActiveGlobalModifiers);
     const unseenHistoryEntryCount = useTypedSelector(selectUnseenHistoryEntryIds).length;
+    const unreadNotificationCount = useTypedSelector(selectUnreadNotificationCount);
+    const unseenBookEntryCount = unseenHistoryEntryCount + unreadNotificationCount;
     const isDebugModeEnabled = useTypedSelector(selectIsDebugModeEnabled);
     const {
         selectedHex,
@@ -391,14 +394,14 @@ const CityPage = ({
             <button
                 className={s.historyBookButton}
                 type="button"
-                aria-label={unseenHistoryEntryCount > 0 ? `Open history, ${unseenHistoryEntryCount} new entries` : "Open history"}
-                title={unseenHistoryEntryCount > 0 ? `${unseenHistoryEntryCount} new history entries` : "Open history"}
+                aria-label={unseenBookEntryCount > 0 ? `Open history, ${unseenBookEntryCount} new entries` : "Open history"}
+                title={unseenBookEntryCount > 0 ? `${unseenBookEntryCount} new entries` : "Open history"}
                 onClick={onHistoryOpen}
             >
                 <BookOpenIcon />
-                {unseenHistoryEntryCount > 0 && (
+                {unseenBookEntryCount > 0 && (
                     <span className={s.historyBookBadge} aria-hidden>
-                        {unseenHistoryEntryCount > 9 ? "9+" : unseenHistoryEntryCount}
+                        {unseenBookEntryCount > 9 ? "9+" : unseenBookEntryCount}
                     </span>
                 )}
             </button>
@@ -538,6 +541,25 @@ function BrainIcon() {
     );
 }
 
+function PlanetIcon() {
+    return (
+        <svg
+            className={s.cityModalButtonIcon}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
+            <circle cx="12" cy="12" r="6.2" />
+            <path d="M3.7 14.4c1.1 1.9 5.2 2 9.2.1s6.4-5.1 5.3-7" />
+            <path d="M20.3 9.6c-1.1-1.9-5.2-2-9.2-.1s-6.4 5.1-5.3 7" />
+        </svg>
+    );
+}
+
 function getProtectedCityRadius(hexes: readonly HexCell[]): number {
     const activeWallHexes = hexes.filter(hex => (
         !hex.isUnclaimed
@@ -591,7 +613,7 @@ function GlobalEffectsDrawer({
                 title={isOpen ? "Hide global effects" : "Show global effects"}
                 onClick={onToggle}
             >
-                {isOpen ? ">" : "<"}
+                <PlanetIcon />
             </button>
             <div className={s.globalEffectsPanel}>
                 <div className={s.selectionHeader}>
@@ -602,7 +624,7 @@ function GlobalEffectsDrawer({
                 {modifierEntries.length ? (
                     <div className={s.globalModifierList}>
                         {modifierEntries.map(({definition, instance, effects}) => (
-                            <article key={definition.id} className={s.globalModifierCard}>
+                            <article key={definition.id} className={`${s.globalModifierCard} ${s.panelFrame[definition.vector ?? DEVELOPMENT_VECTORS.neutral]}`}>
                                 <div className={s.globalModifierHeader}>
                                     <h3 className={s.globalModifierTitle}>{definition.title}</h3>
                                     <span className={s.selectionCoordinates}>x{instance.appliedCount}</span>
@@ -641,7 +663,7 @@ function GlobalEffectList({effects}: {effects: HomogeneousValueEffect[]}) {
                 const definition = getHomogeneousValueDefinition(effect.valueId);
 
                 return (
-                    <div key={key} className={s.metricRow}>
+                    <div key={key} className={`${s.metricRow} ${s.metricRowFrame[effect.vector ?? DEVELOPMENT_VECTORS.neutral]}`}>
                         <dt>{definition.label}</dt>
                         <dd>{formatGlobalEffectAmount(effect, additive, multiplier)}</dd>
                     </div>

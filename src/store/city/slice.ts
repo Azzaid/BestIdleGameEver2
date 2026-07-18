@@ -37,6 +37,9 @@ import {
 } from "../../models/city/expansion.ts";
 
 const UNCLAIMED_REVEAL_RING_COUNT = 2;
+const INITIAL_EXODUS_ARROW_COUNT = 1;
+const EXODUS_SIDEWAYS_DRIFT = 0.62;
+const EXODUS_MIN_DOWNWARD_PULL = 0.78;
 
 const getTerrainBackground = (biome: CityBiome, isUnclaimed: boolean, vector: DevelopmentVectorValue) => selectCityHexBackgroundSprite(
     CITY_HEX_BACKGROUND_SPRITE_POOL,
@@ -55,6 +58,20 @@ const getBuildingUnderlayBackground = (biome: CityBiome, vector: DevelopmentVect
     Math.random,
     DEFAULT_INITIAL_CITY_BIOME,
 );
+
+const createExodusArrows = (count = INITIAL_EXODUS_ARROW_COUNT) => Array.from({length: count}, (_, index) => {
+    const x = (Math.random() * 2 - 1) * EXODUS_SIDEWAYS_DRIFT;
+    const y = EXODUS_MIN_DOWNWARD_PULL + Math.random() * (1 - EXODUS_MIN_DOWNWARD_PULL);
+    const length = Math.hypot(x, y) || 1;
+
+    return {
+        id: `exodus-${index + 1}`,
+        direction: {
+            x: x / length,
+            y: y / length,
+        },
+    };
+});
 
 const getInitialHexes = ((
     cityRadius=INITIAL_CITY_CELL_RADIUS,
@@ -212,6 +229,7 @@ const getInitialState = (biome: CityBiome): CityState => {
             backgroundId: DEFAULT_BATTLE_BACKGROUND_ID,
             detailSeed: 1,
         },
+        exodusArrows: createExodusArrows(),
     };
 };
 
@@ -396,6 +414,11 @@ export const citySlice = createSlice({
                 }
             });
         },
+        initializeCityExodusArrows: (state) => {
+            if (state.exodusArrows?.length) return;
+
+            state.exodusArrows = createExodusArrows();
+        },
         demolishHex: (state, action: PayloadAction<{cellKey: string}>) => {
             const targetHex = state.hexes.find(hex => hex.cellKey === action.payload.cellKey);
             if (!targetHex || targetHex.isUnclaimed || targetHex.kind !== "city" || (!targetHex.buildingKey && !targetHex.partOfStructureId)) return;
@@ -446,6 +469,7 @@ export const {
     loseUnprotectedCityTerritory,
     expandCityRadius,
     expandCitySide,
+    initializeCityExodusArrows,
     recordSurvivedSiege,
     resetCityForMigration,
 } = citySlice.actions

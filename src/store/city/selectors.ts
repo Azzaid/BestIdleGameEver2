@@ -40,6 +40,8 @@ export const selectCityBiome = (state: RootState) => state.city.biome;
 
 export const selectCityBattlefield = (state: RootState) => state.city.battlefield;
 
+export const selectCityExodusArrows = (state: RootState) => state.city.exodusArrows ?? [];
+
 export const selectCitySideHexes = createSelector(
     [selectCityCellRadius],
     (cellRadius) => cellRadius + 1

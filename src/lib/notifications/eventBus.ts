@@ -14,7 +14,7 @@ function uid(): string {
 
 /**
  * Send a notification from anywhere in the app.
- * Listeners (NotificationCenter) will receive it and display toast + archive it.
+ * Listeners (NotificationCenter) will receive it and display a toast + store it.
  */
 export function sendNotification(payload: NewNotification): string {
   const id = uid();

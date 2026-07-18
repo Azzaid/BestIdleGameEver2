@@ -26,8 +26,14 @@ export const upkeepBar = style([
     color: vars.color.text.heading,
     gap: 0,
     alignItems: 'stretch',
-    borderBottom: `1px solid ${vars.color.border.strong}`,
+    borderBottom: 0,
+    boxShadow: 'none',
     overflow: 'visible',
+    selectors: {
+        '&::before': {
+            borderBottom: 0,
+        },
+    },
     '@media': {
         '(max-width: 760px)': {
             minHeight: '42px',
@@ -63,6 +69,46 @@ export const resourceRow = style({
     },
 });
 
+export const headerSide = style({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    flex: '1 1 0',
+    minWidth: 0,
+    '@media': {
+        '(max-width: 760px)': {
+            gap: '8px',
+            alignItems: 'stretch',
+        },
+    },
+});
+
+export const siegeStatusSlot = style({
+    flex: '0 0 clamp(88px, 12vw, 150px)',
+    minWidth: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'stretch',
+    pointerEvents: 'none',
+    '@media': {
+        '(max-width: 520px)': {
+            order: 3,
+            flex: '1 1 100%',
+            minHeight: '24px',
+        },
+    },
+});
+
+export const siegeStatusText = style({
+    color: vars.color.state.error,
+    fontSize: '0.9rem',
+    fontWeight: 950,
+    lineHeight: 1,
+    letterSpacing: 0,
+    textShadow: '0 0 10px rgba(255, 42, 42, 0.68), 0 0 18px rgba(255, 42, 42, 0.36)',
+});
+
 export const rightSlot = style({
     marginLeft: 'auto',
     flex: '0 0 auto',
@@ -95,10 +141,14 @@ export const resourceGroup = style({
     },
 });
 
+export const resourceGroupRight = style({
+    justifyContent: 'flex-end',
+});
+
 export const rightGroup = style({
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     gap: '10px',
     flex: '1 1 0',
     minWidth: 0,
@@ -339,7 +389,7 @@ export const aetherTooltipRow = style({
 
 export const signatureMeter = style({
     position: 'relative',
-    height: '12px',
+    height: '8px',
     width: '100%',
     outline: 'none',
     zIndex: 4,
@@ -370,18 +420,15 @@ export const signatureMeterTitleSiege = style([
 
 export const signatureTrack = style({
     position: 'absolute',
-    left: 'max(8px, env(safe-area-inset-left, 0px))',
-    right: 'max(8px, env(safe-area-inset-right, 0px))',
-    top: '1px',
+    inset: 0,
     height: '8px',
-    borderRadius: '999px',
+    borderRadius: 0,
     overflow: 'hidden',
     background: 'rgb(43 48 55 / 0.32)',
-    border: `1px solid rgb(255 255 255 / 0.13)`,
+    border: 0,
     selectors: {
         [`${signatureMeterSieged} &`]: {
             background: 'rgb(70 20 20 / 0.48)',
-            borderColor: 'rgb(255 72 72 / 0.38)',
             boxShadow: '0 0 10px rgba(255, 42, 42, 0.24)',
         },
     },
@@ -393,7 +440,7 @@ export const signatureFill = style({
     left: '50%',
     height: '100%',
     maxWidth: '100%',
-    borderRadius: '999px',
+    borderRadius: 0,
     transform: 'translateX(-50%)',
     transition: 'width 180ms ease, background-color 180ms ease, box-shadow 180ms ease',
 });

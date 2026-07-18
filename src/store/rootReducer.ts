@@ -9,6 +9,7 @@ import debugSlice from "./debug/slice.ts";
 import unlocksSlice from "./unlocks/slice.ts";
 import globalEventsSlice from "./globalEvents/slice.ts";
 import worldViewSlice from "./worldView/slice.ts";
+import notificationsSlice from "./notifications/slice.ts";
 
 export const rootReducer = combineSlices(
     cityReducer,
@@ -19,5 +20,6 @@ export const rootReducer = combineSlices(
     debugSlice,
     unlocksSlice,
     globalEventsSlice,
-    worldViewSlice
+    worldViewSlice,
+    notificationsSlice
 );

@@ -13,6 +13,47 @@ export const cityCanvas = style({
     height: "100%",
 });
 
+export const exodusPointer = style({
+    position: "absolute",
+    zIndex: 3,
+    width: "52px",
+    height: "52px",
+    display: "grid",
+    placeItems: "center",
+    padding: 0,
+    border: 0,
+    borderRadius: "50%",
+    background: "transparent",
+    color: vars.color.state.warning,
+    cursor: "pointer",
+    filter: "drop-shadow(0 3px 7px rgba(0, 0, 0, 0.76)) drop-shadow(0 0 2px rgba(0, 0, 0, 0.96))",
+    transformOrigin: "50% 50%",
+    transition: "opacity 160ms ease, filter 140ms ease",
+    selectors: {
+        "&:hover": {
+            color: vars.color.text.heading,
+            filter: "drop-shadow(0 4px 9px rgba(0, 0, 0, 0.86)) drop-shadow(0 0 7px rgba(255, 190, 94, 0.58))",
+        },
+        "&:focus-visible": {
+            outline: `2px solid ${vars.color.border.focus}`,
+            outlineOffset: "2px",
+        },
+    },
+});
+
+export const exodusPointerGlyph = style({
+    width: 0,
+    height: 0,
+    borderLeft: "15px solid transparent",
+    borderRight: "15px solid transparent",
+    borderBottom: "34px solid currentColor",
+    selectors: {
+        [`${exodusPointer}:hover &`]: {
+            transform: "translateY(-2px)",
+        },
+    },
+});
+
 export const battleProgress = style({
     position: "absolute",
     left: "50%",

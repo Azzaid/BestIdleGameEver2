@@ -8,6 +8,14 @@ export interface CityBattlefieldState {
     detailSeed: number;
 }
 
+export interface CityExodusArrowState {
+    id: string;
+    direction: {
+        x: number;
+        y: number;
+    };
+}
+
 export interface CityFrontierRadii {
     east: number;
     southEast: number;
@@ -28,4 +36,5 @@ export interface CityState {
     selectedHex?: AxialCoordinate,
     biome: CityBiome,
     battlefield: CityBattlefieldState,
+    exodusArrows: CityExodusArrowState[],
 }
