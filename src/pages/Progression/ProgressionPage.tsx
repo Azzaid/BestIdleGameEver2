@@ -427,10 +427,6 @@ function getCardClass(
   ].filter(Boolean).join(" ");
 }
 
-function getTowerPartSlot(id: string): string {
-  return TOWER_PARTS_BY_ID[id]?.slot ?? "tower part";
-}
-
 function StatsList({rows}: {rows: readonly DetailRow[]}) {
   return (
     <div className={s.field}>
