@@ -11,6 +11,7 @@ import type {
 } from "../../models/homogeneousValues.ts";
 import type {Requirement} from "../../models/progression/requirements.ts";
 import type {BuildingSpriteMetadata} from "../../models/sprites/buildings/BuildingSpriteMetadata.ts";
+import {getBuildingSpriteSize} from "../../models/sprites/buildings/buildingSpriteLayout.ts";
 import type {WallSpriteMetadata} from "../../models/sprites/walls/WallSpriteAtlas.ts";
 import type {WallTopSpriteMetadata} from "../../models/sprites/wallTops/WallTopSpriteMetadata.ts";
 import {ALL_BUILDING_KEYWORDS} from "../../models/city/Keywords.ts";
@@ -204,6 +205,9 @@ const entityKeywordOptions = Array.from(new Set([
 ])).sort();
 const localDataServerUrl = "http://127.0.0.1:4317";
 const hexRadiusNumberStep = "0.001";
+const visualPreviewZoomMin = 0.25;
+const visualPreviewZoomMax = 8;
+const visualPreviewZoomStep = 0.25;
 
 let nextRowId = 1;
 
@@ -1525,6 +1529,7 @@ function VisualAssetField(props: {
   onRemove: () => void;
 }) {
   const [query, setQuery] = useState("");
+  const [visualZoom, setVisualZoom] = useState(1);
   const previewSrc = props.draft?.previewUrl ?? props.selectedAsset?.src;
   const previewLabel = props.draft?.file.name ?? props.selectedAsset?.label ?? props.value;
   const previewMetadata = props.draft?.metadata ?? props.metadataOverride ?? props.selectedAsset?.metadata;
@@ -1534,7 +1539,16 @@ function VisualAssetField(props: {
   const towerPartRenderedSize = towerPartPreviewMetadata
     ? getTowerVisualRenderedSize(towerPartPreviewMetadata)
     : undefined;
-  const previewImageStyle = previewMetadata && isSizedSpriteMetadata(previewMetadata)
+  const buildingPreviewSize = previewMetadata && isBuildingSpriteMetadata(previewMetadata)
+    ? getBuildingSpriteSize(previewMetadata)
+    : undefined;
+  const previewImageStyle = previewMetadata && isBuildingSpriteMetadata(previewMetadata) && buildingPreviewSize
+    ? {
+      width: buildingPreviewSize.width,
+      height: buildingPreviewSize.height,
+      transform: `translate(${previewMetadata.shift.x}px, ${previewMetadata.shift.y}px)`,
+    }
+    : previewMetadata && isSizedSpriteMetadata(previewMetadata)
     ? {
       width: previewMetadata.targetSpriteSize.width,
       height: previewMetadata.targetSpriteSize.height,
@@ -1679,7 +1693,23 @@ function VisualAssetField(props: {
         <div className={s.visualPreviewBox}>
           {previewSrc ? (
             <>
-              <SpriteHexPreview src={previewSrc} alt={previewLabel} imageStyle={previewImageStyle} />
+              <label className={s.field}>
+                <span className={s.label}>Visual Zoom</span>
+                <input
+                  className={s.input}
+                  type="number"
+                  min={visualPreviewZoomMin}
+                  max={visualPreviewZoomMax}
+                  step={visualPreviewZoomStep}
+                  value={visualZoom}
+                  onChange={event => setVisualZoom(clamp(
+                    parsePositiveNumberOrFallback(event.target.value, visualZoom),
+                    visualPreviewZoomMin,
+                    visualPreviewZoomMax,
+                  ))}
+                />
+              </label>
+              <SpriteHexPreview src={previewSrc} alt={previewLabel} imageStyle={previewImageStyle} visualZoom={visualZoom} />
               {previewMetadata && isBuildingSpriteMetadata(previewMetadata) && (
                 <div className={s.row}>
                   <label className={s.field}>
@@ -2980,6 +3010,10 @@ function parseNumberOrFallback(value: string, fallback: number): number {
 function parsePositiveNumberOrFallback(value: string, fallback: number): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
 }
 
 function normalizeDegrees(value: number): number {

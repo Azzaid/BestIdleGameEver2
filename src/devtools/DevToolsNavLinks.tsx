@@ -35,6 +35,9 @@ export default function DevToolsNavLinks() {
         <Link className={appTheme.navBarLink} to="/dev/hex-background-editor">Hex Backgrounds</Link>
       </li>
       <li>
+        <Link className={appTheme.navBarLink} to="/dev/hex-background-lab">Hex Lab</Link>
+      </li>
+      <li>
         <Link className={appTheme.navBarLink} to="/dev/damage-area-vfx">Area VFX</Link>
       </li>
     </>

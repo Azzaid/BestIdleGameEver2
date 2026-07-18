@@ -1,9 +1,12 @@
 import { useId } from "react";
 import * as s from "./BuildingSelector.css";
+import {CITY_HEX_RADIUS, CITY_HEX_WIDTH} from "../../../../data/constants.ts";
 import type {HexTilePreviewProps} from "../../../../models/city/buildingSelector.ts";
 
 export function HexTilePreview({
                                    imageUrl,
+                                   imageZoom = 1,
+                                   imageShift = {x: 0, y: 0},
                                    size = 128,
                                    padding = 0.96,
                                    fit = "cover",
@@ -28,11 +31,13 @@ export function HexTilePreview({
         .map(([x, y]) => `${x},${y}`)
         .join(" ");
 
-    // padded inner box for the image
-    const innerW = 2 * h * padding;
-    const innerH = 2 * r * padding;
-    const innerX = -innerW / 2;
-    const innerY = -innerH / 2;
+    const shiftScale = r / CITY_HEX_RADIUS;
+    const normalizedImageZoom = Number.isFinite(imageZoom)
+        ? Math.max(0.01, imageZoom)
+        : 1;
+    const renderedImageSize = CITY_HEX_WIDTH * padding * normalizedImageZoom * shiftScale;
+    const innerX = -renderedImageSize / 2 + imageShift.x * shiftScale;
+    const innerY = -renderedImageSize / 2 + imageShift.y * shiftScale;
 
     const preserve = fit === "cover" ? "xMidYMid slice" : "xMidYMid meet";
 
@@ -60,8 +65,8 @@ export function HexTilePreview({
                     href={imageUrl}
                     x={innerX}
                     y={innerY}
-                    width={innerW}
-                    height={innerH}
+                    width={renderedImageSize}
+                    height={renderedImageSize}
                     preserveAspectRatio={preserve}
                     clipPath={`url(#hexClip-${clipUid})`}
                 />

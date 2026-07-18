@@ -7,6 +7,7 @@ import ContentPlanPage from "../pages/ContentPlan/ContentPlanPage.tsx";
 import MonsterEditPage from "../pages/MonsterEdit/MonsterEditPage.tsx";
 import GlobalEventsEditorPage from "../pages/GlobalEventsEditor/GlobalEventsEditorPage.tsx";
 import HexBackgroundEditorPage from "../pages/HexBackgroundEditor/HexBackgroundEditorPage.tsx";
+import HexBackgroundLabPage from "../pages/HexBackgroundLab/HexBackgroundLabPage.tsx";
 import HomogeneousValuesEditorPage from "../pages/HomogeneousValuesEditor/HomogeneousValuesEditorPage.tsx";
 import EnemyAnimationSpriteSheetPage from "../pages/EnemyAnimationSpriteSheet/EnemyAnimationSpriteSheetPage.tsx";
 import DamageAreaVfxEditorPage from "../pages/DamageAreaVfxEditor/DamageAreaVfxEditorPage.tsx";
@@ -60,6 +61,10 @@ export default function DevToolsRouteGate({enabled}: {enabled: boolean}) {
     {
       path: "hex-background-editor",
       element: enabled ? <HexBackgroundEditorPage /> : <Navigate to="/city" replace />,
+    },
+    {
+      path: "hex-background-lab",
+      element: enabled ? <HexBackgroundLabPage /> : <Navigate to="/city" replace />,
     },
     {
       path: "enemy-animation-sprites",

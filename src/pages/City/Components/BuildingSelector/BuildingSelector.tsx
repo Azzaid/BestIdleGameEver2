@@ -8,6 +8,7 @@ import {
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
 import {HexTilePreview} from "./HexTilePreview.tsx";
 import {buildingsSpriteAtlas} from "../../../../models/sprites/buildings/buildingsSpriteAtlas.ts";
+import {BUILDING_SPRITE_HEX_WIDTH_RATIO} from "../../../../models/sprites/buildings/buildingSpriteLayout.ts";
 import type {BuildingSelectorProps} from "../../../../models/city/buildingSelector.ts";
 import {
     formatHomogeneousValue,
@@ -80,7 +81,9 @@ export function BuildingSelector({
                     const buildBlockedReason = blocked ? blockedReason : unavailableReason;
                     const buildBlocked = blocked || Boolean(unavailableReason);
                     const hasAdjacencyRules = Boolean(building.effects?.length);
-                    const spriteUrl = buildingsSpriteAtlas[building.vector][building.id]?.src;
+                    const spriteAsset = buildingsSpriteAtlas[building.vector][building.visualAssetId ?? building.id]
+                        ?? buildingsSpriteAtlas[building.vector][building.id];
+                    const spriteUrl = spriteAsset?.src;
 
                     return (
                         <article key={building.id} role="listitem" className={`${s.card} ${s.cardFrame[building.vector]}`} aria-labelledby={`${building.id}-name`}>
@@ -108,7 +111,9 @@ export function BuildingSelector({
                                 <div className={s.previewCol}>
                                     <HexTilePreview
                                         imageUrl={spriteUrl}
-                                        padding={spriteUrl ? 1 : 0.96}
+                                        imageZoom={spriteAsset?.metadata?.zoom}
+                                        imageShift={spriteAsset?.metadata?.shift}
+                                        padding={spriteUrl ? BUILDING_SPRITE_HEX_WIDTH_RATIO : 0.96}
                                         strokeWidth={spriteUrl ? 0 : 3}
                                     />
                                 </div>

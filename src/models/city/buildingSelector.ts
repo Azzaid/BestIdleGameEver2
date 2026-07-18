@@ -10,6 +10,8 @@ export type BuildingSelectorProps = {
 
 export type HexTilePreviewProps = {
     imageUrl?: string;
+    imageZoom?: number;
+    imageShift?: {x: number; y: number};
     size?: number;
     padding?: number;
     fit?: "cover" | "contain";

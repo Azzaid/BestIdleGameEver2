@@ -10,6 +10,7 @@ export const wrapper = style({
     gap: tokens.space.lg,
     minHeight: 0,
     maxHeight: "100%",
+    overflow: "hidden",
     color: vars.color.text.primary,
 });
 
@@ -87,11 +88,15 @@ export const tabCount = style({
 // List grid
 export const list = style({
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))",
+    gridTemplateColumns: "minmax(0, 1fr)",
+    gridAutoRows: "max-content",
     alignContent: "start",
+    alignItems: "start",
     gap: tokens.space.lg,
     minHeight: 0,
-    overflow: "auto",
+    maxHeight: "100%",
+    overflowX: "hidden",
+    overflowY: "auto",
     paddingRight: "2px",
     paddingBottom: "2px",
     scrollbarGutter: "stable",
@@ -110,6 +115,9 @@ export const card = style({
     overflow: "hidden",
     display: "grid",
     gridTemplateRows: "auto auto auto auto",
+    minWidth: 0,
+    height: "max-content",
+    alignSelf: "start",
 });
 
 export const zoneHeader = style({
@@ -157,23 +165,26 @@ export const buildBtn = style({
 // Zone rows
 export const effectsRow = style({
     display: "grid",
-    gridTemplateColumns: "148px minmax(0, 1fr) minmax(0, 1fr)",
+    gridTemplateColumns: "126px minmax(0, 1fr) minmax(0, 1fr)",
     gap: tokens.space.lg,
     padding: `${tokens.space.md} ${tokens.space.lg}`,
     borderBottom: `1px solid ${hud.hudBorder}`,
+    minWidth: 0,
 });
 
 export const zoneRow = style({
     display: "grid",
-    gridTemplateColumns: "148px 1fr",
+    gridTemplateColumns: "126px minmax(0, 1fr)",
     gap: tokens.space.lg,
     padding: `${tokens.space.md} ${tokens.space.lg}`,
     borderBottom: `1px solid ${hud.hudBorder}`,
+    minWidth: 0,
 });
 
 export const previewCol = style({
     display: "grid",
     placeItems: "center",
+    minWidth: 0,
 });
 export const previewColPlaceholder = style({
     visibility: "hidden",
@@ -183,6 +194,7 @@ export const contentCol = style({
     display: "grid",
     alignContent: "start",
     gap: tokens.space.sm,
+    minWidth: 0,
 });
 
 export const sectionTitle = style({
@@ -222,8 +234,11 @@ export const muted = style({
 
 // Preview SVG default tile vars (can be themed)
 export const previewSvg = style({
+    display: "block",
     width: 126,
     height: 126,
+    maxWidth: "100%",
+    boxSizing: "border-box",
     "--tile-fill": hud.hudAccentSoft,
     "--tile-stroke": hud.hudBorder,
 } as React.CSSProperties);

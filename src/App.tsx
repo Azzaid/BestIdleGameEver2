@@ -219,6 +219,7 @@ function GameShell() {
                                               isHistoryOpen={isHistoryModalOpen}
                                               onHistoryOpen={openHistoryModal}
                                               onHistoryClose={() => setIsHistoryModalOpen(false)}
+                                              routeChromeTopInsetPx={cityWorldTopInsetPx}
                                           />,
                                           {worldOverlay: true},
                                       )}
@@ -332,6 +333,7 @@ function AppRoutes() {
           <Route path="/global-events" element={<Navigate to={DevShell ? "/dev/global-events" : "/city"} replace />} />
           <Route path="/homogeneous-values" element={<Navigate to={DevShell ? "/dev/homogeneous-values" : "/city"} replace />} />
           <Route path="/hex-background-editor" element={<Navigate to={DevShell ? "/dev/hex-background-editor" : "/city"} replace />} />
+          <Route path="/hex-background-lab" element={<Navigate to={DevShell ? "/dev/hex-background-lab" : "/city"} replace />} />
           <Route path="/damage-area-vfx" element={<Navigate to={DevShell ? "/dev/damage-area-vfx" : "/city"} replace />} />
           <Route path="/*" element={<GameShell />} />
       </Routes>

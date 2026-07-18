@@ -80,6 +80,7 @@ import {selectWorldViewMode} from "../../store/worldView/selectors.ts";
 import {setWorldViewMode} from "../../store/worldView/slice.ts";
 import HistoryModal from "../History/HistoryPage.tsx";
 import {buildingsSpriteAtlas} from "../../models/sprites/buildings/buildingsSpriteAtlas.ts";
+import {BUILDING_SPRITE_HEX_WIDTH_RATIO} from "../../models/sprites/buildings/buildingSpriteLayout.ts";
 
 const EXPAND_WARNING = "City grows bigger, more noticeable and attracts more monsters";
 const LOST_TERRITORY_BLOCK_REASON = "Lost territory must be reclaimed before it can work, transform, or be rebuilt.";
@@ -89,10 +90,12 @@ const CityPage = ({
     isHistoryOpen = false,
     onHistoryOpen = () => undefined,
     onHistoryClose = () => undefined,
+    routeChromeTopInsetPx = 0,
 }: {
     isHistoryOpen?: boolean;
     onHistoryOpen?: () => void;
     onHistoryClose?: () => void;
+    routeChromeTopInsetPx?: number;
 }) => {
     const dispatch = useTypedDispatch();
     const allHexes = useTypedSelector(selectAllCityHexes);
@@ -474,7 +477,7 @@ const CityPage = ({
                 </section>
             )}
             {isHistoryOpen && (
-                <HistoryModal onClose={onHistoryClose} />
+                <HistoryModal onClose={onHistoryClose} topInsetPx={routeChromeTopInsetPx} />
             )}
             {selectedExpansionOption && (
                 <div className={s.overlayControl}>
@@ -851,9 +854,11 @@ function MultistructureStatus({
                 const transformBlockedReason = blocked ? blockedReason : buildBlockedReason;
                 const missingReason = getMissingStructureReason(candidate.missingBuildingIds);
                 const structureVector = structureBuilding?.vector ?? DEVELOPMENT_VECTORS[candidate.structure.vector];
-                const spriteUrl = structureBuilding
-                    ? buildingsSpriteAtlas[structureBuilding.vector][structureBuilding.id]?.src
+                const spriteAsset = structureBuilding
+                    ? buildingsSpriteAtlas[structureBuilding.vector][structureBuilding.visualAssetId ?? structureBuilding.id]
+                        ?? buildingsSpriteAtlas[structureBuilding.vector][structureBuilding.id]
                     : undefined;
+                const spriteUrl = spriteAsset?.src;
                 const statusLabel = !hasBeenBuiltBefore
                     ? null
                     : isAlreadyTransformed
@@ -904,7 +909,9 @@ function MultistructureStatus({
                                     <div className={buildSelectorStyles.previewCol}>
                                         <HexTilePreview
                                             imageUrl={spriteUrl}
-                                            padding={spriteUrl ? 1 : 0.96}
+                                            imageZoom={spriteAsset?.metadata?.zoom}
+                                            imageShift={spriteAsset?.metadata?.shift}
+                                            padding={spriteUrl ? BUILDING_SPRITE_HEX_WIDTH_RATIO : 0.96}
                                             strokeWidth={spriteUrl ? 0 : 3}
                                             ariaLabel={candidate.structure.name}
                                         />

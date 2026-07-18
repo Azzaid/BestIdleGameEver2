@@ -13,6 +13,13 @@ export const backdrop = style({
   color: vars.color.text.primary,
   pointerEvents: "auto",
   backdropFilter: "blur(4px) saturate(0.92)",
+  '@media': {
+    '(max-width: 760px)': {
+      top: "var(--history-modal-top-inset, 0px)",
+      minHeight: 0,
+      paddingTop: "12px",
+    },
+  },
 });
 
 export const book = style([

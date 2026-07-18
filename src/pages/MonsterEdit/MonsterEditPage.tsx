@@ -80,6 +80,9 @@ type SpriteDraft = {
 };
 
 const localDataServerUrl = "http://127.0.0.1:4317";
+const visualPreviewZoomMin = 0.25;
+const visualPreviewZoomMax = 8;
+const visualPreviewZoomStep = 0.25;
 const rawDefinitionsByRegion: Record<MonsterRegion, readonly MonsterDefinition[]> = {
   wasteland: wastelandEnemyDefinitions as readonly MonsterDefinition[],
 };
@@ -500,6 +503,7 @@ function MonsterVisualAssetField(props: {
   metadata: EnemyVisualMetadata;
 }) {
   const [query, setQuery] = useState("");
+  const [visualZoom, setVisualZoom] = useState(1);
   const previewSrc = props.draft?.previewUrl ?? props.selectedAsset?.src;
   const previewLabel = props.draft?.file.name ?? props.selectedAsset?.label ?? props.value;
   const visibleOptions = props.options
@@ -585,15 +589,34 @@ function MonsterVisualAssetField(props: {
         </div>
         <div className={s.visualPreviewBox}>
           {previewSrc ? (
-            <SpriteHexPreview
-              src={previewSrc}
-              alt={previewLabel}
-              imageStyle={{
-                width: props.metadata.targetSpriteSize?.width,
-                height: props.metadata.targetSpriteSize?.height,
-                transform: `rotate(${props.metadata.rotationDegrees ?? 0}deg)`,
-              }}
-            />
+            <>
+              <label className={s.field}>
+                <span className={s.label}>Visual Zoom</span>
+                <input
+                  className={s.input}
+                  type="number"
+                  min={visualPreviewZoomMin}
+                  max={visualPreviewZoomMax}
+                  step={visualPreviewZoomStep}
+                  value={visualZoom}
+                  onChange={event => setVisualZoom(clamp(
+                    parsePositiveNumberOrFallback(event.target.value, visualZoom),
+                    visualPreviewZoomMin,
+                    visualPreviewZoomMax,
+                  ))}
+                />
+              </label>
+              <SpriteHexPreview
+                src={previewSrc}
+                alt={previewLabel}
+                visualZoom={visualZoom}
+                imageStyle={{
+                  width: props.metadata.targetSpriteSize?.width,
+                  height: props.metadata.targetSpriteSize?.height,
+                  transform: `rotate(${props.metadata.rotationDegrees ?? 0}deg)`,
+                }}
+              />
+            </>
           ) : (
             <p className={s.hint}>No sprite selected.</p>
           )}
@@ -857,6 +880,10 @@ function scaleSpriteSize(sourceSpriteSize: {width: number; height: number}, zoom
 function parsePositiveNumberOrFallback(value: string, fallback: number): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
 }
 
 function fitSpriteSize(sourceSpriteSize: {width: number; height: number}, maxWidth: number, maxHeight: number) {

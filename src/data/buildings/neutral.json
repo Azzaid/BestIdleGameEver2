@@ -81,7 +81,7 @@
   {
     "id": "buildings.neutral.stalkerHut",
     "name": "Stalker Hut",
-    "kind": "building",
+    "kind": "superstructure",
     "description": "Hut of an experienced stalker that can go further and bring more than just scraps.",
     "keywords": [
       "neutral",
@@ -128,7 +128,7 @@
     "visualAssetId": "building_medieval_stalker-hut",
     "requiredBuildingSprites": {
       "buildings.neutral.shelter": "building_medieval_stalker-hut",
-      "buildings.medieval.scrapCollectionPoint": "building_medieval_stalker-hut-from-scrap-collection-point"
+      "buildings.neutral.scrapCollectionPoint": "building_neutral_stalker-hut-from-scrap-collection-point"
     }
   },
   {

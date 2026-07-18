@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState, type CSSProperties} from "react";
 import {ConfirmationModal} from "../../components/ConfirmationModal.tsx";
 import {GLOBAL_EVENTS} from "../../data/globalEvents/index.ts";
 import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
@@ -12,7 +12,13 @@ import {markGlobalHistorySeen} from "../../store/globalEvents/slice.ts";
 import type {GlobalEventHistoryEntry} from "../../models/store/globalEvents.ts";
 import * as s from "./HistoryPage.css.ts";
 
-export default function HistoryModal({onClose}: {onClose: () => void}) {
+export default function HistoryModal({
+  onClose,
+  topInsetPx = 0,
+}: {
+  onClose: () => void;
+  topInsetPx?: number;
+}) {
   const dispatch = useTypedDispatch();
   const eventHistoryEntries = useTypedSelector(selectGlobalEventHistoryEntries);
   const foreseenEventIds = useTypedSelector(selectForeseenGlobalEventIds);
@@ -76,7 +82,12 @@ export default function HistoryModal({onClose}: {onClose: () => void}) {
   }));
 
   return (
-    <section className={s.backdrop} role="presentation" onClick={onClose}>
+    <section
+      className={s.backdrop}
+      role="presentation"
+      style={{"--history-modal-top-inset": `${topInsetPx}px`} as CSSProperties}
+      onClick={onClose}
+    >
       <article
         className={s.book}
         role="dialog"

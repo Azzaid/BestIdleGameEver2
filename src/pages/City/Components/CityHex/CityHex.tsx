@@ -20,6 +20,7 @@ import {BUILDINGS_ATLAS, STRUCTURES_BY_ID} from "../../../../data/buildings/inde
 import {WALL_SEGMENT_BUILDINGS} from "../../../../data/wallSegments/index.ts";
 import {WALL_SUPERSTRUCTURE_BUILDINGS} from "../../../../data/wallSuperstructures/index.ts";
 import {CITY_HEX_RADIUS} from "../../../../data/constants.ts";
+import {getBuildingSpriteSize} from "../../../../models/sprites/buildings/buildingSpriteLayout.ts";
 import type {CityExpansionOption, CityExpansionSideId} from "../../../../models/city/expansion.ts";
 import type {BattlefieldTerrainHex} from "../../../../models/battle/battlefieldTerrain.ts";
 import {mountCityBattleRuntime, type CityBattleRuntimeConfig, type MountedCityBattleRuntime} from "../../../Battle/battleRuntime.ts";
@@ -28,9 +29,7 @@ const HEX_RADIUS_PX = CITY_HEX_RADIUS;
 const HEX_STROKE_WIDTH = 3;
 const HEX_EDGE_GAP_PX = 0;
 const HEX_WIDTH = Math.sqrt(3) * HEX_RADIUS_PX;
-const SPRITE_PADDING = 0.98;
-const SPRITE_WIDTH = HEX_WIDTH * SPRITE_PADDING;
-const SPRITE_HEIGHT = SPRITE_WIDTH;
+const FALLBACK_SPRITE_SIZE = getBuildingSpriteSize();
 const HEX_BACKGROUND_WIDTH = HEX_WIDTH * 1.04;
 const HEX_BACKGROUND_HEIGHT = HEX_RADIUS_PX * 2.08;
 const EXPANSION_ARROW_HALF_WIDTH = HEX_WIDTH;
@@ -1268,15 +1267,13 @@ function getForegroundSpriteInfo(cell: PreparedHexCell) {
         const asset = spriteLookupKey ? citySpriteAtlas?.[spriteLookupKey] : undefined;
         if (!asset?.src) return null;
 
-        const spriteZoom = Number.isFinite(asset.metadata?.zoom)
-            ? Math.max(0.01, asset.metadata?.zoom ?? 1)
-            : 1;
         const shift = asset.metadata?.shift ?? {x: 0, y: 0};
+        const spriteSize = getBuildingSpriteSize(asset.metadata);
 
         return {
             src: asset.src,
-            width: SPRITE_WIDTH * spriteZoom,
-            height: SPRITE_HEIGHT * spriteZoom,
+            width: spriteSize.width,
+            height: spriteSize.height,
             shiftX: shift.x,
             shiftY: shift.y,
             rotationDegrees: 0,
@@ -1291,8 +1288,8 @@ function getForegroundSpriteInfo(cell: PreparedHexCell) {
 
         return {
             src: asset.src,
-            width: metadata?.targetSpriteSize.width ?? SPRITE_WIDTH,
-            height: metadata?.targetSpriteSize.height ?? SPRITE_HEIGHT,
+            width: metadata?.targetSpriteSize.width ?? FALLBACK_SPRITE_SIZE.width,
+            height: metadata?.targetSpriteSize.height ?? FALLBACK_SPRITE_SIZE.height,
             shiftX: 0,
             shiftY: 0,
             rotationDegrees: metadata?.rotationDegrees ?? 0,
@@ -1312,8 +1309,8 @@ function getWallTopSpriteInfo(cell: PreparedHexCell) {
 
     return {
         src: asset.src,
-        width: metadata?.targetSpriteSize.width ?? SPRITE_WIDTH,
-        height: metadata?.targetSpriteSize.height ?? SPRITE_HEIGHT,
+        width: metadata?.targetSpriteSize.width ?? FALLBACK_SPRITE_SIZE.width,
+        height: metadata?.targetSpriteSize.height ?? FALLBACK_SPRITE_SIZE.height,
         rotationDegrees: metadata?.rotationDegrees ?? 0,
     };
 }

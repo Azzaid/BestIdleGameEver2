@@ -29,6 +29,8 @@ type BuildingDefinition = {
   visualAssetId?: string;
 };
 
+type BuildingExistsRequirement = Extract<Requirement, {type: "buildingExists"}>;
+
 const definitionsByVector: Record<DevelopmentVectorKey, readonly BuildingDefinition[]> = {
   neutral: neutralBuildingDefinitions as readonly BuildingDefinition[],
   tech: techBuildingDefinitions as readonly BuildingDefinition[],
@@ -146,8 +148,8 @@ function getBuildRequirements(definition: BuildingDefinition): Requirement[] | u
   return buildRequirements.length ? buildRequirements : undefined;
 }
 
-function getRequiredBuildingRequirements(requiredBuildingIds: readonly string[]): Requirement[] {
-  return [...new Set(requiredBuildingIds)].map((buildingId): Requirement => ({
+function getRequiredBuildingRequirements(requiredBuildingIds: readonly string[]): BuildingExistsRequirement[] {
+  return [...new Set(requiredBuildingIds)].map((buildingId): BuildingExistsRequirement => ({
     type: "buildingExists",
     buildingId,
   }));
