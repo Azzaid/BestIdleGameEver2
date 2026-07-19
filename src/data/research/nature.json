@@ -83,9 +83,9 @@
     ]
   },
   {
-    "id": "research.nature.spores",
-    "name": "Spores",
-    "summary": "Certain mushrooms can emit clouds of spores and wind carry them for a great distances",
+    "id": "research.nature.poisonousSpores",
+    "name": "Poisonous spores",
+    "summary": "Certain mushrooms can emit clouds of poisonous spores and wind can carry them for a great distances.",
     "requirements": [
       {
         "type": "technologyUnlocked",
@@ -98,7 +98,8 @@
     ],
     "keywords": [
       "nature"
-    ]
+    ],
+    "parentId": "research.nature.mushrooms"
   },
   {
     "id": "research.nature.livingWood",
@@ -119,20 +120,22 @@
     ]
   },
   {
-    "id": "research.nature.tentacles",
+    "id": "research.nature.fleshGrafters",
     "parentId": "research.nature.animals",
-    "name": "Tentacles",
-    "summary": "Some animals are malformed beyond recognition and use tentacles to attack everything they see. But they still can be used if you place them on the wall why they a still young.",
+    "name": "Flesh grafters",
+    "summary": "Some animals learned to shape and change flesh to build hives and defence structures.",
     "requirements": [
       {
         "type": "technologyUnlocked",
         "technologyId": "research.nature.animals"
       },
       {
-        "type": "homogeneousValueAtLeast",
-        "valueId": "resource.animals",
-        "amount": 2
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.fleshyHivesProtocolony"
       }
+    ],
+    "keywords": [
+      "nature"
     ]
   },
   {

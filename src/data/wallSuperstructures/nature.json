@@ -47,7 +47,7 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.tentacles"
+        "technologyId": "research.nature.fleshGrafters"
       }
     ],
     "buildRequirements": [
@@ -70,7 +70,7 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.spores"
+        "technologyId": "research.nature.poisonousSpores"
       }
     ],
     "buildRequirements": [
@@ -127,7 +127,7 @@
       {
         "valueId": "tower.zoneDotZoneSize",
         "derivedFrom": "resource.fungi",
-        "derivedMultiplicator": 10,
+        "derivedMultiplicator": 0.1,
         "additionalKeywords": [
           "production"
         ]

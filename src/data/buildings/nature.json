@@ -144,7 +144,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 3
+        "additive": 2
       },
       {
         "valueId": "resource.people",
@@ -244,14 +244,14 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.mushrooms"
+        "technologyId": "research.nature.poisonousSpores"
       }
     ],
     "buildRequirements": [
       {
         "type": "homogeneousValueAtLeast",
         "valueId": "nature.bioComplexity",
-        "amount": 6
+        "amount": 4
       }
     ],
     "values": [
@@ -267,7 +267,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 8
+        "additive": 6
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
       }
     ],
     "effects": [
@@ -336,7 +343,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 6
+        "additive": 4
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
       }
     ],
     "effects": [
@@ -370,14 +384,14 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.mushrooms"
+        "technologyId": "research.nature.poisonousSpores"
       }
     ],
     "buildRequirements": [
       {
         "type": "homogeneousValueAtLeast",
         "valueId": "resource.fungi",
-        "amount": 9
+        "amount": 11
       }
     ],
     "values": [
@@ -393,7 +407,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 10
+        "additive": 8
       }
     ],
     "effects": [
@@ -436,7 +450,7 @@
       "buildings.nature.bigPoisonousMushrooms"
     ],
     "requiredBuildingSprites": {
-      "buildings.nature.bigPoisonousMushrooms": "building_nature_mature-poisonous-mushrooms-from-big-poisonous-mushrooms"
+      "buildings.nature.mycelium": "building_nature_mature-poisonous-mushrooms-from-mycelium"
     },
     "keywords": [
       "nature",
@@ -445,14 +459,14 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.mushrooms"
+        "technologyId": "research.nature.poisonousSpores"
       }
     ],
     "buildRequirements": [
       {
         "type": "homogeneousValueAtLeast",
         "valueId": "resource.fungi",
-        "amount": 12
+        "amount": 15
       }
     ],
     "values": [
@@ -468,7 +482,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 15
+        "additive": 10
       }
     ],
     "hint": "Should finally ripe when fungi is strong.",
@@ -765,7 +779,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 4
+        "additive": 2
       },
       {
         "valueId": "resource.animals",
@@ -793,7 +807,7 @@
   },
   {
     "id": "buildings.nature.fleshyHivesProtocolony",
-    "visualAssetId": "building_nature_fleshy-hives-protocolony",
+    "visualAssetId": "buildings.nature.fleshyHivesProtocolonyFromHiveCluster",
     "name": "Fleshy hives protocolony",
     "kind": "superstructure",
     "description": "Bunch of flesh made hives. Small and fragile but inhabitants already capable of pushing enemies back if planted on the wall.",
@@ -818,7 +832,7 @@
       {
         "type": "homogeneousValueAtLeast",
         "valueId": "nature.bioComplexity",
-        "amount": 3
+        "amount": 1
       }
     ],
     "values": [
@@ -834,7 +848,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 6
+        "additive": 4
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
       }
     ],
     "effects": [
@@ -850,7 +871,7 @@
   },
   {
     "id": "buildings.nature.fleshyHivesColony",
-    "visualAssetId": "building_nature_fleshy-hives-colony",
+    "visualAssetId": "buildings.nature.fleshyHivesColonyFromHiveCluster",
     "name": "Fleshy hives Colony",
     "kind": "superstructure",
     "description": "Hives grow bigger.",
@@ -868,14 +889,14 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.animals"
+        "technologyId": "research.nature.fleshGrafters"
       }
     ],
     "buildRequirements": [
       {
         "type": "homogeneousValueAtLeast",
         "valueId": "nature.bioComplexity",
-        "amount": 6
+        "amount": 3
       }
     ],
     "values": [
@@ -891,7 +912,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 8
+        "additive": 6
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
       }
     ],
     "effects": [
@@ -907,7 +935,7 @@
   },
   {
     "id": "buildings.nature.strongFleshyHivesColony",
-    "visualAssetId": "building_nature_strong-fleshy-hives-colony",
+    "visualAssetId": "buildings.nature.strongFleshyHivesColonyFromHiveCluster",
     "name": "Strong fleshy hives colony",
     "kind": "superstructure",
     "description": "Hives grow bigger.",
@@ -925,14 +953,14 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.animals"
+        "technologyId": "research.nature.fleshGrafters"
       }
     ],
     "buildRequirements": [
       {
         "type": "homogeneousValueAtLeast",
         "valueId": "nature.bioComplexity",
-        "amount": 10
+        "amount": 7
       }
     ],
     "values": [
@@ -948,7 +976,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 10
+        "additive": 8
       }
     ],
     "effects": [
@@ -982,14 +1010,14 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.animals"
+        "technologyId": "research.nature.fleshGrafters"
       }
     ],
     "buildRequirements": [
       {
         "type": "homogeneousValueAtLeast",
         "valueId": "nature.bioComplexity",
-        "amount": 15
+        "amount": 10
       }
     ],
     "values": [
@@ -1005,7 +1033,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 12
+        "additive": 10
       }
     ],
     "effects": [
