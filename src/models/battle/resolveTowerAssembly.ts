@@ -193,6 +193,18 @@ export function createTowerDamageProfiles(
       HOMOGENEOUS_VALUE_IDS.towerSingleTargetDotDamage,
       contributions,
     ),
+    singleTargetInfection: createDamageProfile(
+      stats.singleTargetInfectionDamagePerSecond,
+      keywords,
+      HOMOGENEOUS_VALUE_IDS.towerSingleTargetInfectionDamagePerSecond,
+      contributions,
+    ),
+    projectileInfection: createDamageProfile(
+      stats.projectileInfectionDamagePerSecond,
+      keywords,
+      HOMOGENEOUS_VALUE_IDS.towerProjectileInfectionDamagePerSecond,
+      contributions,
+    ),
   };
 }
 

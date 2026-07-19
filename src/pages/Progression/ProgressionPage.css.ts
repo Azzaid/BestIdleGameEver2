@@ -311,6 +311,44 @@ export const cardSubline = style({
   whiteSpace: "nowrap",
 });
 
+export const gateRequirementRow = style({
+  display: "grid",
+  gap: "5px",
+  minWidth: 0,
+});
+
+export const gateRequirementLabel = style({
+  color: vars.color.text.muted,
+  fontSize: "0.66rem",
+  fontWeight: 900,
+  textTransform: "uppercase",
+});
+
+export const gateRequirementChip = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "5px",
+  width: "100%",
+  minWidth: 0,
+  minHeight: "28px",
+  border: `1px solid ${vars.color.border.default}`,
+  borderRadius: "5px",
+  padding: "3px 6px",
+  background: vars.color.background.surface,
+  color: vars.color.text.primary,
+  fontSize: "0.72rem",
+  fontWeight: 800,
+  cursor: "pointer",
+  textAlign: "left",
+  overflowWrap: "anywhere",
+  boxShadow: "inset 3px 0 0 var(--card-color)",
+  selectors: {
+    "&:hover": {
+      borderColor: vars.color.brand.primary,
+    },
+  },
+});
+
 export const towerPartShelf = style({
   display: "grid",
   gap: "5px",

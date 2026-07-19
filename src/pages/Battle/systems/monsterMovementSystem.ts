@@ -1,6 +1,7 @@
 import type { World } from '../../../models/battle/world.ts';
 import type { MovementController } from '../../../models/battle/movement.ts';
 import type { Transform } from '../../../models/battle/transform.ts';
+import { getEnemyInfectionSpeedMultiplier } from './statusEffectsSystem.ts';
 
 const DEFAULT_MONSTER_SWAY_FREQUENCY_HZ = 0.25;
 
@@ -37,7 +38,7 @@ export function MonsterMovementSystem(world: World, dt: number) {
       case 'linear': {
         const baseVelocity = movement.velocityPixelsPerSecond;
         const baseSpeed = Math.hypot(baseVelocity.x, baseVelocity.y);
-        const speed = getMonsterMovementSpeed(world, baseSpeed);
+        const speed = getMonsterMovementSpeed(world, entityId, baseSpeed);
         const directionRadians = Math.atan2(baseVelocity.y, baseVelocity.x);
 
         transform.position.x += Math.cos(directionRadians) * speed * dt;
@@ -47,7 +48,7 @@ export function MonsterMovementSystem(world: World, dt: number) {
         break;
       }
       case 'wobble': {
-        const speed = getMonsterMovementSpeed(world, movement.baseSpeedPixelsPerSecond);
+        const speed = getMonsterMovementSpeed(world, entityId, movement.baseSpeedPixelsPerSecond);
         const swayAmplitude = getMonsterSwayAmplitude(world, movement.wobbleAmplitudePixels);
         const previousX = transform.position.x;
         const previousTimeAliveSeconds = movement.timeAliveSeconds;
@@ -83,7 +84,7 @@ export function MonsterMovementSystem(world: World, dt: number) {
         }
 
         const stepSeconds = Math.min(dt, movement.trajectoryRemainingSeconds);
-        const stepDistance = getMonsterMovementSpeed(world, movement.speedPixelsPerSecond) * stepSeconds;
+        const stepDistance = getMonsterMovementSpeed(world, entityId, movement.speedPixelsPerSecond) * stepSeconds;
         const directionRadians = Math.atan2(deltaY, deltaX);
 
         if (distanceToTarget <= stepDistance) {
@@ -116,7 +117,7 @@ export function MonsterMovementSystem(world: World, dt: number) {
         const deltaY = movement.currentTarget.y - transform.position.y;
         const distanceToTarget = Math.hypot(deltaX, deltaY);
         if (distanceToTarget > 1e-3) {
-          const stepDistance = getMonsterMovementSpeed(world, movement.speedPixelsPerSecond) * dt;
+          const stepDistance = getMonsterMovementSpeed(world, entityId, movement.speedPixelsPerSecond) * dt;
           const unitX = deltaX / distanceToTarget;
           const unitY = deltaY / distanceToTarget;
           const directionRadians = Math.atan2(unitY, unitX);
@@ -132,7 +133,7 @@ export function MonsterMovementSystem(world: World, dt: number) {
         const deltaX = transform.position.x - movement.threatPoint.x;
         const deltaY = transform.position.y - movement.threatPoint.y;
         const distanceFromThreat = Math.hypot(deltaX, deltaY) || 1;
-        const stepDistance = getMonsterMovementSpeed(world, movement.speedPixelsPerSecond) * dt;
+        const stepDistance = getMonsterMovementSpeed(world, entityId, movement.speedPixelsPerSecond) * dt;
         const directionRadians = Math.atan2(deltaY, deltaX);
 
         transform.position.x += (deltaX / distanceFromThreat) * stepDistance;
@@ -148,7 +149,7 @@ export function MonsterMovementSystem(world: World, dt: number) {
         const tangentSign = movement.clockwise ? 1 : -1;
         const unitTangentX = (-deltaY / distanceFromCenter) * tangentSign;
         const unitTangentY = (deltaX / distanceFromCenter) * tangentSign;
-        const stepDistance = getMonsterMovementSpeed(world, movement.speedPixelsPerSecond) * dt;
+        const stepDistance = getMonsterMovementSpeed(world, entityId, movement.speedPixelsPerSecond) * dt;
         const directionRadians = Math.atan2(unitTangentY, unitTangentX);
 
         transform.position.x += unitTangentX * stepDistance;
@@ -160,7 +161,7 @@ export function MonsterMovementSystem(world: World, dt: number) {
       case 'blink': {
         const baseDriftSpeed = Math.hypot(movement.driftVelocity.x, movement.driftVelocity.y);
         const driftDirectionRadians = Math.atan2(movement.driftVelocity.y, movement.driftVelocity.x);
-        const driftSpeed = getMonsterMovementSpeed(world, baseDriftSpeed);
+        const driftSpeed = getMonsterMovementSpeed(world, entityId, baseDriftSpeed);
 
         movement.blinkRemainingSeconds -= dt;
         transform.position.x += Math.cos(driftDirectionRadians) * driftSpeed * dt;
@@ -191,9 +192,9 @@ export function MonsterMovementSystem(world: World, dt: number) {
   }
 }
 
-function getMonsterMovementSpeed(world: World, baseSpeed: number) {
+function getMonsterMovementSpeed(world: World, enemyId: number, baseSpeed: number) {
   const { speedFlat, speedMultiplier } = world.config.monsterMovementModifiers;
-  return Math.max(0, (baseSpeed + speedFlat) * speedMultiplier);
+  return Math.max(0, (baseSpeed + speedFlat) * speedMultiplier * getEnemyInfectionSpeedMultiplier(world, enemyId));
 }
 
 function getMonsterSwayAmplitude(world: World, baseSwayAmplitude: number) {

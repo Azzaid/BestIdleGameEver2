@@ -605,7 +605,7 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.threes"
+        "technologyId": "research.nature.livingWood"
       }
     ],
     "buildRequirements": [
@@ -628,7 +628,14 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 8
+        "additive": 10
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
       }
     ],
     "effects": [
@@ -662,14 +669,14 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.threes"
+        "technologyId": "research.nature.livingWood"
       }
     ],
     "buildRequirements": [
       {
         "type": "homogeneousValueAtLeast",
         "valueId": "resource.plants",
-        "amount": 9
+        "amount": 11
       }
     ],
     "values": [
@@ -685,7 +692,7 @@
         "additionalKeywords": [
           "production"
         ],
-        "additive": 10
+        "additive": 14
       }
     ],
     "effects": [
@@ -719,7 +726,7 @@
     "requirements": [
       {
         "type": "technologyUnlocked",
-        "technologyId": "research.nature.threes"
+        "technologyId": "research.nature.livingWood"
       }
     ],
     "buildRequirements": [
@@ -1044,6 +1051,288 @@
           "animals",
           "resource"
         ]
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.predatoryMycelium",
+    "visualAssetId": "building_nature_predatory-mycelium",
+    "name": "Predatory mycelium",
+    "kind": "superstructure",
+    "description": "Mycelium mutated into predatory kind. Symbiotic to other fungi and harmfull for animals. Can be planted on a wall to infect enemies.",
+    "requiredBuildingIds": [
+      "buildings.nature.mycelium"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.mycelium": "building_nature_predatory-mycelium-from-mycelium"
+    },
+    "hint": "In evolved ecosystem new mushrooms will grow",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.mushrooms"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 20
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      }
+    ],
+    "effects": [
+      {
+        "requiredBuildingKeywords": [
+          "fungi"
+        ],
+        "multiplier": 1.25,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "animals"
+        ],
+        "multiplier": 0.85,
+        "radius": 1
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.youngPredatoryMushrooms",
+    "visualAssetId": "building_nature_young-predatory-mushrooms",
+    "name": "Young predatory mushrooms",
+    "kind": "superstructure",
+    "description": "First mushrooms start to pop out. Young and poisonous. Not particulary big or strong one but it will get stronger the more fungi is in ecosystem. Symbiotic to plants but can be dangerous to animals.",
+    "requiredBuildingIds": [
+      "buildings.nature.predatoryMycelium"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.mycelium": "building_nature_young-predatory-mushrooms-from-mycelium"
+    },
+    "hint": "In a diverse ecosystem mushrooms will grow",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.predatoryMushrooms"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "nature.bioComplexity",
+        "amount": 4
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 3
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 6
+      },
+      {
+        "valueId": "resource.people",
+        "additionalKeywords": [
+          "upkeep"
+        ],
+        "additive": 1
+      }
+    ],
+    "effects": [
+      {
+        "requiredBuildingKeywords": [
+          "fungi"
+        ],
+        "multiplier": 1.5,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "plants"
+        ],
+        "multiplier": 1.25,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "animals"
+        ],
+        "multiplier": 0.85
+      }
+    ]
+  },
+  {
+    "id": "buildings.nature.bigPredatoryMushrooms",
+    "visualAssetId": "building_nature_big-predatory-mushrooms",
+    "name": "Big predatory mushrooms",
+    "kind": "superstructure",
+    "description": "Grown up predatory mushrooms. Spikes can be gathered and used as a projectile.",
+    "hint": "Will grow if fungi presence is strong enough.",
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.predatoryMushrooms"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.fungi",
+        "amount": 11
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 4
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 8
+      }
+    ],
+    "effects": [
+      {
+        "requiredBuildingKeywords": [
+          "fungi"
+        ],
+        "multiplier": 1.5,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "animals"
+        ],
+        "multiplier": 0.85,
+        "radius": 1
+      }
+    ],
+    "requiredBuildingIds": [
+      "buildings.nature.youngPredatoryMushrooms"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.mycelium": "building_nature_big-predatory-mushrooms-from-mycelium"
+    }
+  },
+  {
+    "id": "buildings.nature.maturePredatoryMushrooms",
+    "visualAssetId": "building_nature_mature-predatory-mushrooms",
+    "name": "Mature predatory mushrooms",
+    "kind": "superstructure",
+    "description": "Matrure shrooms. Fully grown and ready to carry their genetical legacy forth.",
+    "requiredBuildingIds": [
+      "buildings.nature.bigPredatoryMushrooms"
+    ],
+    "requiredBuildingSprites": {
+      "buildings.nature.mycelium": "building_nature_mature-predatory-mushrooms-from-mycelium"
+    },
+    "keywords": [
+      "nature",
+      "building"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.predatoryMushrooms"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueAtLeast",
+        "valueId": "resource.fungi",
+        "amount": 15
+      }
+    ],
+    "values": [
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "city.signature",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 10
+      }
+    ],
+    "hint": "Should finally ripe when fungi is strong.",
+    "effects": [
+      {
+        "requiredBuildingKeywords": [
+          "fungi",
+          "production"
+        ],
+        "multiplier": 1.25,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "animals",
+          "production"
+        ],
+        "multiplier": 0.5,
+        "radius": 1
+      },
+      {
+        "requiredBuildingKeywords": [
+          "people",
+          "production"
+        ],
+        "multiplier": 0.8,
+        "radius": 1
       }
     ]
   }

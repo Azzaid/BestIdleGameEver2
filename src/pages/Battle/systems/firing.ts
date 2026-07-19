@@ -43,6 +43,7 @@ export function FiringSystem(world: World, dt: number) {
       world.lifespans.set(id, { remainingSeconds: 2.0 });
       world.projectileInfo.set(id, {
         damageProfile: tower.projectileDamageProfile,
+        infection: tower.projectileInfection,
         projectileRadius: tower.projectileRadius,
         aoeRadius: tower.aoeRadius,
         speedPixelsPerSecond: tower.projectileSpeed,

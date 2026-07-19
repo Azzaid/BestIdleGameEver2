@@ -22,5 +22,6 @@ export function towerStatsToPixels(stats: TowerStatsResolved): TowerStatsResolve
     singleTargetCircleRange: toPixels(stats.singleTargetCircleRange),
     singleTargetDotRange: toPixels(stats.singleTargetDotRange),
     singleTargetStunRange: toPixels(stats.singleTargetStunRange),
+    singleTargetInfectionRange: toPixels(stats.singleTargetInfectionRange),
   };
 }

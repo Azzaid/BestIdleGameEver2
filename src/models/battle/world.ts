@@ -10,6 +10,7 @@ import type { WaveSchedulerConfig, WaveSchedulerState } from './wave.ts';
 import type { WaveSpawner } from './waveSpawner.ts';
 import type { EnemyBlueprint } from './enemyBlueprints.ts';
 import type { DamageProfile } from './damage.ts';
+import type { InfectionApplication, InfectionStatus } from './statusEffects.ts';
 
 export interface DamageAreaVfxView {
   container: PIXI.Container;
@@ -51,6 +52,7 @@ export interface WallZoneEffects {
 
 export interface ProjectileInfo {
   damageProfile: DamageProfile;
+  infection?: InfectionApplication;
   projectileRadius: number;
   aoeRadius: number;
   speedPixelsPerSecond: number;
@@ -138,6 +140,7 @@ export interface World {
   towerZoneDotProgress: Map<EntityId, number>;
   enemyTowerMovementOverrides: Map<EntityId, TowerMovementOverrideState>;
   enemyTowerStunRemainingSeconds: Map<EntityId, number>;
+  enemyInfections: Map<EntityId, InfectionStatus>;
 
   projectileInfo: Map<EntityId, ProjectileInfo>;
 }

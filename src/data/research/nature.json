@@ -155,5 +155,24 @@
         "buildingId": "buildings.nature.bigPoisonousMushrooms"
       }
     ]
+  },
+  {
+    "id": "research.nature.predatoryMushrooms",
+    "parentId": "research.nature.mushrooms",
+    "name": "Predatory mushrooms",
+    "summary": "Some mushroms prefer to inject their spores into a living creatures instead of spreading them.",
+    "keywords": [
+      "nature"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.mushrooms"
+      },
+      {
+        "type": "buildingExists",
+        "buildingId": "buildings.nature.predatoryMycelium"
+      }
+    ]
   }
 ]

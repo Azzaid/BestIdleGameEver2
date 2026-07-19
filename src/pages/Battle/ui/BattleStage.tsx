@@ -1091,6 +1091,21 @@ export function createTowerData({
         singleTargetStunDuration: stats.singleTargetStunDuration,
         singleTargetStunsPerSecond: stats.singleTargetStunsPerSecond,
         singleTargetStunRange: stats.singleTargetStunRange,
+        singleTargetInfectionDuration: stats.singleTargetInfectionDuration,
+        singleTargetInfectionsPerSecond: stats.singleTargetInfectionsPerSecond,
+        singleTargetInfectionRange: stats.singleTargetInfectionRange,
+        singleTargetInfectionStacks: stats.singleTargetInfectionStacks,
+        singleTargetInfectionMaxStacks: stats.singleTargetInfectionMaxStacks,
+        singleTargetInfectionSlowPerStack: stats.singleTargetInfectionSlowPerStack,
+        singleTargetInfectionDamageProfile: damageProfiles.singleTargetInfection,
+        projectileInfection: createInfectionApplication({
+            durationSeconds: stats.projectileInfectionDuration,
+            stacks: stats.projectileInfectionStacks,
+            maxStacks: stats.projectileInfectionMaxStacks,
+            slowPerStack: stats.projectileInfectionSlowPerStack,
+            damagePerSecondPerStack: stats.projectileInfectionDamagePerSecond,
+            damageProfile: damageProfiles.projectileInfection,
+        }),
         rangeCityPixels: stats.targetingDistanceLimit,
         currentTarget: undefined,
         gunEntity,
@@ -1098,6 +1113,38 @@ export function createTowerData({
         retargetCooldownSeconds: stats.retargetCooldownSeconds,
         retargetRemainingSeconds: 0,
         aimKeywords,
+    };
+}
+
+function createInfectionApplication({
+    durationSeconds,
+    stacks,
+    maxStacks,
+    slowPerStack,
+    damagePerSecondPerStack,
+    damageProfile,
+}: {
+    durationSeconds: number;
+    stacks: number;
+    maxStacks: number;
+    slowPerStack: number;
+    damagePerSecondPerStack: number;
+    damageProfile: TowerDamageProfiles["projectileInfection"];
+}): TowerData["projectileInfection"] {
+    if (
+        durationSeconds <= 0
+        || stacks <= 0
+        || maxStacks <= 0
+        || (slowPerStack <= 0 && damagePerSecondPerStack <= 0)
+    ) return undefined;
+
+    return {
+        durationSeconds,
+        stacks,
+        maxStacks,
+        slowPerStack,
+        damagePerSecondPerStack,
+        damageProfile,
     };
 }
 

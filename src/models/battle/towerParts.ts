@@ -56,6 +56,18 @@ export interface TowerModifiers {
   singleTargetStunDuration: number;
   singleTargetStunsPerSecond: number;
   singleTargetStunRange: number;
+  singleTargetInfectionDuration: number;
+  singleTargetInfectionsPerSecond: number;
+  singleTargetInfectionRange: number;
+  singleTargetInfectionStacks: number;
+  singleTargetInfectionMaxStacks: number;
+  singleTargetInfectionSlowPerStack: number;
+  singleTargetInfectionDamagePerSecond: number;
+  projectileInfectionDuration: number;
+  projectileInfectionStacks: number;
+  projectileInfectionMaxStacks: number;
+  projectileInfectionSlowPerStack: number;
+  projectileInfectionDamagePerSecond: number;
   weight: number;
   maximumWeight: number;
 }
@@ -164,6 +176,18 @@ export interface TowerStatsResolved {
   singleTargetStunDuration: number;
   singleTargetStunsPerSecond: number;
   singleTargetStunRange: number;
+  singleTargetInfectionDuration: number;
+  singleTargetInfectionsPerSecond: number;
+  singleTargetInfectionRange: number;
+  singleTargetInfectionStacks: number;
+  singleTargetInfectionMaxStacks: number;
+  singleTargetInfectionSlowPerStack: number;
+  singleTargetInfectionDamagePerSecond: number;
+  projectileInfectionDuration: number;
+  projectileInfectionStacks: number;
+  projectileInfectionMaxStacks: number;
+  projectileInfectionSlowPerStack: number;
+  projectileInfectionDamagePerSecond: number;
   weight: number;
   maximumWeight: number;
   keywords: Set<string>;

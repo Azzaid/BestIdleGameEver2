@@ -16,6 +16,7 @@ import { WallZoneEffectsSystem } from './wallZoneEffectsSystem.ts';
 import { TowerZoneEffectsSystem } from './towerZoneEffectsSystem.ts';
 import { DamageAreaVfxSystem } from './damageAreaVfxSystem.ts';
 import { DebugTowerTargetingRadiusSystem } from './debugTowerTargetingRadiusSystem.ts';
+import { StatusEffectsSystem } from './statusEffectsSystem.ts';
 
 /** Per-frame update orchestrator */
 export function runSystems(world: World, dt: number) {
@@ -25,6 +26,7 @@ export function runSystems(world: World, dt: number) {
   FiringSystem(world, dt);
 
   TowerZoneEffectsSystem(world, dt);
+  StatusEffectsSystem(world, dt);
   MonsterMovementSystem(world, dt);
   ProjectileMovementSystem(world, dt);
   LifespanSystem(world, dt);
@@ -56,6 +58,7 @@ export function cleanupRemovedEntities(world: World) {
       world.enemyPushBackRemainingSeconds.delete(id);
       world.enemyTowerMovementOverrides.delete(id);
       world.enemyTowerStunRemainingSeconds.delete(id);
+      world.enemyInfections.delete(id);
       world.retreatingEnemyIds.delete(id);
       world.towerZoneDotProgress.delete(id);
       deleteTowerZoneEffectKeysForEntity(world.enemyTowerZoneCooldownRemainingSeconds, id);

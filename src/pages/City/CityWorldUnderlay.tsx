@@ -923,6 +923,7 @@ function getTowerBattlefieldRange(stats: TowerStatsResolved) {
         stats.singleTargetCircleRange,
         stats.singleTargetDotRange,
         stats.singleTargetStunRange,
+        stats.singleTargetInfectionRange,
     );
 }
 

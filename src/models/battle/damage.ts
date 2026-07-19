@@ -20,6 +20,8 @@ export type TowerDamageProfiles = {
   projectile: DamageProfile;
   zoneDot: DamageProfile;
   singleTargetDot: DamageProfile;
+  singleTargetInfection: DamageProfile;
+  projectileInfection: DamageProfile;
 };
 
 export type DamageModifier = (

@@ -42,6 +42,7 @@ export function createWorld(config: WorldConfig): World {
       towerZoneDotProgress: new Map(),
       enemyTowerMovementOverrides: new Map(),
       enemyTowerStunRemainingSeconds: new Map(),
+      enemyInfections: new Map(),
       projectileInfo: new Map(),
       spawners: [],
       waveScheduler: {

@@ -1,5 +1,5 @@
 import {type CSSProperties, type ReactNode, useMemo} from "react";
-import {BUILDINGS_ATLAS} from "../../data/buildings/index.ts";
+import {BUILDINGS_ATLAS, STRUCTURES_BY_ID} from "../../data/buildings/index.ts";
 import {TOWER_PARTS_BY_ID} from "../../data/gunParts/index.ts";
 import {researchTree} from "../../data/research/index.ts";
 import {DEVELOPMENT_VECTOR_LABELS, DEVELOPMENT_VECTORS, type DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
@@ -18,7 +18,7 @@ import {
 } from "../Progression/data/mapLayout.ts";
 import type {ProgressionNodeKind} from "../Progression/data/types.ts";
 import {useTypedSelector} from "../../store/hooks.ts";
-import {selectCompleteCityStructureIds, selectCityHexes} from "../../store/city/selectors.ts";
+import {selectBuiltStructureIds, selectCompleteCityStructureIds, selectCityHexes} from "../../store/city/selectors.ts";
 import {selectAetherAtmosphereLevels} from "../../store/homogeneousValues/selectors.ts";
 import {selectPurchasedTechsIds} from "../../store/research/selectors.ts";
 import {selectCityResolution} from "../../store/upkeep/selectors.ts";
@@ -40,6 +40,7 @@ const KIND_ICONS: Record<Extract<ProgressionNodeKind, "building" | "towerPart">,
 export default function ResearchPage() {
   const purchasedTechsIds = useTypedSelector(selectPurchasedTechsIds);
   const cityHexes = useTypedSelector(selectCityHexes);
+  const builtStructureIds = useTypedSelector(selectBuiltStructureIds);
   const completeStructureIds = useTypedSelector(selectCompleteCityStructureIds);
   const resolvedCityData = useTypedSelector(selectCityResolution);
   const aetherAtmosphereLevels = useTypedSelector(selectAetherAtmosphereLevels);
@@ -107,6 +108,7 @@ export default function ResearchPage() {
               key={lane.vector}
               lane={lane}
               purchased={purchased}
+              builtStructureIds={builtStructureIds}
             />
           ))}
         </div>
@@ -120,9 +122,11 @@ export default function ResearchPage() {
 function ResearchLane({
   lane,
   purchased,
+  builtStructureIds,
 }: {
   lane: ProgressionMapLane;
   purchased: ReadonlySet<string>;
+  builtStructureIds: readonly string[];
 }) {
   const style = {
     "--vector-color": VECTOR_COLORS[lane.vector],
@@ -141,6 +145,7 @@ function ResearchLane({
             branch={branch}
             vector={lane.vector}
             purchased={purchased}
+            builtStructureIds={builtStructureIds}
           />
         ))}
       </div>
@@ -152,10 +157,12 @@ function ResearchBranch({
   branch,
   vector,
   purchased,
+  builtStructureIds,
 }: {
   branch: ProgressionMapBranch;
   vector: DevelopmentVectorKey;
   purchased: ReadonlySet<string>;
+  builtStructureIds: readonly string[];
 }) {
   const technology = branch.gate ? researchTree[branch.gate.id] : undefined;
   const discovered = technology ? purchased.has(technology.id) : false;
@@ -179,7 +186,12 @@ function ResearchBranch({
         <div className={s.unlockColumn}>
           <ContentSection title="Buildings" emptyText="No buildings revealed by this technology." count={buildings.length}>
             {buildings.map(item => (
-              <ContentCard key={getProgressionMapNodeKey(item)} item={item} vector={item.vector ?? vector} />
+              <ContentCard
+                key={getProgressionMapNodeKey(item)}
+                item={item}
+                vector={item.vector ?? vector}
+                builtStructureIds={builtStructureIds}
+              />
             ))}
           </ContentSection>
           <ContentSection title="Tower Parts" emptyText="No tower parts revealed by this technology." count={towerParts.length}>
@@ -199,6 +211,7 @@ function ResearchBranch({
               branch={child}
               vector={vector}
               purchased={purchased}
+              builtStructureIds={builtStructureIds}
             />
           ))}
         </div>
@@ -253,11 +266,17 @@ function ContentSection({
 function ContentCard({
   item,
   vector,
+  builtStructureIds,
 }: {
   item: ProgressionMapItem;
   vector: DevelopmentVectorKey;
+  builtStructureIds: readonly string[];
 }) {
   const content = findBuilding(item.id);
+  const isUnbuiltMultistructure = Boolean(content?.isMultistructure && !builtStructureIds.includes(item.id));
+  const description = isUnbuiltMultistructure
+    ? getMultistructureHint(item.id, content)
+    : content?.description;
   const style = {"--card-color": VECTOR_COLORS[vector]} as CSSProperties;
 
   return (
@@ -266,9 +285,13 @@ function ContentCard({
         <span className={s.kindIcon}>{KIND_ICONS.building}</span>
         <strong className={s.cardTitle}>{item.name}</strong>
       </div>
-      {content?.description ? <p className={s.contentDescription}>{content.description}</p> : null}
+      {description ? <p className={s.contentDescription}>{description}</p> : null}
     </article>
   );
+}
+
+function getMultistructureHint(id: string, building: Building | undefined): string | undefined {
+  return STRUCTURES_BY_ID[id]?.hint ?? building?.multiHexStructure?.[0]?.hint ?? building?.description;
 }
 
 function TowerPartChip({

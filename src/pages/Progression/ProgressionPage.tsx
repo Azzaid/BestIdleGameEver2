@@ -262,6 +262,7 @@ function ProgressionBranch({
         <TechnologyGate
           gate={{...branch.gate, layoutDepth: branch.depth, ownerBuildingIds: []}}
           color={VECTOR_COLORS[branch.gate.vector ?? vector]}
+          requiredBuildings={getTechnologyRequiredBuildings(branch.gate)}
           selectedNodeKey={selectedNodeKey}
           onSelect={onSelect}
         />
@@ -386,11 +387,13 @@ function ProgressionCard({
 function TechnologyGate({
   gate,
   color,
+  requiredBuildings,
   selectedNodeKey,
   onSelect,
 }: {
   gate: ProgressionMapItem;
   color: string;
+  requiredBuildings: ProgressionGraphNode[];
   selectedNodeKey: string;
   onSelect: (key: string) => void;
 }) {
@@ -410,9 +413,35 @@ function TechnologyGate({
         <span className={s.kindIcon}>{KIND_ICONS.research}</span>
         <strong className={s.gateTitle}>{gate.name}</strong>
       </div>
+      {requiredBuildings.length ? (
+        <div className={s.gateRequirementRow}>
+          <span className={s.gateRequirementLabel}>Unlocked by</span>
+          {requiredBuildings.map(building => (
+            <button
+              key={getProgressionMapNodeKey(building)}
+              type="button"
+              className={getCardClass(building, selectedNodeKey, s.gateRequirementChip)}
+              style={{"--card-color": VECTOR_COLORS[building.vector ?? gate.vector ?? "neutral"]} as CSSProperties}
+              onClick={event => {
+                event.stopPropagation();
+                onSelect(getProgressionMapNodeKey(building));
+              }}
+            >
+              <span className={s.kindIcon}>{KIND_ICONS.building}</span>
+              {building.name}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <div className={s.cardSubline}>Depth {gate.layoutDepth + 1}</div>
     </article>
   );
+}
+
+function getTechnologyRequiredBuildings(gate: ProgressionGraphNode): ProgressionGraphNode[] {
+  return (gate.requirements?.buildings ?? [])
+    .map(buildingId => PROGRESSION_GRAPH.nodes.find(node => node.kind === "building" && node.id === buildingId))
+    .filter((building): building is ProgressionGraphNode => Boolean(building));
 }
 
 function getCardClass(

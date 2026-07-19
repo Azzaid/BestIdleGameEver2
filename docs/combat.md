@@ -229,6 +229,11 @@ Panicked:
 Sleeping:
 -100%
 
+Current prototype behavior:
+
+- Infection is implemented as a reusable enemy status. Each application adds stacks up to its configured maximum, refreshes duration, slows movement by stack, and deals damage over time through the normal battle damage resolver.
+- Wall superstructures can apply single-target infection on cooldown with `tower.singleTargetInfection*` values. Projectile ammo can later apply the same status on hit with `tower.projectileInfection*` values.
+
 This creates alternative strategies.
 
 ---

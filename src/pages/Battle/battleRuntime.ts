@@ -29,6 +29,7 @@ import {HealthSystem} from "./systems/healthSystem.ts";
 import {DamageAreaVfxSystem} from "./systems/damageAreaVfxSystem.ts";
 import {DebugTowerTargetingRadiusSystem} from "./systems/debugTowerTargetingRadiusSystem.ts";
 import {PixiSyncSystem} from "./systems/pixiSync.ts";
+import {StatusEffectsSystem} from "./systems/statusEffectsSystem.ts";
 
 export type TowerPreviewRuntimeConfig = {
     tower: TowerAssemblyResolved;
@@ -365,6 +366,7 @@ function runTowerPreviewSystems(
     AimingSystem(world, dt);
     FiringSystem(world, dt);
     TowerZoneEffectsSystem(world, dt);
+    StatusEffectsSystem(world, dt);
     ProjectileMovementSystem(world, dt);
     LifespanSystem(world, dt);
     ProjectilesSystem(world);

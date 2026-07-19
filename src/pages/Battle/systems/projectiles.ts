@@ -1,5 +1,6 @@
 import type { ProjectileInfo, World } from '../../../models/battle/world.ts';
 import { applyDamageModifiers } from '../keywords/damageResolver';
+import { applyEnemyInfection } from './statusEffectsSystem.ts';
 
 export function ProjectilesSystem(world: World) {
   for (const [projId, info] of world.projectileInfo) {
@@ -14,6 +15,7 @@ export function ProjectilesSystem(world: World) {
       const r = (enemy.hitRadius ?? 14) + info.projectileRadius;
       if (dx*dx + dy*dy <= r*r) {
         applyProjectileDamage(world, enemyId, info);
+        applyProjectileInfection(world, enemyId, info);
         applyAreaDamage(world, enemyId, info);
         world.toRemove.add(projId);
         break;
@@ -33,6 +35,16 @@ function applyProjectileDamage(
 
   const dmg = applyDamageModifiers(info.damageProfile, enemy, hp);
   hp.hitPoints -= dmg;
+}
+
+function applyProjectileInfection(
+  world: World,
+  enemyId: number,
+  info: Pick<ProjectileInfo, 'infection'>
+) {
+  if (!info.infection) return;
+
+  applyEnemyInfection(world, enemyId, info.infection);
 }
 
 function applyAreaDamage(

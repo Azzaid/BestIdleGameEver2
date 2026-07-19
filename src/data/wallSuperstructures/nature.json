@@ -133,5 +133,100 @@
         ]
       }
     ]
+  },
+  {
+    "id": "wallSuperstructures.nature.sporeInjector",
+    "visualAssetId": "wallSuperstructures.nature.toxicPuffShrooms",
+    "name": "Spore injector",
+    "wallTopCategory": "wallSuperstructure",
+    "keywords": [
+      "nature",
+      "wallSuperstructure",
+      "infection",
+      "slow",
+      "harm"
+    ],
+    "requirements": [
+      {
+        "type": "technologyUnlocked",
+        "technologyId": "research.nature.predatoryMushrooms"
+      }
+    ],
+    "buildRequirements": [
+      {
+        "type": "homogeneousValueLessThan",
+        "valueId": "nature.bioDisbalance",
+        "amount": 3
+      }
+    ],
+    "values": [
+      {
+        "valueId": "tower.singleTargetInfectionRange",
+        "additionalKeywords": [
+          "production",
+          "infection"
+        ],
+        "additive": 6
+      },
+      {
+        "valueId": "tower.singleTargetInfectionsPerSecond",
+        "additionalKeywords": [
+          "production",
+          "infection"
+        ],
+        "additive": 0.35
+      },
+      {
+        "valueId": "tower.singleTargetInfectionDuration",
+        "additionalKeywords": [
+          "production",
+          "infection"
+        ],
+        "additive": 8
+      },
+      {
+        "valueId": "tower.singleTargetInfectionStacks",
+        "additionalKeywords": [
+          "production",
+          "infection"
+        ],
+        "additive": 1
+      },
+      {
+        "valueId": "tower.singleTargetInfectionMaxStacks",
+        "additionalKeywords": [
+          "production",
+          "infection"
+        ],
+        "additive": 5
+      },
+      {
+        "valueId": "tower.singleTargetInfectionSlowPerStack",
+        "additionalKeywords": [
+          "production",
+          "infection",
+          "slow"
+        ],
+        "additive": 0.08
+      },
+      {
+        "valueId": "tower.singleTargetInfectionDamagePerSecond",
+        "additionalKeywords": [
+          "production",
+          "infection",
+          "damage.poison",
+          "damage.ignoreArmor"
+        ],
+        "additive": 2
+      },
+      {
+        "valueId": "resource.fungi",
+        "additionalKeywords": [
+          "production"
+        ],
+        "additive": 1
+      }
+    ],
+    "description": "A patient wall-rooted organ that spits infectious spores into single targets. Each reinfection deepens the slow and the rot."
   }
 ]

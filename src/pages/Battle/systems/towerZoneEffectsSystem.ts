@@ -3,6 +3,7 @@ import type { MovementController } from '../../../models/battle/movement.ts';
 import type { TowerData } from '../../../models/battle/tower.ts';
 import type { World } from '../../../models/battle/world.ts';
 import { applyDamageModifiers } from '../keywords/damageResolver.ts';
+import { applyEnemyInfection } from './statusEffectsSystem.ts';
 
 const PUSH_BACK_DURATION_SECONDS = 0.5;
 const MINIMUM_OVERRIDE_SPEED_PIXELS_PER_SECOND = 20;
@@ -26,6 +27,7 @@ export function TowerZoneEffectsSystem(world: World, dt: number) {
     updateSingleTargetMovementEffect(world, towerId, tower, towerTransform.position, 'circle');
     updateSingleTargetDots(world, towerId, tower, towerTransform.position, dt);
     updateSingleTargetStuns(world, towerId, tower, towerTransform.position);
+    updateSingleTargetInfections(world, towerId, tower, towerTransform.position);
   }
 }
 
@@ -307,6 +309,47 @@ function updateSingleTargetStuns(
     Math.max(world.enemyTowerStunRemainingSeconds.get(enemyId) ?? 0, singleTargetStunDuration),
   );
   world.enemyTowerZoneCooldownRemainingSeconds.set(cooldownKey, 1 / singleTargetStunsPerSecond);
+}
+
+function updateSingleTargetInfections(
+  world: World,
+  towerId: EntityId,
+  tower: TowerData,
+  towerPosition: { x: number; y: number },
+) {
+  const {
+    singleTargetInfectionDuration,
+    singleTargetInfectionsPerSecond,
+    singleTargetInfectionRange,
+    singleTargetInfectionStacks,
+    singleTargetInfectionMaxStacks,
+    singleTargetInfectionSlowPerStack,
+    singleTargetInfectionDamageProfile,
+  } = tower;
+  if (
+    singleTargetInfectionDuration <= 0
+    || singleTargetInfectionsPerSecond <= 0
+    || singleTargetInfectionRange <= 0
+    || singleTargetInfectionStacks <= 0
+    || singleTargetInfectionMaxStacks <= 0
+    || (singleTargetInfectionSlowPerStack <= 0 && singleTargetInfectionDamageProfile.amount <= 0)
+  ) return;
+
+  const cooldownKey = createTowerEffectKey(towerId, 'singleInfection');
+  if ((world.enemyTowerZoneCooldownRemainingSeconds.get(cooldownKey) ?? 0) > 0) return;
+
+  const enemyId = findClosestEnemyToTower(world, towerPosition, singleTargetInfectionRange);
+  if (enemyId === undefined) return;
+
+  applyEnemyInfection(world, enemyId, {
+    durationSeconds: singleTargetInfectionDuration,
+    stacks: singleTargetInfectionStacks,
+    maxStacks: singleTargetInfectionMaxStacks,
+    slowPerStack: singleTargetInfectionSlowPerStack,
+    damagePerSecondPerStack: singleTargetInfectionDamageProfile.amount,
+    damageProfile: singleTargetInfectionDamageProfile,
+  });
+  world.enemyTowerZoneCooldownRemainingSeconds.set(cooldownKey, 1 / singleTargetInfectionsPerSecond);
 }
 
 function applyMovementOverride(

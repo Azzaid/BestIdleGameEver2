@@ -1,6 +1,7 @@
 import type { EntityId } from './common.ts';
 import type { DamageProfile, TowerDamageProfiles } from './damage.ts';
 import type { SpriteInfo } from './spriteInfo.ts';
+import type { InfectionApplication } from './statusEffects.ts';
 import type { TowerStatsResolved } from './towerParts.ts';
 
 export const INITIAL_TOWER_AIM_RADIANS = -Math.PI / 2;
@@ -53,6 +54,14 @@ export interface TowerData {
   singleTargetStunDuration: number;
   singleTargetStunsPerSecond: number;
   singleTargetStunRange: number;
+  singleTargetInfectionDuration: number;
+  singleTargetInfectionsPerSecond: number;
+  singleTargetInfectionRange: number;
+  singleTargetInfectionStacks: number;
+  singleTargetInfectionMaxStacks: number;
+  singleTargetInfectionSlowPerStack: number;
+  singleTargetInfectionDamageProfile: DamageProfile;
+  projectileInfection?: InfectionApplication;
 
   // Runtime targeting state
   rangeCityPixels: number;
