@@ -5,7 +5,7 @@ import {wallSpriteMetadataAtlas, wallSpritesAtlas} from "../../../../models/spri
 import {wallTopSpriteMetadataAtlas, wallTopSpritesAtlas} from "../../../../models/sprites/wallTops/wallTopSpriteAtlas.ts";
 import type {HexCell} from "../../../../models/city/HexGrid.ts";
 import {CITY_HEX_BACKGROUND_SPRITES_BY_ID} from "../../../../data/cityHexBackgrounds.ts";
-import {selectBaseClaimedTerrainBackground} from "../../../../data/cityTerrainBackgrounds.ts";
+import {selectBaseCityTerrainBackground} from "../../../../data/cityTerrainBackgrounds.ts";
 import {getDevelopmentVectorKey, type CityBiome} from "../../../../models/city/hexBackgrounds.ts";
 import {
     axialCoordinateToPixelPosition,
@@ -1221,26 +1221,28 @@ function drawHexCell({
     const isHovered = !cell.isUnclaimed && cell.cellKey === hoveredCellKey;
     const isSelected = !cell.isUnclaimed && cell.cellKey === selectedCellKey;
     const isClaimedTerrainPreview = cell.isUnclaimed && topExpansionPreviewCellKeys.has(cell.cellKey);
-    const fallbackBaseTerrainBackground = isClaimedTerrainPreview && !cell.baseTerrainSpriteId
-        ? selectBaseClaimedTerrainBackground(biome, cell.backgroundDevelopmentVector, cell)
-        : undefined;
-    const visibleBackgroundSpriteId = isClaimedTerrainPreview
-        ? cell.baseTerrainSpriteId ?? fallbackBaseTerrainBackground?.backgroundSpriteId ?? cell.backgroundSpriteId
-        : cell.backgroundSpriteId;
-    const visibleBackgroundDevelopmentVector = isClaimedTerrainPreview
-        ? cell.baseTerrainDevelopmentVector ?? fallbackBaseTerrainBackground?.backgroundDevelopmentVector ?? cell.backgroundDevelopmentVector
-        : cell.backgroundDevelopmentVector;
-    const backgroundSprite = CITY_HEX_BACKGROUND_SPRITES_BY_ID[visibleBackgroundSpriteId];
-    const backgroundFill = getHexBackgroundFallbackFill(biome, visibleBackgroundDevelopmentVector, cell.kind);
+    const background = getVisibleBackgroundInfo(cell, biome);
+    const backgroundFill = getHexBackgroundFallbackFill(biome, background.developmentVector, cell.kind);
     const fallbackBackground = createHexShape(hexagonPoints, backgroundFill);
     cellLayer.addChild(fallbackBackground);
 
-    if (backgroundSprite?.src) {
+    if (background.src) {
         addMaskedSprite({
             parent: cellLayer,
-            src: backgroundSprite.src,
+            src: background.src,
             width: HEX_BACKGROUND_WIDTH,
             height: HEX_BACKGROUND_HEIGHT,
+            maskPoints: hexagonPoints,
+        });
+    }
+
+    const obstacle = !isClaimedTerrainPreview ? getObstacleSpriteInfo(cell) : null;
+    if (obstacle) {
+        addMaskedSprite({
+            parent: cellLayer,
+            src: obstacle.src,
+            width: obstacle.width,
+            height: obstacle.height,
             maskPoints: hexagonPoints,
         });
     }
@@ -1281,7 +1283,7 @@ function drawHexCell({
         }
     }
 
-    if (cell.isUnclaimed && !isClaimedTerrainPreview) {
+    if (cell.isUnclaimed && !isClaimedTerrainPreview && !obstacle) {
         const shadeOpacity = axialDistance({column: 0, row: 0}, cell) > claimedRadius + 1
             ? OUTER_UNCLAIMED_LAND_SHADE_OPACITY
             : UNCLAIMED_LAND_SHADE_OPACITY;
@@ -1297,6 +1299,41 @@ function drawHexCell({
         const visibleHexSides = HEX_SIDE_DEFINITIONS.filter(side => !isSharedStructureSide(cell, side, cellsByKey));
         drawHexSideLines(cellLayer, visibleHexSides, hexagonVertexPoints, color, HEX_STROKE_WIDTH);
     }
+}
+
+function getVisibleBackgroundInfo(cell: PreparedHexCell, biome: CityBiome) {
+    const spriteId = cell.baseTerrainSpriteId ?? cell.backgroundSpriteId;
+    const developmentVector = cell.baseTerrainDevelopmentVector ?? cell.backgroundDevelopmentVector;
+    const storedSprite = CITY_HEX_BACKGROUND_SPRITES_BY_ID[spriteId];
+    if (storedSprite?.src) {
+        return {
+            spriteId,
+            developmentVector,
+            src: storedSprite.src,
+        };
+    }
+
+    const replacement = selectBaseCityTerrainBackground(biome, developmentVector, cell);
+    const replacementSprite = CITY_HEX_BACKGROUND_SPRITES_BY_ID[replacement.backgroundSpriteId];
+
+    return {
+        spriteId: replacement.backgroundSpriteId,
+        developmentVector: replacement.backgroundDevelopmentVector,
+        src: replacementSprite?.src,
+    };
+}
+
+function getObstacleSpriteInfo(cell: PreparedHexCell) {
+    if (!cell.isUnclaimed || !cell.obstacleSpriteId) return null;
+
+    const asset = CITY_HEX_BACKGROUND_SPRITES_BY_ID[cell.obstacleSpriteId];
+    if (!asset?.src) return null;
+
+    return {
+        src: asset.src,
+        width: FALLBACK_SPRITE_SIZE.width,
+        height: FALLBACK_SPRITE_SIZE.height,
+    };
 }
 
 function getForegroundSpriteInfo(cell: PreparedHexCell) {
@@ -1553,15 +1590,12 @@ function getCityAssetUrls(
     }
 
     for (const cell of cells) {
+        const background = getVisibleBackgroundInfo(cell, biome);
+        if (background.src) urls.add(background.src);
+
         const isClaimedTerrainPreview = cell.isUnclaimed && topExpansionPreviewCellKeys.has(cell.cellKey);
-        const fallbackBaseTerrainBackground = isClaimedTerrainPreview && !cell.baseTerrainSpriteId
-            ? selectBaseClaimedTerrainBackground(biome, cell.backgroundDevelopmentVector, cell)
-            : undefined;
-        const visibleBackgroundSpriteId = isClaimedTerrainPreview
-            ? cell.baseTerrainSpriteId ?? fallbackBaseTerrainBackground?.backgroundSpriteId ?? cell.backgroundSpriteId
-            : cell.backgroundSpriteId;
-        const backgroundSprite = CITY_HEX_BACKGROUND_SPRITES_BY_ID[visibleBackgroundSpriteId];
-        if (backgroundSprite?.src) urls.add(backgroundSprite.src);
+        const obstacle = !isClaimedTerrainPreview ? getObstacleSpriteInfo(cell) : null;
+        if (obstacle?.src) urls.add(obstacle.src);
 
         const foreground = getForegroundSpriteInfo(cell);
         if (foreground?.src) urls.add(foreground.src);
@@ -2097,15 +2131,10 @@ function getHexBackgroundFallbackFill(
 ) {
     const vectorKey = getDevelopmentVectorKey(vector);
     const biomeHue: Record<CityBiome, number> = {
+        plains: 48,
+        desert: 36,
+        marsh: 96,
         alpine: 192,
-        floodplain: 118,
-        swamp: 86,
-        steppe: 48,
-        rocky: 210,
-        volcanic: 8,
-        coastal: 178,
-        tundra: 204,
-        ancientForest: 132,
     };
     const vectorHueOffset: Record<string, number> = {
         tech: 18,

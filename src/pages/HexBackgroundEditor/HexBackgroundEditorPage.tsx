@@ -30,8 +30,8 @@ type FilterState = {
 
 export default function HexBackgroundEditorPage() {
   const [upload, setUpload] = useState<UploadState>({
-    type: CITY_HEX_BACKGROUND_TYPES.claimedTerrain,
-    biome: CITY_BIOMES.steppe,
+    type: CITY_HEX_BACKGROUND_TYPES.background,
+    biome: CITY_BIOMES.plains,
     vector: "medieval",
     fileStem: "",
     file: null,
@@ -125,12 +125,12 @@ export default function HexBackgroundEditorPage() {
       <aside className={s.panel}>
         <div className={s.header}>
           <h1 className={s.title}>Hex Backgrounds</h1>
-          <p className={s.subtitle}>Upload terrain PNGs into the local asset folders.</p>
+          <p className={s.subtitle}>Upload base terrain and obstacle PNGs into the local asset folders.</p>
         </div>
 
         <form className={s.form} onSubmit={handleSubmit}>
           <label className={s.field}>
-            <span className={s.label}>Terrain type</span>
+            <span className={s.label}>Asset type</span>
             <select
               className={s.input}
               value={upload.type}

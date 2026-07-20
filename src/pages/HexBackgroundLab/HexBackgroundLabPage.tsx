@@ -1,10 +1,10 @@
 import {useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent} from "react";
 import {CITY_HEX_BACKGROUND_SPRITES} from "../../data/cityHexBackgrounds.ts";
 import {CITY_HEX_RADIUS, CITY_HEX_WIDTH} from "../../data/constants.ts";
-import type {CityHexBackgroundSprite} from "../../models/city/hexBackgrounds.ts";
+import {CITY_HEX_BACKGROUND_TYPES, type CityHexBackgroundSprite} from "../../models/city/hexBackgrounds.ts";
 import * as s from "./HexBackgroundLabPage.css.ts";
 
-type LayerId = "background" | "overlay" | "object";
+type LayerId = "background" | "overlay" | "obstacle";
 
 type LayerState = {
   fileName: string;
@@ -27,15 +27,16 @@ type LayerZoomState = Record<LayerId, number>;
 const layers = [
   {id: "background", label: "Background", accept: "image/*"},
   {id: "overlay", label: "Overlay", accept: "image/*"},
-  {id: "object", label: "Object", accept: "image/*"},
+  {id: "obstacle", label: "Obstacle", accept: "image/*"},
 ] as const satisfies readonly LayerConfig[];
 
-const defaultBackgroundSprite = CITY_HEX_BACKGROUND_SPRITES[0];
+const backgroundSprites = CITY_HEX_BACKGROUND_SPRITES.filter(sprite => sprite.type === CITY_HEX_BACKGROUND_TYPES.background);
+const defaultBackgroundSprite = backgroundSprites[0];
 const maxGridRadius = 4;
 const defaultLayerZoom: LayerZoomState = {
   background: 100,
   overlay: 100,
-  object: 100,
+  obstacle: 100,
 };
 
 export default function HexBackgroundLabPage() {
@@ -47,14 +48,14 @@ export default function HexBackgroundLabPage() {
   const objectUrlsRef = useRef(new Set<string>());
 
   const selectedBackground = useMemo(
-    () => CITY_HEX_BACKGROUND_SPRITES.find(sprite => sprite.id === selectedBackgroundId) ?? defaultBackgroundSprite,
+    () => backgroundSprites.find(sprite => sprite.id === selectedBackgroundId) ?? defaultBackgroundSprite,
     [selectedBackgroundId],
   );
   const backgroundUrl = customLayers.background?.url ?? selectedBackground?.src ?? "";
   const previewLayers = [
     {id: "background", label: "Background", url: backgroundUrl, fit: "cover", zoom: layerZoom.background, clipped: true},
     {id: "overlay", label: "Overlay", url: customLayers.overlay?.url ?? "", fit: "contain", zoom: layerZoom.overlay, clipped: true},
-    {id: "object", label: "Object", url: customLayers.object?.url ?? "", fit: "contain", zoom: layerZoom.object, clipped: false},
+    {id: "obstacle", label: "Obstacle", url: customLayers.obstacle?.url ?? "", fit: "contain", zoom: layerZoom.obstacle, clipped: false},
   ] as const;
 
   useEffect(() => () => {
@@ -112,7 +113,7 @@ export default function HexBackgroundLabPage() {
       <aside className={s.panel}>
         <div className={s.header}>
           <h1 className={s.title}>Hex Lab</h1>
-          <p className={s.subtitle}>Compose terrain, overlay, and object art in one city hex.</p>
+          <p className={s.subtitle}>Compose terrain, overlay, and obstacle art in one city hex.</p>
         </div>
 
         <label className={s.field}>
@@ -125,7 +126,7 @@ export default function HexBackgroundLabPage() {
               clearLayer("background");
             }}
           >
-            {CITY_HEX_BACKGROUND_SPRITES.map(sprite => (
+            {backgroundSprites.map(sprite => (
               <option key={sprite.id} value={sprite.id}>{formatSpriteLabel(sprite)}</option>
             ))}
           </select>
@@ -239,11 +240,11 @@ function LayeredHexPreview({
   const maxX = Math.max(...centers.map(center => center.x + width / 2));
   const minY = Math.min(...centers.map(center => center.y - height / 2));
   const maxY = Math.max(...centers.map(center => center.y + height / 2));
-  const objectZoom = (previewLayers.find(layer => layer.id === "object")?.zoom ?? 100) / 100;
-  const objectPadding = Math.max(0, (Math.max(width, height) * (objectZoom - 1)) / 2);
-  const padding = 14 + objectPadding;
+  const obstacleZoom = (previewLayers.find(layer => layer.id === "obstacle")?.zoom ?? 100) / 100;
+  const obstaclePadding = Math.max(0, (Math.max(width, height) * (obstacleZoom - 1)) / 2);
+  const padding = 14 + obstaclePadding;
   const clippedLayers = previewLayers.filter(layer => layer.clipped);
-  const objectLayer = previewLayers.find(layer => layer.id === "object");
+  const obstacleLayer = previewLayers.find(layer => layer.id === "obstacle");
   const viewBoxX = minX - padding;
   const viewBoxY = minY - padding;
   const viewBoxWidth = maxX - minX + padding * 2;
@@ -302,21 +303,21 @@ function LayeredHexPreview({
           </g>
         );
       })}
-      {objectLayer?.url && hexes.map((hex, index) => {
+      {obstacleLayer?.url && hexes.map((hex, index) => {
         const center = centers[index];
         if (!center) return null;
 
         return (
           <image
-            key={`object:${hex.column}:${hex.row}`}
-            href={objectLayer.url}
-            x={center.x - (width * objectLayer.zoom / 100) / 2}
-            y={center.y - (height * objectLayer.zoom / 100) / 2}
-            width={width * objectLayer.zoom / 100}
-            height={height * objectLayer.zoom / 100}
+            key={`obstacle:${hex.column}:${hex.row}`}
+            href={obstacleLayer.url}
+            x={center.x - (width * obstacleLayer.zoom / 100) / 2}
+            y={center.y - (height * obstacleLayer.zoom / 100) / 2}
+            width={width * obstacleLayer.zoom / 100}
+            height={height * obstacleLayer.zoom / 100}
             preserveAspectRatio="xMidYMid meet"
           >
-            <title>{objectLayer.label}</title>
+            <title>{obstacleLayer.label}</title>
           </image>
         );
       })}

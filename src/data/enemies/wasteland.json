@@ -73,5 +73,32 @@
       "wobbleAmplitudeHexRadius": 1,
       "sameTrajectoryTimeSeconds": 3
     }
+  },
+  {
+    "id": "enemies.wasteland.shadowCat",
+    "displayName": "Shadow cat",
+    "minimumCityVisibilityThreshold": 200,
+    "strengthCost": 5,
+    "selectionWeight": 1,
+    "kind": "ranged",
+    "pressure": 3,
+    "maxHitPoints": 15,
+    "armor": 0,
+    "hitRadius": 0.1875,
+    "shotDistance": 1,
+    "keywords": [
+      "cloaked"
+    ],
+    "sprite": {
+      "textureKey": "enemy_a_complete_full_body_isometric_view_of_a_sneaky_ma_max_px_frames_25_rows_5_cols_5"
+    },
+    "swarmSize": 1,
+    "swarmSizeMax": 3,
+    "movement": {
+      "kind": "blink",
+      "speedHexRadiusPerSecond": 0.5,
+      "wobbleAmplitudeHexRadius": 0.5
+    },
+    "cloakRange": 2
   }
 ]

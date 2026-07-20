@@ -111,6 +111,13 @@ export const resourceSlot = style({
     },
 });
 
+export const meterResourceSlot = style([
+    resourceSlot,
+    {
+        overflow: 'visible',
+    },
+]);
+
 export const resourcePlaceholder = style({
     width: '1px',
     minHeight: '30px',

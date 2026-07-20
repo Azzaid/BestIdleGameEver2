@@ -3,19 +3,20 @@ import {DEFAULT_INITIAL_CITY_BIOME} from "./constants.ts";
 import {
     CITY_HEX_BACKGROUND_TYPES,
     selectCityHexBackgroundSprite,
+    selectCityHexObstacleSprite,
     type CityBiome,
 } from "../models/city/hexBackgrounds.ts";
 import type {AxialCoordinate} from "../models/city/HexGrid.ts";
 import type {DevelopmentVectorValue} from "../models/DevlopmentVector.ts";
 
-export function selectBaseClaimedTerrainBackground(
+export function selectBaseCityTerrainBackground(
     biome: CityBiome,
     vector: DevelopmentVectorValue,
     coordinate: AxialCoordinate,
 ) {
     return selectCityHexBackgroundSprite(
         CITY_HEX_BACKGROUND_SPRITE_POOL,
-        CITY_HEX_BACKGROUND_TYPES.claimedTerrain,
+        CITY_HEX_BACKGROUND_TYPES.background,
         biome,
         vector,
         createCoordinateRandom(coordinate),
@@ -23,14 +24,17 @@ export function selectBaseClaimedTerrainBackground(
     );
 }
 
-export function selectClaimableTerrainBackground(
+export function selectCityHexObstacle(
     biome: CityBiome,
     vector: DevelopmentVectorValue,
     coordinate: AxialCoordinate,
+    isPermanent: boolean,
 ) {
-    return selectCityHexBackgroundSprite(
+    return selectCityHexObstacleSprite(
         CITY_HEX_BACKGROUND_SPRITE_POOL,
-        CITY_HEX_BACKGROUND_TYPES.claimableTerrain,
+        isPermanent
+            ? CITY_HEX_BACKGROUND_TYPES.permanentObstacle
+            : CITY_HEX_BACKGROUND_TYPES.removableObstacle,
         biome,
         vector,
         createCoordinateRandom(coordinate),

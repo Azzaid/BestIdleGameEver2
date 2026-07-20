@@ -1,38 +1,27 @@
 import {DEVELOPMENT_VECTORS, type DevelopmentVectorKey, type DevelopmentVectorValue} from "../DevlopmentVector.ts";
 
 export const CITY_HEX_BACKGROUND_TYPES = {
-    claimedTerrain: "claimedTerrain",
-    buildingUnderlay: "buildingUnderlay",
-    claimableTerrain: "claimableTerrain",
-    unclaimableTerrain: "unclaimableTerrain",
+    background: "background",
+    removableObstacle: "removableObstacle",
+    permanentObstacle: "permanentObstacle",
 } as const;
 
 export type CityHexBackgroundType = typeof CITY_HEX_BACKGROUND_TYPES[keyof typeof CITY_HEX_BACKGROUND_TYPES];
 
 export const CITY_BIOMES = {
+    plains: "plains",
+    desert: "desert",
+    marsh: "marsh",
     alpine: "alpine",
-    floodplain: "floodplain",
-    swamp: "swamp",
-    steppe: "steppe",
-    rocky: "rocky",
-    volcanic: "volcanic",
-    coastal: "coastal",
-    tundra: "tundra",
-    ancientForest: "ancientForest",
 } as const;
 
 export type CityBiome = typeof CITY_BIOMES[keyof typeof CITY_BIOMES];
 
 export const CITY_BIOME_LABELS: Record<CityBiome, string> = {
+    [CITY_BIOMES.plains]: "Plains",
+    [CITY_BIOMES.desert]: "Desert",
+    [CITY_BIOMES.marsh]: "Marsh",
     [CITY_BIOMES.alpine]: "Alpine",
-    [CITY_BIOMES.floodplain]: "Floodplain",
-    [CITY_BIOMES.swamp]: "Swamp",
-    [CITY_BIOMES.steppe]: "Steppe",
-    [CITY_BIOMES.rocky]: "Rocky",
-    [CITY_BIOMES.volcanic]: "Volcanic",
-    [CITY_BIOMES.coastal]: "Coastal",
-    [CITY_BIOMES.tundra]: "Tundra",
-    [CITY_BIOMES.ancientForest]: "Ancient forest",
 };
 
 export type CityHexBackgroundSpriteId = string;
@@ -55,12 +44,17 @@ export type CityHexBackgroundSelection = {
     backgroundDevelopmentVector: DevelopmentVectorValue;
 };
 
+export type CityHexObstacleSelection = {
+    obstacleSpriteId: CityHexBackgroundSpriteId;
+    obstacleDevelopmentVector: DevelopmentVectorValue;
+};
+
 const developmentVectorValues = Object.values(DEVELOPMENT_VECTORS)
     .filter(vector => vector !== DEVELOPMENT_VECTORS.neutral);
 const cityBiomeValues = Object.values(CITY_BIOMES);
 
 export function selectRandomCityBiome(random = Math.random): CityBiome {
-    return selectRandomItem(cityBiomeValues, random) ?? CITY_BIOMES.steppe;
+    return selectRandomItem(cityBiomeValues, random) ?? CITY_BIOMES.plains;
 }
 
 export function selectHexBackgroundVector(random = Math.random): DevelopmentVectorValue {
@@ -76,15 +70,50 @@ export function selectCityHexBackgroundSprite(
     fallbackBiome?: CityBiome,
 ): CityHexBackgroundSelection {
     const vectorKey = getDevelopmentVectorKey(vector);
-    const sprites = pool[type]?.[biome]?.[vectorKey] ?? [];
-    const fallbackSprites = fallbackBiome && fallbackBiome !== biome
-        ? pool[type]?.[fallbackBiome]?.[vectorKey] ?? []
-        : [];
-    const sprite = selectRandomItem(sprites, random) ?? selectRandomItem(fallbackSprites, random);
+    const biomeFallbackOrder = [
+        biome,
+        ...(fallbackBiome && fallbackBiome !== biome ? [fallbackBiome] : []),
+    ];
+    const vectorFallbackOrder = getVectorFallbackOrder(vectorKey);
+    const sprite = selectRandomItem(
+        biomeFallbackOrder.flatMap(candidateBiome => (
+            vectorFallbackOrder.flatMap(candidateVector => pool[type]?.[candidateBiome]?.[candidateVector] ?? [])
+        )),
+        random,
+    );
 
     return {
         backgroundSpriteId: sprite?.id ?? getFallbackCityHexBackgroundSpriteId(type, biome, vectorKey),
         backgroundDevelopmentVector: vector,
+    };
+}
+
+function getVectorFallbackOrder(vector: DevelopmentVectorKey): DevelopmentVectorKey[] {
+    return [
+        vector,
+        "medieval",
+        "tech",
+        "nature",
+        "aether",
+    ].filter((candidate, index, candidates): candidate is DevelopmentVectorKey => (
+        candidate !== "neutral"
+        && candidates.indexOf(candidate) === index
+    ));
+}
+
+export function selectCityHexObstacleSprite(
+    pool: CityHexBackgroundSpritePool,
+    type: typeof CITY_HEX_BACKGROUND_TYPES.removableObstacle | typeof CITY_HEX_BACKGROUND_TYPES.permanentObstacle,
+    biome: CityBiome,
+    vector: DevelopmentVectorValue,
+    random = Math.random,
+    fallbackBiome?: CityBiome,
+): CityHexObstacleSelection {
+    const selection = selectCityHexBackgroundSprite(pool, type, biome, vector, random, fallbackBiome);
+
+    return {
+        obstacleSpriteId: selection.backgroundSpriteId,
+        obstacleDevelopmentVector: selection.backgroundDevelopmentVector,
     };
 }
 

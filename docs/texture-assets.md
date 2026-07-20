@@ -18,7 +18,7 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - City wall segment metadata: `src/assets/wallSegments/<vector>/wall_<vector>_<id>.json`
 - City wall-top/superstructure textures: `src/assets/wallSuperstructures/<vector>/walltop_<vector>_<id>.png`
 - City wall-top/superstructure metadata: `src/assets/wallSuperstructures/<vector>/walltop_<vector>_<id>.json`
-- City hex background textures: `src/assets/hexBackgrounds/<type>/<biome>/<vector>/<id>.png`
+- City hex background and obstacle textures: `src/assets/hexBackgrounds/<type>/<biome>/<vector>/<id>.png`
 - Tower component textures: `src/assets/gunParts/<vector>/<vector>_<slot>_<id>.png`
 - Tower component metadata: `src/assets/gunParts/<vector>/<vector>_<slot>_<id>.json`
 - Ammo projectile textures: `src/assets/projectiles/<vector>/<vector>_projectile_<id>.png`
@@ -31,8 +31,8 @@ Use this when adding or moving gameplay textures. Keep active textures in typed 
 - Unused images: `src/assets/unused/...`
 
 Use the development vector folder names from `src/models/DevlopmentVector.ts`: `neutral`, `tech`, `nature`, `medieval`, and `aether`. Neutral starter content currently reuses legacy medieval texture file names and IDs where needed for compatibility.
-Use the city hex background type folder names from `src/models/city/hexBackgrounds.ts`: `claimedTerrain`, `buildingUnderlay`, `claimableTerrain`, and `unclaimableTerrain`.
-Use the biome folder names from `src/models/city/hexBackgrounds.ts`: `alpine`, `floodplain`, `swamp`, `steppe`, `rocky`, `volcanic`, `coastal`, `tundra`, and `ancientForest`.
+Use the city hex background type folder names from `src/models/city/hexBackgrounds.ts`: `background`, `removableObstacle`, and `permanentObstacle`.
+Use the biome folder names from `src/models/city/hexBackgrounds.ts`: `plains`, `desert`, `marsh`, and `alpine`.
 Use kebab-case for the file `<id>` segment. The editor derives game IDs from these filenames, for example `wall_medieval_scrap-barricade.png` maps to `wallSegments.medieval.scrapBarricade`.
 
 ## Add A City Building Texture
@@ -46,12 +46,12 @@ Use kebab-case for the file `<id>` segment. The editor derives game IDs from the
 
 ## Add A City Hex Background Texture
 
-1. Pick the terrain type, biome, and development vector folder.
+1. Pick the asset type, biome, and development vector folder.
 2. Put the PNG in `src/assets/hexBackgrounds/<type>/<biome>/<vector>/`.
 3. The runtime catalog in `src/data/cityHexBackgrounds.ts` discovers the file and exposes it as `hexBackgrounds.<type>.<biome>.<vector>.<fileStem>`.
-4. City hexes store the selected background sprite id in city state. If no sprite exists for the selected type, biome, and vector, the City page fills the hex with a biome/vector fallback color.
-5. Building construction switches the hex from `claimedTerrain` to `buildingUnderlay`; demolition returns it to `claimedTerrain`.
-6. In local debug mode, `/hex-background-editor` lists discovered hex background sprites and uploads PNGs through the local data server endpoint `POST /hex-background-sprites`.
+4. City hexes store a hidden base `background` sprite id in city state. If no sprite exists for the selected biome and vector, the City page fills the hex with a biome/vector fallback color.
+5. Unclaimed hexes within the maximum city radius draw a `removableObstacle` sprite over the base background. Hexes outside the maximum city radius draw a `permanentObstacle` sprite. Claimed hexes and built hexes draw only the base background under city objects.
+6. In local debug mode, `/hex-background-editor` lists discovered sprites and uploads PNGs through the local data server endpoint `POST /hex-background-sprites`.
 
 ## Add A Wall Segment Texture
 

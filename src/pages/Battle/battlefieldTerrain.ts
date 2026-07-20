@@ -1,7 +1,6 @@
 import {
     getCityHexBackgroundSpriteSrc,
-    selectBaseClaimedTerrainBackground,
-    selectClaimableTerrainBackground,
+    selectBaseCityTerrainBackground,
 } from "../../data/cityTerrainBackgrounds.ts";
 import {
     getDevelopmentVectorKey,
@@ -82,10 +81,10 @@ export function createBattlefieldTerrainHexes({
                 : sideFieldDepth === 1
                     ? SIDE_FIELD_SHADE_OPACITY
                     : undefined;
-            const background = sideFieldDepth > 0
-                ? selectClaimableTerrainBackground(biome, terrainVector, coordinate)
-                : baseTerrainBackgroundsByKey?.[cellKey]
-                    ?? selectBaseClaimedTerrainBackground(biome, terrainVector, coordinate);
+            const storedBackground = baseTerrainBackgroundsByKey?.[cellKey];
+            const background = storedBackground && getCityHexBackgroundSpriteSrc(storedBackground.backgroundSpriteId)
+                ? storedBackground
+                : selectBaseCityTerrainBackground(biome, terrainVector, coordinate);
 
             terrainHexes.push({
                 ...coordinate,
@@ -199,15 +198,10 @@ function getBattlefieldTerrainFallbackFill(
     vector: DevelopmentVectorValue,
 ): number {
     const biomeHue: Record<CityBiome, number> = {
+        plains: 62,
+        desert: 38,
+        marsh: 112,
         alpine: 132,
-        floodplain: 92,
-        swamp: 112,
-        steppe: 62,
-        rocky: 34,
-        volcanic: 8,
-        coastal: 188,
-        tundra: 200,
-        ancientForest: 124,
     };
     const vectorKey = getDevelopmentVectorKey(vector);
     const vectorHueOffset: Record<string, number> = {

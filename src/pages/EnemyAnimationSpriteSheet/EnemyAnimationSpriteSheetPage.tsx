@@ -408,8 +408,14 @@ function PixiAnimationPreview(props: {
           image: props.imageUrl,
         },
       };
+      const texture = await loadPreviewTexture(props.imageUrl);
+      if (disposed || app !== nextApp) {
+        texture.destroy(true);
+        return;
+      }
+
       sheet = new Spritesheet({
-        texture: Texture.from(props.imageUrl),
+        texture,
         data: atlas,
       });
       await sheet.parse();
@@ -444,6 +450,21 @@ function PixiAnimationPreview(props: {
   }, [props.atlas, props.fps, props.frameKeys, props.imageUrl, props.rotationDegrees, props.targetHeight, props.targetWidth]);
 
   return <div ref={hostRef} className={s.pixiHost} />;
+}
+
+async function loadPreviewTexture(imageUrl: string): Promise<Texture> {
+  const image = await loadPreviewImage(imageUrl);
+
+  return Texture.from(image, true);
+}
+
+function loadPreviewImage(imageUrl: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Sprite sheet preview image could not be loaded."));
+    image.src = imageUrl;
+  });
 }
 
 function createFrameRects(

@@ -372,7 +372,7 @@
   },
   {
     "id": "buildings.nature.bigPoisonousMushrooms",
-    "visualAssetId": "building_nature_big-poisonous-mushrooms",
+    "visualAssetId": "buildings.nature.bigPoisonousMushroomsFromMycelium",
     "name": "Big poisonous mushrooms",
     "kind": "superstructure",
     "description": "Grown up poisonous mushrooms. Can be gathered and pressed into living poisonous gun platform that will help to slide a weapon and create dangerous spore cloud. Better no to plant them near animals.",

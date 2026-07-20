@@ -14,12 +14,9 @@ import type {CityState} from "../../models/store/city.ts";
 import {detectMultistructures} from "../../models/city/multistructureDetection.ts";
 import {STRUCTURES, STRUCTURES_BY_ID} from "../../data/buildings/index.ts";
 import {superstructures, walls} from "../../data/ids.ts";
-import {CITY_HEX_BACKGROUND_SPRITE_POOL} from "../../data/cityHexBackgrounds.ts";
-import {selectBaseClaimedTerrainBackground} from "../../data/cityTerrainBackgrounds.ts";
+import {selectBaseCityTerrainBackground, selectCityHexObstacle} from "../../data/cityTerrainBackgrounds.ts";
 import {
-    CITY_HEX_BACKGROUND_TYPES,
     type CityBiome,
-    selectCityHexBackgroundSprite,
     selectRandomCityBiome,
 } from "../../models/city/hexBackgrounds.ts";
 import {
@@ -40,24 +37,6 @@ const UNCLAIMED_REVEAL_RING_COUNT = 2;
 const INITIAL_EXODUS_ARROW_COUNT = 1;
 const EXODUS_SIDEWAYS_DRIFT = 0.62;
 const EXODUS_MIN_DOWNWARD_PULL = 0.78;
-
-const getTerrainBackground = (biome: CityBiome, isUnclaimed: boolean, vector: DevelopmentVectorValue) => selectCityHexBackgroundSprite(
-    CITY_HEX_BACKGROUND_SPRITE_POOL,
-    isUnclaimed ? CITY_HEX_BACKGROUND_TYPES.claimableTerrain : CITY_HEX_BACKGROUND_TYPES.claimedTerrain,
-    biome,
-    vector,
-    Math.random,
-    DEFAULT_INITIAL_CITY_BIOME,
-);
-
-const getBuildingUnderlayBackground = (biome: CityBiome, vector: DevelopmentVectorValue = DEVELOPMENT_VECTORS.medieval) => selectCityHexBackgroundSprite(
-    CITY_HEX_BACKGROUND_SPRITE_POOL,
-    CITY_HEX_BACKGROUND_TYPES.buildingUnderlay,
-    biome,
-    vector,
-    Math.random,
-    DEFAULT_INITIAL_CITY_BIOME,
-);
 
 const createExodusArrows = (count = INITIAL_EXODUS_ARROW_COUNT) => Array.from({length: count}, (_, index) => {
     const x = (Math.random() * 2 - 1) * EXODUS_SIDEWAYS_DRIFT;
@@ -86,10 +65,13 @@ const getInitialHexes = ((
         const rowMax = Math.min(mapRadius, -column + mapRadius);
         for (let row = rowMin; row <= rowMax; row++) {
             const isUnclaimed = getAxialDistance({column, row}, {column: 0, row: 0}) > cityRadius;
+            const isPermanentObstacle = getAxialDistance({column, row}, {column: 0, row: 0}) > maxCitySize;
             const isWall = !isUnclaimed && row === -cityRadius;
             const terrainVector = terrainVectorMap[getTerrainVectorMapKey({column, row})] ?? DEVELOPMENT_VECTORS.medieval;
-            const background = getTerrainBackground(biome, isUnclaimed, terrainVector);
-            const baseTerrainBackground = selectBaseClaimedTerrainBackground(biome, terrainVector, {column, row});
+            const baseTerrainBackground = selectBaseCityTerrainBackground(biome, terrainVector, {column, row});
+            const obstacle = isUnclaimed
+                ? selectCityHexObstacle(biome, terrainVector, {column, row}, isPermanentObstacle)
+                : undefined;
 
             generatedCells.push({
                 column,
@@ -99,10 +81,13 @@ const getInitialHexes = ((
                 kind: isWall ? "wall" : "city",
                 buildingKey: null,
                 developmentVector: DEVELOPMENT_VECTORS.medieval,
-                backgroundSpriteId: background.backgroundSpriteId,
-                backgroundDevelopmentVector: background.backgroundDevelopmentVector,
+                backgroundSpriteId: baseTerrainBackground.backgroundSpriteId,
+                backgroundDevelopmentVector: baseTerrainBackground.backgroundDevelopmentVector,
                 baseTerrainSpriteId: baseTerrainBackground.backgroundSpriteId,
                 baseTerrainDevelopmentVector: baseTerrainBackground.backgroundDevelopmentVector,
+                obstacleSpriteId: obstacle?.obstacleSpriteId,
+                obstacleDevelopmentVector: obstacle?.obstacleDevelopmentVector,
+                obstacleIsPermanent: obstacle ? isPermanentObstacle : undefined,
                 wallKey: isWall ? walls.neutral.scrapBarricade : null,
                 wallDevelopmentVector: DEVELOPMENT_VECTORS.neutral,
                 wallTopKey: column === 0 && isWall ? superstructures.neutral.oldStump : null,
@@ -136,8 +121,9 @@ const getGeneratedHexes = (
             }
 
             const terrainVector = terrainVectorMap[getTerrainVectorMapKey({column, row})] ?? DEVELOPMENT_VECTORS.medieval;
-            const background = getTerrainBackground(biome, true, terrainVector);
-            const baseTerrainBackground = selectBaseClaimedTerrainBackground(biome, terrainVector, {column, row});
+            const baseTerrainBackground = selectBaseCityTerrainBackground(biome, terrainVector, {column, row});
+            const isPermanentObstacle = getAxialDistance({column, row}, {column: 0, row: 0}) > maxCitySize;
+            const obstacle = selectCityHexObstacle(biome, terrainVector, {column, row}, isPermanentObstacle);
 
             generatedCells.push({
                 column,
@@ -147,10 +133,13 @@ const getGeneratedHexes = (
                 kind: "city",
                 buildingKey: null,
                 developmentVector: DEVELOPMENT_VECTORS.medieval,
-                backgroundSpriteId: background.backgroundSpriteId,
-                backgroundDevelopmentVector: background.backgroundDevelopmentVector,
+                backgroundSpriteId: baseTerrainBackground.backgroundSpriteId,
+                backgroundDevelopmentVector: baseTerrainBackground.backgroundDevelopmentVector,
                 baseTerrainSpriteId: baseTerrainBackground.backgroundSpriteId,
                 baseTerrainDevelopmentVector: baseTerrainBackground.backgroundDevelopmentVector,
+                obstacleSpriteId: obstacle.obstacleSpriteId,
+                obstacleDevelopmentVector: obstacle.obstacleDevelopmentVector,
+                obstacleIsPermanent: isPermanentObstacle,
                 wallKey: null,
                 wallDevelopmentVector: undefined,
                 wallTopKey: null,
@@ -246,17 +235,16 @@ export const citySlice = createSlice({
             const currentHex = state.hexes[hexToBuildIndex];
             if (currentHex.isUnclaimed || currentHex.isLost || currentHex.kind !== "city" || currentHex.buildingKey || currentHex.partOfStructureId) return;
 
-            const background = action.payload.developmentVector === DEVELOPMENT_VECTORS.neutral
-                ? {
-                    backgroundSpriteId: currentHex.backgroundSpriteId,
-                    backgroundDevelopmentVector: currentHex.backgroundDevelopmentVector,
-                }
-                : getBuildingUnderlayBackground(state.biome, action.payload.developmentVector);
-
             state.hexes[hexToBuildIndex] = {
                 ...action.payload,
                 kind: currentHex.kind,
-                ...background,
+                backgroundSpriteId: currentHex.backgroundSpriteId,
+                backgroundDevelopmentVector: currentHex.backgroundDevelopmentVector,
+                baseTerrainSpriteId: currentHex.baseTerrainSpriteId,
+                baseTerrainDevelopmentVector: currentHex.baseTerrainDevelopmentVector,
+                obstacleSpriteId: currentHex.obstacleSpriteId,
+                obstacleDevelopmentVector: currentHex.obstacleDevelopmentVector,
+                obstacleIsPermanent: currentHex.obstacleIsPermanent,
                 spriteKey: null,
                 initialBuildingKey: null,
                 partOfStructureId: null,
@@ -307,9 +295,6 @@ export const citySlice = createSlice({
                 const initialBuildingKey = hex.initialBuildingKey ?? hex.buildingKey;
                 hex.buildingKey = structureId;
                 hex.developmentVector = DEVELOPMENT_VECTORS[structureDef.vector];
-                if (hex.developmentVector !== DEVELOPMENT_VECTORS.neutral) {
-                    Object.assign(hex, getBuildingUnderlayBackground(state.biome, hex.developmentVector));
-                }
                 hex.initialBuildingKey = initialBuildingKey;
                 hex.partOfStructureId = structureId;
                 hex.structureCoreCellKey = coreCellKey;
@@ -364,7 +349,7 @@ export const citySlice = createSlice({
                         backgroundSpriteId: hex.baseTerrainSpriteId,
                         backgroundDevelopmentVector: hex.baseTerrainDevelopmentVector ?? terrainVector,
                     }
-                    : selectBaseClaimedTerrainBackground(state.biome, terrainVector, hex);
+                    : selectBaseCityTerrainBackground(state.biome, terrainVector, hex);
                 if (!hex.isLost) {
                     Object.assign(hex, baseTerrainBackground);
                 }
@@ -435,7 +420,7 @@ export const citySlice = createSlice({
                         backgroundSpriteId: hex.baseTerrainSpriteId,
                         backgroundDevelopmentVector: hex.baseTerrainDevelopmentVector ?? terrainVector,
                     }
-                    : selectBaseClaimedTerrainBackground(state.biome, terrainVector, hex);
+                    : selectBaseCityTerrainBackground(state.biome, terrainVector, hex);
                 Object.assign(hex, baseTerrainBackground);
                 hex.baseTerrainSpriteId = baseTerrainBackground.backgroundSpriteId;
                 hex.baseTerrainDevelopmentVector = baseTerrainBackground.backgroundDevelopmentVector;

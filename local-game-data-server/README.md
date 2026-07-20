@@ -102,7 +102,7 @@ Use `kind=projectile` for ammo projectile sprites. Projectile uploads save PNG f
 `POST /global-events` writes event definitions to `src/data/globalEvents/events.json`.
 `POST /global-event-images` saves a PNG event image under `src/assets/events/{fileStem}.png`. Send it as `multipart/form-data` with `fileStem`, optional `previousFileStem`, and an `image` file field.
 `DELETE /global-event-images` removes an event PNG. Send JSON with `fileStem`.
-`POST /hex-background-sprites` saves a PNG under `src/assets/hexBackgrounds/{type}/{biome}/{vector}/{fileStem}.png`. Send it as `multipart/form-data` with `type`, `biome`, `vector`, `fileStem`, and an `image` file field.
+`POST /hex-background-sprites` saves a PNG under `src/assets/hexBackgrounds/{type}/{biome}/{vector}/{fileStem}.png`. Send it as `multipart/form-data` with `type`, `biome`, `vector`, `fileStem`, and an `image` file field. Supported types are `background`, `removableObstacle`, and `permanentObstacle`; supported biomes are `plains`, `desert`, `marsh`, and `alpine`.
 `POST /battle-effect-sprites` saves a PNG under `src/assets/battle/effects/{fileStem}.png`. Send it as `multipart/form-data` with `fileStem` and an `image` file field.
 `POST /battle-damage-area-vfx` writes damage-area VFX mappings to `src/data/battleDamageAreaVfxDefinitions.json`. Send JSON with a `definition` object.
 `POST /global-modifiers` writes modifier definitions to `src/data/globalModifiers/modifiers.json`.

@@ -32,6 +32,7 @@ type MonsterDefinition = {
   maxHitPoints: number;
   armor: number;
   hitRadius: number;
+  cloakRange?: number;
   shotDistance?: number;
   keywords: string[];
   sprite: {
@@ -59,6 +60,7 @@ type MonsterForm = {
   maxHitPoints: string;
   armor: string;
   hitRadius: string;
+  cloakRange: string;
   shotDistance: string;
   keywords: string;
   textureKey: string;
@@ -379,6 +381,7 @@ export default function MonsterEditPage() {
             <NumberField label="Hit points" value={form.maxHitPoints} onChange={value => updateForm("maxHitPoints", value)} />
             <NumberField label="Armor" value={form.armor} onChange={value => updateForm("armor", value)} />
             <NumberField label="Hit radius (hexR)" value={form.hitRadius} onChange={value => updateForm("hitRadius", value)} />
+            <NumberField label="Cloak range (hexR)" value={form.cloakRange} onChange={value => updateForm("cloakRange", value)} />
             {form.kind === "ranged" && (
               <NumberField label="Shot distance (hexR)" value={form.shotDistance} onChange={value => updateForm("shotDistance", value)} />
             )}
@@ -650,6 +653,7 @@ function createInitialForm(monsterId: string, monster: MonsterDefinition | null)
     maxHitPoints: String(source.maxHitPoints),
     armor: String(source.armor),
     hitRadius: String(source.hitRadius),
+    cloakRange: stringifyOptionalNumber(source.cloakRange, ""),
     shotDistance: stringifyOptionalNumber(source.shotDistance, ""),
     keywords: source.keywords.join(", "),
     textureKey: source.sprite.textureKey,
@@ -680,6 +684,7 @@ function createDefaultMonster(region: MonsterRegion, itemName: string): MonsterD
     maxHitPoints: 4,
     armor: 0,
     hitRadius: 0.1875,
+    cloakRange: undefined,
     keywords: [],
     sprite: {
       textureKey: `enemy_${camelToSnake(normalizeIdPart(itemName))}`,
@@ -710,6 +715,7 @@ function createPreview(
     maxHitPoints: parseNumberOrFallback(form.maxHitPoints, 1),
     armor: parseNumberOrFallback(form.armor, 0),
     hitRadius: parseNumberOrFallback(form.hitRadius, 1),
+    cloakRange: parsePositiveOptionalNumber(form.cloakRange) ?? undefined,
     shotDistance: form.kind === "ranged" ? parseOptionalNumber(form.shotDistance) ?? undefined : undefined,
     keywords: parseKeywords(form.keywords),
     sprite: {
@@ -815,6 +821,11 @@ function parseOptionalNumber(value: string): number | null {
   if (value.trim() === "") return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parsePositiveOptionalNumber(value: string): number | null {
+  const parsed = parseOptionalNumber(value);
+  return parsed !== null && parsed > 0 ? parsed : null;
 }
 
 function parseNumberOrFallback(value: string, fallback: number): number {

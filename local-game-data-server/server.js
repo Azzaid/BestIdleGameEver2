@@ -1424,8 +1424,8 @@ async function saveHexBackgroundSpriteUpload(fields, imageFile) {
 }
 
 function resolveHexBackgroundSpriteTarget(action) {
-  const types = new Set(['claimedTerrain', 'buildingUnderlay', 'claimableTerrain', 'unclaimableTerrain'])
-  const biomes = new Set(['alpine', 'floodplain', 'swamp', 'steppe', 'rocky', 'volcanic', 'coastal', 'tundra', 'ancientForest'])
+  const types = new Set(['background', 'removableObstacle', 'permanentObstacle'])
+  const biomes = new Set(['plains', 'desert', 'marsh', 'alpine'])
   const vectors = new Set(['tech', 'nature', 'medieval', 'aether'])
 
   if (!types.has(action?.type)) {

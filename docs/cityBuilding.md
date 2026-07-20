@@ -83,7 +83,7 @@ Current implementation note, 2026-06-24:
 - Each hex stores its own terrain background sprite id and background vector from the city terrain vector map. The City route draws that per-hex background clipped to the hex instead of relying on one global city image.
 - City state stores both claimed cells and two surrounding unclaimed rings. Unclaimed cells are regular hex records with `isUnclaimed: true`; gameplay selectors filter them out until expansion claims them.
 - Terrain vector maps use global vector weights, small spot and short-line influence seeds, coordinate noise, softmax-style weighted selection, and a light cleanup pass to remove isolated single-hex artifacts.
-- Empty and cleared hexes use `claimedTerrain` backgrounds selected from `src/assets/hexBackgrounds/<type>/<biome>/<vector>`. Built hexes use `buildingUnderlay` backgrounds based on the city biome and the building or multistructure vector. Missing sprites fall back to a biome/vector color fill.
+- Empty, cleared, and built hexes use hidden base `background` sprites selected from `src/assets/hexBackgrounds/<type>/<biome>/<vector>`. Unclaimed expansion hexes draw `removableObstacle` sprites over that base background, while map cells outside the maximum city radius draw `permanentObstacle` sprites. Missing background sprites fall back to a biome/vector color fill.
 - City hexes can hold building content; wall hexes separately track wall segment and wall superstructure layers.
 - Building content is data-driven through `src/data/buildings/<vector>.json` and normalized by `createBuildingFactory`.
 - Multistructure candidates are detected from connected clusters using `STRUCTURES` derived from superstructure definitions.

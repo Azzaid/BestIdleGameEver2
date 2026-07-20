@@ -44,7 +44,7 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
         <div className={s.upkeepBar}>
             <div className={s.resourceRow}>
                 {renderResourceCard(DEVELOPMENT_VECTORS.medieval, providedUpkeep, effectiveUpkeep)}
-                <div className={s.resourceSlot}>
+                <div className={s.meterResourceSlot}>
                     {showNatureBalance ? (
                         <NatureBalanceTriangle
                             fungi={homogeneousTotals[HOMOGENEOUS_VALUE_IDS.resourceFungi] ?? 0}
@@ -58,7 +58,7 @@ export const UpkeepBar = ({rightSlot}: {rightSlot?: ReactNode}) => {
                     {signatureStatus.isBesieged && <span className={s.siegeStatusText}>SIEGE</span>}
                 </div>
                 {renderResourceCard(DEVELOPMENT_VECTORS.tech, providedUpkeep, effectiveUpkeep)}
-                <div className={s.resourceSlot}>
+                <div className={s.meterResourceSlot}>
                     {showAetherAtmosphere ? (
                         <div className={s.aetherMeterSlot}>
                             <AetherAtmosphereOrb atmosphere={aetherAtmosphere} />
