@@ -39,7 +39,8 @@ export function BattleStage(props: {
     resolvedTowers: TowerAssemblyResolved[];
     initialThreat: number;
     targetThreat: number;
-    threatGrowthPerSecond: number;
+    siegeThreatStepPercent: number;
+    initialSiegeTotalStrength: number;
     waveThreatToCityThreatRatio: number;
     simultaneousMonstersLimit: number;
     timeBetweenWavesSeconds: number;
@@ -47,6 +48,7 @@ export function BattleStage(props: {
     completesWhenThreatTargetReached: boolean;
     wallResilience: number;
     wallIgnoredThreat: number;
+    cloakRevealRange: number;
     monsterMovementModifiers: MonsterMovementModifiers;
     wallZoneEffects: WallZoneEffects;
     showDebugOutlines: boolean;
@@ -69,7 +71,8 @@ export function BattleStage(props: {
     const runtimePropsRef = useRef({
         initialThreat: props.initialThreat,
         targetThreat: props.targetThreat,
-        threatGrowthPerSecond: props.threatGrowthPerSecond,
+        siegeThreatStepPercent: props.siegeThreatStepPercent,
+        initialSiegeTotalStrength: props.initialSiegeTotalStrength,
         waveThreatToCityThreatRatio: props.waveThreatToCityThreatRatio,
         simultaneousMonstersLimit: props.simultaneousMonstersLimit,
         timeBetweenWavesSeconds: props.timeBetweenWavesSeconds,
@@ -77,6 +80,7 @@ export function BattleStage(props: {
         completesWhenThreatTargetReached: props.completesWhenThreatTargetReached,
         wallResilience: props.wallResilience,
         wallIgnoredThreat: props.wallIgnoredThreat,
+        cloakRevealRange: props.cloakRevealRange,
         monsterMovementModifiers: props.monsterMovementModifiers,
         wallZoneEffects: props.wallZoneEffects,
         showSiegeOutline: props.showSiegeOutline,
@@ -92,7 +96,8 @@ export function BattleStage(props: {
         runtimePropsRef.current = {
             initialThreat: props.initialThreat,
             targetThreat: props.targetThreat,
-            threatGrowthPerSecond: props.threatGrowthPerSecond,
+            siegeThreatStepPercent: props.siegeThreatStepPercent,
+            initialSiegeTotalStrength: props.initialSiegeTotalStrength,
             waveThreatToCityThreatRatio: props.waveThreatToCityThreatRatio,
             simultaneousMonstersLimit: props.simultaneousMonstersLimit,
             timeBetweenWavesSeconds: props.timeBetweenWavesSeconds,
@@ -100,6 +105,7 @@ export function BattleStage(props: {
             completesWhenThreatTargetReached: props.completesWhenThreatTargetReached,
             wallResilience: props.wallResilience,
             wallIgnoredThreat: props.wallIgnoredThreat,
+            cloakRevealRange: props.cloakRevealRange,
             monsterMovementModifiers: props.monsterMovementModifiers,
             wallZoneEffects: props.wallZoneEffects,
             showSiegeOutline: props.showSiegeOutline,
@@ -110,7 +116,8 @@ export function BattleStage(props: {
     }, [
         props.initialThreat,
         props.targetThreat,
-        props.threatGrowthPerSecond,
+        props.siegeThreatStepPercent,
+        props.initialSiegeTotalStrength,
         props.waveThreatToCityThreatRatio,
         props.simultaneousMonstersLimit,
         props.timeBetweenWavesSeconds,
@@ -118,6 +125,7 @@ export function BattleStage(props: {
         props.completesWhenThreatTargetReached,
         props.wallResilience,
         props.wallIgnoredThreat,
+        props.cloakRevealRange,
         props.monsterMovementModifiers,
         props.wallZoneEffects,
         props.showSiegeOutline,
@@ -245,7 +253,8 @@ export function BattleStage(props: {
                 app: nextApp,
                 initialThreat: runtimeProps.initialThreat,
                 targetThreat: runtimeProps.targetThreat,
-                threatGrowthPerSecond: runtimeProps.threatGrowthPerSecond,
+                siegeThreatStepPercent: runtimeProps.siegeThreatStepPercent,
+                initialSiegeTotalStrength: runtimeProps.initialSiegeTotalStrength,
                 waveThreatToCityThreatRatio: runtimeProps.waveThreatToCityThreatRatio,
                 simultaneousMonstersLimit: runtimeProps.simultaneousMonstersLimit,
                 timeBetweenWavesSeconds: runtimeProps.timeBetweenWavesSeconds,
@@ -253,6 +262,7 @@ export function BattleStage(props: {
                 completesWhenThreatTargetReached: runtimeProps.completesWhenThreatTargetReached,
                 wallResilience: runtimeProps.wallResilience,
                 wallIgnoredThreat: runtimeProps.wallIgnoredThreat,
+                cloakRevealRange: runtimeProps.cloakRevealRange,
                 monsterMovementModifiers: runtimeProps.monsterMovementModifiers,
                 wallZoneEffects: runtimeProps.wallZoneEffects,
                 onBattleMetrics: runtimeProps.onBattleMetrics,
@@ -489,12 +499,14 @@ export function BattleStage(props: {
             lastRuntimeResetKeyRef.current = props.runtimeResetKey;
             world.currentThreat = props.initialThreat;
             world.siegeElapsedSeconds = 0;
+            world.siegeDefeatedStrength = 0;
+            world.siegeTotalStrength = props.initialSiegeTotalStrength;
             world.siegePressure = 0;
+            world.defeatedEnemies = 0;
             world.battleEnded = false;
             world.lastBattleEndWasHandled = false;
             world.pendingBattleOutcome = undefined;
             world.siegeOverwhelmedWasHandled = false;
-            world.siegeMeterFrozen = false;
             world.retreatingEnemyIds.clear();
             for (const spawner of world.spawners) {
                 spawner.destroy(world);
@@ -511,7 +523,8 @@ export function BattleStage(props: {
 
         world.config.initialThreat = props.initialThreat;
         world.config.targetThreat = props.targetThreat;
-        world.config.threatGrowthPerSecond = props.threatGrowthPerSecond;
+        world.config.siegeThreatStepPercent = props.siegeThreatStepPercent;
+        world.config.initialSiegeTotalStrength = props.initialSiegeTotalStrength;
         world.config.waveThreatToCityThreatRatio = props.waveThreatToCityThreatRatio;
         world.config.simultaneousMonstersLimit = props.simultaneousMonstersLimit;
         world.config.timeBetweenWavesSeconds = props.timeBetweenWavesSeconds;
@@ -519,6 +532,7 @@ export function BattleStage(props: {
         world.config.completesWhenThreatTargetReached = props.completesWhenThreatTargetReached;
         world.config.wallResilience = props.wallResilience;
         world.config.wallIgnoredThreat = props.wallIgnoredThreat;
+        world.config.cloakRevealRange = props.cloakRevealRange;
         world.config.monsterMovementModifiers = props.monsterMovementModifiers;
         world.config.wallZoneEffects = props.wallZoneEffects;
         world.config.onBattleMetrics = props.onBattleMetrics;
@@ -553,7 +567,8 @@ export function BattleStage(props: {
         props.runtimeResetKey,
         props.retreatEnemiesSignal,
         props.targetThreat,
-        props.threatGrowthPerSecond,
+        props.siegeThreatStepPercent,
+        props.initialSiegeTotalStrength,
         props.waveThreatToCityThreatRatio,
         props.simultaneousMonstersLimit,
         props.timeBetweenWavesSeconds,
@@ -561,6 +576,7 @@ export function BattleStage(props: {
         props.completesWhenThreatTargetReached,
         props.wallResilience,
         props.wallIgnoredThreat,
+        props.cloakRevealRange,
         props.monsterMovementModifiers,
         props.wallZoneEffects,
         props.showSiegeOutline,
@@ -1056,6 +1072,8 @@ export function createTowerData({
         aoeRadius: stats.aoeRadius,
         keywords,
         targetingDistanceLimit: stats.targetingDistanceLimit,
+        reconRange: stats.reconRange,
+        detectionRange: stats.detectionRange,
         maximumRange: stats.maximumRange,
         minimumRange: stats.minimumRange,
         maximumRotationAngle: stats.maximumRotationAngle,

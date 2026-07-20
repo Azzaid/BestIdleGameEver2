@@ -16,6 +16,10 @@ Current implementation note, 2026-06-24:
 - Runtime code is split across world state, asset loading, spawning, aiming, firing, projectile movement, monster movement, lifespan, health, wall load, siege, wall zone effects, UI health bars, and Pixi synchronization under `src/pages/Battle`.
 - Battle consumes resolved tower, wall, enemy, and siege state from the shared data/value architecture rather than owning the whole progression model.
 - The current trigger model uses city signature versus controlled territory: when effective signature exceeds controlled territory, the city becomes besieged. Siege escalates battle pressure, but research, city building, demolition, tower rebuilding, and migration remain available. Wall-protected territory claims remain available during siege; expansion outside the protected hex is available only when there is no active siege.
+- The visible siege meter tracks defeated monster `strengthCost` divided by the precomputed total wave strength budget for the siege. It fills from kills rather than elapsed time.
+- Siege wave timing resolves through the `siege.waveTime` homogeneous value, which defaults to `SIEGE_WAVE_INTERVAL_SECONDS`. A siege wave can release when that countdown expires or immediately after all currently spawned enemies are cleared.
+- Siege threat advances by `siege.threatStepPercent` each released wave until the target-threat wave has been generated.
+- Enemies may define `cloakRange`. Cloaked enemies start transparent, fade in over that distance from the battlefield top, cannot be chosen by tower targeting or single-target tower effects until fully visible, and are immediately revealed inside the wall-distance reveal band defined by the best resolved `tower.detectionRange` among active towers and standalone wall-top defenses. Projectile collision, AOE, wall zones, and tower zones can still harm cloaked enemies.
 
 ---
 

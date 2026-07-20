@@ -52,6 +52,8 @@ export function homogeneousValueTotalsToTowerStats(
         projectileSpread: totals[HOMOGENEOUS_VALUE_IDS.towerProjectileSpread] ?? 0,
         aoeRadius: distance(HOMOGENEOUS_VALUE_IDS.towerAoeRadius),
         targetingDistanceLimit: distance(HOMOGENEOUS_VALUE_IDS.towerTargetingDistanceLimit),
+        reconRange: distance(HOMOGENEOUS_VALUE_IDS.towerReconRange),
+        detectionRange: distance(HOMOGENEOUS_VALUE_IDS.towerDetectionRange),
         maximumRange: distance(HOMOGENEOUS_VALUE_IDS.towerMaximumRange, Infinity),
         minimumRange: distance(HOMOGENEOUS_VALUE_IDS.towerMinimumRange),
         maximumRotationAngle: totals[HOMOGENEOUS_VALUE_IDS.towerMaximumRotationAngle] ?? Infinity,

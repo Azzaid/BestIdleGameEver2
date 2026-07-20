@@ -4,6 +4,7 @@ import type { TowerData } from '../../../models/battle/tower.ts';
 import type { World } from '../../../models/battle/world.ts';
 import { applyDamageModifiers } from '../keywords/damageResolver.ts';
 import { applyEnemyInfection } from './statusEffectsSystem.ts';
+import { isEnemyTargetable } from './enemyCloakSystem.ts';
 
 const PUSH_BACK_DURATION_SECONDS = 0.5;
 const MINIMUM_OVERRIDE_SPEED_PIXELS_PER_SECOND = 20;
@@ -476,6 +477,8 @@ function findClosestEnemyToTower(
   const range2 = range * range;
 
   for (const [enemyId, enemy] of world.enemiesData) {
+    if (!isEnemyTargetable(world, enemyId)) continue;
+
     const transform = world.transforms.get(enemyId);
     if (!transform) continue;
 

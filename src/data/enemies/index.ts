@@ -15,8 +15,9 @@ type EnemyMovementDefinition = {
   sameTrajectoryTimeSeconds?: number;
 };
 
-type EnemyDefinition = Omit<EnemyBlueprint, "keywords" | "createMovement" | "createAttackMovement" | "hitRadius" | "shotDistance"> & {
+type EnemyDefinition = Omit<EnemyBlueprint, "keywords" | "createMovement" | "createAttackMovement" | "hitRadius" | "cloakRange" | "shotDistance"> & {
   hitRadius: number;
+  cloakRange?: number;
   shotDistance?: number;
   keywords: string[];
   movement?: EnemyMovementDefinition;
@@ -40,6 +41,7 @@ function buildEnemies(definitions: readonly EnemyDefinition[]): Record<string, E
     {
       ...definition,
       hitRadius: toPixels(definition.hitRadius),
+      cloakRange: definition.cloakRange === undefined ? undefined : toPixels(definition.cloakRange),
       shotDistance: definition.shotDistance === undefined ? undefined : toPixels(definition.shotDistance),
       sprite: {
         ...definition.sprite,

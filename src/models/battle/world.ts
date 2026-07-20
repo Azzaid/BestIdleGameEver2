@@ -67,7 +67,8 @@ export interface WorldConfig {
   app: PIXI.Application;
   initialThreat: number;
   targetThreat: number;
-  threatGrowthPerSecond: number;
+  siegeThreatStepPercent: number;
+  initialSiegeTotalStrength: number;
   waveThreatToCityThreatRatio: number;
   simultaneousMonstersLimit: number;
   timeBetweenWavesSeconds: number;
@@ -75,6 +76,7 @@ export interface WorldConfig {
   completesWhenThreatTargetReached: boolean;
   wallResilience: number;
   wallIgnoredThreat: number;
+  cloakRevealRange: number;
   monsterMovementModifiers: MonsterMovementModifiers;
   wallZoneEffects: WallZoneEffects;
   onBattleMetrics?: (metrics: BattleMetrics) => void;
@@ -86,6 +88,8 @@ export interface BattleMetrics {
   threat: number;
   targetThreat: number;
   siegeElapsedSeconds: number;
+  siegeDefeatedStrength: number;
+  siegeTotalStrength: number;
   siegePressure: number;
   wallResilience: number;
 }
@@ -122,13 +126,14 @@ export interface World {
   toRemove: Set<EntityId>;
   siegePressure: number;
   siegeElapsedSeconds: number;
+  siegeDefeatedStrength: number;
+  siegeTotalStrength: number;
   defeatedEnemies: number;
   currentThreat: number;
   battleEnded: boolean;
   lastBattleEndWasHandled: boolean;
   pendingBattleOutcome?: BattleResult["outcome"];
   siegeOverwhelmedWasHandled: boolean;
-  siegeMeterFrozen: boolean;
   retreatingEnemyIds: Set<EntityId>;
   towerReloadRemainingSeconds: Map<EntityId, number>;
   enemyPushBackCooldownRemainingSeconds: Map<EntityId, number>;

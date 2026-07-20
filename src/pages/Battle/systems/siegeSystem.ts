@@ -3,18 +3,14 @@ import type { World } from '../../../models/battle/world.ts';
 export function SiegeSystem(world: World, dt: number) {
   if (world.battleEnded) return;
 
-  if (!world.siegeMeterFrozen) {
-    world.siegeElapsedSeconds += dt;
-    world.currentThreat = Math.min(
-      world.config.targetThreat,
-      world.currentThreat + world.config.threatGrowthPerSecond * dt
-    );
-  }
+  world.siegeElapsedSeconds += dt;
 
   const metrics = {
     threat: world.currentThreat,
     targetThreat: world.config.targetThreat,
     siegeElapsedSeconds: world.siegeElapsedSeconds,
+    siegeDefeatedStrength: world.siegeDefeatedStrength,
+    siegeTotalStrength: world.siegeTotalStrength,
     siegePressure: world.siegePressure,
     wallResilience: world.config.wallResilience,
   };
@@ -35,7 +31,6 @@ export function SiegeSystem(world: World, dt: number) {
   ) {
     world.pendingBattleOutcome = "held";
     world.waveScheduler.state.enabled = false;
-    world.spawners = [];
   }
 
   if (!world.pendingBattleOutcome || hasActiveEnemies(world) || world.spawners.length > 0) {
@@ -57,7 +52,6 @@ function handleSiegeOverwhelmed(world: World) {
 
   world.siegeOverwhelmedWasHandled = true;
   world.pendingBattleOutcome = undefined;
-  world.siegeMeterFrozen = true;
   world.waveScheduler.state.enabled = true;
   world.waveScheduler.state.timeUntilNextWaveSeconds = 0;
   world.currentThreat = world.config.targetThreat;

@@ -3,7 +3,7 @@ import type {
     HomogeneousValueDefinition,
     HomogeneousValueId,
 } from "../../models/homogeneousValues.ts";
-import {BASE_TOWER_STATS} from "../constants.ts";
+import {BASE_TOWER_STATS, SIEGE_THREAT_STEP_PERCENT, SIEGE_WAVE_INTERVAL_SECONDS} from "../constants.ts";
 
 export const HOMOGENEOUS_VALUE_IDS = {
     resourcePeople: "resource.people",
@@ -37,10 +37,8 @@ export const HOMOGENEOUS_VALUE_IDS = {
     monsterRegenAmountMultiplier: "monster.regenAmountMultiplier",
     monsterRegenSpeedFlat: "monster.regenSpeedFlat",
     monsterRegenSpeedMultiplier: "monster.regenSpeedMultiplier",
-    siegeThreatFlat: "siege.threatFlat",
-    siegeThreatMultiplier: "siege.threatMultiplier",
-    siegeLengthFlat: "siege.lengthFlat",
-    siegeLengthMultiplier: "siege.lengthMultiplier",
+    siegeThreatStepPercent: "siege.threatStepPercent",
+    siegeWaveTime: "siege.waveTime",
     siegeSimultaneousMonstersLimitFlat: "siege.simultaneousMonstersLimitFlat",
     siegeSimultaneousMonstersLimitMultiplier: "siege.simultaneousMonstersLimitMultiplier",
     wallResilience: "wall.resilience",
@@ -60,6 +58,8 @@ export const HOMOGENEOUS_VALUE_IDS = {
     towerProjectileSpread: "tower.projectileSpread",
     towerAoeRadius: "tower.aoeRadius",
     towerTargetingDistanceLimit: "tower.targetingDistanceLimit",
+    towerReconRange: "tower.reconRange",
+    towerDetectionRange: "tower.detectionRange",
     towerMaximumRange: "tower.maximumRange",
     towerMinimumRange: "tower.minimumRange",
     towerMaximumRotationAngle: "tower.maximumRotationAngle",
@@ -331,33 +331,19 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         displayMethod: "multiplier",
         initialValue: 1,
     },
-    [HOMOGENEOUS_VALUE_IDS.siegeThreatFlat]: {
-        id: HOMOGENEOUS_VALUE_IDS.siegeThreatFlat,
-        label: "Siege Threat",
-        keywords: ["siege", "threat", "flat"],
-        displayMethod: "integer",
-        initialValue: 0,
+    [HOMOGENEOUS_VALUE_IDS.siegeThreatStepPercent]: {
+        id: HOMOGENEOUS_VALUE_IDS.siegeThreatStepPercent,
+        label: "Siege Threat Step",
+        keywords: ["siege", "threat", "step"],
+        displayMethod: "percent",
+        initialValue: SIEGE_THREAT_STEP_PERCENT,
     },
-    [HOMOGENEOUS_VALUE_IDS.siegeThreatMultiplier]: {
-        id: HOMOGENEOUS_VALUE_IDS.siegeThreatMultiplier,
-        label: "Siege Threat Multiplier",
-        keywords: ["siege", "threat", "multiplier"],
-        displayMethod: "multiplier",
-        initialValue: 1,
-    },
-    [HOMOGENEOUS_VALUE_IDS.siegeLengthFlat]: {
-        id: HOMOGENEOUS_VALUE_IDS.siegeLengthFlat,
-        label: "Siege Length",
-        keywords: ["siege", "length", "flat"],
+    [HOMOGENEOUS_VALUE_IDS.siegeWaveTime]: {
+        id: HOMOGENEOUS_VALUE_IDS.siegeWaveTime,
+        label: "Siege Wave Time",
+        keywords: ["siege", "wave", "time"],
         displayMethod: "seconds",
-        initialValue: 0,
-    },
-    [HOMOGENEOUS_VALUE_IDS.siegeLengthMultiplier]: {
-        id: HOMOGENEOUS_VALUE_IDS.siegeLengthMultiplier,
-        label: "Siege Length Multiplier",
-        keywords: ["siege", "length", "multiplier"],
-        displayMethod: "multiplier",
-        initialValue: 1,
+        initialValue: SIEGE_WAVE_INTERVAL_SECONDS,
     },
     [HOMOGENEOUS_VALUE_IDS.siegeSimultaneousMonstersLimitFlat]: {
         id: HOMOGENEOUS_VALUE_IDS.siegeSimultaneousMonstersLimitFlat,
@@ -495,6 +481,20 @@ export const HOMOGENEOUS_VALUE_DEFINITIONS = {
         keywords: ["tower", "targetingDistanceLimit"],
         displayMethod: "distance",
         initialValue: BASE_TOWER_STATS.targetingDistanceLimit,
+    },
+    [HOMOGENEOUS_VALUE_IDS.towerReconRange]: {
+        id: HOMOGENEOUS_VALUE_IDS.towerReconRange,
+        label: "Tower Recon Range",
+        keywords: ["tower", "reconRange"],
+        displayMethod: "distance",
+        initialValue: BASE_TOWER_STATS.reconRange,
+    },
+    [HOMOGENEOUS_VALUE_IDS.towerDetectionRange]: {
+        id: HOMOGENEOUS_VALUE_IDS.towerDetectionRange,
+        label: "Tower Detection Range",
+        keywords: ["tower", "detectionRange"],
+        displayMethod: "distance",
+        initialValue: BASE_TOWER_STATS.detectionRange,
     },
     [HOMOGENEOUS_VALUE_IDS.towerMaximumRange]: {
         id: HOMOGENEOUS_VALUE_IDS.towerMaximumRange,

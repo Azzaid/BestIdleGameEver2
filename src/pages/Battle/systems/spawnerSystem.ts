@@ -1,6 +1,7 @@
 import type { World } from '../../../models/battle/world.ts';
 import { planWaveComposition } from '../spawn/wavePlanner';
 import { WaveSpawner } from '../../../models/battle/waveSpawner.ts';
+import { getNextSiegeWaveThreat } from '../../../models/battle/siegeThreat.ts';
 
 /**
  * SpawnerSystem:
@@ -47,6 +48,14 @@ export function SpawnerSystem(world: World, dtSeconds: number) {
     if (sched.state.timeUntilNextWaveSeconds <= 0) {
         const remainingMonsterSlots = world.config.simultaneousMonstersLimit - world.enemiesData.size;
         if (remainingMonsterSlots <= 0) return;
+        if (world.config.completesWhenThreatTargetReached) {
+            world.currentThreat = getNextSiegeWaveThreat({
+                currentThreat: world.currentThreat,
+                initialThreat: world.config.initialThreat,
+                targetThreat: world.config.targetThreat,
+                threatStepPercent: world.config.siegeThreatStepPercent,
+            });
+        }
 
         const requiredStrength = Math.max(
             1,

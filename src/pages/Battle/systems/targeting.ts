@@ -2,6 +2,7 @@
 import type { World } from '../../../models/battle/world.ts';
 import type {EntityId} from "../../../models/battle/common.ts";
 import {shortestAngleDelta} from "./towerAim.ts";
+import { isEnemyTargetable } from './enemyCloakSystem.ts';
 
 /** Sort helper */
 function sortBy(_world: World, candidates: EntityId[], score: (id: EntityId) => number): EntityId[] {
@@ -173,6 +174,7 @@ export function TargetingSystem(world: World, dtSeconds?: number) {
         // Validate current target
         const currentPos = tower.currentTarget ? world.transforms.get(tower.currentTarget)?.position : undefined;
         const currentAlive = !!(tower.currentTarget && world.enemiesData.has(tower.currentTarget));
+        const currentTargetable = !!(tower.currentTarget && isEnemyTargetable(world, tower.currentTarget));
         const currentInRange = !!(currentPos && isTargetInsideTowerConstraints(
             currentPos,
             basePos,
@@ -181,13 +183,15 @@ export function TargetingSystem(world: World, dtSeconds?: number) {
             tower.zeroRotationRadians,
             degreesToRadians(tower.maximumRotationAngle),
         ));
-        if (currentAlive && currentInRange && tower.retargetRemainingSeconds > 0) {
+        if (currentAlive && currentTargetable && currentInRange && tower.retargetRemainingSeconds > 0) {
             continue; // keep the current target during the hold window
         }
 
         // Rebuild candidate set inside distance limit
         const candidates: EntityId[] = [];
         for (const [enemyId] of world.enemiesData) {
+            if (!isEnemyTargetable(world, enemyId)) continue;
+
             const pos = world.transforms.get(enemyId)?.position;
             if (!pos) continue;
             if (isTargetInsideTowerConstraints(

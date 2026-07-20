@@ -4,8 +4,10 @@ export function HealthSystem(world: World) {
   for (const [entityId, health] of world.healths) {
     if (health.hitPoints > 0) continue;
 
-    if (world.enemiesData.has(entityId) && !world.toRemove.has(entityId)) {
+    const enemy = world.enemiesData.get(entityId);
+    if (enemy && !world.toRemove.has(entityId)) {
       world.defeatedEnemies += 1;
+      world.siegeDefeatedStrength += enemy.strengthCost;
     }
 
     world.toRemove.add(entityId);

@@ -408,7 +408,10 @@ function PixiAnimationPreview(props: {
           image: props.imageUrl,
         },
       };
-      sheet = new Spritesheet(Texture.from(props.imageUrl), atlas);
+      sheet = new Spritesheet({
+        texture: Texture.from(props.imageUrl),
+        data: atlas,
+      });
       await sheet.parse();
       if (disposed || app !== nextApp) return;
 

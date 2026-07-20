@@ -30,9 +30,9 @@ export const BATTLE_WALL_APRON_HEIGHT = 80;
 
 export const SIEGE_THREAT_START_RATIO = 0.8;
 
-export const SIEGE_DURATION_SECONDS = 60;
+export const SIEGE_THREAT_STEP_PERCENT = 10;
 
-export const SIEGE_WAVE_INTERVAL_SECONDS = 10;
+export const SIEGE_WAVE_INTERVAL_SECONDS = 5;
 
 export const PRESSURE_WAVE_INTERVAL_SECONDS = 18;
 
@@ -54,6 +54,8 @@ export const BASE_TOWER_STATS = {
     projectileSpread: 0,
     aoeRadius: 0,
     targetingDistanceLimit: 0,
+    reconRange: 0,
+    detectionRange: 0,
     maximumRange: Infinity,
     minimumRange: 0,
     maximumRotationAngle: Infinity,

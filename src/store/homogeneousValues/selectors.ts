@@ -1,6 +1,6 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {HOMOGENEOUS_VALUE_IDS} from "../../data/homogeneousValues/index.ts";
-import {toPixels} from "../../data/constants.ts";
+import {SIEGE_THREAT_STEP_PERCENT, SIEGE_WAVE_INTERVAL_SECONDS, toPixels} from "../../data/constants.ts";
 import {resolveAetherAtmosphereFromTotals} from "../../models/city/aetherAtmosphereResolution.ts";
 import {createInitialHomogeneousValueTotals} from "../../models/homogeneousValueResolution.ts";
 import type {HomogeneousValueId, HomogeneousValueTotals} from "../../models/homogeneousValues.ts";
@@ -146,10 +146,8 @@ export const selectMonsterModifierValues = createSelector(
 export const selectSiegeModifierValues = createSelector(
     [selectHomogeneousValueTotals],
     (totals) => ({
-        threatFlat: totals[HOMOGENEOUS_VALUE_IDS.siegeThreatFlat] ?? 0,
-        threatMultiplier: totals[HOMOGENEOUS_VALUE_IDS.siegeThreatMultiplier] ?? 1,
-        lengthFlat: totals[HOMOGENEOUS_VALUE_IDS.siegeLengthFlat] ?? 0,
-        lengthMultiplier: totals[HOMOGENEOUS_VALUE_IDS.siegeLengthMultiplier] ?? 1,
+        threatStepPercent: totals[HOMOGENEOUS_VALUE_IDS.siegeThreatStepPercent] ?? SIEGE_THREAT_STEP_PERCENT,
+        waveTime: totals[HOMOGENEOUS_VALUE_IDS.siegeWaveTime] ?? SIEGE_WAVE_INTERVAL_SECONDS,
         simultaneousMonstersLimitFlat: totals[HOMOGENEOUS_VALUE_IDS.siegeSimultaneousMonstersLimitFlat] ?? 0,
         simultaneousMonstersLimitMultiplier: totals[HOMOGENEOUS_VALUE_IDS.siegeSimultaneousMonstersLimitMultiplier] ?? 1,
     }),

@@ -52,7 +52,8 @@ export type CityBattleRuntimeConfig = {
     resolvedTowers: TowerAssemblyResolved[];
     initialThreat: number;
     targetThreat: number;
-    threatGrowthPerSecond: number;
+    siegeThreatStepPercent: number;
+    initialSiegeTotalStrength: number;
     waveThreatToCityThreatRatio: number;
     simultaneousMonstersLimit: number;
     timeBetweenWavesSeconds: number;
@@ -60,6 +61,7 @@ export type CityBattleRuntimeConfig = {
     completesWhenThreatTargetReached: boolean;
     wallResilience: number;
     wallIgnoredThreat: number;
+    cloakRevealRange: number;
     monsterMovementModifiers: MonsterMovementModifiers;
     wallZoneEffects: WallZoneEffects;
     showDebugOutlines: boolean;
@@ -108,7 +110,8 @@ export async function mountCityBattleRuntime({
         app,
         initialThreat: config.initialThreat,
         targetThreat: config.targetThreat,
-        threatGrowthPerSecond: config.threatGrowthPerSecond,
+        siegeThreatStepPercent: config.siegeThreatStepPercent,
+        initialSiegeTotalStrength: config.initialSiegeTotalStrength,
         waveThreatToCityThreatRatio: config.waveThreatToCityThreatRatio,
         simultaneousMonstersLimit: config.simultaneousMonstersLimit,
         timeBetweenWavesSeconds: config.timeBetweenWavesSeconds,
@@ -116,6 +119,7 @@ export async function mountCityBattleRuntime({
         completesWhenThreatTargetReached: config.completesWhenThreatTargetReached,
         wallResilience: config.wallResilience,
         wallIgnoredThreat: config.wallIgnoredThreat,
+        cloakRevealRange: config.cloakRevealRange,
         monsterMovementModifiers: config.monsterMovementModifiers,
         wallZoneEffects: config.wallZoneEffects,
         onBattleMetrics: config.onBattleMetrics,
@@ -214,12 +218,14 @@ export async function mountCityBattleRuntime({
             lastRuntimeResetKey = nextConfig.runtimeResetKey;
             world.currentThreat = nextConfig.initialThreat;
             world.siegeElapsedSeconds = 0;
+            world.siegeDefeatedStrength = 0;
+            world.siegeTotalStrength = nextConfig.initialSiegeTotalStrength;
             world.siegePressure = 0;
+            world.defeatedEnemies = 0;
             world.battleEnded = false;
             world.lastBattleEndWasHandled = false;
             world.pendingBattleOutcome = undefined;
             world.siegeOverwhelmedWasHandled = false;
-            world.siegeMeterFrozen = false;
             for (const spawner of world.spawners) {
                 spawner.destroy(world);
             }
@@ -235,7 +241,8 @@ export async function mountCityBattleRuntime({
 
         world.config.initialThreat = nextConfig.initialThreat;
         world.config.targetThreat = nextConfig.targetThreat;
-        world.config.threatGrowthPerSecond = nextConfig.threatGrowthPerSecond;
+        world.config.siegeThreatStepPercent = nextConfig.siegeThreatStepPercent;
+        world.config.initialSiegeTotalStrength = nextConfig.initialSiegeTotalStrength;
         world.config.waveThreatToCityThreatRatio = nextConfig.waveThreatToCityThreatRatio;
         world.config.simultaneousMonstersLimit = nextConfig.simultaneousMonstersLimit;
         world.config.timeBetweenWavesSeconds = nextConfig.timeBetweenWavesSeconds;
@@ -243,6 +250,7 @@ export async function mountCityBattleRuntime({
         world.config.completesWhenThreatTargetReached = nextConfig.completesWhenThreatTargetReached;
         world.config.wallResilience = nextConfig.wallResilience;
         world.config.wallIgnoredThreat = nextConfig.wallIgnoredThreat;
+        world.config.cloakRevealRange = nextConfig.cloakRevealRange;
         world.config.monsterMovementModifiers = nextConfig.monsterMovementModifiers;
         world.config.wallZoneEffects = nextConfig.wallZoneEffects;
         world.config.onBattleMetrics = nextConfig.onBattleMetrics;
@@ -406,6 +414,8 @@ function spawnTowerPreviewTargetIfNeeded(
         kind: "melee",
         mode: "walk",
         hitRadius: 14,
+        cloakRange: 0,
+        cloakVisibility: 1,
         pressure: 0,
         keywords: new Set(),
         walkMovement: standingMovement,

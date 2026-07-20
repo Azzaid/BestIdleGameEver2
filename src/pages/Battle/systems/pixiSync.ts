@@ -18,5 +18,9 @@ export function PixiSyncSystem(world: World) {
     }
     display.position.set(tf.position.x, tf.position.y);
     display.rotation = world.enemiesData.has(entityId) ? 0 : tf.rotationRadians ?? 0;
+    const enemy = world.enemiesData.get(entityId);
+    if (enemy) {
+      display.alpha = enemy.cloakRange > 0 ? enemy.cloakVisibility : 1;
+    }
   }
 }

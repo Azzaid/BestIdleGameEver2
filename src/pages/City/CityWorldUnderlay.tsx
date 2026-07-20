@@ -31,10 +31,7 @@ import {
     CITY_HEX_RADIUS,
     CITY_HEX_WIDTH,
     PRESSURE_WAVE_INTERVAL_SECONDS,
-    SIEGE_DURATION_SECONDS,
     SIEGE_THREAT_START_RATIO,
-    SIEGE_WAVE_INTERVAL_SECONDS,
-    toPixels,
 } from "../../data/constants.ts";
 import {useCityCanvasInteraction} from "./cityCanvasInteraction.tsx";
 import {createBattlefieldTerrainHexes} from "../Battle/battlefieldTerrain.ts";
@@ -76,6 +73,7 @@ import {getTowerAnchorPosition} from "../Battle/ui/BattleStage.tsx";
 import {ConfirmationModal} from "../../components/ConfirmationModal.tsx";
 import {selectGlobalSignalRequirementSnapshot} from "../../store/globalEvents/selectors.ts";
 import {resetWallForMigration} from "../../store/wall/slice.ts";
+import {getSiegeTotalStrengthBudget} from "../../models/battle/siegeThreat.ts";
 
 type BattleMode = "siege" | "pressure";
 
@@ -83,11 +81,19 @@ const SIEGE_REPELLED_MESSAGE = "Siege repelled. City now controls more territory
 const SIEGE_TERRITORY_LOST_MESSAGE = "Siege overwhelmed city defense and we had to fall back to protected hexes behind the wall";
 const SIEGE_NOT_LIFTED_MESSAGE = "City where not able to lift the siege. There are still monster waiting behind the wall.";
 const EXODUS_MESSAGE = "Are you ready to abandon city and move on in search for a better place?";
-const BATTLEFIELD_UNTARGETABLE_ENTRY_HEXES = 3;
 
 function toPercent(value: number, max: number) {
     if (max <= 0) return 0;
     return Math.floor(Math.max(0, Math.min(100, (value / max) * 100)));
+}
+
+function createInitialMetricsRenderRef() {
+    return {
+        second: -1,
+        siegeDefeatedStrength: -1,
+        siegeTotalStrength: -1,
+        siegePressure: -1,
+    };
 }
 
 export function CityWorldUnderlay({
@@ -131,7 +137,12 @@ export function CityWorldUnderlay({
         target: "city",
         id: 0,
     });
-    const lastRenderedMetricsSecondRef = useRef(-1);
+    const lastRenderedMetricsRef = useRef({
+        second: -1,
+        siegeDefeatedStrength: -1,
+        siegeTotalStrength: -1,
+        siegePressure: -1,
+    });
     const hasAnnouncedSiegeStartedRef = useRef(false);
     const previousWorldViewModeRef = useRef<WorldViewMode>(worldViewMode);
     const battleRuntimeIsActive = interactive && worldViewMode === "battle";
@@ -213,14 +224,17 @@ export function CityWorldUnderlay({
         ? cityThreat * controlledTerritoryGrowthStep
         : cityThreat;
     const initialThreat = isSiege ? cityThreat * SIEGE_THREAT_START_RATIO : targetThreat;
-    const siegeDurationSeconds = Math.max(1, (
-        SIEGE_DURATION_SECONDS + siegeModifierValues.lengthFlat
-    ) * siegeModifierValues.lengthMultiplier);
-    const threatGrowthPerSecond = isSiege && targetThreat > initialThreat
-        ? (targetThreat - initialThreat) / siegeDurationSeconds
+    const siegeThreatStepPercent = Math.max(0.0001, siegeModifierValues.threatStepPercent);
+    const initialSiegeTotalStrength = isSiege
+        ? getSiegeTotalStrengthBudget({
+            initialThreat,
+            targetThreat,
+            threatStepPercent: siegeThreatStepPercent,
+            waveThreatToCityThreatRatio: BATTLE_WAVE_THREAT_TO_CITY_THREAT_RATIO,
+        })
         : 0;
     const timeBetweenWavesSeconds = isSiege
-        ? SIEGE_WAVE_INTERVAL_SECONDS
+        ? Math.max(0, siegeModifierValues.waveTime)
         : PRESSURE_WAVE_INTERVAL_SECONDS;
     const simultaneousMonstersLimit = Math.max(0, Math.floor(
         (BASE_SIMULTANEOUS_MONSTERS_LIMIT + siegeModifierValues.simultaneousMonstersLimitFlat)
@@ -230,21 +244,28 @@ export function CityWorldUnderlay({
         threat: initialThreat,
         targetThreat,
         siegeElapsedSeconds: 0,
+        siegeDefeatedStrength: 0,
+        siegeTotalStrength: initialSiegeTotalStrength,
         siegePressure: 0,
         wallResilience: wallResolution.resilience,
     }));
     const siegeProgressPercent = isSiege
-        ? toPercent(metrics.siegeElapsedSeconds, siegeDurationSeconds)
+        ? toPercent(metrics.siegeDefeatedStrength, metrics.siegeTotalStrength)
         : 0;
     const wallResilienceProgressPercent = toPercent(metrics.siegePressure, metrics.wallResilience);
     const battlefieldWidth = Math.max(1, battleWallSegments.length) * CITY_HEX_WIDTH;
-    const standaloneDefenseRanges = standaloneTowerDefenses.map((defense) => getTowerBattlefieldRange(defense.stats));
-    const longestTowerRange = Math.max(
+    const standaloneDefenseRanges = standaloneTowerDefenses.map((defense) => getTowerBattlefieldVisibleRange(defense.stats));
+    const battleDetectionRange = Math.max(
         0,
-        ...resolvedBattleTowers.map((tower) => getTowerBattlefieldRange(tower.stats)),
+        ...resolvedBattleTowers.map((tower) => tower.stats.detectionRange),
+        ...standaloneTowerDefenses.map((defense) => defense.stats.detectionRange),
+    );
+    const longestTowerVisibleRange = Math.max(
+        0,
+        ...resolvedBattleTowers.map((tower) => getTowerBattlefieldVisibleRange(tower.stats)),
         ...standaloneDefenseRanges,
     );
-    const battlefieldDepth = longestTowerRange * BATTLEFIELD_RANGE_MULTIPLIER + toPixels(BATTLEFIELD_UNTARGETABLE_ENTRY_HEXES);
+    const battlefieldDepth = longestTowerVisibleRange * BATTLEFIELD_RANGE_MULTIPLIER;
     const battlefieldHeight = battlefieldDepth + BATTLE_WALL_APRON_HEIGHT;
     const activeTowerIndex = activeTower
         ? availableTowers.findIndex((tower) => tower.id === activeTower.id)
@@ -341,30 +362,34 @@ export function CityWorldUnderlay({
         dispatch(addNotificationHistoryEntry(notification));
     }, [dispatch]);
     useEffect(() => {
-        lastRenderedMetricsSecondRef.current = -1;
+        lastRenderedMetricsRef.current = createInitialMetricsRenderRef();
         setMetrics({
             threat: initialThreat,
             targetThreat,
             siegeElapsedSeconds: 0,
+            siegeDefeatedStrength: 0,
+            siegeTotalStrength: initialSiegeTotalStrength,
             siegePressure: 0,
             wallResilience: wallResolution.resilience,
         });
-    }, [battleRunId, initialThreat, targetThreat, wallResolution.resilience]);
+    }, [battleRunId, initialSiegeTotalStrength, initialThreat, targetThreat, wallResolution.resilience]);
     useEffect(() => {
         const wasActive = previousBattleRuntimeIsActiveRef.current;
         previousBattleRuntimeIsActiveRef.current = battleRuntimeIsActive;
         if (wasActive === battleRuntimeIsActive) return;
 
-        lastRenderedMetricsSecondRef.current = -1;
+        lastRenderedMetricsRef.current = createInitialMetricsRenderRef();
         setBattleRunId(runId => runId + 1);
         setMetrics({
             threat: initialThreat,
             targetThreat,
             siegeElapsedSeconds: 0,
+            siegeDefeatedStrength: 0,
+            siegeTotalStrength: initialSiegeTotalStrength,
             siegePressure: 0,
             wallResilience: wallResolution.resilience,
         });
-    }, [battleRuntimeIsActive, initialThreat, targetThreat, wallResolution.resilience]);
+    }, [battleRuntimeIsActive, initialSiegeTotalStrength, initialThreat, targetThreat, wallResolution.resilience]);
     useEffect(() => {
         if (!isSiege) {
             hasAnnouncedSiegeStartedRef.current = false;
@@ -440,9 +465,20 @@ export function CityWorldUnderlay({
     }, [allHexes, announceSiegeResult, dispatch, isSiege]);
     const handleBattleMetrics = useCallback((nextMetrics: BattleMetrics) => {
         const nextSecond = Math.floor(nextMetrics.siegeElapsedSeconds);
-        if (nextSecond === lastRenderedMetricsSecondRef.current) return;
+        const lastRenderedMetrics = lastRenderedMetricsRef.current;
+        if (
+            nextSecond === lastRenderedMetrics.second
+            && nextMetrics.siegeDefeatedStrength === lastRenderedMetrics.siegeDefeatedStrength
+            && nextMetrics.siegeTotalStrength === lastRenderedMetrics.siegeTotalStrength
+            && nextMetrics.siegePressure === lastRenderedMetrics.siegePressure
+        ) return;
 
-        lastRenderedMetricsSecondRef.current = nextSecond;
+        lastRenderedMetricsRef.current = {
+            second: nextSecond,
+            siegeDefeatedStrength: nextMetrics.siegeDefeatedStrength,
+            siegeTotalStrength: nextMetrics.siegeTotalStrength,
+            siegePressure: nextMetrics.siegePressure,
+        };
         setMetrics(nextMetrics);
     }, []);
     const battleRuntime = useMemo<CityBattleRuntimeConfig | null>(() => {
@@ -477,7 +513,8 @@ export function CityWorldUnderlay({
                 resolvedTowers: [],
                 initialThreat,
                 targetThreat,
-                threatGrowthPerSecond: 0,
+                siegeThreatStepPercent,
+                initialSiegeTotalStrength: 0,
                 waveThreatToCityThreatRatio: BATTLE_WAVE_THREAT_TO_CITY_THREAT_RATIO,
                 simultaneousMonstersLimit: 1,
                 timeBetweenWavesSeconds,
@@ -485,6 +522,7 @@ export function CityWorldUnderlay({
                 completesWhenThreatTargetReached: false,
                 wallResilience: wallResolution.resilience,
                 wallIgnoredThreat: wallResolution.ignoredThreat,
+                cloakRevealRange: battleDetectionRange,
                 monsterMovementModifiers,
                 wallZoneEffects,
                 showDebugOutlines: isDebugModeEnabled,
@@ -527,7 +565,8 @@ export function CityWorldUnderlay({
             resolvedTowers: resolvedBattleTowers,
             initialThreat,
             targetThreat,
-            threatGrowthPerSecond,
+            siegeThreatStepPercent,
+            initialSiegeTotalStrength,
             waveThreatToCityThreatRatio: BATTLE_WAVE_THREAT_TO_CITY_THREAT_RATIO,
             simultaneousMonstersLimit,
             timeBetweenWavesSeconds,
@@ -535,6 +574,7 @@ export function CityWorldUnderlay({
             completesWhenThreatTargetReached: isSiege,
             wallResilience: wallResolution.resilience,
             wallIgnoredThreat: wallResolution.ignoredThreat,
+            cloakRevealRange: battleDetectionRange,
             monsterMovementModifiers,
             wallZoneEffects,
             showDebugOutlines: isDebugModeEnabled,
@@ -553,6 +593,7 @@ export function CityWorldUnderlay({
         battlefieldHeight,
         battlefieldHexes,
         battlefieldWidth,
+        battleDetectionRange,
         handleBattleEnded,
         handleBattleMetrics,
         handleSiegeOverwhelmed,
@@ -562,10 +603,11 @@ export function CityWorldUnderlay({
         monsterMovementModifiers,
         resolvedBattleTowers,
         retreatEnemiesSignal,
+        initialSiegeTotalStrength,
         simultaneousMonstersLimit,
         standaloneTowerDefenses,
         targetThreat,
-        threatGrowthPerSecond,
+        siegeThreatStepPercent,
         timeBetweenWavesSeconds,
         towerPreview,
         translatedBattlefield.origin,
@@ -710,7 +752,7 @@ export function CityWorldUnderlay({
             {battleRuntimeIsActive && battleRuntime && (
                 <>
                     {isSiege && (
-                        <div className={`${s.battleProgress} ${s.siegeProgress}`} aria-label="Siege duration">
+                        <div className={`${s.battleProgress} ${s.siegeProgress}`} aria-label="Siege monsters defeated">
                             <span className={s.progressLabel}>Siege</span>
                             <div className={s.progressTrack}>
                                 <div
@@ -925,6 +967,10 @@ function getTowerBattlefieldRange(stats: TowerStatsResolved) {
         stats.singleTargetStunRange,
         stats.singleTargetInfectionRange,
     );
+}
+
+function getTowerBattlefieldVisibleRange(stats: TowerStatsResolved) {
+    return getTowerBattlefieldRange(stats) + Math.max(0, stats.reconRange);
 }
 
 function areExodusPointersEqual(

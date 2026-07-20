@@ -21,6 +21,8 @@ export interface TowerModifiers {
   projectileSpread: number;
   aoeRadius: number;
   targetingDistanceLimit: number;
+  reconRange: number;
+  detectionRange: number;
   maximumRange: number;
   minimumRange: number;
   maximumRotationAngle: number;
@@ -141,6 +143,8 @@ export interface TowerStatsResolved {
   projectileSpread: number;
   aoeRadius: number;
   targetingDistanceLimit: number;
+  reconRange: number;
+  detectionRange: number;
   maximumRange: number;
   minimumRange: number;
   maximumRotationAngle: number;

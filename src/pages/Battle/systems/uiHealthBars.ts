@@ -22,6 +22,7 @@ export function HealthBarSystem(world: World) {
 
     const ratio = Math.max(0, Math.min(1, hp.hitPoints / hp.maxHitPoints));
     bar.clear();
+    bar.alpha = enemy.cloakRange > 0 ? enemy.cloakVisibility : 1;
     bar.beginFill(0x000000, 0.6).drawRect(x, y, width, height).endFill();
     bar.beginFill(0x3ad66e).drawRect(x, y, width * ratio, height).endFill();
   }

@@ -19,6 +19,8 @@ export interface TowerData {
   aoeRadius: number;
   keywords: Set<string>;
   targetingDistanceLimit: number;
+  reconRange: number;
+  detectionRange: number;
   maximumRange: number;
   minimumRange: number;
   maximumRotationAngle: number; // deg

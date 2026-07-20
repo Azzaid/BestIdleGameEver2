@@ -17,10 +17,12 @@ import { TowerZoneEffectsSystem } from './towerZoneEffectsSystem.ts';
 import { DamageAreaVfxSystem } from './damageAreaVfxSystem.ts';
 import { DebugTowerTargetingRadiusSystem } from './debugTowerTargetingRadiusSystem.ts';
 import { StatusEffectsSystem } from './statusEffectsSystem.ts';
+import { EnemyCloakSystem } from './enemyCloakSystem.ts';
 
 /** Per-frame update orchestrator */
 export function runSystems(world: World, dt: number) {
   SpawnerSystem(world, dt);
+  EnemyCloakSystem(world);
   TargetingSystem(world);
   AimingSystem(world, dt);
   FiringSystem(world, dt);
@@ -28,6 +30,7 @@ export function runSystems(world: World, dt: number) {
   TowerZoneEffectsSystem(world, dt);
   StatusEffectsSystem(world, dt);
   MonsterMovementSystem(world, dt);
+  EnemyCloakSystem(world);
   ProjectileMovementSystem(world, dt);
   LifespanSystem(world, dt);
   ProjectilesSystem(world);

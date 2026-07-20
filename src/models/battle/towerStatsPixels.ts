@@ -8,6 +8,8 @@ export function towerStatsToPixels(stats: TowerStatsResolved): TowerStatsResolve
     projectileRadius: toPixels(stats.projectileRadius),
     aoeRadius: toPixels(stats.aoeRadius),
     targetingDistanceLimit: toPixels(stats.targetingDistanceLimit),
+    reconRange: toPixels(stats.reconRange),
+    detectionRange: toPixels(stats.detectionRange),
     maximumRange: toPixels(stats.maximumRange),
     minimumRange: toPixels(stats.minimumRange),
     zonePushBackDistance: toPixels(stats.zonePushBackDistance),

@@ -11,12 +11,9 @@ Current implementation note, 2026-06-24:
 
 - Fix scroll and drag behavior on graph-based pages.
 - Move battle tuning values out into named constants:
-  - siege duration;
   - auto-victory threshold at `1.2` city threat;
   - wave internal threat to city threat ratio;
-  - wave interval in siege mode;
   - wave interval in pressure mode.
-- Keep sieges time-limited, but use a dedicated duration constant instead of a hardcoded one-minute limit.
 - Unify data folder structure.
 - Add multistructures.
 - Slightly adjust battle scale.

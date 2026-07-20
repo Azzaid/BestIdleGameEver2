@@ -35,6 +35,7 @@ export interface EnemyBlueprint {
     maxHitPoints: number;
     armor: number;
     hitRadius: number;
+    cloakRange?: number;
     shotDistance?: number;       // for ranged pressure threshold
     keywords: Set<string>;
 

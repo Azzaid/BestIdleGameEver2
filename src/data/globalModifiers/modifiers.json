@@ -31,13 +31,13 @@
     "id": "tiny_settlement",
     "title": "Tiny settlement",
     "vector": "neutral",
-    "description": "Merely an outpost not even a village. Easy to blend with environment. Sieges will be much shorter.",
+    "description": "Merely an outpost not even a village. Easy to blend with environment. Sieges will reach full pressure in fewer waves.",
     "applyRules": [],
     "effects": [
       {
-        "valueId": "siege.lengthMultiplier",
+        "valueId": "siege.threatStepPercent",
         "vector": "neutral",
-        "multiplier": 0.2
+        "multiplier": 5
       }
     ]
   },
@@ -45,13 +45,13 @@
     "id": "village",
     "title": "Village",
     "vector": "neutral",
-    "description": "Few houses more. You started to attract attention.",
+    "description": "Few houses more. You started to attract attention. Sieges still reach full pressure faster than they do against larger settlements.",
     "applyRules": [],
     "effects": [
       {
-        "valueId": "siege.lengthMultiplier",
+        "valueId": "siege.threatStepPercent",
         "vector": "neutral",
-        "multiplier": 0.5
+        "multiplier": 2
       }
     ]
   }
