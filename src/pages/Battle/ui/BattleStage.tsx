@@ -1,7 +1,7 @@
 import { Application, Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createWorld, createEntityId } from '../core/world';
-import { runSystems } from '../systems/runSystems';
+import { clearTransientBattleState, runSystems } from '../systems/runSystems';
 import {
     createCamera,
     computeMinZoomForWall,
@@ -165,6 +165,8 @@ export function BattleStage(props: {
         let cleanupInput = () => {};
         let cleanupResize = () => {};
         let cleanupLoading = () => {};
+        let cleanupTicker = () => {};
+        let cleanupWorld = () => {};
 
         const destroyApp = () => {
             const currentApp = app;
@@ -270,6 +272,13 @@ export function BattleStage(props: {
                 onSiegeOverwhelmed: runtimeProps.onSiegeOverwhelmed,
             });
             worldRef.current = world;
+            cleanupWorld = () => {
+                for (const spawner of world.spawners) {
+                    spawner.destroy(world);
+                }
+                world.spawners = [];
+                clearTransientBattleState(world);
+            };
             camera.container.addChild(world.worldLayer);
 
             if (props.renderTerrain ?? true) {
@@ -385,12 +394,16 @@ export function BattleStage(props: {
 
             // Ticker stays the same in v8 (TickerPlugin is built-in)
             let previousTimeMs = performance.now();
-            nextApp.ticker.add(() => {
+            const tick = () => {
                 const nowMs = performance.now();
                 const dt = Math.min(0.25, (nowMs - previousTimeMs) / 1000);
                 previousTimeMs = nowMs;
                 runSystems(world, dt);
-            }); // :contentReference[oaicite:1]{index=1}
+            };
+            nextApp.ticker.add(tick); // :contentReference[oaicite:1]{index=1}
+            cleanupTicker = () => {
+                nextApp.ticker.remove(tick);
+            };
 
             // Camera input
             const canvas = nextApp.canvas;
@@ -465,6 +478,11 @@ export function BattleStage(props: {
                     ? error.message
                     : String(error);
                 setStageError(message || "Unknown Battle renderer error");
+                cleanupInput();
+                cleanupResize();
+                cleanupLoading();
+                cleanupTicker();
+                cleanupWorld();
                 destroyApp();
             }
         })();
@@ -476,6 +494,8 @@ export function BattleStage(props: {
             cleanupInput();
             cleanupResize();
             cleanupLoading();
+            cleanupTicker();
+            cleanupWorld();
             destroyApp();
         };
     }, [
@@ -512,6 +532,7 @@ export function BattleStage(props: {
                 spawner.destroy(world);
             }
             world.spawners = [];
+            clearTransientBattleState(world);
             world.waveScheduler.state.enabled = true;
             world.waveScheduler.state.timeUntilNextWaveSeconds = 0;
             world.waveScheduler.state.currentWaveIndex = 0;

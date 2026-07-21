@@ -30,6 +30,7 @@ export function DamageAreaVfxSystem(world: World, dt: number) {
   for (const [key, view] of world.damageAreaVfxViews) {
     if (activeKeys.has(key)) continue;
 
+    view.container.parent?.removeChild(view.container);
     view.container.destroy({ children: true });
     world.damageAreaVfxViews.delete(key);
   }

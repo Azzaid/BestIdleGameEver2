@@ -7,14 +7,11 @@ export function PixiSyncSystem(world: World) {
     let display = world.sprites.get(entityId);
     if (!display) {
       const gfx = new PIXI.Graphics();
-      gfx.beginFill(0xffffff).drawRect(-16, -16, 32, 32).endFill();
-      const sprite = world.config.app.renderer.generateTexture(gfx);
-      const sp = new PIXI.Sprite(sprite);
-      sp.anchor.set(0.5);
-      sp.zIndex = 5;
-      world.worldLayer.addChild(sp);
-      world.sprites.set(entityId, sp);
-      display = sp;
+      gfx.rect(-16, -16, 32, 32).fill(0xffffff);
+      gfx.zIndex = 5;
+      world.worldLayer.addChild(gfx);
+      world.sprites.set(entityId, gfx);
+      display = gfx;
     }
     display.position.set(tf.position.x, tf.position.y);
     display.rotation = world.enemiesData.has(entityId) ? 0 : tf.rotationRadians ?? 0;

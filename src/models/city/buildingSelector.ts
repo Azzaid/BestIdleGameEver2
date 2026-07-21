@@ -2,6 +2,8 @@ import type {DevelopmentVectorValue} from "../DevlopmentVector.ts";
 
 export type BuildingSelectorProps = {
     onBuild: (buildingId: string, activeVector: DevelopmentVectorValue) => void;
+    activeVector: DevelopmentVectorValue;
+    onActiveVectorChange: (activeVector: DevelopmentVectorValue) => void;
     unlockedBuildingIds: ReadonlySet<string>;
     unavailableBuildingReasons?: Readonly<Record<string, string>>;
     blocked?: boolean;

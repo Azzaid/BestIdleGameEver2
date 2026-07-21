@@ -69,15 +69,61 @@ export function cleanupRemovedEntities(world: World) {
       deleteTowerZoneEffectKeysForEntity(world.enemyTowerZoneDotProgress, id);
       deleteDamageAreaVfxPulseKeysForEntity(world.damageAreaVfxPulseTriggers, id);
       const hb = world.healthBars.get(id);
-      if (hb) { hb.destroy(); world.healthBars.delete(id); }
+      if (hb) {
+        hb.parent?.removeChild(hb);
+        hb.destroy();
+        world.healthBars.delete(id);
+      }
       const targetingRing = world.debugTowerTargetingRings.get(id);
-      if (targetingRing) { targetingRing.destroy(); world.debugTowerTargetingRings.delete(id); }
+      if (targetingRing) {
+        targetingRing.parent?.removeChild(targetingRing);
+        targetingRing.destroy();
+        world.debugTowerTargetingRings.delete(id);
+      }
       const view = world.sprites.get(id);
-      if (view) { view.destroy({ children: true }); world.sprites.delete(id); }
+      if (view) {
+        view.parent?.removeChild(view);
+        view.destroy({ children: true });
+        world.sprites.delete(id);
+      }
       world.projectileInfo.delete(id);
     }
     world.toRemove.clear();
   }
+}
+
+export function clearTransientBattleState(world: World) {
+  for (const id of world.enemiesData.keys()) {
+    world.toRemove.add(id);
+  }
+  for (const id of world.projectileInfo.keys()) {
+    world.toRemove.add(id);
+  }
+  cleanupRemovedEntities(world);
+
+  world.retreatingEnemyIds.clear();
+  world.towerReloadRemainingSeconds.clear();
+  for (const tower of world.towersData.values()) {
+    tower.currentTarget = undefined;
+    tower.retargetRemainingSeconds = 0;
+  }
+  world.enemyPushBackCooldownRemainingSeconds.clear();
+  world.enemyPushBackRemainingSeconds.clear();
+  world.wallZoneDotProgress = 0;
+  world.enemyTowerZoneCooldownRemainingSeconds.clear();
+  world.enemyTowerPushBacks.clear();
+  world.enemyTowerZoneDotProgress.clear();
+  world.towerZoneDotProgress.clear();
+  world.enemyTowerMovementOverrides.clear();
+  world.enemyTowerStunRemainingSeconds.clear();
+  world.enemyInfections.clear();
+  world.damageAreaVfxPulseTriggers.clear();
+
+  for (const view of world.damageAreaVfxViews.values()) {
+    view.container.parent?.removeChild(view.container);
+    view.container.destroy({ children: true });
+  }
+  world.damageAreaVfxViews.clear();
 }
 
 function deleteTowerZoneEffectKeysForEntity(map: Pick<Map<string, unknown>, 'keys' | 'delete'>, entityId: number) {

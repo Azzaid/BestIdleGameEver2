@@ -1,5 +1,6 @@
 import type { CityState } from "../models/store/city.ts";
 import type { GlobalEventsState } from "../models/store/globalEvents.ts";
+import type { HexBackgroundEditorState } from "../models/store/hexBackgroundEditor.ts";
 import type { ResearchState } from "../models/store/research.ts";
 import type { TowersState } from "../models/store/towers.ts";
 import type { UnlocksState } from "../models/store/unlocks.ts";
@@ -15,6 +16,7 @@ type PersistedStoreState = {
   towers: TowersState;
   unlocks: UnlocksState;
   globalEvents: GlobalEventsState;
+  hexBackgroundEditor: HexBackgroundEditorState;
 };
 
 type SaveFile = {
@@ -72,6 +74,7 @@ function pickPersistedSlices(state: Partial<PersistedStoreState>): Partial<Persi
   if (state.towers !== undefined) persistedState.towers = state.towers;
   if (state.unlocks !== undefined) persistedState.unlocks = state.unlocks;
   if (state.globalEvents !== undefined) persistedState.globalEvents = state.globalEvents;
+  if (state.hexBackgroundEditor !== undefined) persistedState.hexBackgroundEditor = state.hexBackgroundEditor;
 
   return persistedState;
 }

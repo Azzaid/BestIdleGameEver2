@@ -48,6 +48,7 @@ function destroyRing(world: World, towerId: EntityId) {
   const ring = world.debugTowerTargetingRings.get(towerId);
   if (!ring) return;
 
+  ring.parent?.removeChild(ring);
   ring.destroy();
   world.debugTowerTargetingRings.delete(towerId);
 }

@@ -1,6 +1,6 @@
 import {Application, Container, Graphics} from "pixi.js";
 import {createEntityId, createWorld} from "./core/world.ts";
-import {cleanupRemovedEntities, runSystems} from "./systems/runSystems.ts";
+import {clearTransientBattleState, cleanupRemovedEntities, runSystems} from "./systems/runSystems.ts";
 import {loadBattleAssets} from "./assets/assetLoader.ts";
 import {getWallContactY} from "./core/wallGeometry.ts";
 import {buildTowerVisualContainer} from "./factories/towerVisualRenderer.ts";
@@ -230,6 +230,7 @@ export async function mountCityBattleRuntime({
                 spawner.destroy(world);
             }
             world.spawners = [];
+            clearTransientBattleState(world);
             world.waveScheduler.state.enabled = true;
             world.waveScheduler.state.timeUntilNextWaveSeconds = 0;
             world.waveScheduler.state.currentWaveIndex = 0;
@@ -304,6 +305,7 @@ export async function mountCityBattleRuntime({
                 spawner.destroy(world);
             }
             world.spawners = [];
+            clearTransientBattleState(world);
             world.worldLayer.parent?.removeChild(world.worldLayer);
             world.worldLayer.destroy({children: true});
         },

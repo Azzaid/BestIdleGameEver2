@@ -10,6 +10,7 @@ import unlocksSlice from "./unlocks/slice.ts";
 import globalEventsSlice from "./globalEvents/slice.ts";
 import worldViewSlice from "./worldView/slice.ts";
 import notificationsSlice from "./notifications/slice.ts";
+import hexBackgroundEditorSlice from "./hexBackgroundEditor/slice.ts";
 
 export const rootReducer = combineSlices(
     cityReducer,
@@ -21,5 +22,6 @@ export const rootReducer = combineSlices(
     unlocksSlice,
     globalEventsSlice,
     worldViewSlice,
-    notificationsSlice
+    notificationsSlice,
+    hexBackgroundEditorSlice
 );

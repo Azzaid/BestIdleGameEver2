@@ -132,6 +132,7 @@ const CityPage = ({
         setConfirmingExpansionSide,
     } = useCityCanvasInteraction();
     const [globalEffectsOpen, setGlobalEffectsOpen] = useState(false);
+    const [selectedBuildVector, setSelectedBuildVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.neutral);
     const hasAutoSelectedStarterTowerRef = useRef(false);
     const previousWorldViewModeRef = useRef(worldViewMode);
     const hasBuiltEffectiveTower = useMemo(
@@ -469,6 +470,8 @@ const CityPage = ({
                             />
                             : <BuildingSelector
                             onBuild={handleBuildingSelect}
+                            activeVector={selectedBuildVector}
+                            onActiveVectorChange={setSelectedBuildVector}
                             unlockedBuildingIds={visibleBuildingIdSet}
                             unavailableBuildingReasons={unavailableBuildingReasons}
                             blocked={false}

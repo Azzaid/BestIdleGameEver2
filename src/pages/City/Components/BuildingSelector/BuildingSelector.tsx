@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import * as s from "./BuildingSelector.css.ts";
 import {
     DEVELOPMENT_VECTOR_LABELS,
     DEVELOPMENT_VECTORS,
-    type DevelopmentVectorValue,
 } from "../../../../models/DevlopmentVector.ts";
 import {BUILDINGS_ATLAS} from "../../../../data/buildings";
 import {HexTilePreview} from "./HexTilePreview.tsx";
@@ -21,12 +20,13 @@ import {normalizeMultiplier} from "../../../../models/homogeneousValueResolution
 
 export function BuildingSelector({
                                      onBuild,
+                                     activeVector,
+                                     onActiveVectorChange,
                                      unlockedBuildingIds,
                                      unavailableBuildingReasons = {},
                                      blocked = false,
                                  blockedReason,
                                  }: BuildingSelectorProps) {
-    const [activeVector, setActiveVector] = useState<DevelopmentVectorValue>(DEVELOPMENT_VECTORS.neutral);
     const availableVectors = useMemo(() => (
         Object.values(DEVELOPMENT_VECTORS)
             .map(vector => ({
@@ -44,9 +44,9 @@ export function BuildingSelector({
 
         const fallbackVector = availableVectors[0]?.vector;
         if (fallbackVector) {
-            setActiveVector(fallbackVector);
+            onActiveVectorChange(fallbackVector);
         }
-    }, [activeVector, availableVectors]);
+    }, [activeVector, availableVectors, onActiveVectorChange]);
 
     return (
         <div className={s.wrapper} data-theme={activeVector}>
@@ -63,7 +63,7 @@ export function BuildingSelector({
                             role="tab"
                             aria-selected={activeVector === vector}
                             className={`${s.tabButton[activeVector === vector ? 'active' : 'regular']} ${s.tabVector[vector]}`}
-                            onClick={() => setActiveVector(vector)}
+                            onClick={() => onActiveVectorChange(vector)}
                             data-vector={vector}
                         >
                             <span className={s.tabDot} aria-hidden />

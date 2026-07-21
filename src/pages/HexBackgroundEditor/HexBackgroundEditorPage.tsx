@@ -6,6 +6,16 @@ import {
 } from "../../data/cityHexBackgrounds.ts";
 import {CITY_BIOME_LABELS, CITY_BIOMES, CITY_HEX_BACKGROUND_TYPES} from "../../models/city/hexBackgrounds.ts";
 import type {DevelopmentVectorKey} from "../../models/DevlopmentVector.ts";
+import {useTypedDispatch, useTypedSelector} from "../../store/hooks.ts";
+import {
+  selectHexBackgroundEditorFilters,
+  selectHexBackgroundEditorUpload,
+} from "../../store/hexBackgroundEditor/selectors.ts";
+import {
+  setHexBackgroundEditorFilters,
+  setHexBackgroundUploadSelection,
+} from "../../store/hexBackgroundEditor/slice.ts";
+import type {HexBackgroundEditorFilters} from "../../models/store/hexBackgroundEditor.ts";
 import * as s from "./HexBackgroundEditorPage.css.ts";
 
 const localDataServerUrl = "http://127.0.0.1:4317";
@@ -14,33 +24,17 @@ const biomes = Object.values(CITY_BIOMES);
 const vectors = ["tech", "nature", "medieval", "aether"] as const satisfies readonly DevelopmentVectorKey[];
 
 type UploadState = {
-  type: CityHexBackgroundType;
-  biome: CityBiome;
-  vector: DevelopmentVectorKey;
   fileStem: string;
   file: File | null;
 };
 
-type FilterState = {
-  query: string;
-  type: "" | CityHexBackgroundType;
-  biome: "" | CityBiome;
-  vector: "" | DevelopmentVectorKey;
-};
-
 export default function HexBackgroundEditorPage() {
+  const dispatch = useTypedDispatch();
+  const uploadSelection = useTypedSelector(selectHexBackgroundEditorUpload);
+  const filters = useTypedSelector(selectHexBackgroundEditorFilters);
   const [upload, setUpload] = useState<UploadState>({
-    type: CITY_HEX_BACKGROUND_TYPES.background,
-    biome: CITY_BIOMES.plains,
-    vector: "medieval",
     fileStem: "",
     file: null,
-  });
-  const [filters, setFilters] = useState<FilterState>({
-    query: "",
-    type: "",
-    biome: "",
-    vector: "",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -89,9 +83,9 @@ export default function HexBackgroundEditorPage() {
     }
 
     const formData = new FormData();
-    formData.set("type", upload.type);
-    formData.set("biome", upload.biome);
-    formData.set("vector", upload.vector);
+    formData.set("type", uploadSelection.type);
+    formData.set("biome", uploadSelection.biome);
+    formData.set("vector", uploadSelection.vector);
     formData.set("fileStem", fileStem);
     formData.set("image", upload.file);
 
@@ -133,8 +127,8 @@ export default function HexBackgroundEditorPage() {
             <span className={s.label}>Asset type</span>
             <select
               className={s.input}
-              value={upload.type}
-              onChange={event => setUpload(current => ({...current, type: event.target.value as CityHexBackgroundType}))}
+              value={uploadSelection.type}
+              onChange={event => dispatch(setHexBackgroundUploadSelection({type: event.target.value as CityHexBackgroundType}))}
             >
               {terrainTypes.map(type => <option key={type} value={type}>{formatLabel(type)}</option>)}
             </select>
@@ -144,8 +138,8 @@ export default function HexBackgroundEditorPage() {
             <span className={s.label}>Biome</span>
             <select
               className={s.input}
-              value={upload.biome}
-              onChange={event => setUpload(current => ({...current, biome: event.target.value as CityBiome}))}
+              value={uploadSelection.biome}
+              onChange={event => dispatch(setHexBackgroundUploadSelection({biome: event.target.value as CityBiome}))}
             >
               {biomes.map(biome => <option key={biome} value={biome}>{CITY_BIOME_LABELS[biome]}</option>)}
             </select>
@@ -155,8 +149,8 @@ export default function HexBackgroundEditorPage() {
             <span className={s.label}>Vector</span>
             <select
               className={s.input}
-              value={upload.vector}
-              onChange={event => setUpload(current => ({...current, vector: event.target.value as DevelopmentVectorKey}))}
+              value={uploadSelection.vector}
+              onChange={event => dispatch(setHexBackgroundUploadSelection({vector: event.target.value as DevelopmentVectorKey}))}
             >
               {vectors.map(vector => <option key={vector} value={vector}>{formatLabel(vector)}</option>)}
             </select>
@@ -197,13 +191,13 @@ export default function HexBackgroundEditorPage() {
             <input
               className={s.input}
               value={filters.query}
-              onChange={event => setFilters(current => ({...current, query: event.target.value}))}
+              onChange={event => dispatch(setHexBackgroundEditorFilters({query: event.target.value}))}
               placeholder="id or file name"
             />
           </label>
-          <FilterSelect label="Type" value={filters.type} options={terrainTypes} onChange={value => setFilters(current => ({...current, type: value as FilterState["type"]}))} />
-          <FilterSelect label="Biome" value={filters.biome} options={biomes} labels={CITY_BIOME_LABELS} onChange={value => setFilters(current => ({...current, biome: value as FilterState["biome"]}))} />
-          <FilterSelect label="Vector" value={filters.vector} options={vectors} onChange={value => setFilters(current => ({...current, vector: value as FilterState["vector"]}))} />
+          <FilterSelect label="Type" value={filters.type} options={terrainTypes} onChange={value => dispatch(setHexBackgroundEditorFilters({type: value as HexBackgroundEditorFilters["type"]}))} />
+          <FilterSelect label="Biome" value={filters.biome} options={biomes} labels={CITY_BIOME_LABELS} onChange={value => dispatch(setHexBackgroundEditorFilters({biome: value as HexBackgroundEditorFilters["biome"]}))} />
+          <FilterSelect label="Vector" value={filters.vector} options={vectors} onChange={value => dispatch(setHexBackgroundEditorFilters({vector: value as HexBackgroundEditorFilters["vector"]}))} />
         </div>
 
         <div className={s.summary}>{rows.length} of {CITY_HEX_BACKGROUND_SPRITES.length} sprites</div>
